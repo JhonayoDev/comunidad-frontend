@@ -24,7 +24,8 @@ const routes = [
       {
         path: "notificaciones",
         name: "Notificaciones",
-        component: () => import("../views/dashboard/DashboardView.vue"),
+        component: () =>
+          import("../views/notificaciones/NotificacionesView.vue"),
       },
       {
         path: "residentes",
