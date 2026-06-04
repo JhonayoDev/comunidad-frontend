@@ -17,7 +17,7 @@ export const useAuthStore = defineStore("auth", () => {
     const payload = JSON.parse(atob(token.value.split(".")[1]));
     user.value = {
       email: payload.sub,
-      role: payload.role,
+      role: payload.role?.replace("ROLE_", ""),
     };
 
     localStorage.setItem("token", token.value);
