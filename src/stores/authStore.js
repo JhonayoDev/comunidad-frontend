@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import api from "../services/api";
+import { perfilService } from "../services/perfilService";
 
 export const useAuthStore = defineStore("auth", () => {
   const token = ref(localStorage.getItem("token") || null);
@@ -8,19 +9,26 @@ export const useAuthStore = defineStore("auth", () => {
 
   const isAuthenticated = computed(() => !!token.value);
   const userRole = computed(() => user.value?.role || null);
+  const userName = computed(
+    () => user.value?.nombre || user.value?.email || "Usuario",
+  );
 
   async function login(email, password) {
     const response = await api.post("/auth", { email, password });
     token.value = response.data.token;
 
-    // Decodifica el payload del JWT para extraer email y rol
-    const payload = JSON.parse(atob(token.value.split(".")[1]));
+    // Guardamos el token primero para que el interceptor lo adjunte
+    localStorage.setItem("token", token.value);
+
+    // Llamamos a /me para obtener los datos completos del usuario
+    const perfil = await perfilService.getMiPerfil();
     user.value = {
-      email: payload.sub,
-      role: payload.role?.replace("ROLE_", ""),
+      id: perfil.data.id,
+      nombre: perfil.data.nombre,
+      email: perfil.data.email,
+      role: perfil.data.role,
     };
 
-    localStorage.setItem("token", token.value);
     localStorage.setItem("user", JSON.stringify(user.value));
   }
 
@@ -31,5 +39,5 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.removeItem("user");
   }
 
-  return { token, user, isAuthenticated, userRole, login, logout };
+  return { token, user, isAuthenticated, userRole, userName, login, logout };
 });

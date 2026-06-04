@@ -6,11 +6,10 @@
     >
       <div>
         <p class="text-xs opacity-75">Bienvenido/a</p>
-        <h1 class="font-bold text-lg leading-tight">{{ userName }}</h1>
+        <h1 class="font-bold text-lg leading-tight">{{ auth.userName }}</h1>
         <p class="text-xs opacity-75">Condominio Comunidad</p>
       </div>
       <div class="flex items-center gap-3">
-        <!-- Badge de notificaciones -->
         <div class="indicator">
           <span
             v-if="notifCount > 0"
@@ -51,9 +50,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "../stores/authStore";
+import { perfilService } from "../services/perfilService";
 
 const router = useRouter();
 const route = useRoute();
@@ -61,7 +61,6 @@ const auth = useAuthStore();
 
 const notifCount = ref(0);
 const currentRoute = computed(() => route.name);
-const userName = computed(() => auth.user?.email || "Usuario");
 
 // Navegación según rol
 const navItems = computed(() => {
@@ -85,7 +84,6 @@ const navItems = computed(() => {
     ];
   }
 
-  // RESIDENTE
   return [
     { label: "Inicio", icon: "🏠", routeName: "Inicio" },
     { label: "Notificaciones", icon: "🔔", routeName: "Notificaciones" },
@@ -97,4 +95,26 @@ const navItems = computed(() => {
 function goTo(routeName) {
   router.push({ name: routeName });
 }
+
+// Badge de notificaciones
+async function actualizarBadge() {
+  try {
+    const response = await perfilService.getBadgeNotificaciones();
+    notifCount.value = response.data.noLeidas;
+  } catch {
+    // Si falla no interrumpe la app
+  }
+}
+
+// Intervalo que actualiza el badge cada 30 segundos
+let intervalo = null;
+
+onMounted(() => {
+  actualizarBadge();
+  intervalo = setInterval(actualizarBadge, 30000);
+});
+
+onUnmounted(() => {
+  clearInterval(intervalo);
+});
 </script>
