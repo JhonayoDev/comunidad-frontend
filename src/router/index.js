@@ -59,7 +59,7 @@ const routes = [
       {
         path: "menu",
         name: "Menu",
-        component: () => import("../views/dashboard/DashboardView.vue"),
+        component: () => import("../views/menu/MenuView.vue"),
       },
     ],
   },
