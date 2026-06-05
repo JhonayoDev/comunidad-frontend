@@ -94,6 +94,12 @@ const routes = [
         component: () => import("../views/residente/PerfilView.vue"),
         meta: { roles: ["RESIDENTE", "ADMIN", "GUARDIA"] },
       },
+      {
+        path: "gestiones",
+        name: "Gestiones",
+        component: () => import("../views/residente/GestionesView.vue"),
+        meta: { roles: ["RESIDENTE"] },
+      },
     ],
   },
 

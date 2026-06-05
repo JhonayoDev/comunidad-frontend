@@ -86,9 +86,9 @@ const navItems = computed(() => {
 
   return [
     { label: "Inicio", icon: "🏠", routeName: "Inicio" },
-    { label: "Notificaciones", icon: "🔔", routeName: "Notificaciones" },
-    { label: "Mi unidad", icon: "🏡", routeName: "MiUnidad" },
-    { label: "Menú", icon: "☰", routeName: "Menu" },
+    { label: "Notif.", icon: "🔔", routeName: "Notificaciones" },
+    { label: "Gestiones", icon: "📋", routeName: "Gestiones" },
+    { label: "Perfil", icon: "👤", routeName: "Perfil" },
   ];
 });
 
