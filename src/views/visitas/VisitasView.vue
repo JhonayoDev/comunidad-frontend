@@ -47,6 +47,11 @@
       </div>
     </div>
 
+    <!-- Aviso de caché -->
+    <div v-if="error" class="alert alert-warning mb-4 py-2">
+      <span class="text-sm">⚠️ {{ error }}</span>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md text-primary"></span>
@@ -87,7 +92,7 @@
               <button
                 v-if="!visita.horaSalida"
                 class="btn btn-outline btn-xs"
-                @click="registrarSalida(visita)"
+                @click="handleSalida(visita)"
               >
                 Registrar salida
               </button>
@@ -101,10 +106,9 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { visitasService } from "../../services/visitasService";
+import { useVisitas } from "../../composables/useVisitas";
 
-const visitas = ref([]);
-const loading = ref(false);
+const { visitas, loading, error, cargar, registrarSalida } = useVisitas();
 
 const filtros = ref({
   patente: "",
@@ -115,32 +119,19 @@ const filtros = ref({
 let timeout = null;
 function buscar() {
   clearTimeout(timeout);
-  timeout = setTimeout(() => cargar(), 400);
-}
-
-async function cargar() {
-  loading.value = true;
-  try {
+  timeout = setTimeout(() => {
     const params = {};
     if (filtros.value.patente) params.patente = filtros.value.patente;
     if (filtros.value.nombre) params.nombre = filtros.value.nombre;
     if (filtros.value.activa !== "") params.activa = filtros.value.activa;
-
-    const response = await visitasService.getVisitas(params);
-    visitas.value = response.data;
-  } catch {
-    // error silencioso
-  } finally {
-    loading.value = false;
-  }
+    cargar(params);
+  }, 400);
 }
 
-async function registrarSalida(visita) {
-  try {
-    await visitasService.registrarSalida(visita.id);
-    visita.horaSalida = new Date().toISOString();
-  } catch (e) {
-    alert(e.response?.data?.message || "Error al registrar salida");
+async function handleSalida(visita) {
+  const resultado = await registrarSalida(visita);
+  if (resultado !== true) {
+    alert(resultado);
   }
 }
 
@@ -159,5 +150,5 @@ function formatFecha(fecha) {
   });
 }
 
-onMounted(() => cargar());
+onMounted(() => cargar({ activa: "true" }));
 </script>

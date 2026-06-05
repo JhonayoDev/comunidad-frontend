@@ -12,6 +12,11 @@
       </button>
     </div>
 
+    <!-- Aviso de caché -->
+    <div v-if="error" class="alert alert-warning mb-4 py-2">
+      <span class="text-sm">⚠️ {{ error }}</span>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md text-primary"></span>
@@ -34,9 +39,7 @@
       >
         <div class="card-body p-4">
           <div class="flex items-start gap-3">
-            <!-- Ícono según tipo -->
             <span class="text-2xl mt-0.5">{{ iconoPorTipo(notif.tipo) }}</span>
-
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-2">
                 <p class="font-semibold text-sm truncate">{{ notif.titulo }}</p>
@@ -61,45 +64,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { notificacionesService } from "../../services/notificacionesService";
+import { onMounted } from "vue";
+import { useNotificaciones } from "../../composables/useNotificaciones";
 
-const notificaciones = ref([]);
-const loading = ref(true);
-
-const hayNoLeidas = computed(() => notificaciones.value.some((n) => !n.leida));
-
-async function cargar() {
-  loading.value = true;
-  try {
-    const response = await notificacionesService.getTodasLasNotificaciones();
-    notificaciones.value = response.data;
-  } catch {
-    // error silencioso por ahora
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function marcarLeida(notif) {
-  if (notif.leida) return;
-  try {
-    await notificacionesService.marcarLeida(notif.notificacionId);
-    notif.leida = true;
-    notif.fechaLectura = new Date().toISOString();
-  } catch {
-    // error silencioso
-  }
-}
-
-async function marcarTodas() {
-  try {
-    await notificacionesService.marcarTodasLeidas();
-    notificaciones.value.forEach((n) => (n.leida = true));
-  } catch {
-    // error silencioso
-  }
-}
+const {
+  notificaciones,
+  loading,
+  error,
+  hayNoLeidas,
+  cargar,
+  marcarLeida,
+  marcarTodas,
+} = useNotificaciones();
 
 function iconoPorTipo(tipo) {
   const iconos = {
