@@ -71,10 +71,9 @@ const routes = [
       {
         path: "solicitudes",
         name: "Solicitudes",
-        component: () => import("../views/dashboard/DashboardView.vue"),
+        component: () => import("../views/guardia/SolicitudesView.vue"),
         meta: { roles: ["GUARDIA", "ADMIN"] },
       },
-
       // ── Residente ─────────────────────────────────
       {
         path: "inicio",
