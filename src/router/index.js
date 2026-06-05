@@ -33,7 +33,7 @@ const routes = [
       {
         path: "dashboard",
         name: "Dashboard",
-        component: () => import("../views/dashboard/DashboardView.vue"),
+        component: () => import("../views/dashboard/AdminDashboardView.vue"),
         meta: { roles: ["ADMIN"] },
       },
       {
