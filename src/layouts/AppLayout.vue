@@ -9,7 +9,8 @@
         <h1 class="font-bold text-lg leading-tight">{{ auth.userName }}</h1>
         <p class="text-xs opacity-75">Condominio Comunidad</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <!-- Badge de notificaciones -->
         <div class="indicator">
           <span
             v-if="notifCount > 0"
@@ -24,9 +25,12 @@
             🔔
           </button>
         </div>
+        <!-- Logout -->
+        <button class="btn btn-ghost btn-circle btn-sm" @click="handleLogout">
+          🚪
+        </button>
       </div>
     </header>
-
     <!-- Contenido de la página -->
     <main class="flex-1 overflow-y-auto pb-20">
       <RouterView />
@@ -105,7 +109,10 @@ async function actualizarBadge() {
     // Si falla no interrumpe la app
   }
 }
-
+function handleLogout() {
+  auth.logout();
+  router.push({ name: "Login" });
+}
 // Intervalo que actualiza el badge cada 30 segundos
 let intervalo = null;
 
