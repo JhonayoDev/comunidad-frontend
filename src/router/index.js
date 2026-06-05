@@ -40,12 +40,17 @@ const routes = [
       {
         path: "porton",
         name: "Porton",
-        component: () => import("../views/dashboard/DashboardView.vue"),
+        component: () => import("../views/guardia/PortonView.vue"),
       },
       {
         path: "visitas",
         name: "Visitas",
-        component: () => import("../views/dashboard/DashboardView.vue"),
+        component: () => import("../views/guardia/VisitasView.vue"),
+      },
+      {
+        path: "visitas/nueva",
+        name: "RegistrarVisita",
+        component: () => import("../views/guardia/RegistrarVisitaView.vue"),
       },
       {
         path: "solicitudes",
