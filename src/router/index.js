@@ -45,10 +45,9 @@ const routes = [
       {
         path: "vehiculos",
         name: "Vehiculos",
-        component: () => import("../views/dashboard/DashboardView.vue"),
+        component: () => import("../views/admin/VehiculosView.vue"),
         meta: { roles: ["ADMIN"] },
       },
-
       // ── Guardia ───────────────────────────────────
       {
         path: "porton",
@@ -71,7 +70,7 @@ const routes = [
       {
         path: "solicitudes",
         name: "Solicitudes",
-        component: () => import("../views/guardia/SolicitudesView.vue"),
+        component: () => import("../views/admin/SolicitudesAdminView.vue"),
         meta: { roles: ["GUARDIA", "ADMIN"] },
       },
       // ── Residente ─────────────────────────────────
@@ -98,6 +97,12 @@ const routes = [
         name: "Gestiones",
         component: () => import("../views/residente/GestionesView.vue"),
         meta: { roles: ["RESIDENTE"] },
+      },
+      {
+        path: "residentes",
+        name: "Residentes",
+        component: () => import("../views/admin/ResidentesView.vue"),
+        meta: { roles: ["ADMIN"] },
       },
     ],
   },
