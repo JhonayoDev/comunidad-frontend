@@ -37,15 +37,15 @@ const routes = [
         meta: { roles: ["ADMIN"] },
       },
       {
-        path: "residentes",
-        name: "Residentes",
-        component: () => import("../views/dashboard/DashboardView.vue"),
-        meta: { roles: ["ADMIN"] },
-      },
-      {
         path: "vehiculos",
         name: "Vehiculos",
         component: () => import("../views/admin/VehiculosView.vue"),
+        meta: { roles: ["ADMIN"] },
+      },
+      {
+        path: "solicitudes-admin",
+        name: "SolicitudesAdmin",
+        component: () => import("../views/admin/SolicitudesAdminView.vue"),
         meta: { roles: ["ADMIN"] },
       },
       // ── Guardia ───────────────────────────────────
@@ -70,10 +70,9 @@ const routes = [
       {
         path: "solicitudes",
         name: "Solicitudes",
-        component: () => import("../views/admin/SolicitudesAdminView.vue"),
-        meta: { roles: ["GUARDIA", "ADMIN"] },
-      },
-      // ── Residente ─────────────────────────────────
+        component: () => import("../views/guardia/SolicitudesView.vue"),
+        meta: { roles: ["GUARDIA"] },
+      }, // ── Residente ─────────────────────────────────
       {
         path: "inicio",
         name: "Inicio",

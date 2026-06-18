@@ -86,7 +86,7 @@
           <div class="grid grid-cols-2 gap-2">
             <button
               class="btn btn-outline btn-sm flex flex-col h-16 gap-1"
-              @click="$router.push({ name: 'Solicitudes' })"
+              @click="$router.push({ name: 'SolicitudesAdmin' })"
             >
               <span class="text-xl">📋</span>
               <span class="text-xs">Solicitudes</span>
