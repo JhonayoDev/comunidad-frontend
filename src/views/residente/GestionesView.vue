@@ -154,12 +154,35 @@
         </div>
       </div>
     </div>
+    <!-- Mis encomiendas -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body p-0">
+        <div
+          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-base-200"
+          @click="$router.push({ name: 'MisEncomiendas' })"
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-xl">📦</span>
+            <div>
+              <p class="font-medium">Mis encomiendas</p>
+              <p class="text-xs text-base-content/40">
+                Paquetes pendientes de retiro
+              </p>
+            </div>
+          </div>
+          <span class="text-base-content/40">›</span>
+        </div>
+      </div>
+    </div>
+    <!-- -->
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
-
+// En el script
+import { useRouter } from "vue-router";
+const router = useRouter();
 const seccionActiva = ref(null);
 
 const reclamoForm = ref({

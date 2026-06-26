@@ -66,7 +66,19 @@ async function handleLogin() {
   error.value = "";
   try {
     await auth.login(email.value, password.value);
-    router.push({ name: "Dashboard" });
+
+    // Redirigir según condominios
+    if (auth.condominios.length === 0) {
+      error.value = "No tienes acceso a ningún condominio";
+      return;
+    }
+    if (auth.condominioActualRol === "ADMINISTRADOR") {
+      router.push({ name: "Dashboard" });
+    } else if (auth.condominioActualRol === "GUARDIA") {
+      router.push({ name: "GuardiaDashboard" });
+    } else {
+      router.push({ name: "Inicio" });
+    }
   } catch (e) {
     error.value = e.response?.data?.message || "Error al iniciar sesión";
   } finally {
@@ -74,7 +86,6 @@ async function handleLogin() {
   }
 }
 </script>
-
 <style scoped>
 .login-container {
   min-height: 100vh;

@@ -5,16 +5,8 @@ export const perfilService = {
     return api.get("/me");
   },
 
-  getMisVinculos() {
-    return api.get("/me/vinculos");
-  },
-
-  getMisVehiculos() {
-    return api.get("/me/vehiculos");
-  },
-
-  getBadgeNotificaciones() {
-    return api.get("/notificaciones/badge");
+  getBadgeNotificaciones(condominioId) {
+    return api.get(`/condominios/${condominioId}/notificaciones/badge`);
   },
 
   cambiarPassword(data) {
@@ -29,8 +21,7 @@ export const perfilService = {
     return api.post("/me/email/verificar", { token });
   },
 
-  // Futuro — dashboard residente agregado
-  getDashboard() {
-    return api.get("/dashboard/residente");
+  getDashboardResidente(condominioId) {
+    return api.get(`/condominios/${condominioId}/dashboard/residente`);
   },
 };

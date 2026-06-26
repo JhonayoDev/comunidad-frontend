@@ -1,23 +1,23 @@
 import api from "./api";
 
 export const notificacionesService = {
-  getTodasLasNotificaciones() {
-    return api.get("/notificaciones");
+  getTodas(condominioId) {
+    return api.get(`/condominios/${condominioId}/notificaciones`);
   },
 
-  getNoLeidas() {
-    return api.get("/notificaciones/no-leidas");
+  getBadge(condominioId) {
+    return api.get(`/condominios/${condominioId}/notificaciones/badge`);
   },
 
-  getBadge() {
-    return api.get("/notificaciones/badge");
+  marcarLeida(condominioId, notificacionId) {
+    return api.patch(
+      `/condominios/${condominioId}/notificaciones/${notificacionId}/leida`,
+    );
   },
 
-  marcarLeida(notificacionId) {
-    return api.put(`/notificaciones/${notificacionId}/leida`);
-  },
-
-  marcarTodasLeidas() {
-    return api.put("/notificaciones/leida/todas");
+  marcarTodasLeidas(condominioId) {
+    return api.patch(
+      `/condominios/${condominioId}/notificaciones/todas-leidas`,
+    );
   },
 };

@@ -1,103 +1,93 @@
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <!-- Aviso de caché -->
     <div v-if="error" class="alert alert-warning py-2">
       <span class="text-sm">⚠️ {{ error }}</span>
     </div>
 
-    <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md text-primary"></span>
     </div>
 
-    <template v-else>
-      <!-- Mi unidad -->
+    <template v-else-if="dashboard">
+      <!-- Mis unidades -->
       <div class="card bg-base-100 shadow">
         <div class="card-body p-4">
-          <h3 class="font-bold text-base mb-3">Mi unidad</h3>
+          <h3 class="font-bold text-base mb-3">Mis unidades</h3>
 
-          <div v-if="vinculos.length === 0" class="text-center py-4">
+          <div v-if="dashboard.unidades.length === 0" class="text-center py-4">
             <p class="text-base-content/60 text-sm">
               No tienes unidades asignadas
             </p>
           </div>
 
-          <div v-else class="flex flex-col gap-3">
-            <div v-for="vinculo in vinculos" :key="vinculo.id">
-              <div class="flex items-center gap-2">
-                <span class="text-xl">🏠</span>
+          <div v-else class="flex flex-col gap-4">
+            <div v-for="unidad in dashboard.unidades" :key="unidad.id">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">{{
+                  unidad.tipo === "ESTACIONAMIENTO" ? "🅿️" : "🏠"
+                }}</span>
                 <div>
-                  <p class="font-semibold">Casa {{ vinculo.unidadNumero }}</p>
-                  <p class="text-xs text-base-content/60">
-                    Sector {{ vinculo.unidadNumero }} —
-                    <span class="badge badge-ghost badge-xs">{{
-                      tipoVinculo(vinculo.tipo)
-                    }}</span>
+                  <p class="font-semibold">
+                    {{
+                      unidad.tipo === "ESTACIONAMIENTO"
+                        ? "Estacionamiento"
+                        : "Casa"
+                    }}
+                    {{ unidad.numero }}
                   </p>
                 </div>
               </div>
-            </div>
 
-            <!-- Estacionamientos -->
-            <div v-if="estacionamientos.length > 0" class="divider my-0"></div>
-            <div
-              v-for="est in estacionamientos"
-              :key="est.id"
-              class="flex items-center gap-2"
-            >
-              <span class="text-xl">🅿️</span>
-              <div>
-                <p class="font-semibold">
-                  Estacionamiento Nº {{ est.unidadNumero }}
-                </p>
+              <!-- Personas (convivientes) -->
+              <div
+                v-for="persona in unidad.personas"
+                :key="persona.id"
+                class="ml-8 flex items-center gap-2 text-sm"
+              >
+                <span>👤</span>
+                <span>{{ persona.nombre }}</span>
+                <span class="badge badge-ghost badge-xs">{{
+                  tipoVinculo(persona.tipo)
+                }}</span>
+              </div>
+
+              <!-- Vehículos -->
+              <div
+                v-for="vehiculo in unidad.vehiculos"
+                :key="vehiculo.id"
+                class="ml-8 flex items-center gap-2 text-sm"
+              >
+                <span>🚗</span>
+                <span class="font-mono">{{ vehiculo.patente }}</span>
+              </div>
+
+              <!-- Gasto común -->
+              <div
+                v-if="unidad.gastoActual"
+                class="ml-8 mt-2 p-2 bg-base-200 rounded"
+              >
+                <div class="flex justify-between items-center">
+                  <span class="text-xs"
+                    >GC {{ unidad.gastoActual.periodo }}</span
+                  >
+                  <span
+                    class="text-sm font-bold"
+                    :class="{
+                      'text-success':
+                        unidad.gastoActual.estadoPago === 'PAGADO',
+                      'text-error': unidad.gastoActual.estadoPago === 'VENCIDO',
+                    }"
+                  >
+                    ${{ formatMonto(unidad.gastoActual.monto) }}
+                  </span>
+                </div>
                 <p class="text-xs text-base-content/60">
-                  {{ tipoUnidad(est.tipo) }}
+                  Vence: {{ unidad.gastoActual.fechaVencimiento }} —
+                  {{ estadoPago(unidad.gastoActual.estadoPago) }}
                 </p>
               </div>
-            </div>
 
-            <!-- Vehículos -->
-            <div v-if="vehiculos.length > 0" class="divider my-0"></div>
-            <div
-              v-for="vehiculo in vehiculos"
-              :key="vehiculo.id"
-              class="flex items-center gap-2"
-            >
-              <span class="text-xl">🚗</span>
-              <div>
-                <p class="font-semibold">{{ vehiculo.patente }}</p>
-                <p class="text-xs text-base-content/60">
-                  {{ vehiculo.marca }} {{ vehiculo.modelo }} —
-                  {{ vehiculo.color }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Gastos comunes -->
-      <div class="card bg-base-100 shadow">
-        <div class="card-body p-4">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="font-bold text-base">Gastos comunes</h3>
-            <span class="badge badge-ghost badge-sm">{{
-              gastoComun.periodo
-            }}</span>
-          </div>
-
-          <div
-            v-if="!gastoComun.disponible"
-            class="flex items-center gap-3 py-2"
-          >
-            <span class="text-3xl">💰</span>
-            <div>
-              <p class="text-2xl font-bold">
-                $ {{ formatMonto(gastoComun.deudaActual) }}
-              </p>
-              <p class="text-xs text-base-content/40">
-                Próximamente disponible
-              </p>
+              <div class="divider my-2"></div>
             </div>
           </div>
         </div>
@@ -108,7 +98,6 @@
         <div class="card-body p-4">
           <h3 class="font-bold text-base mb-3">Novedades</h3>
           <div class="flex flex-col gap-2">
-            <!-- Notificaciones -->
             <div
               class="flex items-center justify-between p-2 rounded-lg hover:bg-base-200 cursor-pointer"
               @click="$router.push({ name: 'Notificaciones' })"
@@ -130,7 +119,6 @@
               </div>
             </div>
 
-            <!-- Encomiendas — placeholder -->
             <div
               class="flex items-center justify-between p-2 rounded-lg opacity-50"
             >
@@ -149,7 +137,6 @@
         <div class="card-body p-4">
           <h3 class="font-bold text-base mb-3">Acciones rápidas</h3>
           <div class="grid grid-cols-2 gap-2">
-            <!-- Visita esperada — placeholder -->
             <button
               class="btn btn-outline btn-sm flex flex-col h-16 gap-1 opacity-50"
               disabled
@@ -157,8 +144,6 @@
               <span class="text-xl">🚪</span>
               <span class="text-xs">Visita esperada</span>
             </button>
-
-            <!-- Reserva área común — placeholder -->
             <button
               class="btn btn-outline btn-sm flex flex-col h-16 gap-1 opacity-50"
               disabled
@@ -166,8 +151,6 @@
               <span class="text-xl">📅</span>
               <span class="text-xs">Reservar área</span>
             </button>
-
-            <!-- Reclamo/Caso -->
             <button
               class="btn btn-outline btn-sm flex flex-col h-16 gap-1 opacity-50"
               disabled
@@ -175,8 +158,6 @@
               <span class="text-xl">📝</span>
               <span class="text-xs">Reclamo / Caso</span>
             </button>
-
-            <!-- Actualizar perfil -->
             <button
               class="btn btn-outline btn-sm flex flex-col h-16 gap-1"
               @click="$router.push({ name: 'Perfil' })"
@@ -192,30 +173,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useResidente } from "../../composables/useResidente";
+import { ref, onMounted } from "vue";
+import { useAuthStore } from "../../stores/authStore";
 import { perfilService } from "../../services/perfilService";
 
-const { vinculos, vehiculos, gastoComun, loading, error, cargar } =
-  useResidente();
-
+const auth = useAuthStore();
+const dashboard = ref(null);
 const notifCount = ref(0);
-
-// Filtra solo estacionamientos de los vínculos
-const estacionamientos = computed(() =>
-  vinculos.value.filter(
-    (v) => v.tipo !== "CASA" && v.unidadTipo?.includes("ESTACIONAMIENTO"),
-  ),
-);
-
-async function cargarBadge() {
-  try {
-    const response = await perfilService.getBadgeNotificaciones();
-    notifCount.value = response.data.noLeidas;
-  } catch {
-    // silencioso
-  }
-}
+const loading = ref(true);
+const error = ref(null);
 
 function tipoVinculo(tipo) {
   const tipos = {
@@ -226,21 +192,37 @@ function tipoVinculo(tipo) {
   return tipos[tipo] || tipo;
 }
 
-function tipoUnidad(tipo) {
-  const tipos = {
-    ESTACIONAMIENTO_RESIDENTE: "Estacionamiento residente",
-    ESTACIONAMIENTO_VISITA: "Estacionamiento visita",
-    ESTACIONAMIENTO_DISCAPACITADO: "Estacionamiento discapacitado",
+function estadoPago(estado) {
+  const estados = {
+    PENDIENTE: "Pendiente",
+    PAGADO: "Pagado",
+    VENCIDO: "Vencido",
   };
-  return tipos[tipo] || tipo;
+  return estados[estado] || estado;
 }
 
 function formatMonto(monto) {
   return new Intl.NumberFormat("es-CL").format(monto);
 }
 
-onMounted(() => {
-  cargar();
-  cargarBadge();
+onMounted(async () => {
+  const cid = auth.condominioActualId;
+  if (!cid) {
+    error.value = "Selecciona un condominio primero";
+    loading.value = false;
+    return;
+  }
+  try {
+    const [resDash, resBadge] = await Promise.all([
+      perfilService.getDashboardResidente(cid),
+      perfilService.getBadgeNotificaciones(cid),
+    ]);
+    dashboard.value = resDash.data;
+    notifCount.value = resBadge.data.noLeidas;
+  } catch {
+    error.value = "Error al cargar el dashboard";
+  } finally {
+    loading.value = false;
+  }
 });
 </script>

@@ -1,45 +1,42 @@
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <!-- Aviso de caché -->
     <div v-if="error" class="alert alert-warning py-2">
       <span class="text-sm">⚠️ {{ error }}</span>
     </div>
 
-    <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md text-primary"></span>
     </div>
 
-    <template v-else>
+    <template v-else-if="dashboard">
       <!-- Alertas importantes -->
       <div
-        v-if="datos.solicitudesPendientes > 0"
+        v-if="
+          dashboard.pendientes.encomiendas > 0 ||
+          dashboard.pendientes.reclamos > 0
+        "
         class="alert alert-warning py-3 cursor-pointer"
-        @click="$router.push({ name: 'Solicitudes' })"
       >
         <span class="text-xl">📋</span>
         <div>
           <p class="font-semibold">
-            {{ datos.solicitudesPendientes }} solicitudes pendientes
+            {{
+              dashboard.pendientes.encomiendas + dashboard.pendientes.reclamos
+            }}
+            pendientes
           </p>
-          <p class="text-xs">Toca para revisar</p>
         </div>
         <span class="ml-auto">›</span>
       </div>
 
-      <!-- Visitas activas -->
-      <div
-        class="alert alert-success py-3 cursor-pointer"
-        @click="$router.push({ name: 'Visitas' })"
-      >
+      <!-- Accesos activos -->
+      <div class="alert alert-success py-3">
         <span class="text-xl">🚪</span>
         <div>
           <p class="font-semibold">
-            {{ datos.visitasActivas }} visitas activas ahora
+            {{ dashboard.accesos.activosAhora }} accesos activos ahora
           </p>
-          <p class="text-xs">Toca para ver el detalle</p>
         </div>
-        <span class="ml-auto">›</span>
       </div>
 
       <!-- Estadísticas -->
@@ -47,34 +44,36 @@
         <div class="card bg-base-100 shadow">
           <div class="card-body p-4 items-center text-center">
             <p class="text-3xl font-bold text-primary">
-              {{ datos.totalUnidades }}
+              {{ dashboard.totales.unidades }}
             </p>
-            <p class="text-xs text-base-content/60">Casas</p>
+            <p class="text-xs text-base-content/60">Unidades</p>
           </div>
         </div>
 
         <div class="card bg-base-100 shadow">
           <div class="card-body p-4 items-center text-center">
             <p class="text-3xl font-bold text-primary">
-              {{ datos.visitasActivas }}
+              {{ dashboard.totales.residentesActivos }}
             </p>
-            <p class="text-xs text-base-content/60">Visitas activas</p>
+            <p class="text-xs text-base-content/60">Residentes</p>
           </div>
         </div>
 
-        <div class="card bg-base-100 shadow opacity-50">
+        <div class="card bg-base-100 shadow">
           <div class="card-body p-4 items-center text-center">
-            <p class="text-3xl font-bold text-base-content/40">—</p>
-            <p class="text-xs text-base-content/40">Encomiendas</p>
-            <p class="text-xs text-base-content/40">Próximamente</p>
+            <p class="text-3xl font-bold text-primary">
+              {{ dashboard.totales.vehiculos }}
+            </p>
+            <p class="text-xs text-base-content/60">Vehículos</p>
           </div>
         </div>
 
-        <div class="card bg-base-100 shadow opacity-50">
+        <div class="card bg-base-100 shadow">
           <div class="card-body p-4 items-center text-center">
-            <p class="text-3xl font-bold text-base-content/40">—</p>
-            <p class="text-xs text-base-content/40">Reclamos</p>
-            <p class="text-xs text-base-content/40">Próximamente</p>
+            <p class="text-3xl font-bold text-primary">
+              {{ dashboard.anunciosVigentes }}
+            </p>
+            <p class="text-xs text-base-content/60">Anuncios</p>
           </div>
         </div>
       </div>
@@ -84,22 +83,6 @@
         <div class="card-body p-4">
           <h3 class="font-bold text-base mb-3">Acciones rápidas</h3>
           <div class="grid grid-cols-2 gap-2">
-            <button
-              class="btn btn-outline btn-sm flex flex-col h-16 gap-1"
-              @click="$router.push({ name: 'SolicitudesAdmin' })"
-            >
-              <span class="text-xl">📋</span>
-              <span class="text-xs">Solicitudes</span>
-            </button>
-
-            <button
-              class="btn btn-outline btn-sm flex flex-col h-16 gap-1"
-              @click="$router.push({ name: 'Visitas' })"
-            >
-              <span class="text-xl">🚪</span>
-              <span class="text-xs">Visitas</span>
-            </button>
-
             <button
               class="btn btn-outline btn-sm flex flex-col h-16 gap-1"
               @click="$router.push({ name: 'Residentes' })"
@@ -123,23 +106,29 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
-import { useDashboardAdmin } from "../../composables/useDashboardAdmin";
-import { solicitudesService } from "../../services/solicitudesService";
+import { ref, onMounted } from "vue";
+import { useAuthStore } from "../../stores/authStore";
+import api from "../../services/api";
 
-const { datos, loading, error, cargar } = useDashboardAdmin();
-
-async function cargarSolicitudes() {
-  try {
-    const response = await solicitudesService.getPendientes();
-    datos.value.solicitudesPendientes = response.data.length;
-  } catch {
-    // silencioso
-  }
-}
+const auth = useAuthStore();
+const dashboard = ref(null);
+const loading = ref(true);
+const error = ref(null);
 
 onMounted(async () => {
-  await cargar();
-  await cargarSolicitudes();
+  const cid = auth.condominioActualId;
+  if (!cid) {
+    error.value = "Selecciona un condominio primero";
+    loading.value = false;
+    return;
+  }
+  try {
+    const response = await api.get(`/condominios/${cid}/dashboard/admin`);
+    dashboard.value = response.data;
+  } catch {
+    error.value = "Error al cargar el dashboard";
+  } finally {
+    loading.value = false;
+  }
 });
 </script>

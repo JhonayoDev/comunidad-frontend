@@ -28,51 +28,79 @@ const routes = [
         name: "Menu",
         component: () => import("../views/menu/MenuView.vue"),
       },
+      {
+        path: "perfil",
+        name: "Perfil",
+        component: () => import("../views/residente/PerfilView.vue"),
+        meta: {
+          roles: ["RESIDENTE", "ADMINISTRADOR", "GUARDIA"],
+        },
+      },
+      // ── Guardia / Admin ───────────────────────────
+      {
+        path: "encomiendas",
+        name: "Encomiendas",
+        component: () => import("../views/encomiendas/EncomiendасView.vue"),
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+      },
 
       // ── Admin ─────────────────────────────────────
       {
         path: "dashboard",
         name: "Dashboard",
         component: () => import("../views/dashboard/AdminDashboardView.vue"),
-        meta: { roles: ["ADMIN"] },
+        meta: { roles: ["ADMINISTRADOR"] },
       },
       {
         path: "vehiculos",
         name: "Vehiculos",
         component: () => import("../views/admin/VehiculosView.vue"),
-        meta: { roles: ["ADMIN"] },
+        meta: { roles: ["ADMINISTRADOR"] },
       },
       {
         path: "solicitudes-admin",
         name: "SolicitudesAdmin",
         component: () => import("../views/admin/SolicitudesAdminView.vue"),
-        meta: { roles: ["ADMIN"] },
+        meta: { roles: ["ADMINISTRADOR"] },
+      },
+      {
+        path: "residentes",
+        name: "Residentes",
+        component: () => import("../views/admin/ResidentesView.vue"),
+        meta: { roles: ["ADMINISTRADOR"] },
       },
       // ── Guardia ───────────────────────────────────
+      {
+        path: "guardia",
+        name: "GuardiaDashboard",
+        component: () => import("../views/dashboard/GuardiaDashboardView.vue"),
+        meta: { roles: ["GUARDIA"] },
+      },
       {
         path: "porton",
         name: "Porton",
         component: () => import("../views/visitas/PortonView.vue"),
-        meta: { roles: ["GUARDIA", "ADMIN"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
       },
       {
         path: "visitas",
         name: "Visitas",
         component: () => import("../views/visitas/VisitasView.vue"),
-        meta: { roles: ["GUARDIA", "ADMIN"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
       },
       {
         path: "visitas/nueva",
         name: "RegistrarVisita",
         component: () => import("../views/visitas/RegistrarVisitaView.vue"),
-        meta: { roles: ["GUARDIA", "ADMIN"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
       },
       {
         path: "solicitudes",
         name: "Solicitudes",
         component: () => import("../views/guardia/SolicitudesView.vue"),
         meta: { roles: ["GUARDIA"] },
-      }, // ── Residente ─────────────────────────────────
+      },
+      // ── Residente ─────────────────────────────────
       {
         path: "inicio",
         name: "Inicio",
@@ -86,22 +114,16 @@ const routes = [
         meta: { roles: ["RESIDENTE"] },
       },
       {
-        path: "perfil",
-        name: "Perfil",
-        component: () => import("../views/residente/PerfilView.vue"),
-        meta: { roles: ["RESIDENTE", "ADMIN", "GUARDIA"] },
-      },
-      {
         path: "gestiones",
         name: "Gestiones",
         component: () => import("../views/residente/GestionesView.vue"),
         meta: { roles: ["RESIDENTE"] },
       },
       {
-        path: "residentes",
-        name: "Residentes",
-        component: () => import("../views/admin/ResidentesView.vue"),
-        meta: { roles: ["ADMIN"] },
+        path: "mis-encomiendas",
+        name: "MisEncomiendas",
+        component: () => import("../views/encomiendas/MisEncomiendасView.vue"),
+        meta: { roles: ["RESIDENTE"] },
       },
     ],
   },
@@ -114,34 +136,35 @@ const router = createRouter({
   routes,
 });
 
-// Ruta inicial según rol
 function rutaInicial(role) {
-  if (role === "ADMIN") return { name: "Dashboard" };
-  if (role === "GUARDIA") return { name: "Porton" };
+  if (role === "ADMINISTRADOR") return { name: "Dashboard" };
+  if (role === "GUARDIA") return { name: "GuardiaDashboard" };
   return { name: "Inicio" };
 }
 
 router.beforeEach((to) => {
   const auth = useAuthStore();
 
-  // Si no está autenticado y la ruta es privada → login
   if (!to.meta.public && !auth.isAuthenticated) {
     return { name: "Login" };
   }
 
-  // Si ya está autenticado y va al login → ruta inicial según rol
   if (to.name === "Login" && auth.isAuthenticated) {
-    return rutaInicial(auth.userRole);
+    return rutaInicial(auth.condominioActualRol || auth.user?.roles?.[0]);
   }
 
-  // Si va a la raíz → ruta inicial según rol
   if (to.path === "/" && auth.isAuthenticated) {
-    return rutaInicial(auth.userRole);
+    return rutaInicial(auth.condominioActualRol || auth.user?.roles?.[0]);
   }
 
-  // Si la ruta tiene roles definidos y el usuario no tiene permiso → ruta inicial
-  if (to.meta.roles && !to.meta.roles.includes(auth.userRole)) {
-    return rutaInicial(auth.userRole);
+  const userRoles = auth.user?.roles || [];
+  const routeRoles = to.meta.roles;
+  if (
+    routeRoles &&
+    !routeRoles.some((r) => userRoles.includes(r)) &&
+    !routeRoles.includes(auth.condominioActualRol)
+  ) {
+    return rutaInicial(auth.condominioActualRol || userRoles[0]);
   }
 });
 

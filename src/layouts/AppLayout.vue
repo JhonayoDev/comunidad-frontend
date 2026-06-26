@@ -7,7 +7,21 @@
       <div>
         <p class="text-xs opacity-75">Bienvenido/a</p>
         <h1 class="font-bold text-lg leading-tight">{{ auth.userName }}</h1>
-        <p class="text-xs opacity-75">Condominio Comunidad</p>
+        <div class="flex items-center gap-1">
+          <select
+            v-if="auth.hasMultipleCondominios"
+            v-model="selectedCondominioId"
+            @change="onCondominioChange"
+            class="text-xs bg-primary text-primary-content border border-primary-content/30 rounded px-1 py-0.5"
+          >
+            <option v-for="c in auth.condominios" :key="c.id" :value="c.id">
+              {{ c.nombre }}
+            </option>
+          </select>
+          <p v-else class="text-xs opacity-75">
+            {{ auth.condominioActualNombre || "Condominio" }}
+          </p>
+        </div>
       </div>
       <div class="flex items-center gap-2">
         <!-- Badge de notificaciones -->
@@ -35,7 +49,6 @@
     <main class="flex-1 overflow-y-auto pb-20">
       <RouterView />
     </main>
-
     <!-- Barra de navegación inferior -->
     <nav
       class="btm-nav btm-nav-sm fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300"
@@ -52,7 +65,9 @@
     </nav>
   </div>
 </template>
-
+```
+<script setup>
+```js
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -65,12 +80,20 @@ const auth = useAuthStore();
 
 const notifCount = ref(0);
 const currentRoute = computed(() => route.name);
+const selectedCondominioId = ref(auth.condominioActualId || "");
 
-// Navegación según rol
+function onCondominioChange() {
+  if (selectedCondominioId.value) {
+    auth.seleccionarCondominio(selectedCondominioId.value);
+    router.go(0); // recarga para refrescar datos con nuevo condominioId
+  }
+}
+
+// Navegación según rol del condominio seleccionado
 const navItems = computed(() => {
-  const role = auth.userRole;
+  const role = auth.condominioActualRol || (auth.user?.roles?.[0] ?? "");
 
-  if (role === "ADMIN") {
+  if (role === "ADMINISTRADOR") {
     return [
       { label: "Inicio", icon: "🏠", routeName: "Dashboard" },
       { label: "Residentes", icon: "👥", routeName: "Residentes" },
@@ -81,9 +104,9 @@ const navItems = computed(() => {
 
   if (role === "GUARDIA") {
     return [
+      { label: "Inicio", icon: "🏠", routeName: "GuardiaDashboard" },
       { label: "Portón", icon: "🚧", routeName: "Porton" },
-      { label: "Visitas", icon: "📋", routeName: "Visitas" },
-      { label: "Solicitudes", icon: "📝", routeName: "Solicitudes" },
+      { label: "Encomiendas", icon: "📦", routeName: "Encomiendas" },
       { label: "Menú", icon: "☰", routeName: "Menu" },
     ];
   }
@@ -100,20 +123,22 @@ function goTo(routeName) {
   router.push({ name: routeName });
 }
 
-// Badge de notificaciones
 async function actualizarBadge() {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
   try {
-    const response = await perfilService.getBadgeNotificaciones();
+    const response = await perfilService.getBadgeNotificaciones(cid);
     notifCount.value = response.data.noLeidas;
   } catch {
     // Si falla no interrumpe la app
   }
 }
+
 function handleLogout() {
   auth.logout();
   router.push({ name: "Login" });
 }
-// Intervalo que actualiza el badge cada 30 segundos
+
 let intervalo = null;
 
 onMounted(() => {
