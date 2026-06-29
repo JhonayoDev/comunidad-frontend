@@ -180,7 +180,7 @@
 import { ref, onMounted } from "vue";
 import { useEncomiendas } from "../../composables/useEncomiendas";
 import { unidadesService } from "../../services/unidadesService";
-import { encomiendасService } from "../../services/encomiendасService";
+import { encomiendasService } from "../../services/encomiendasService";
 
 const { encomiendas, loading, error, cargar, entregar } = useEncomiendas();
 
@@ -231,7 +231,7 @@ async function registrar() {
 
   loadingForm.value = true;
   try {
-    await encomiendасService.registrar({
+    await encomiendasService.registrar({
       unidadId: form.value.unidadId,
       descripcion: form.value.descripcion,
       receptorNombre: form.value.receptorNombre || null,

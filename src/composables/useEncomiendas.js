@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { encomiendасService } from "../services/encomiendасService";
+import { encomiendasService } from "../services/encomiendasService";
 
 const CACHE_KEY = "cache_encomiendas";
 
@@ -12,7 +12,7 @@ export function useEncomiendas() {
     loading.value = true;
     error.value = null;
     try {
-      const response = await encomiendасService.getEncomiendas(filtros);
+      const response = await encomiendasService.getEncomiendas(filtros);
       encomiendas.value = response.data;
       if (Object.keys(filtros).length === 0) {
         localStorage.setItem(CACHE_KEY, JSON.stringify(response.data));
@@ -32,7 +32,7 @@ export function useEncomiendas() {
 
   async function entregar(encomienda) {
     try {
-      await encomiendасService.entregar(encomienda.id);
+      await encomiendasService.entregar(encomienda.id);
       encomienda.estado = "ENTREGADA";
       encomienda.fechaEntrega = new Date().toISOString();
       return true;

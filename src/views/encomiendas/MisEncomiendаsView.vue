@@ -47,7 +47,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { encomiendасService } from "../../services/encomiendасService";
+import { encomiendasService } from "../../services/encomiendasService";
 
 const encomiendas = ref([]);
 const loading = ref(false);
@@ -55,7 +55,7 @@ const loading = ref(false);
 async function cargar() {
   loading.value = true;
   try {
-    const response = await encomiendасService.getMisEncomiendas();
+    const response = await encomiendasService.getMisEncomiendas();
     encomiendas.value = response.data;
   } finally {
     loading.value = false;

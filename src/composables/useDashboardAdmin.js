@@ -1,16 +1,7 @@
 import { ref } from "vue";
+import { visitasService } from "../services/visitasService";
+import { unidadesService } from "../services/unidadesService";
 
-export function useDashboardAdmin() {
-  const dashboard = ref(null);
-  const loading = ref(false);
-  const error = ref(null);
-
-  // Ya no se usa directamente — ahora AdminDashboardView
-  // llama al endpoint directamente con api.get()
-  // Se mantiene para compatibilidad
-
-  return { dashboard, loading, error };
-}
 const CACHE_KEY = "cache_dashboard_admin";
 
 export function useDashboardAdmin() {

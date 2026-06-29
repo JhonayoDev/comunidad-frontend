@@ -65,9 +65,6 @@
     </nav>
   </div>
 </template>
-```
-<script setup>
-```js
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";

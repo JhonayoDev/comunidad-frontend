@@ -21,7 +21,7 @@ const MOCK_ENCOMIENDAS = [
   },
 ];
 
-export const encomiendасService = {
+export const encomiendasService = {
   async getEncomiendas(filtros = {}) {
     try {
       return await api.get("/encomiendas", { params: filtros });

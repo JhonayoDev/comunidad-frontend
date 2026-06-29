@@ -40,7 +40,7 @@ const routes = [
       {
         path: "encomiendas",
         name: "Encomiendas",
-        component: () => import("../views/encomiendas/EncomiendасView.vue"),
+        component: () => import("../views/encomiendas/EncomiendаsView.vue"),
         meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
       },
 
@@ -122,7 +122,7 @@ const routes = [
       {
         path: "mis-encomiendas",
         name: "MisEncomiendas",
-        component: () => import("../views/encomiendas/MisEncomiendасView.vue"),
+        component: () => import("../views/encomiendas/MisEncomiendаsView.vue"),
         meta: { roles: ["RESIDENTE"] },
       },
     ],
