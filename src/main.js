@@ -1,19 +1,24 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import router from "./router";
+
 import App from "./App.vue";
+import router from "./router";
+
 import PrimeVue from "primevue/config";
-import Aura from "@primeuix/themes/aura";
-import "./style.css";
+import { ComunidadTheme } from "./theme";
+
 import "primeicons/primeicons.css";
+import "./style.css";
 
 const app = createApp(App);
 
 app.use(createPinia());
+
 app.use(router);
+
 app.use(PrimeVue, {
   theme: {
-    preset: Aura,
+    preset: ComunidadTheme,
     options: {
       cssLayer: {
         name: "primevue",
