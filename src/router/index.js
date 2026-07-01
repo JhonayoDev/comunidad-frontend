@@ -16,6 +16,13 @@ const routes = [
     component: () => import("../layouts/AppLayout.vue"),
     meta: { public: false },
     children: [
+      {
+        path: "superadmin",
+        name: "SuperAdminDashboard",
+        component: () =>
+          import("../views/superadmin/SuperAdminDashboardView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
       // ── Compartidas ──────────────────────────────
       {
         path: "notificaciones",
@@ -136,9 +143,16 @@ const router = createRouter({
   routes,
 });
 
-function rutaInicial(role) {
-  if (role === "ADMINISTRADOR") return { name: "Dashboard" };
-  if (role === "GUARDIA") return { name: "GuardiaDashboard" };
+function rutaInicial(auth) {
+  const rolesGlobales = auth.user?.roles || [];
+
+  if (rolesGlobales.includes("SUPER_ADMIN")) {
+    return { name: "SuperAdminDashboard" };
+  }
+
+  const rol = auth.condominioActualRol || rolesGlobales[0];
+  if (rol === "ADMINISTRADOR") return { name: "Dashboard" };
+  if (rol === "GUARDIA") return { name: "GuardiaDashboard" };
   return { name: "Inicio" };
 }
 
@@ -150,11 +164,11 @@ router.beforeEach((to) => {
   }
 
   if (to.name === "Login" && auth.isAuthenticated) {
-    return rutaInicial(auth.condominioActualRol || auth.user?.roles?.[0]);
+    return rutaInicial(auth);
   }
 
   if (to.path === "/" && auth.isAuthenticated) {
-    return rutaInicial(auth.condominioActualRol || auth.user?.roles?.[0]);
+    return rutaInicial(auth);
   }
 
   const userRoles = auth.user?.roles || [];
