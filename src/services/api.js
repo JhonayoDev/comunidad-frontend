@@ -14,13 +14,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Si el servidor responde 401, limpia sesión y va al login
-// Excepto en /auth (login) para que el formulario muestre el error
+// Si el servidor responde 401, limpia sesión y va al login.
+// Excepto en los endpoints de /auth/* (login, forgot/reset/setup password),
+// para que el formulario correspondiente muestre su propio error en vez
+// de forzar una recarga de página.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginEndpoint = error.config?.url === "/auth";
-    if (error.response?.status === 401 && !isLoginEndpoint) {
+    const isAuthEndpoint = error.config?.url?.startsWith("/auth/");
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
