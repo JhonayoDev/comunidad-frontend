@@ -29,7 +29,9 @@ async function handleLogin() {
       error.value = "No tienes acceso a ningún condominio";
       return;
     }
-    if (auth.condominioActualRol === "ADMINISTRADOR") {
+    if (auth.user.roles.includes("SUPER_ADMIN")) {
+      router.push({ name: "SuperAdminDashboard" });
+    } else if (auth.condominioActualRol === "ADMINISTRADOR") {
       router.push({ name: "Dashboard" });
     } else if (auth.condominioActualRol === "GUARDIA") {
       router.push({ name: "GuardiaDashboard" });
