@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 
@@ -17,6 +17,15 @@ const password = ref("");
 const loading = ref(false);
 const error = ref("");
 
+// Mostrar error proveniente del interceptor 401 (sesión expirada, reuse detection, etc.)
+onMounted(() => {
+  const storedError = sessionStorage.getItem("loginError");
+  if (storedError) {
+    error.value = storedError;
+    sessionStorage.removeItem("loginError");
+  }
+});
+
 async function handleLogin() {
   loading.value = true;
   error.value = "";
@@ -24,7 +33,6 @@ async function handleLogin() {
   try {
     await auth.login(email.value, password.value);
 
-    // Redirigir según condominios
     if (auth.condominios.length === 0) {
       error.value = "No tienes acceso a ningún condominio";
       return;
@@ -39,7 +47,26 @@ async function handleLogin() {
       router.push({ name: "Inicio" });
     }
   } catch (e) {
-    error.value = e.response?.data?.message ?? "Error al iniciar sesión";
+    const status = e.response?.status;
+    const data = e.response?.data;
+    const retryAfter = e.response?.headers?.["retry-after"];
+
+    if (status === 429) {
+      if (retryAfter) {
+        error.value = `Demasiados intentos. Intenta en ${retryAfter} segundos`;
+      } else {
+        error.value = "Demasiados intentos. Espera un momento e intenta nuevamente";
+      }
+    } else if (status === 401) {
+      const msg = data?.message || "";
+      if (msg.toLowerCase().includes("inactiva") || msg.toLowerCase().includes("desactivad")) {
+        error.value = "Cuenta desactivada. Contacta al administrador";
+      } else {
+        error.value = "Credenciales incorrectas";
+      }
+    } else {
+      error.value = data?.message ?? "Error al iniciar sesión";
+    }
   } finally {
     loading.value = false;
   }

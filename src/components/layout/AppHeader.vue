@@ -120,8 +120,8 @@ function goTo(name) {
   router.push({ name });
 }
 
-function handleLogout() {
-  auth.logout();
+async function handleLogout() {
+  await auth.logout();
   router.push({ name: "Login" });
 }
 </script>
