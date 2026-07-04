@@ -9,13 +9,11 @@ const NAV_ITEMS_BY_ROLE = {
       icon: "pi pi-building",
       routeName: "SuperAdminDashboard",
     },
-    { label: "Menú", icon: "pi pi-bars", routeName: "Menu" },
   ],
   ADMINISTRADOR: [
     { label: "Inicio", icon: "pi pi-home", routeName: "Dashboard" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
-    { label: "Menú", icon: "pi pi-bars", routeName: "Menu" },
   ],
   GUARDIA: [
     { label: "Inicio", icon: "pi pi-home", routeName: "GuardiaDashboard" },
@@ -24,7 +22,6 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
     { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },
     { label: "Solic.", icon: "pi pi-pencil", routeName: "Solicitudes" },
-    { label: "Menú", icon: "pi pi-bars", routeName: "Menu" },
   ],
 };
 
