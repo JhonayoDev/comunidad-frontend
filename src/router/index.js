@@ -131,6 +131,37 @@ const routes = [
         component: () => import("../views/finanzas/LedgerView.vue"),
         meta: { cargos: ["PRESIDENTE", "TESORERO"] },
       },
+      {
+        path: "finanzas/pagos",
+        name: "Pagos",
+        component: () => import("../views/finanzas/PagosView.vue"),
+        meta: { cargos: ["PRESIDENTE", "TESORERO"] },
+      },
+      {
+        path: "finanzas/plantillas",
+        name: "PlantillasGasto",
+        component: () => import("../views/finanzas/PlantillasGastoView.vue"),
+        meta: { cargos: ["PRESIDENTE", "TESORERO"] },
+      },
+      // ── Gestión (cargos) ──────────────────────────
+      {
+        path: "miembros",
+        name: "Miembros",
+        component: () => import("../views/gestion/MiembrosView.vue"),
+        meta: { cargos: ["PRESIDENTE", "SECRETARIO"] },
+      },
+      {
+        path: "anuncios",
+        name: "Anuncios",
+        component: () => import("../views/gestion/AnunciosView.vue"),
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+      },
+      {
+        path: "casos-admin",
+        name: "CasosAdmin",
+        component: () => import("../views/gestion/CasosAdminView.vue"),
+        meta: { cargos: ["PRESIDENTE", "SECRETARIO"] },
+      },
       // ── Guardia ───────────────────────────────────
       {
         path: "guardia",

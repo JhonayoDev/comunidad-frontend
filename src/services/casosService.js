@@ -12,4 +12,12 @@ export const casosService = {
   abrir(condominioId, data) {
     return api.post(`/condominios/${condominioId}/casos`, data);
   },
+
+  agregarSeguimiento(condominioId, casoId, data) {
+    return api.post(`/condominios/${condominioId}/casos/${casoId}/seguimientos`, data);
+  },
+
+  cerrar(condominioId, casoId, resumenCierre) {
+    return api.patch(`/condominios/${condominioId}/casos/${casoId}/cerrar`, { resumenCierre });
+  },
 };
