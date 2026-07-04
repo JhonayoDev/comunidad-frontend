@@ -1,15 +1,15 @@
 import api from "./api";
 
 export const unidadesService = {
-  getUnidades() {
-    return api.get("/residentes/unidades");
+  getUnidades(condominioId) {
+    return api.get(`/condominios/${condominioId}/unidades`);
   },
 
-  getUnidad(id) {
-    return api.get(`/residentes/unidades/${id}`);
+  getUnidad(condominioId, id) {
+    return api.get(`/condominios/${condominioId}/unidades/${id}`);
   },
 
-  getSectores() {
-    return api.get("/residentes/sectores");
+  getSectores(condominioId) {
+    return api.get(`/condominios/${condominioId}/sectores`);
   },
 };

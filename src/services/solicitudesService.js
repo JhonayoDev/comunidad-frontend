@@ -1,23 +1,23 @@
 import api from "./api";
 
 export const solicitudesService = {
-  getPendientes() {
-    return api.get("/solicitudes-registro/pendientes");
+  getPendientes(condominioId) {
+    return api.get(`/condominios/${condominioId}/solicitudes-registro`, { params: { estado: "PENDIENTE" } });
   },
 
-  getTodas() {
-    return api.get("/solicitudes-registro");
+  getTodas(condominioId) {
+    return api.get(`/condominios/${condominioId}/solicitudes-registro`);
   },
 
-  crear(data) {
-    return api.post("/solicitudes-registro", data);
+  crear(condominioId, data) {
+    return api.post(`/condominios/${condominioId}/solicitudes-registro`, data);
   },
 
-  aprobar(id) {
-    return api.post(`/solicitudes-registro/${id}/aprobar`);
+  aprobar(condominioId, id) {
+    return api.post(`/condominios/${condominioId}/solicitudes-registro/${id}/aprobar`);
   },
 
-  rechazar(id) {
-    return api.post(`/solicitudes-registro/${id}/rechazar`);
+  rechazar(condominioId, id) {
+    return api.post(`/condominios/${condominioId}/solicitudes-registro/${id}/rechazar`);
   },
 };

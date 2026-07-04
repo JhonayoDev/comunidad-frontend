@@ -88,14 +88,15 @@ onMounted(async () => {
     const [resDash, resBadge, resEnv] = await Promise.all([
       perfilService.getDashboardResidente(cid),
       perfilService.getBadgeNotificaciones(cid),
-      encomiendasService.getMisEncomiendas(),
+      encomiendasService.getMisEncomiendas(cid),
     ]);
     dashboard.value = resDash.data;
     notifCount.value = resBadge.data.noLeidas;
     encomiendas.value = (resEnv.data || []).filter(
       (e) => e.estado === "PENDIENTE",
     );
-  } catch {
+  } catch (e) {
+    console.error("Error al cargar dashboard residente", e);
     error.value = "Error al cargar el dashboard";
   } finally {
     loading.value = false;
@@ -256,9 +257,9 @@ onMounted(async () => {
             <div class="flex items-center gap-3">
               <i class="pi pi-inbox text-xl text-primary"></i>
               <div class="flex flex-col">
-                <span class="text-sm font-medium">{{ env.descripcion }}</span>
+                <span class="text-sm font-medium">{{ env.tipo }} · {{ env.nombreDestinatario }}</span>
                 <span class="text-xs text-surface-500">
-                  Casa {{ env.unidadNumero }} · {{ new Date(env.fechaIngreso || env.fechaRecepcion).toLocaleDateString("es-CL") }}
+                  Casa {{ env.unidadNumero }} · {{ new Date(env.creadoEn).toLocaleDateString("es-CL") }}
                 </span>
               </div>
             </div>

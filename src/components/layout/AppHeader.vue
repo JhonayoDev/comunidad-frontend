@@ -6,7 +6,7 @@
           <Prime />
         </span>
         <img
-          src="../../assets/vite.svg"
+          src="../../assets/casa.png"
           alt="el logo va aqui"
           className="w-16 h-16 overflow-hidden object-cover"
         />
@@ -16,19 +16,7 @@
           variant="text"
           size="small"
           class="text-surface-0! hover:bg-surface-700!"
-          >Products</Button
-        >
-        <Button
-          variant="text"
-          size="small"
-          class="text-surface-0! hover:bg-surface-700!"
-          >Solutions</Button
-        >
-        <Button
-          variant="text"
-          size="small"
-          class="text-surface-0! hover:bg-surface-700!"
-          >Resources</Button
+          >{{ auth.userName }}</Button
         >
         <Select
           v-if="auth.hasMultipleCondominios"
@@ -43,29 +31,6 @@
         <small v-else class="text-500">
           {{ auth.condominioActualNombre || "Condominio" }}
         </small>
-      </div>
-    </template>
-
-    <template #center>
-      <div class="flex items-center">
-        <User />
-        <div>
-          <strong class="text-lg line-height-2">{{ auth.userName }}</strong>
-
-          <Select
-            v-if="auth.hasMultipleCondominios"
-            v-model="selectedCondominioId"
-            :options="auth.condominios"
-            optionLabel="nombre"
-            optionValue="id"
-            class="mt-2 w-12rem"
-            placeholder="Condominio"
-            @change="onCondominioChange"
-          />
-          <small v-else class="text-500">
-            {{ auth.condominioActualNombre || "Condominio" }}
-          </small>
-        </div>
       </div>
     </template>
 

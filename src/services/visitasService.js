@@ -1,27 +1,27 @@
 import api from "./api";
 
 export const visitasService = {
-  registrarIngreso(data) {
-    return api.post("/visitas", data);
+  registrarIngreso(condominioId, data) {
+    return api.post(`/condominios/${condominioId}/accesos/ingresar`, data);
   },
 
-  registrarSalida(id) {
-    return api.put(`/visitas/${id}/salida`);
+  registrarSalida(condominioId, id) {
+    return api.patch(`/condominios/${condominioId}/accesos/${id}/salida`);
   },
 
-  getVisitas(filtros = {}) {
-    return api.get("/visitas", { params: filtros });
+  getVisitas(condominioId, filtros = {}) {
+    return api.get(`/condominios/${condominioId}/accesos`, { params: filtros });
   },
 
-  getVisita(id) {
-    return api.get(`/visitas/${id}`);
+  getVisita(condominioId, id) {
+    return api.get(`/condominios/${condominioId}/accesos/${id}`);
   },
 
-  getVisitasFrecuentes(patente) {
-    return api.get("/visitas/frecuente", { params: { patente } });
+  getVisitasFrecuentes(condominioId, patente) {
+    return api.get(`/condominios/${condominioId}/accesos/frecuentes`, { params: { patente } });
   },
 
-  consultaRapida(patente) {
-    return api.get("/vehiculos/consulta-rapida", { params: { patente } });
+  consultaRapida(condominioId, patente) {
+    return api.get(`/condominios/${condominioId}/vehiculos/consulta-rapida`, { params: { patente } });
   },
 };

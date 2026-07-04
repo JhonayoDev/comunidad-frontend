@@ -32,13 +32,13 @@
         />
         <div class="flex gap-2">
           <select
-            v-model="filtros.activa"
+            v-model="filtros.estado"
             class="select select-bordered select-sm flex-1"
             @change="buscar()"
           >
             <option value="">Todas</option>
-            <option value="true">Activas</option>
-            <option value="false">Con salida</option>
+            <option value="ACTIVO">Activas</option>
+            <option value="FINALIZADO">Con salida</option>
           </select>
           <button class="btn btn-ghost btn-sm" @click="limpiarFiltros">
             Limpiar
@@ -73,24 +73,24 @@
         <div class="card-body p-4">
           <div class="flex items-start justify-between gap-2">
             <div class="flex-1 min-w-0">
-              <p class="font-semibold">{{ visita.nombreResponsable }}</p>
-              <p v-if="visita.patente" class="text-sm font-mono">
-                {{ visita.patente }}
+              <p class="font-semibold">{{ visita.nombreVisitante }}</p>
+              <p v-if="visita.patenteVisitante" class="text-sm font-mono">
+                {{ visita.patenteVisitante }}
               </p>
-              <p class="text-xs text-base-content/60">{{ visita.categoria }}</p>
+              <p class="text-xs text-base-content/60">{{ visita.tipo }}</p>
               <p class="text-xs text-base-content/40">
-                {{ formatFecha(visita.horaIngreso) }}
+                {{ formatFecha(visita.fechaIngreso) }}
               </p>
             </div>
             <div class="flex flex-col items-end gap-2">
               <span
-                v-if="!visita.horaSalida"
+                v-if="visita.estado === 'ACTIVO'"
                 class="badge badge-success badge-sm"
                 >Activa</span
               >
               <span v-else class="badge badge-ghost badge-sm">Salió</span>
               <button
-                v-if="!visita.horaSalida"
+                v-if="visita.estado === 'ACTIVO'"
                 class="btn btn-outline btn-xs"
                 @click="handleSalida(visita)"
               >
@@ -113,7 +113,7 @@ const { visitas, loading, error, cargar, registrarSalida } = useVisitas();
 const filtros = ref({
   patente: "",
   nombre: "",
-  activa: "true",
+  estado: "ACTIVO",
 });
 
 let timeout = null;
@@ -123,7 +123,7 @@ function buscar() {
     const params = {};
     if (filtros.value.patente) params.patente = filtros.value.patente;
     if (filtros.value.nombre) params.nombre = filtros.value.nombre;
-    if (filtros.value.activa !== "") params.activa = filtros.value.activa;
+    if (filtros.value.estado !== "") params.estado = filtros.value.estado;
     cargar(params);
   }, 400);
 }
@@ -136,7 +136,7 @@ async function handleSalida(visita) {
 }
 
 function limpiarFiltros() {
-  filtros.value = { patente: "", nombre: "", activa: "true" };
+  filtros.value = { patente: "", nombre: "", estado: "ACTIVO" };
   cargar();
 }
 
@@ -150,5 +150,5 @@ function formatFecha(fecha) {
   });
 }
 
-onMounted(() => cargar({ activa: "true" }));
+onMounted(() => cargar({ estado: "ACTIVO" }));
 </script>

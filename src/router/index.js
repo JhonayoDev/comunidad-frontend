@@ -125,6 +125,18 @@ const routes = [
         component: () => import("../views/guardia/SolicitudesView.vue"),
         meta: { roles: ["GUARDIA"] },
       },
+      {
+        path: "bitacora",
+        name: "Bitacora",
+        component: () => import("../views/guardia/BitacoraView.vue"),
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+      },
+      {
+        path: "autorizaciones",
+        name: "Autorizaciones",
+        component: () => import("../views/guardia/AutorizacionesView.vue"),
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+      },
       // ── Residente ─────────────────────────────────
       {
         path: "inicio",
