@@ -12,6 +12,7 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@primeicons/vue": "8.0.0-rc.1",
     "@primeuix/themes": "^2.0.3",
     "axios": "^1.16.1",
     "pinia": "^3.0.4",

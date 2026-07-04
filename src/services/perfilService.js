@@ -21,6 +21,10 @@ export const perfilService = {
     return api.post("/me/email/verificar", { token });
   },
 
+  actualizarMe(data) {
+    return api.put("/me", data);
+  },
+
   getDashboardResidente(condominioId) {
     return api.get(`/condominios/${condominioId}/dashboard/residente`);
   },

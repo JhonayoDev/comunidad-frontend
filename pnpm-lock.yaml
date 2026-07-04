@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@primeicons/vue':
+        specifier: 8.0.0-rc.1
+        version: 8.0.0-rc.1(vue@3.5.34)
       '@primeuix/themes':
         specifier: ^2.0.3
         version: 2.0.3
@@ -692,6 +695,14 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@primeicons/core@8.0.0-rc.1':
+    resolution: {integrity: sha512-ua8X+4/S9HcHr6mGnzj/SfvgCq5grksTd5wxvvk0AE8KemWIp/dui0u7S30GTTcPM8U4eGf+5xO6bkJ6gWaScQ==}
+
+  '@primeicons/vue@8.0.0-rc.1':
+    resolution: {integrity: sha512-p5o+g68yEdhzHR3NrQ5FW0nf9A8FkhQ2qIU3jlGb53Id/N/g8jakU06G7C+WDSbob2dklnhIZjgkWtKMbZLH4g==}
+    peerDependencies:
+      vue: ^3
 
   '@primeuix/styled@0.7.4':
     resolution: {integrity: sha512-QSO/NpOQg8e9BONWRBx9y8VGMCMYz0J/uKfNJEya/RGEu7ARx0oYW0ugI1N3/KB1AAvyGxzKBzGImbwg0KUiOQ==}
@@ -3489,6 +3500,16 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@primeicons/core@8.0.0-rc.1':
+    dependencies:
+      '@primeuix/utils': 0.6.4
+
+  '@primeicons/vue@8.0.0-rc.1(vue@3.5.34)':
+    dependencies:
+      '@primeicons/core': 8.0.0-rc.1
+      '@primeuix/utils': 0.6.4
+      vue: 3.5.34
 
   '@primeuix/styled@0.7.4':
     dependencies:

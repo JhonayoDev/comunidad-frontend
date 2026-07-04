@@ -21,6 +21,9 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Inicio", icon: "pi pi-home", routeName: "GuardiaDashboard" },
     { label: "Portón", icon: "pi pi-shield", routeName: "Porton" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
+    { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
+    { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },
+    { label: "Solic.", icon: "pi pi-pencil", routeName: "Solicitudes" },
     { label: "Menú", icon: "pi pi-bars", routeName: "Menu" },
   ],
 };

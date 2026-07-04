@@ -30,7 +30,7 @@
           >
             <option value="">Seleccione una casa</option>
             <option v-for="u in unidades" :key="u.id" :value="u.id">
-              Casa {{ u.numero }} — Sector {{ u.sectorNumero }}
+              Casa {{ u.numero }} — {{ u.sectorNombre }}
             </option>
           </select>
           <p v-if="errores.unidadId" class="text-error text-xs mt-1">
@@ -40,32 +40,41 @@
 
         <div class="form-control">
           <label class="label"
-            ><span class="label-text font-semibold">Descripción *</span></label
+            ><span class="label-text font-semibold">Tipo *</span></label
           >
-          <input
-            v-model="form.descripcion"
-            type="text"
-            placeholder="Ej: Caja mediana — Amazon"
-            class="input input-bordered"
-            :class="{ 'input-error': errores.descripcion }"
-          />
-          <p v-if="errores.descripcion" class="text-error text-xs mt-1">
-            {{ errores.descripcion }}
+          <select
+            v-model="form.tipo"
+            class="select select-bordered"
+            :class="{ 'select-error': errores.tipo }"
+          >
+            <option value="">Seleccione tipo</option>
+            <option value="CARTA">Carta</option>
+            <option value="ENCOMIENDA">Encomienda / Paquete</option>
+          </select>
+          <p v-if="errores.tipo" class="text-error text-xs mt-1">
+            {{ errores.tipo }}
           </p>
         </div>
 
         <div class="form-control">
           <label class="label"
             ><span class="label-text font-semibold"
-              >Nombre receptor (opcional)</span
+              >Nombre destinatario *</span
             ></label
           >
           <input
-            v-model="form.receptorNombre"
+            v-model="form.nombreDestinatario"
             type="text"
-            placeholder="Nombre de quien retira"
+            placeholder="Nombre del destinatario"
             class="input input-bordered"
+            :class="{ 'input-error': errores.nombreDestinatario }"
           />
+          <p
+            v-if="errores.nombreDestinatario"
+            class="text-error text-xs mt-1"
+          >
+            {{ errores.nombreDestinatario }}
+          </p>
         </div>
 
         <p v-if="errorGeneral" class="text-error text-sm">{{ errorGeneral }}</p>
@@ -117,23 +126,19 @@
       </button>
     </div>
 
-    <!-- Aviso caché -->
     <div v-if="error" class="alert alert-warning py-2">
       <span class="text-sm">⚠️ {{ error }}</span>
     </div>
 
-    <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-md text-primary"></span>
     </div>
 
-    <!-- Sin resultados -->
     <div v-else-if="encomiendas.length === 0" class="text-center py-12">
       <p class="text-4xl mb-2">📦</p>
       <p class="text-base-content/60 text-sm">No hay encomiendas</p>
     </div>
 
-    <!-- Lista -->
     <div v-else class="flex flex-col gap-2">
       <div
         v-for="e in encomiendas"
@@ -144,12 +149,15 @@
           <div class="flex items-start justify-between gap-2">
             <div class="flex-1 min-w-0">
               <p class="font-bold">Casa {{ e.unidadNumero }}</p>
-              <p class="text-sm">{{ e.descripcion }}</p>
-              <p v-if="e.receptorNombre" class="text-xs text-base-content/60">
-                {{ e.receptorNombre }}
+              <p class="text-sm">
+                <span class="badge badge-xs badge-ghost">{{ e.tipo }}</span>
+                {{ e.nombreDestinatario }}
+              </p>
+              <p class="text-xs text-base-content/60">
+                {{ e.creadoPorNombre }}
               </p>
               <p class="text-xs text-base-content/40">
-                {{ formatFecha(e.fechaRecepcion) }}
+                {{ formatFecha(e.creadoEn) }}
               </p>
             </div>
             <div class="flex flex-col items-end gap-2">
@@ -178,10 +186,12 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useAuthStore } from "../../stores/authStore";
 import { useEncomiendas } from "../../composables/useEncomiendas";
 import { unidadesService } from "../../services/unidadesService";
 import { encomiendasService } from "../../services/encomiendasService";
 
+const auth = useAuthStore();
 const { encomiendas, loading, error, cargar, entregar } = useEncomiendas();
 
 const mostrarFormulario = ref(false);
@@ -195,17 +205,22 @@ const filtroEstado = ref("PENDIENTE");
 
 const form = ref({
   unidadId: "",
-  descripcion: "",
-  receptorNombre: "",
+  tipo: "",
+  nombreDestinatario: "",
 });
 
 async function cargarUnidades() {
+  const cid = auth.condominioActualId;
+  if (!cid) {
+    loadingUnidades.value = false;
+    return;
+  }
   loadingUnidades.value = true;
   try {
-    const response = await unidadesService.getUnidades();
+    const response = await unidadesService.getUnidades(cid);
     unidades.value = response.data.filter((u) => u.tipo === "CASA");
-  } catch {
-    // silencioso
+  } catch (e) {
+    console.error("Error al cargar unidades:", e);
   } finally {
     loadingUnidades.value = false;
   }
@@ -220,7 +235,8 @@ function cambiarFiltro(estado) {
 function validar() {
   errores.value = {};
   if (!form.value.unidadId) errores.value.unidadId = "Seleccione una casa";
-  if (!form.value.descripcion) errores.value.descripcion = "Campo obligatorio";
+  if (!form.value.tipo) errores.value.tipo = "Seleccione un tipo";
+  if (!form.value.nombreDestinatario) errores.value.nombreDestinatario = "Campo obligatorio";
   return Object.keys(errores.value).length === 0;
 }
 
@@ -229,12 +245,14 @@ async function registrar() {
   mensajeExito.value = "";
   if (!validar()) return;
 
+  const cid = auth.condominioActualId;
+  if (!cid) return;
   loadingForm.value = true;
   try {
-    await encomiendasService.registrar({
+    await encomiendasService.registrar(cid, {
       unidadId: form.value.unidadId,
-      descripcion: form.value.descripcion,
-      receptorNombre: form.value.receptorNombre || null,
+      tipo: form.value.tipo,
+      nombreDestinatario: form.value.nombreDestinatario,
     });
     mensajeExito.value = "Encomienda registrada correctamente";
     cancelar();
@@ -247,13 +265,17 @@ async function registrar() {
 }
 
 async function handleEntregar(e) {
-  const resultado = await entregar(e);
+  const nombreRetira = prompt("Nombre de quien retira:");
+  if (!nombreRetira) return;
+  const rutRetira = prompt("RUT de quien retira:");
+  if (!rutRetira) return;
+  const resultado = await entregar(e, nombreRetira, rutRetira);
   if (resultado !== true) alert(resultado);
 }
 
 function cancelar() {
   mostrarFormulario.value = false;
-  form.value = { unidadId: "", descripcion: "", receptorNombre: "" };
+  form.value = { unidadId: "", tipo: "", nombreDestinatario: "" };
   errores.value = {};
 }
 

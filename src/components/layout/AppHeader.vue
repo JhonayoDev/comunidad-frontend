@@ -1,10 +1,23 @@
 <template>
-  <Menubar class="border-none surface-card px-3 py-2">
+  <Menubar class="border-l-red-600 surface-card px-3 py-2 mt-4">
     <template #start>
-      <div class="flex flex-column">
-        <small class="text-500">Bienvenido/a</small>
-        <strong class="text-lg line-height-2">{{ auth.userName }}</strong>
-
+      <div class="flex items-center gap-1">
+        <span class="text-xl" style="color: var(--p-primary-400)">
+          <Prime />
+        </span>
+        <img
+          src="../../assets/casa.png"
+          alt="el logo va aqui"
+          className="w-16 h-16 overflow-hidden object-cover"
+        />
+      </div>
+      <div class="ml-6 flex gap-1">
+        <Button
+          variant="text"
+          size="small"
+          class="text-surface-0! hover:bg-surface-700!"
+          >{{ auth.userName }}</Button
+        >
         <Select
           v-if="auth.hasMultipleCondominios"
           v-model="selectedCondominioId"
@@ -60,6 +73,7 @@ import Menubar from "primevue/menubar";
 import Button from "primevue/button";
 import Select from "primevue/select";
 import Badge from "primevue/badge";
+import User from "@primeicons/vue/user";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -71,8 +85,8 @@ function goTo(name) {
   router.push({ name });
 }
 
-function handleLogout() {
-  auth.logout();
+async function handleLogout() {
+  await auth.logout();
   router.push({ name: "Login" });
 }
 </script>

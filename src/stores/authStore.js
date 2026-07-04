@@ -1,11 +1,15 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import api from "../services/api";
-import { perfilService } from "../services/perfilService";
-import { condominiosService } from "../services/condominiosService";
+import { authService } from "@/services/authService";
+import { accessToken } from "@/utils/tokenStore";
+import { condominiosService } from "@/services/condominiosService";
+import {
+  scheduleProactiveRefresh,
+  clearProactiveRefresh,
+} from "@/utils/refreshScheduler";
 
 export const useAuthStore = defineStore("auth", () => {
-  const token = ref(localStorage.getItem("token") || null);
+  // Datos de sesión — no contienen tokens
   const user = ref(JSON.parse(localStorage.getItem("user") || "null"));
   const condominios = ref(
     JSON.parse(localStorage.getItem("condominios") || "[]"),
@@ -14,10 +18,15 @@ export const useAuthStore = defineStore("auth", () => {
     JSON.parse(localStorage.getItem("condominioActual") || "null"),
   );
 
-  const isAuthenticated = computed(() => !!token.value);
+  // ─── Computed ────────────────────────────────────────────────────────────────
+  // isAuthenticated lee del ref reactivo → se actualiza automáticamente
+  const isAuthenticated = computed(() => !!accessToken.value);
   const hasMultipleCondominios = computed(() => condominios.value.length > 1);
   const userName = computed(
     () => user.value?.nombre || user.value?.email || "Usuario",
+  );
+  const userRole = computed(
+    () => condominioActual.value?.rolAcceso || user.value?.roles?.[0] || "",
   );
   const condominioActualId = computed(() => condominioActual.value?.id || null);
   const condominioActualNombre = computed(
@@ -27,64 +36,92 @@ export const useAuthStore = defineStore("auth", () => {
     () => condominioActual.value?.rolAcceso || null,
   );
 
+  // ─── Actions ─────────────────────────────────────────────────────────────────
   async function login(email, password) {
-    const response = await api.post("/auth/login", { email, password });
-    const data = response.data;
-    token.value = data.accessToken;
-    localStorage.setItem("token", token.value);
-    const perfil = await perfilService.getMiPerfil();
+    const { data } = await authService.login(email, password);
+
+    accessToken.value = data.accessToken;
+    scheduleProactiveRefresh();
+
     user.value = {
-      personaId: perfil.data.personaId,
-      nombre: perfil.data.nombre,
-      email: perfil.data.email,
-      roles: perfil.data.roles,
+      personaId: data.personaId,
+      nombre: data.nombre,
+      email: data.email,
+      roles: data.roles,
     };
     localStorage.setItem("user", JSON.stringify(user.value));
+
     await fetchCondominios();
+
     if (condominios.value.length === 1) {
       seleccionarCondominio(condominios.value[0].id);
     }
   }
 
+  // Al recargar la página el accessToken se pierde (era memoria).
+  // Este método lo recupera usando la cookie httpOnly del browser.
+  async function tryRestoreSession() {
+    try {
+      const { data } = await authService.refresh();
+      accessToken.value = data.accessToken;
+      scheduleProactiveRefresh();
+      return true;
+    } catch {
+      clearSession();
+      return false;
+    }
+  }
+
   async function fetchCondominios() {
-    const response = await condominiosService.getCondominios();
-    condominios.value = response.data;
-    localStorage.setItem("condominios", JSON.stringify(condominios.value));
+    const { data } = await condominiosService.getCondominios();
+    condominios.value = data;
+    localStorage.setItem("condominios", JSON.stringify(data));
   }
 
   function seleccionarCondominio(id) {
     const encontrado = condominios.value.find((c) => c.id === id);
-    if (encontrado) {
-      condominioActual.value = encontrado;
-      localStorage.setItem("condominioActual", JSON.stringify(encontrado));
+    if (!encontrado) return;
+    condominioActual.value = encontrado;
+    localStorage.setItem("condominioActual", JSON.stringify(encontrado));
+  }
+
+  async function logout() {
+    try {
+      await authService.logout(accessToken.value);
+    } catch {
+      // Si falla en el servidor, limpiamos igualmente en el cliente
+    } finally {
+      clearSession();
     }
   }
 
-  function logout() {
-    token.value = null;
+  function clearSession() {
+    clearProactiveRefresh();
+    accessToken.value = null;
     user.value = null;
     condominios.value = [];
     condominioActual.value = null;
-    localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("condominios");
     localStorage.removeItem("condominioActual");
   }
 
   return {
-    token,
     user,
     condominios,
     condominioActual,
     isAuthenticated,
     hasMultipleCondominios,
     userName,
+    userRole,
     condominioActualId,
     condominioActualNombre,
     condominioActualRol,
     login,
+    tryRestoreSession,
     fetchCondominios,
     seleccionarCondominio,
     logout,
+    clearSession,
   };
 });

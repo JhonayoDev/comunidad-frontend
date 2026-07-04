@@ -1,187 +1,46 @@
-<template>
-  <div class="p-4 flex flex-col gap-4">
-    <div v-if="error" class="alert alert-warning py-2">
-      <span class="text-sm">⚠️ {{ error }}</span>
-    </div>
-
-    <div v-if="loading" class="flex justify-center py-8">
-      <span class="loading loading-spinner loading-md text-primary"></span>
-    </div>
-
-    <template v-else-if="dashboard">
-      <!-- Mis unidades -->
-      <div class="card bg-base-100 shadow">
-        <div class="card-body p-4">
-          <h3 class="font-bold text-base mb-3">Mis unidades</h3>
-
-          <div v-if="dashboard.unidades.length === 0" class="text-center py-4">
-            <p class="text-base-content/60 text-sm">
-              No tienes unidades asignadas
-            </p>
-          </div>
-
-          <div v-else class="flex flex-col gap-4">
-            <div v-for="unidad in dashboard.unidades" :key="unidad.id">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="text-xl">{{
-                  unidad.tipo === "ESTACIONAMIENTO" ? "🅿️" : "🏠"
-                }}</span>
-                <div>
-                  <p class="font-semibold">
-                    {{
-                      unidad.tipo === "ESTACIONAMIENTO"
-                        ? "Estacionamiento"
-                        : "Casa"
-                    }}
-                    {{ unidad.numero }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Personas (convivientes) -->
-              <div
-                v-for="persona in unidad.personas"
-                :key="persona.id"
-                class="ml-8 flex items-center gap-2 text-sm"
-              >
-                <span>👤</span>
-                <span>{{ persona.nombre }}</span>
-                <span class="badge badge-ghost badge-xs">{{
-                  tipoVinculo(persona.tipo)
-                }}</span>
-              </div>
-
-              <!-- Vehículos -->
-              <div
-                v-for="vehiculo in unidad.vehiculos"
-                :key="vehiculo.id"
-                class="ml-8 flex items-center gap-2 text-sm"
-              >
-                <span>🚗</span>
-                <span class="font-mono">{{ vehiculo.patente }}</span>
-              </div>
-
-              <!-- Gasto común -->
-              <div
-                v-if="unidad.gastoActual"
-                class="ml-8 mt-2 p-2 bg-base-200 rounded"
-              >
-                <div class="flex justify-between items-center">
-                  <span class="text-xs"
-                    >GC {{ unidad.gastoActual.periodo }}</span
-                  >
-                  <span
-                    class="text-sm font-bold"
-                    :class="{
-                      'text-success':
-                        unidad.gastoActual.estadoPago === 'PAGADO',
-                      'text-error': unidad.gastoActual.estadoPago === 'VENCIDO',
-                    }"
-                  >
-                    ${{ formatMonto(unidad.gastoActual.monto) }}
-                  </span>
-                </div>
-                <p class="text-xs text-base-content/60">
-                  Vence: {{ unidad.gastoActual.fechaVencimiento }} —
-                  {{ estadoPago(unidad.gastoActual.estadoPago) }}
-                </p>
-              </div>
-
-              <div class="divider my-2"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Novedades -->
-      <div class="card bg-base-100 shadow">
-        <div class="card-body p-4">
-          <h3 class="font-bold text-base mb-3">Novedades</h3>
-          <div class="flex flex-col gap-2">
-            <div
-              class="flex items-center justify-between p-2 rounded-lg hover:bg-base-200 cursor-pointer"
-              @click="$router.push({ name: 'Notificaciones' })"
-            >
-              <div class="flex items-center gap-2">
-                <span class="text-xl">🔔</span>
-                <span class="text-sm font-medium">Notificaciones</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span
-                  v-if="notifCount > 0"
-                  class="badge badge-primary badge-sm"
-                  >{{ notifCount }}</span
-                >
-                <span v-else class="text-xs text-base-content/40"
-                  >Sin nuevas</span
-                >
-                <span class="text-base-content/40">›</span>
-              </div>
-            </div>
-
-            <div
-              class="flex items-center justify-between p-2 rounded-lg opacity-50"
-            >
-              <div class="flex items-center gap-2">
-                <span class="text-xl">📦</span>
-                <span class="text-sm font-medium">Encomiendas</span>
-              </div>
-              <span class="text-xs text-base-content/40">Próximamente</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Acciones rápidas -->
-      <div class="card bg-base-100 shadow">
-        <div class="card-body p-4">
-          <h3 class="font-bold text-base mb-3">Acciones rápidas</h3>
-          <div class="grid grid-cols-2 gap-2">
-            <button
-              class="btn btn-outline btn-sm flex flex-col h-16 gap-1 opacity-50"
-              disabled
-            >
-              <span class="text-xl">🚪</span>
-              <span class="text-xs">Visita esperada</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm flex flex-col h-16 gap-1 opacity-50"
-              disabled
-            >
-              <span class="text-xl">📅</span>
-              <span class="text-xs">Reservar área</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm flex flex-col h-16 gap-1 opacity-50"
-              disabled
-            >
-              <span class="text-xl">📝</span>
-              <span class="text-xs">Reclamo / Caso</span>
-            </button>
-            <button
-              class="btn btn-outline btn-sm flex flex-col h-16 gap-1"
-              @click="$router.push({ name: 'Perfil' })"
-            >
-              <span class="text-xl">👤</span>
-              <span class="text-xs">Mi perfil</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 import { perfilService } from "../../services/perfilService";
+import { encomiendasService } from "../../services/encomiendasService";
 
+import Card from "primevue/card";
+import Avatar from "primevue/avatar";
+import Tag from "primevue/tag";
+import Badge from "primevue/badge";
+import Button from "primevue/button";
+import Message from "primevue/message";
+import Skeleton from "primevue/skeleton";
+import Divider from "primevue/divider";
+
+const router = useRouter();
 const auth = useAuthStore();
 const dashboard = ref(null);
+const encomiendas = ref([]);
 const notifCount = ref(0);
 const loading = ref(true);
 const error = ref(null);
+
+const iniciales = computed(() => {
+  const nombre = dashboard.value?.nombre || auth.userName;
+  return nombre
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+});
+
+const totalDeuda = computed(() => {
+  if (!dashboard.value?.unidades) return 0;
+  return dashboard.value.unidades.reduce((sum, u) => {
+    if (u.gastoActual && u.gastoActual.estadoPago !== "PAGADO") {
+      return sum + u.gastoActual.monto;
+    }
+    return sum;
+  }, 0);
+});
 
 function tipoVinculo(tipo) {
   const tipos = {
@@ -192,17 +51,30 @@ function tipoVinculo(tipo) {
   return tipos[tipo] || tipo;
 }
 
-function estadoPago(estado) {
-  const estados = {
-    PENDIENTE: "Pendiente",
-    PAGADO: "Pagado",
-    VENCIDO: "Vencido",
-  };
-  return estados[estado] || estado;
+function formatMonto(monto) {
+  return new Intl.NumberFormat("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0,
+  }).format(monto);
 }
 
-function formatMonto(monto) {
-  return new Intl.NumberFormat("es-CL").format(monto);
+function severityDeuda(estado) {
+  if (estado === "PAGADO") return "success";
+  if (estado === "VENCIDO") return "danger";
+  return "warn";
+}
+
+function labelDeuda(estado) {
+  if (estado === "PAGADO") return "Pagado";
+  if (estado === "VENCIDO") return "Vencido";
+  return "Pendiente";
+}
+
+function severityEncomienda(estado) {
+  if (estado === "ENTREGADA") return "info";
+  if (estado === "CERRADA") return "contrast";
+  return "warn";
 }
 
 onMounted(async () => {
@@ -213,16 +85,231 @@ onMounted(async () => {
     return;
   }
   try {
-    const [resDash, resBadge] = await Promise.all([
+    const [resDash, resBadge, resEnv] = await Promise.all([
       perfilService.getDashboardResidente(cid),
       perfilService.getBadgeNotificaciones(cid),
+      encomiendasService.getMisEncomiendas(cid),
     ]);
     dashboard.value = resDash.data;
     notifCount.value = resBadge.data.noLeidas;
-  } catch {
+    encomiendas.value = (resEnv.data || []).filter(
+      (e) => e.estado === "PENDIENTE",
+    );
+  } catch (e) {
+    console.error("Error al cargar dashboard residente", e);
     error.value = "Error al cargar el dashboard";
   } finally {
     loading.value = false;
   }
 });
 </script>
+
+<template>
+  <div class="p-4 flex flex-col gap-4">
+    <Message v-if="error" severity="error" :closable="false">
+      {{ error }}
+    </Message>
+
+    <template v-if="loading">
+      <Card>
+        <template #content>
+          <div class="flex items-center gap-4">
+            <Skeleton shape="circle" size="4rem" />
+            <div class="flex flex-col gap-2 flex-1">
+              <Skeleton width="60%" height="1.2rem" />
+              <Skeleton width="40%" height="0.9rem" />
+            </div>
+          </div>
+        </template>
+      </Card>
+      <Card><template #content><Skeleton width="100%" height="8rem" /></template></Card>
+      <Card><template #content><Skeleton width="100%" height="6rem" /></template></Card>
+    </template>
+
+    <template v-else-if="dashboard">
+      <!-- Card 1: Información del propietario -->
+      <Card>
+        <template #content>
+          <div class="flex items-center gap-4">
+            <Avatar
+              :label="iniciales"
+              size="xlarge"
+              shape="circle"
+              class="font-bold"
+              style="background: var(--p-primary-400); color: #fff"
+            />
+            <div class="flex flex-col gap-1">
+              <h2 class="text-xl font-bold m-0">
+                {{ dashboard.nombre || auth.userName }}
+              </h2>
+              <p class="text-sm m-0 text-surface-500">
+                {{ dashboard.email || auth.user?.email }}
+              </p>
+              <div class="flex gap-2 mt-1">
+                <Tag :value="auth.userRole" severity="info" />
+                <Button
+                  label="Mi perfil"
+                  icon="pi pi-user"
+                  size="small"
+                  variant="text"
+                  @click="router.push({ name: 'Perfil' })"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
+      </Card>
+
+      <!-- Card 2: Deudas -->
+      <Card>
+        <template #title>
+          <div class="flex items-center justify-between">
+            <span>Mis Deudas</span>
+            <Tag
+              v-if="totalDeuda > 0"
+              :value="formatMonto(totalDeuda)"
+              severity="danger"
+            />
+          </div>
+        </template>
+        <template #content>
+          <div
+            v-for="unidad in dashboard.unidades"
+            :key="unidad.id"
+            class="flex flex-col gap-2"
+          >
+            <div class="flex items-center gap-2">
+              <i
+                class="pi"
+                :class="unidad.tipo === 'ESTACIONAMIENTO' ? 'pi-map-marker' : 'pi-home'"
+                style="font-size: 1.2rem"
+              ></i>
+              <span class="font-semibold">
+                {{ unidad.tipo === "ESTACIONAMIENTO" ? "Estacionamiento" : "Casa" }}
+                {{ unidad.numero }}
+              </span>
+            </div>
+
+            <div v-if="unidad.gastoActual" class="ml-6">
+              <div
+                class="flex items-center justify-between p-2 border-round"
+                :class="{
+                  'bg-emphasis': unidad.gastoActual.estadoPago !== 'VENCIDO',
+                  'bg-red-50': unidad.gastoActual.estadoPago === 'VENCIDO',
+                  'border-1 border-red-200': unidad.gastoActual.estadoPago === 'VENCIDO',
+                }"
+              >
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium">
+                    GC {{ unidad.gastoActual.periodo }}
+                  </span>
+                  <span class="text-xs text-surface-500">
+                    Vence: {{ unidad.gastoActual.fechaVencimiento }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm">
+                    {{ formatMonto(unidad.gastoActual.monto) }}
+                  </span>
+                  <Tag
+                    :value="labelDeuda(unidad.gastoActual.estadoPago)"
+                    :severity="severityDeuda(unidad.gastoActual.estadoPago)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div
+              v-else
+              class="ml-6 p-2 text-sm text-surface-400 italic"
+            >
+              Sin gasto común activo
+            </div>
+
+            <Divider v-if="unidad !== dashboard.unidades[dashboard.unidades.length - 1]" class="my-1" />
+          </div>
+        </template>
+      </Card>
+
+      <!-- Card 3: Encomiendas -->
+      <Card>
+        <template #title>
+          <div class="flex items-center justify-between">
+            <span>Encomiendas</span>
+            <Badge
+              v-if="encomiendas.length > 0"
+              :value="encomiendas.length"
+              severity="warn"
+            />
+          </div>
+        </template>
+        <template #content>
+          <div v-if="encomiendas.length === 0" class="flex flex-column align-items-center gap-2 py-3">
+            <i class="pi pi-box text-4xl text-surface-300"></i>
+            <p class="text-sm text-surface-400 m-0">No tienes encomiendas pendientes</p>
+          </div>
+          <div
+            v-for="env in encomiendas"
+            :key="env.id"
+            class="flex items-center justify-between p-2 border-round hover:bg-emphasis cursor-pointer"
+            @click="router.push({ name: 'MisEncomiendas' })"
+          >
+            <div class="flex items-center gap-3">
+              <i class="pi pi-inbox text-xl text-primary"></i>
+              <div class="flex flex-col">
+                <span class="text-sm font-medium">{{ env.tipo }} · {{ env.nombreDestinatario }}</span>
+                <span class="text-xs text-surface-500">
+                  Casa {{ env.unidadNumero }} · {{ new Date(env.creadoEn).toLocaleDateString("es-CL") }}
+                </span>
+              </div>
+            </div>
+            <Tag
+              :value="env.estado === 'PENDIENTE' ? 'Pendiente' : env.estado"
+              :severity="severityEncomienda(env.estado)"
+            />
+          </div>
+        </template>
+      </Card>
+
+      <!-- Notificaciones y Acciones rápidas -->
+      <Card>
+        <template #title>Acceso rápido</template>
+        <template #content>
+          <div class="flex flex-col gap-2">
+            <Button
+              label="Notificaciones"
+              icon="pi pi-bell"
+              severity="secondary"
+              variant="text"
+              class="w-full justify-content-start"
+              @click="router.push({ name: 'Notificaciones' })"
+            >
+              <Badge
+                v-if="notifCount > 0"
+                :value="notifCount"
+                severity="danger"
+                class="ml-auto"
+              />
+            </Button>
+            <Button
+              label="Mis Encomiendas"
+              icon="pi pi-box"
+              severity="secondary"
+              variant="text"
+              class="w-full justify-content-start"
+              @click="router.push({ name: 'MisEncomiendas' })"
+            />
+            <Button
+              label="Mi Perfil"
+              icon="pi pi-user"
+              severity="secondary"
+              variant="text"
+              class="w-full justify-content-start"
+              @click="router.push({ name: 'Perfil' })"
+            />
+          </div>
+        </template>
+      </Card>
+    </template>
+  </div>
+</template>
