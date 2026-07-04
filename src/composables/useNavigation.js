@@ -27,8 +27,12 @@ const NAV_ITEMS_BY_ROLE = {
 
 const DEFAULT_NAV_ITEMS = [
   { label: "Inicio", icon: "pi pi-home", routeName: "Inicio" },
+  { label: "Mi unidad", icon: "pi pi-home", routeName: "MiUnidad" },
+  { label: "Deudas", icon: "pi pi-credit-card", routeName: "MisDeudas" },
+  { label: "Autoriz.", icon: "pi pi-verified", routeName: "MisAutorizaciones" },
+  { label: "Casos", icon: "pi pi-file", routeName: "MisCasos" },
+  { label: "Encomiendas", icon: "pi pi-box", routeName: "MisEncomiendas" },
   { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
-  { label: "Gestiones", icon: "pi pi-list", routeName: "Gestiones" },
   { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
 ];
 
