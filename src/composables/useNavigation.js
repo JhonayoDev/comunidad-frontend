@@ -35,6 +35,12 @@ const RESIDENTE_ITEMS = [
 const CARGO_NAV_ITEMS = {
   PRESIDENTE: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
+    { label: "D. Financiero", icon: "pi pi-chart-line", routeName: "FinanzasDashboard" },
+    { label: "Gastos", icon: "pi pi-arrow-right", routeName: "Gastos" },
+    { label: "Cuentas", icon: "pi pi-wallet", routeName: "Cuentas" },
+    { label: "G. Comunes", icon: "pi pi-calendar", routeName: "GastosComunes" },
+    { label: "Cargos Adic.", icon: "pi pi-plus-circle", routeName: "CargosAdicionales" },
+    { label: "Ledger", icon: "pi pi-book", routeName: "Ledger" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
@@ -45,10 +51,17 @@ const CARGO_NAV_ITEMS = {
   ],
   TESORERO: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
+    { label: "D. Financiero", icon: "pi pi-chart-line", routeName: "FinanzasDashboard" },
+    { label: "Gastos", icon: "pi pi-arrow-right", routeName: "Gastos" },
+    { label: "Cuentas", icon: "pi pi-wallet", routeName: "Cuentas" },
+    { label: "G. Comunes", icon: "pi pi-calendar", routeName: "GastosComunes" },
+    { label: "Cargos Adic.", icon: "pi pi-plus-circle", routeName: "CargosAdicionales" },
+    { label: "Ledger", icon: "pi pi-book", routeName: "Ledger" },
     { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
   ],
   SECRETARIO: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
+    { label: "Cargos Adic.", icon: "pi pi-plus-circle", routeName: "CargosAdicionales" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },

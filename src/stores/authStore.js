@@ -49,7 +49,7 @@ export const useAuthStore = defineStore("auth", () => {
   const CONTEXT_DASHBOARDS = {
     residente: "Inicio",
     presidente: "Dashboard",
-    tesorero: "Dashboard",
+    tesorero: "FinanzasDashboard",
     secretario: "Dashboard",
     delegado: "Dashboard",
   };

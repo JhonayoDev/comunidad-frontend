@@ -94,6 +94,43 @@ const routes = [
         component: () => import("../views/admin/ResidentesView.vue"),
         meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
       },
+      // ── Finanzas (cargos) ─────────────────────────
+      {
+        path: "finanzas",
+        name: "FinanzasDashboard",
+        component: () => import("../views/finanzas/FinanzasDashboardView.vue"),
+        meta: { cargos: ["PRESIDENTE", "TESORERO"] },
+      },
+      {
+        path: "finanzas/gastos",
+        name: "Gastos",
+        component: () => import("../views/finanzas/GastosView.vue"),
+        meta: { cargos: ["PRESIDENTE", "TESORERO"] },
+      },
+      {
+        path: "finanzas/cuentas",
+        name: "Cuentas",
+        component: () => import("../views/finanzas/CuentasView.vue"),
+        meta: { cargos: ["PRESIDENTE"] },
+      },
+      {
+        path: "gastos-comunes",
+        name: "GastosComunes",
+        component: () => import("../views/finanzas/GastosComunesView.vue"),
+        meta: { cargos: ["PRESIDENTE", "TESORERO"] },
+      },
+      {
+        path: "finanzas/cargos",
+        name: "CargosAdicionales",
+        component: () => import("../views/finanzas/CargosAdicionalesView.vue"),
+        meta: { cargos: ["PRESIDENTE", "TESORERO", "SECRETARIO"] },
+      },
+      {
+        path: "finanzas/ledger",
+        name: "Ledger",
+        component: () => import("../views/finanzas/LedgerView.vue"),
+        meta: { cargos: ["PRESIDENTE", "TESORERO"] },
+      },
       // ── Guardia ───────────────────────────────────
       {
         path: "guardia",
