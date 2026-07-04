@@ -48,11 +48,11 @@ const routes = [
         component: () =>
           import("../views/notificaciones/NotificacionesView.vue"),
       },
-      {
-        path: "menu",
-        name: "Menu",
-        component: () => import("../views/menu/MenuView.vue"),
-      },
+      // {
+      //   path: "menu",
+      //   name: "Menu",
+      //   component: () => import("../views/menu/MenuView.vue"),
+      // },
       {
         path: "perfil",
         name: "Perfil",
