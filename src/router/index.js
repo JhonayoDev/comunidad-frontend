@@ -48,11 +48,11 @@ const routes = [
         component: () =>
           import("../views/notificaciones/NotificacionesView.vue"),
       },
-      // {
-      //   path: "menu",
-      //   name: "Menu",
-      //   component: () => import("../views/menu/MenuView.vue"),
-      // },
+      {
+        path: "menu",
+        name: "Menu",
+        component: () => import("../views/menu/MenuView.vue"),
+      },
       {
         path: "perfil",
         name: "Perfil",
@@ -74,25 +74,25 @@ const routes = [
         path: "dashboard",
         name: "Dashboard",
         component: () => import("../views/dashboard/AdminDashboardView.vue"),
-        meta: { roles: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"] },
       },
       {
         path: "vehiculos",
         name: "Vehiculos",
         component: () => import("../views/admin/VehiculosView.vue"),
-        meta: { roles: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
       },
       {
         path: "solicitudes-admin",
         name: "SolicitudesAdmin",
         component: () => import("../views/admin/SolicitudesAdminView.vue"),
-        meta: { roles: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
       },
       {
         path: "residentes",
         name: "Residentes",
         component: () => import("../views/admin/ResidentesView.vue"),
-        meta: { roles: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
       },
       // ── Guardia ───────────────────────────────────
       {
@@ -105,19 +105,19 @@ const routes = [
         path: "porton",
         name: "Porton",
         component: () => import("../views/visitas/PortonView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
       },
       {
         path: "visitas",
         name: "Visitas",
         component: () => import("../views/visitas/VisitasView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
       },
       {
         path: "visitas/nueva",
         name: "RegistrarVisita",
         component: () => import("../views/visitas/RegistrarVisitaView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
       },
       {
         path: "solicitudes",
@@ -129,13 +129,13 @@ const routes = [
         path: "bitacora",
         name: "Bitacora",
         component: () => import("../views/guardia/BitacoraView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"] },
       },
       {
         path: "autorizaciones",
         name: "Autorizaciones",
         component: () => import("../views/guardia/AutorizacionesView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
       },
       // ── Residente ─────────────────────────────────
       {
@@ -203,7 +203,7 @@ function rutaInicial(auth) {
   const rol = auth.condominioActualRol || rolesGlobales[0];
   if (rol === "ADMINISTRADOR") return { name: "Dashboard" };
   if (rol === "GUARDIA") return { name: "GuardiaDashboard" };
-  if (rol === "RESIDENTE") return { name: "Inicio" };
+  if (rol === "RESIDENTE") return { name: auth.contextDashboard };
   return { name: "Login" };
 }
 
@@ -245,11 +245,18 @@ router.beforeEach(async (to) => {
 
   const userRoles = auth.user?.roles || [];
   const routeRoles = to.meta.roles;
-  if (
-    routeRoles &&
-    !routeRoles.some((r) => userRoles.includes(r)) &&
-    !routeRoles.includes(auth.condominioActualRol)
-  ) {
+  const routeCargos = to.meta.cargos;
+
+  const tieneRol =
+    !routeRoles ||
+    routeRoles.some((r) => userRoles.includes(r)) ||
+    routeRoles.includes(auth.condominioActualRol);
+
+  const tieneCargo =
+    !routeCargos ||
+    routeCargos.includes(auth.condominioActualCargo);
+
+  if (!tieneRol || !tieneCargo) {
     return rutaInicial(auth);
   }
 });

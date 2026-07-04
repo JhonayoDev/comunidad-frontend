@@ -35,6 +35,39 @@ export const useAuthStore = defineStore("auth", () => {
   const condominioActualRol = computed(
     () => condominioActual.value?.rolAcceso || null,
   );
+  const condominioActualCargo = computed(
+    () => condominioActual.value?.cargo || null,
+  );
+
+  const CARGO_LABELS = {
+    PRESIDENTE: "Presidente",
+    TESORERO: "Tesorero",
+    SECRETARIO: "Secretario",
+    DELEGADO: "Delegado",
+  };
+
+  const CONTEXT_DASHBOARDS = {
+    residente: "Inicio",
+    presidente: "Dashboard",
+    tesorero: "Dashboard",
+    secretario: "Dashboard",
+    delegado: "Dashboard",
+  };
+
+  const activeContext = ref("residente");
+
+  const contextos = computed(() => {
+    const list = [{ key: "residente", label: "Residente" }];
+    const cargo = condominioActualCargo.value;
+    if (cargo && CARGO_LABELS[cargo]) {
+      list.push({ key: cargo.toLowerCase(), label: CARGO_LABELS[cargo] });
+    }
+    return list;
+  });
+
+  const contextDashboard = computed(
+    () => CONTEXT_DASHBOARDS[activeContext.value] || "Inicio",
+  );
 
   // ─── Actions ─────────────────────────────────────────────────────────────────
   async function login(email, password) {
@@ -78,10 +111,15 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.setItem("condominios", JSON.stringify(data));
   }
 
+  function setActiveContext(ctx) {
+    activeContext.value = ctx;
+  }
+
   function seleccionarCondominio(id) {
     const encontrado = condominios.value.find((c) => c.id === id);
     if (!encontrado) return;
     condominioActual.value = encontrado;
+    activeContext.value = "residente";
     localStorage.setItem("condominioActual", JSON.stringify(encontrado));
   }
 
@@ -117,6 +155,11 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActualId,
     condominioActualNombre,
     condominioActualRol,
+    condominioActualCargo,
+    activeContext,
+    contextos,
+    contextDashboard,
+    setActiveContext,
     login,
     tryRestoreSession,
     fetchCondominios,

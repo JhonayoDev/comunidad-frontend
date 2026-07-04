@@ -53,15 +53,32 @@
     </div>
   </header>
 
+  <div
+    v-if="showContextPills"
+    class="flex gap-1 px-3 pb-2 overflow-x-auto surface-ground border-bottom-1 surface-border"
+  >
+    <Button
+      v-for="ctx in auth.contextos"
+      :key="ctx.key"
+      :label="ctx.label"
+      :severity="auth.activeContext === ctx.key ? 'primary' : 'secondary'"
+      :variant="auth.activeContext === ctx.key ? 'filled' : 'text'"
+      size="small"
+      rounded
+      @click="switchContext(ctx)"
+    />
+  </div>
+
   <Drawer v-model:visible="drawerVisible" position="right" header="Menú">
     <MenuView />
   </Drawer>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
+import { useNavigation } from "@/composables/useNavigation";
 import { useNotificationBadge } from "@/composables/useNotificationBadge";
 import { useCondominioSelector } from "@/composables/useCondominioSelector";
 import MenuView from "@/views/menu/MenuView.vue";
@@ -73,10 +90,17 @@ import Badge from "primevue/badge";
 const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
+const { switchContext } = useNavigation();
 const { notifCount } = useNotificationBadge();
 const { selectedCondominioId, onCondominioChange } = useCondominioSelector();
 
 const drawerVisible = ref(false);
+
+const showContextPills = computed(() => {
+  return (
+    auth.user?.roles?.includes("RESIDENTE") && !!auth.condominioActualCargo
+  );
+});
 
 watch(
   () => route.name,
