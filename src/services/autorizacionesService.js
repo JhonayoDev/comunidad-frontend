@@ -16,4 +16,12 @@ export const autorizacionesService = {
       `/condominios/${condominioId}/autorizaciones/${id}/cancelar`,
     );
   },
+
+  misAutorizaciones(condominioId) {
+    return api.get(`/condominios/${condominioId}/mis-autorizaciones`);
+  },
+
+  crear(condominioId, data) {
+    return api.post(`/condominios/${condominioId}/autorizaciones`, data);
+  },
 };

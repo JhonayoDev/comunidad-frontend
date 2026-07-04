@@ -28,4 +28,8 @@ export const perfilService = {
   getDashboardResidente(condominioId) {
     return api.get(`/condominios/${condominioId}/dashboard/residente`);
   },
+
+  getMisDeudas(condominioId) {
+    return api.get(`/condominios/${condominioId}/mis-deudas`);
+  },
 };

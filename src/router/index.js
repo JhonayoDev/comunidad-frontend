@@ -162,6 +162,24 @@ const routes = [
         component: () => import("../views/encomiendas/MisEncomiendasView.vue"),
         meta: { roles: ["RESIDENTE"] },
       },
+      {
+        path: "mis-autorizaciones",
+        name: "MisAutorizaciones",
+        component: () => import("../views/residente/MisAutorizacionesView.vue"),
+        meta: { roles: ["RESIDENTE"] },
+      },
+      {
+        path: "mis-deudas",
+        name: "MisDeudas",
+        component: () => import("../views/residente/MisDeudasView.vue"),
+        meta: { roles: ["RESIDENTE"] },
+      },
+      {
+        path: "mis-casos",
+        name: "MisCasos",
+        component: () => import("../views/residente/CasosView.vue"),
+        meta: { roles: ["RESIDENTE"] },
+      },
     ],
   },
 
