@@ -20,4 +20,16 @@ export const notificacionesService = {
       `/condominios/${condominioId}/notificaciones/todas-leidas`,
     );
   },
+
+  listarPlantillas(condominioId) {
+    return api.get(`/condominios/${condominioId}/notificaciones/plantillas`);
+  },
+
+  guardarPlantilla(condominioId, codigo, data) {
+    return api.put(`/condominios/${condominioId}/notificaciones/plantillas/${codigo}`, data);
+  },
+
+  restaurarPlantilla(condominioId, codigo) {
+    return api.delete(`/condominios/${condominioId}/notificaciones/plantillas/${codigo}`);
+  },
 };

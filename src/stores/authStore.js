@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { authService } from "@/services/authService";
+import api from "@/services/api";
 import { accessToken } from "@/utils/tokenStore";
 import { condominiosService } from "@/services/condominiosService";
 import {
@@ -35,6 +36,39 @@ export const useAuthStore = defineStore("auth", () => {
   const condominioActualRol = computed(
     () => condominioActual.value?.rolAcceso || null,
   );
+  const condominioActualCargo = computed(
+    () => condominioActual.value?.cargo || null,
+  );
+
+  const CARGO_LABELS = {
+    PRESIDENTE: "Presidente",
+    TESORERO: "Tesorero",
+    SECRETARIO: "Secretario",
+    DELEGADO: "Delegado",
+  };
+
+  const CONTEXT_DASHBOARDS = {
+    residente: "Inicio",
+    presidente: "Dashboard",
+    tesorero: "FinanzasDashboard",
+    secretario: "Dashboard",
+    delegado: "Dashboard",
+  };
+
+  const activeContext = ref("residente");
+
+  const contextos = computed(() => {
+    const list = [{ key: "residente", label: "Residente" }];
+    const cargo = condominioActualCargo.value;
+    if (cargo && CARGO_LABELS[cargo]) {
+      list.push({ key: cargo.toLowerCase(), label: CARGO_LABELS[cargo] });
+    }
+    return list;
+  });
+
+  const contextDashboard = computed(
+    () => CONTEXT_DASHBOARDS[activeContext.value] || "Inicio",
+  );
 
   // ─── Actions ─────────────────────────────────────────────────────────────────
   async function login(email, password) {
@@ -65,6 +99,19 @@ export const useAuthStore = defineStore("auth", () => {
       const { data } = await authService.refresh();
       accessToken.value = data.accessToken;
       scheduleProactiveRefresh();
+      // Cargar perfil y condominios después de restaurar el token
+      const meRes = await api.get("/me");
+      user.value = {
+        personaId: meRes.data.personaId,
+        nombre: meRes.data.nombre,
+        email: meRes.data.email,
+        roles: meRes.data.roles,
+      };
+      localStorage.setItem("user", JSON.stringify(user.value));
+      await fetchCondominios();
+      if (condominios.value.length === 1) {
+        seleccionarCondominio(condominios.value[0].id);
+      }
       return true;
     } catch {
       clearSession();
@@ -78,10 +125,15 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.setItem("condominios", JSON.stringify(data));
   }
 
+  function setActiveContext(ctx) {
+    activeContext.value = ctx;
+  }
+
   function seleccionarCondominio(id) {
     const encontrado = condominios.value.find((c) => c.id === id);
     if (!encontrado) return;
     condominioActual.value = encontrado;
+    activeContext.value = "residente";
     localStorage.setItem("condominioActual", JSON.stringify(encontrado));
   }
 
@@ -117,6 +169,11 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActualId,
     condominioActualNombre,
     condominioActualRol,
+    condominioActualCargo,
+    activeContext,
+    contextos,
+    contextDashboard,
+    setActiveContext,
     login,
     tryRestoreSession,
     fetchCondominios,

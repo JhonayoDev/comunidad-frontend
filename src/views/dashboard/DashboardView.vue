@@ -10,6 +10,7 @@ import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Divider from "primevue/divider";
 import Avatar from "primevue/avatar";
+import Button from "primevue/button";
 
 const auth = useAuthStore();
 const dashboard = ref(null);
@@ -90,15 +91,16 @@ onMounted(async () => {
 
     <template v-else-if="dashboard">
       <div v-if="dashboard.unidades?.length > 1" class="flex gap-2 overflow-x-auto pb-2">
-        <button
+        <Button
           v-for="u in dashboard.unidades"
           :key="u.id"
-          class="btn btn-sm"
-          :class="unidadActiva === u.id ? 'btn-primary' : 'btn-ghost'"
+          size="small"
+          :severity="unidadActiva === u.id ? 'primary' : 'secondary'"
+          :variant="unidadActiva === u.id ? 'solid' : 'outlined'"
           @click="unidadActiva = u.id"
         >
           {{ tipoUnidad(u.tipo) }} {{ u.numero }}
-        </button>
+        </Button>
       </div>
 
       <div

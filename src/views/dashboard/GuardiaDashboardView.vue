@@ -1,11 +1,9 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
-import api from "@/services/api";
-import { encomiendasService } from "@/services/encomiendasService";
-import { bitacoraService } from "@/services/bitacoraService";
-import { autorizacionesService } from "@/services/autorizacionesService";
+import { useTurno } from "@/composables/useTurno";
+import { useDashboardGuardia } from "@/composables/useDashboardGuardia";
 
 import Card from "primevue/card";
 import Tag from "primevue/tag";
@@ -20,117 +18,22 @@ import InputText from "primevue/inputtext";
 
 const router = useRouter();
 const auth = useAuthStore();
-const dashboard = ref(null);
-const turno = ref(null);
-const encomiendas = ref([]);
-const autorizaciones = ref([]);
-const loading = ref(true);
-const error = ref(null);
-const turnoLoading = ref(false);
-let timerInterval = null;
 
-const accionesLabels = {
-  TURNO_INICIO: { label: "Iniciar turno", icon: "pi pi-play", severity: "success" },
-  TURNO_FIN: { label: "Finalizar turno", icon: "pi pi-stop", severity: "danger" },
-  COLACION_SALIDA: { label: "Salir a colación", icon: "pi pi-clock", severity: "warn" },
-  COLACION_REGRESO: { label: "Regresar de colación", icon: "pi pi-check-circle", severity: "info" },
-  NOVEDAD: { label: "Registrar novedad", icon: "pi pi-pencil", severity: "help" },
-};
+const {
+  turno, tiempoTranscurrido, turnoLoading, turnoError,
+  showNovedadDialog, enviandoNovedad, nuevaNovedad,
+  accionesLabels, clasificaciones,
+  cargarTurno, ejecutarAccion, registrarNovedad,
+  formatearFecha,
+} = useTurno();
 
-const tiempoTranscurrido = ref("");
-const showNovedadDialog = ref(false);
-const enviandoNovedad = ref(false);
-const nuevaNovedad = ref({
-  tipo: "NOVEDAD",
-  clasificacion: "NORMAL",
-  observaciones: "",
-  fotoUrl: "",
-});
+const {
+  dashboard, encomiendas, autorizaciones,
+  loading, error,
+  cargarDashboard, severityEstado,
+} = useDashboardGuardia();
 
-const clasificaciones = [
-  { label: "Normal", value: "NORMAL" },
-  { label: "Urgente", value: "URGENTE" },
-  { label: "Emergencia", value: "EMERGENCIA" },
-  { label: "Informativo", value: "INFO" },
-];
-
-function actualizarTiempo() {
-  if (!turno.value?.ultimoEventoEn) {
-    tiempoTranscurrido.value = "";
-    return;
-  }
-  const desde = new Date(turno.value.ultimoEventoEn);
-  const ahora = new Date();
-  const diff = Math.floor((ahora - desde) / 1000);
-  const h = Math.floor(diff / 3600);
-  const m = Math.floor((diff % 3600) / 60);
-  const s = diff % 60;
-  tiempoTranscurrido.value = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-function formatearFecha(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
-}
-
-async function ejecutarAccion(tipo) {
-  if (tipo === "NOVEDAD") {
-    showNovedadDialog.value = true;
-    return;
-  }
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  turnoLoading.value = true;
-  try {
-    await bitacoraService.registrarEvento(cid, { tipo, clasificacion: "NORMAL" });
-    const res = await bitacoraService.miTurno(cid);
-    turno.value = res.data;
-    actualizarTiempo();
-  } catch (e) {
-    console.error("Error al registrar acción de turno", e);
-    error.value = "Error al registrar acción de turno";
-  } finally {
-    turnoLoading.value = false;
-  }
-}
-
-async function registrarNovedad() {
-  if (!nuevaNovedad.value.observaciones.trim()) return;
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  enviandoNovedad.value = true;
-  try {
-    await bitacoraService.registrarEvento(cid, {
-      tipo: nuevaNovedad.value.tipo,
-      clasificacion: nuevaNovedad.value.clasificacion,
-      observaciones: nuevaNovedad.value.observaciones,
-      fotoUrl: nuevaNovedad.value.fotoUrl || null,
-    });
-    showNovedadDialog.value = false;
-    nuevaNovedad.value = {
-      tipo: "NOVEDAD",
-      clasificacion: "NORMAL",
-      observaciones: "",
-      fotoUrl: "",
-    };
-    const res = await bitacoraService.miTurno(cid);
-    turno.value = res.data;
-    actualizarTiempo();
-  } catch (e) {
-    console.error("Error al registrar novedad", e);
-    error.value = "Error al registrar novedad";
-  } finally {
-    enviandoNovedad.value = false;
-  }
-}
-
-function severityEstado(estado) {
-  if (estado === "ACTIVO") return "success";
-  if (estado === "FINALIZADO") return "info";
-  if (estado === "RECHAZADO") return "danger";
-  return "warn";
-}
+const mergedError = computed(() => turnoError.value || error.value);
 
 onMounted(async () => {
   const cid = auth.condominioActualId;
@@ -139,39 +42,17 @@ onMounted(async () => {
     loading.value = false;
     return;
   }
-  try {
-    const [resDash, resTurno, resEnv, resAuth] = await Promise.all([
-      api.get(`/condominios/${cid}/dashboard/guardia`),
-      bitacoraService.miTurno(cid),
-      encomiendasService.getEncomiendas(cid, { estado: "PENDIENTE" }),
-      autorizacionesService.listar(cid, { estado: "PENDIENTE" }),
-    ]);
-    dashboard.value = resDash.data;
-    turno.value = resTurno.data;
-    encomiendas.value = resEnv.data || [];
-    autorizaciones.value = resAuth.data || [];
-
-    if (turno.value?.enTurno) {
-      actualizarTiempo();
-      timerInterval = setInterval(actualizarTiempo, 1000);
-    }
-  } catch (e) {
-    console.error("Error al cargar dashboard guardia", e);
-    error.value = "Error al cargar el dashboard";
-  } finally {
-    loading.value = false;
-  }
-});
-
-onUnmounted(() => {
-  clearInterval(timerInterval);
+  await Promise.all([
+    cargarDashboard(cid),
+    cargarTurno(cid),
+  ]);
 });
 </script>
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <Message v-if="error" severity="error" :closable="false">
-      {{ error }}
+    <Message v-if="mergedError" severity="error" :closable="false">
+      {{ mergedError }}
     </Message>
 
     <template v-if="loading">

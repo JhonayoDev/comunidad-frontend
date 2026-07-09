@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
+
 import { useAuthStore } from "@/stores/authStore";
 import { bitacoraService } from "@/services/bitacoraService";
+import { usePaginacion } from "@/composables/usePaginacion";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -12,16 +14,57 @@ import InputText from "primevue/inputtext";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
+import Paginator from "primevue/paginator";
 
 const auth = useAuthStore();
 const eventos = ref([]);
+const pagBitacora = usePaginacion();
 const loading = ref(true);
 const error = ref(null);
 const showDialog = ref(false);
 const enviando = ref(false);
+const turno = ref(null);
+const loadingTurno = ref(false);
+
+async function cargarTurno() {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  loadingTurno.value = true;
+  try {
+    const { data } = await bitacoraService.miTurno(cid);
+    turno.value = data;
+  } catch {
+    turno.value = null;
+  } finally {
+    loadingTurno.value = false;
+  }
+}
+
+async function iniciarTurno() {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  try {
+    await bitacoraService.registrarEvento(cid, { tipo: "TURNO_INICIO", clasificacion: "NORMAL", observaciones: "Inicio de turno" });
+    await Promise.all([cargarTurno(), cargarEventos()]);
+  } catch (e) {
+    console.error("Error al iniciar turno", e);
+  }
+}
+
+async function finalizarTurno() {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  try {
+    await bitacoraService.registrarEvento(cid, { tipo: "TURNO_FIN", clasificacion: "NORMAL", observaciones: "Fin de turno" });
+    await Promise.all([cargarTurno(), cargarEventos()]);
+  } catch (e) {
+    console.error("Error al finalizar turno", e);
+  }
+}
 
 const clasificacionFilter = ref(null);
 const tipoFilter = ref(null);
+
 
 const clasificaciones = [
   { label: "Normal", value: "NORMAL" },
@@ -71,27 +114,18 @@ function formatearFecha(iso) {
   });
 }
 
-const eventosFiltrados = computed(() => {
-  let resultado = eventos.value;
-  if (tipoFilter.value) {
-    resultado = resultado.filter((e) => e.tipo === tipoFilter.value.value);
-  }
-  if (clasificacionFilter.value) {
-    resultado = resultado.filter(
-      (e) => e.clasificacion === clasificacionFilter.value.value,
-    );
-  }
-  return resultado;
-});
-
 async function cargarEventos() {
   const cid = auth.condominioActualId;
   if (!cid) return;
   loading.value = true;
   error.value = null;
   try {
-    const res = await bitacoraService.listar(cid);
-    eventos.value = res.data || [];
+    const params = { ...pagBitacora.paramsPaginacion.value };
+    if (tipoFilter.value) params.tipo = tipoFilter.value.value;
+    if (clasificacionFilter.value) params.clasificacion = clasificacionFilter.value.value;
+    const res = await bitacoraService.listar(cid, params);
+    pagBitacora.actualizar(res.data);
+    eventos.value = pagBitacora.contenido.value;
   } catch (e) {
     console.error("Error al cargar bitácora", e);
     error.value = "Error al cargar la bitácora";
@@ -128,7 +162,15 @@ async function registrarNovedad() {
   }
 }
 
-onMounted(cargarEventos);
+watch([tipoFilter, clasificacionFilter], () => {
+  pagBitacora.reiniciar();
+  cargarEventos();
+});
+
+onMounted(() => {
+  cargarTurno();
+  cargarEventos();
+});
 </script>
 
 <template>
@@ -146,6 +188,24 @@ onMounted(cargarEventos);
         @click="showDialog = true"
       />
     </div>
+
+    <Card v-if="auth.condominioActualRol === 'GUARDIA' && !loadingTurno">
+      <template #content>
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <i :class="turno?.activo ? 'pi pi-play-circle text-green-500' : 'pi pi-stop-circle text-surface-400'" style="font-size:1.5rem"></i>
+            <div>
+              <span class="text-sm font-medium">{{ turno?.activo ? 'Turno activo' : 'Sin turno activo' }}</span>
+              <span v-if="turno?.activo && turno.inicio" class="text-xs text-surface-400 ml-2">Desde {{ new Date(turno.inicio).toLocaleTimeString('es-CL') }}</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <Button v-if="!turno?.activo" label="Iniciar turno" icon="pi pi-play" size="small" severity="success" @click="iniciarTurno" />
+            <Button v-if="turno?.activo" label="Finalizar turno" icon="pi pi-stop" size="small" severity="danger" @click="finalizarTurno" />
+          </div>
+        </div>
+      </template>
+    </Card>
 
     <div class="flex gap-2">
       <Select
@@ -178,7 +238,7 @@ onMounted(cargarEventos);
       </div>
     </template>
 
-    <template v-else-if="eventosFiltrados.length === 0">
+    <template v-else-if="!eventos.length">
       <Card>
         <template #content>
           <div class="flex flex-column align-items-center gap-2 py-4">
@@ -192,7 +252,7 @@ onMounted(cargarEventos);
     <template v-else>
       <div class="flex flex-col gap-3">
         <Card
-          v-for="evento in eventosFiltrados"
+          v-for="evento in eventos"
           :key="evento.id"
           class="cursor-pointer hover:surface-hover transition-shadow"
         >
@@ -246,6 +306,12 @@ onMounted(cargarEventos);
           </template>
         </Card>
       </div>
+      <Paginator
+        :rows="pagBitacora.tamano.value"
+        :totalRecords="pagBitacora.totalElementos.value"
+        :first="pagBitacora.pagina.value * pagBitacora.tamano.value"
+        @page="pagBitacora.alCambiarPagina($event); cargarEventos()"
+      />
     </template>
 
     <Dialog

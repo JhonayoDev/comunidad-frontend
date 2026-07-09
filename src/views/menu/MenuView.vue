@@ -7,10 +7,11 @@ import Card from "primevue/card";
 import Avatar from "primevue/avatar";
 import Tag from "primevue/tag";
 import Button from "primevue/button";
+import Divider from "primevue/divider";
 
 const router = useRouter();
 const auth = useAuthStore();
-const { navItems, goTo } = useNavigation();
+const { groupedNavItems, goTo } = useNavigation();
 
 async function handleLogout() {
   await auth.logout();
@@ -40,13 +41,21 @@ async function handleLogout() {
       </template>
     </Card>
 
-    <!-- Módulos -->
+    <!-- Módulos agrupados por contexto -->
     <Card>
       <template #title>Módulos</template>
       <template #content>
-        <div class="flex flex-col gap-1">
+        <template v-for="group in groupedNavItems" :key="group.label">
+          <Divider
+            v-if="group.label && groupedNavItems.length > 1"
+            :key="'div-' + group.label"
+            align="left"
+            class="my-2"
+          >
+            <span class="text-xs font-semibold text-surface-500 uppercase">{{ group.label }}</span>
+          </Divider>
           <Button
-            v-for="item in navItems"
+            v-for="item in group.items"
             :key="item.routeName"
             :label="item.label"
             :icon="item.icon"
@@ -54,7 +63,7 @@ async function handleLogout() {
             class="w-full justify-content-start"
             @click="goTo(item.routeName)"
           />
-        </div>
+        </template>
       </template>
     </Card>
 
