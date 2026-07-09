@@ -37,6 +37,14 @@ export const finanzasService = {
     return api.get(`/condominios/${cid}/finanzas/categorias`, { params });
   },
 
+  crearCategoria(cid, data) {
+    return api.post(`/condominios/${cid}/finanzas/categorias`, data);
+  },
+
+  eliminarCategoria(cid, id) {
+    return api.delete(`/condominios/${cid}/finanzas/categorias/${id}`);
+  },
+
   listarLedger(cid, params = {}) {
     return api.get(`/condominios/${cid}/finanzas/ledger`, { params });
   },

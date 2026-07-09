@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { finanzasService } from "@/services/finanzasService";
+import { usePaginacion } from "@/composables/usePaginacion";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -14,12 +15,14 @@ import DatePicker from "primevue/datepicker";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
+import Paginator from "primevue/paginator";
 
 const auth = useAuthStore();
 
 const loading = ref(true);
 const error = ref(null);
 const gastos = ref([]);
+const pagGastos = usePaginacion();
 const categorias = ref([]);
 const cuentas = ref([]);
 
@@ -52,11 +55,12 @@ async function cargar() {
   error.value = null;
   try {
     const [gastosRes, catRes, cuentasRes] = await Promise.all([
-      finanzasService.listarGastos(cid, { soloActivos: filtroSoloActivos.value }),
+      finanzasService.listarGastos(cid, { soloActivos: filtroSoloActivos.value, ...pagGastos.paramsPaginacion.value }),
       finanzasService.listarCategorias(cid),
       finanzasService.listarCuentas(cid),
     ]);
-    gastos.value = gastosRes.data;
+    pagGastos.actualizar(gastosRes.data);
+    gastos.value = pagGastos.contenido.value;
     categorias.value = catRes.data;
     cuentas.value = cuentasRes.data;
   } catch (e) {
@@ -70,14 +74,16 @@ async function cargar() {
 async function buscar() {
   const cid = auth.condominioActualId;
   if (!cid) return;
+  pagGastos.reiniciar();
   loading.value = true;
   try {
-    const params = { soloActivos: filtroSoloActivos.value };
+    const params = { soloActivos: filtroSoloActivos.value, ...pagGastos.paramsPaginacion.value };
     if (filtroCategoria.value) params.categoriaId = filtroCategoria.value;
     if (filtroDesde.value) params.desde = formatearFecha(filtroDesde.value);
     if (filtroHasta.value) params.hasta = formatearFecha(filtroHasta.value);
     const { data } = await finanzasService.listarGastos(cid, params);
-    gastos.value = data;
+    pagGastos.actualizar(data);
+    gastos.value = pagGastos.contenido.value;
   } catch (e) {
     console.error("Error al buscar gastos", e);
   } finally {
@@ -245,6 +251,12 @@ onMounted(() => {
             />
           </div>
         </div>
+        <Paginator
+          :rows="pagGastos.tamano.value"
+          :totalRecords="pagGastos.totalElementos.value"
+          :first="pagGastos.pagina.value * pagGastos.tamano.value"
+          @page="pagGastos.alCambiarPagina($event); cargar()"
+        />
       </div>
     </template>
 

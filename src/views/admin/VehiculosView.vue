@@ -1,185 +1,247 @@
-<template>
-  <div class="p-4 flex flex-col gap-4">
-    <h2 class="text-lg font-bold">Vehículos</h2>
-
-    <!-- Aviso de caché -->
-    <div v-if="error" class="alert alert-warning py-2">
-      <span class="text-sm">⚠️ {{ error }}</span>
-    </div>
-
-    <!-- Buscador -->
-    <div class="card bg-base-100 shadow">
-      <div class="card-body p-3 flex flex-col gap-2">
-        <input
-          v-model="filtros.patente"
-          type="text"
-          placeholder="Buscar por patente"
-          class="input input-bordered input-sm uppercase"
-          @input="
-            filtros.patente = filtros.patente.toUpperCase();
-            buscar();
-          "
-        />
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="loading" class="flex justify-center py-8">
-      <span class="loading loading-spinner loading-md text-primary"></span>
-    </div>
-
-    <!-- Sin resultados -->
-    <div v-else-if="vehiculos.length === 0" class="text-center py-12">
-      <p class="text-4xl mb-2">🚗</p>
-      <p class="text-base-content/60 text-sm">No hay vehículos registrados</p>
-    </div>
-
-    <!-- Lista -->
-    <div v-else class="flex flex-col gap-2">
-      <div
-        v-for="v in vehiculos"
-        :key="v.id"
-        class="card bg-base-100 shadow-sm cursor-pointer"
-        @click="seleccionar(v)"
-      >
-        <div class="card-body p-4">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex-1 min-w-0">
-              <p class="font-bold font-mono">{{ v.patente }}</p>
-              <p class="text-sm">
-                {{ v.marca }} {{ v.modelo }} — {{ v.color }}
-              </p>
-              <p class="text-xs text-base-content/60">
-                {{ tipoVehiculo(v.tipo) }}
-              </p>
-              <p class="text-xs text-base-content/40">
-                {{ v.propietarioNombre }}
-              </p>
-            </div>
-            <div class="flex flex-col items-end gap-1">
-              <span
-                class="badge badge-sm"
-                :class="v.activo ? 'badge-success' : 'badge-ghost'"
-              >
-                {{ v.activo ? "Activo" : "Baja" }}
-              </span>
-              <span class="text-base-content/40">›</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal detalle -->
-    <div v-if="vehiculoSeleccionado" class="modal modal-open">
-      <div class="modal-box">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-lg font-mono">
-            {{ vehiculoSeleccionado.patente }}
-          </h3>
-          <button class="btn btn-ghost btn-sm btn-circle" @click="cerrarModal">
-            ✕
-          </button>
-        </div>
-
-        <div class="flex flex-col gap-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-base-content/60">Marca / Modelo</span>
-            <span class="font-medium"
-              >{{ vehiculoSeleccionado.marca }}
-              {{ vehiculoSeleccionado.modelo }}</span
-            >
-          </div>
-          <div class="flex justify-between">
-            <span class="text-base-content/60">Color</span>
-            <span class="font-medium">{{ vehiculoSeleccionado.color }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-base-content/60">Tipo</span>
-            <span class="font-medium">{{
-              tipoVehiculo(vehiculoSeleccionado.tipo)
-            }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-base-content/60">Propietario</span>
-            <span class="font-medium">{{
-              vehiculoSeleccionado.propietarioNombre
-            }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-base-content/60">Estado</span>
-            <span
-              class="badge badge-sm"
-              :class="
-                vehiculoSeleccionado.activo ? 'badge-success' : 'badge-ghost'
-              "
-            >
-              {{ vehiculoSeleccionado.activo ? "Activo" : "Dado de baja" }}
-            </span>
-          </div>
-
-          <!-- Estacionamientos -->
-          <div v-if="vehiculoSeleccionado.estacionamientos?.length > 0">
-            <div class="divider my-1"></div>
-            <p class="text-base-content/60 mb-1">Estacionamientos</p>
-            <div
-              v-for="e in vehiculoSeleccionado.estacionamientos"
-              :key="e.numero"
-              class="flex justify-between"
-            >
-              <span>Nº {{ e.numero }}</span>
-              <span class="text-base-content/60">{{ e.tipo }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-action">
-          <button class="btn btn-ghost btn-sm" @click="cerrarModal">
-            Cerrar
-          </button>
-        </div>
-      </div>
-      <div class="modal-backdrop" @click="cerrarModal"></div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from "vue";
-import { useVehiculos } from "../../composables/useVehiculos";
+import { useAuthStore } from "@/stores/authStore";
+import { vehiculosService } from "@/services/vehiculosService";
 
-const { vehiculos, loading, error, cargar } = useVehiculos();
+import Card from "primevue/card";
+import Button from "primevue/button";
+import Dialog from "primevue/dialog";
+import InputText from "primevue/inputtext";
+import Select from "primevue/select";
+import Tag from "primevue/tag";
+import Skeleton from "primevue/skeleton";
+import Message from "primevue/message";
+import ConfirmDialog from "primevue/confirmdialog";
+import { useConfirm } from "primevue/useconfirm";
 
-const filtros = ref({ patente: "" });
-const vehiculoSeleccionado = ref(null);
+const auth = useAuthStore();
+const confirm = useConfirm();
 
-let timeout = null;
-function buscar() {
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
+const cid = () => auth.condominioActualId;
+
+const loading = ref(true);
+const error = ref(null);
+const vehiculos = ref([]);
+const filtroPatente = ref("");
+
+const showCrear = ref(false);
+const showEditar = ref(false);
+const showEstacionamiento = ref(false);
+const vehiculoEditando = ref(null);
+const enviando = ref(false);
+
+const formCrear = ref({ patente: "", marca: "", modelo: "", color: "", tipo: "AUTO", propietarioNombre: "" });
+const formEditar = ref({ patente: "", marca: "", modelo: "", color: "", tipo: "AUTO", propietarioNombre: "" });
+const formEstacionamiento = ref({ numero: "" });
+
+const tiposVehiculo = [
+  { label: "Auto", value: "AUTO" },
+  { label: "Camioneta", value: "CAMIONETA" },
+  { label: "Moto", value: "MOTO" },
+  { label: "Otro", value: "OTRO" },
+];
+
+async function cargar() {
+  if (!cid()) return;
+  loading.value = true;
+  error.value = null;
+  try {
     const params = {};
-    if (filtros.value.patente) params.patente = filtros.value.patente;
-    cargar(params);
-  }, 400);
+    if (filtroPatente.value) params.patente = filtroPatente.value;
+    const { data } = await vehiculosService.listar(cid(), params);
+    vehiculos.value = data;
+  } catch (e) {
+    console.error("Error al cargar vehículos", e);
+    error.value = "No se pudieron cargar los vehículos";
+  } finally {
+    loading.value = false;
+  }
 }
 
-function seleccionar(v) {
-  vehiculoSeleccionado.value = v;
+function abrirCrear() {
+  formCrear.value = { patente: "", marca: "", modelo: "", color: "", tipo: "AUTO", propietarioNombre: "" };
+  showCrear.value = true;
 }
 
-function cerrarModal() {
-  vehiculoSeleccionado.value = null;
+async function crearVehiculo() {
+  if (!cid()) return;
+  enviando.value = true;
+  try {
+    await vehiculosService.crear(cid(), formCrear.value);
+    showCrear.value = false;
+    await cargar();
+  } catch (e) {
+    console.error("Error al crear vehículo", e);
+  } finally {
+    enviando.value = false;
+  }
 }
 
-function tipoVehiculo(tipo) {
-  const tipos = {
-    AUTO: "Auto",
-    CAMIONETA: "Camioneta",
-    MOTO: "Moto",
-    OTRO: "Otro",
-  };
-  return tipos[tipo] || tipo;
+function abrirEditar(v) {
+  vehiculoEditando.value = v;
+  formEditar.value = { patente: v.patente, marca: v.marca, modelo: v.modelo, color: v.color, tipo: v.tipo, propietarioNombre: v.propietarioNombre || "" };
+  showEditar.value = true;
 }
 
-onMounted(() => cargar());
+async function editarVehiculo() {
+  if (!cid() || !vehiculoEditando.value) return;
+  enviando.value = true;
+  try {
+    await vehiculosService.actualizar(cid(), vehiculoEditando.value.id, formEditar.value);
+    showEditar.value = false;
+    vehiculoEditando.value = null;
+    await cargar();
+  } catch (e) {
+    console.error("Error al editar vehículo", e);
+  } finally {
+    enviando.value = false;
+  }
+}
+
+function confirmarDesactivar(v) {
+  confirm.require({
+    message: `¿Desactivar vehículo ${v.patente}?`,
+    header: "Confirmar",
+    acceptLabel: "Desactivar",
+    rejectLabel: "Cancelar",
+    accept: () => desactivarVehiculo(v),
+  });
+}
+
+async function desactivarVehiculo(v) {
+  if (!cid()) return;
+  try {
+    await vehiculosService.desactivar(cid(), v.id);
+    await cargar();
+  } catch (e) {
+    console.error("Error al desactivar vehículo", e);
+  }
+}
+
+function abrirEstacionamiento(v) {
+  vehiculoEditando.value = v;
+  formEstacionamiento.value = { numero: "" };
+  showEstacionamiento.value = true;
+}
+
+async function vincularEstacionamiento() {
+  if (!cid() || !vehiculoEditando.value) return;
+  enviando.value = true;
+  try {
+    await vehiculosService.vincularEstacionamiento(cid(), vehiculoEditando.value.id, formEstacionamiento.value);
+    showEstacionamiento.value = false;
+    await cargar();
+  } catch (e) {
+    console.error("Error al vincular estacionamiento", e);
+  } finally {
+    enviando.value = false;
+  }
+}
+
+async function desvincularEstacionamiento(v) {
+  if (!cid()) return;
+  try {
+    await vehiculosService.desvincularEstacionamiento(cid(), v.id);
+    await cargar();
+  } catch (e) {
+    console.error("Error al desvincular estacionamiento", e);
+  }
+}
+
+let timeout;
+function onBuscar() {
+  clearTimeout(timeout);
+  timeout = setTimeout(cargar, 300);
+}
+
+onMounted(cargar);
 </script>
+
+<template>
+  <div class="p-4 flex flex-col gap-4">
+    <div class="flex justify-between items-center">
+      <h1 class="text-xl font-bold m-0">Vehículos</h1>
+      <Button label="Nuevo vehículo" icon="pi pi-plus" size="small" @click="abrirCrear" />
+    </div>
+
+    <Card>
+      <template #content>
+        <InputText v-model="filtroPatente" placeholder="Buscar por patente..." class="w-full uppercase" @input="onBuscar" />
+      </template>
+    </Card>
+
+    <Skeleton v-if="loading" width="100%" height="300px" />
+    <Message v-else-if="error" severity="error">{{ error }}</Message>
+
+    <template v-else>
+      <div v-if="!vehiculos.length" class="text-center text-surface-400 py-8">No hay vehículos registrados</div>
+      <div v-else class="flex flex-col gap-2">
+        <div v-for="v in vehiculos" :key="v.id" class="surface-card p-3 border-round shadow-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold font-mono">{{ v.patente }}</span>
+                <Tag :value="v.tipo" severity="info" size="small" />
+                <Tag v-if="!v.activo" value="Baja" severity="secondary" size="small" />
+              </div>
+              <span class="text-sm text-surface-500">{{ v.marca }} {{ v.modelo }} — {{ v.color }}</span>
+              <span v-if="v.propietarioNombre" class="text-xs text-surface-400 ml-2">{{ v.propietarioNombre }}</span>
+              <div v-if="v.estacionamientos?.length" class="text-xs text-surface-400">
+                Est.: {{ v.estacionamientos.map(e => `N°${e.numero}`).join(', ') }}
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <Button v-if="v.activo" icon="pi pi-car" variant="text" size="small" severity="success" @click="abrirEstacionamiento(v)" />
+              <Button icon="pi pi-pencil" variant="text" size="small" severity="secondary" @click="abrirEditar(v)" />
+              <Button v-if="v.activo" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="confirmarDesactivar(v)" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <Dialog v-model:visible="showCrear" header="Nuevo vehículo" modal :style="{ width: '95%', maxWidth: '400px' }">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1"><label class="text-sm">Patente</label><InputText v-model="formCrear.patente" class="uppercase" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Marca</label><InputText v-model="formCrear.marca" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Modelo</label><InputText v-model="formCrear.modelo" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Color</label><InputText v-model="formCrear.color" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Tipo</label><Select v-model="formCrear.tipo" :options="tiposVehiculo" optionLabel="label" optionValue="value" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Propietario</label><InputText v-model="formCrear.propietarioNombre" placeholder="Opcional" /></div>
+      </div>
+      <template #footer>
+        <Button label="Cancelar" severity="secondary" variant="text" @click="showCrear = false" />
+        <Button label="Crear" :loading="enviando" @click="crearVehiculo" />
+      </template>
+    </Dialog>
+
+    <Dialog v-model:visible="showEditar" header="Editar vehículo" modal :style="{ width: '95%', maxWidth: '400px' }">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1"><label class="text-sm">Patente</label><InputText v-model="formEditar.patente" class="uppercase" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Marca</label><InputText v-model="formEditar.marca" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Modelo</label><InputText v-model="formEditar.modelo" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Color</label><InputText v-model="formEditar.color" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Tipo</label><Select v-model="formEditar.tipo" :options="tiposVehiculo" optionLabel="label" optionValue="value" /></div>
+        <div class="flex flex-col gap-1"><label class="text-sm">Propietario</label><InputText v-model="formEditar.propietarioNombre" /></div>
+      </div>
+      <template #footer>
+        <Button label="Cancelar" severity="secondary" variant="text" @click="showEditar = false" />
+        <Button label="Guardar" :loading="enviando" @click="editarVehiculo" />
+      </template>
+    </Dialog>
+
+    <Dialog v-model:visible="showEstacionamiento" header="Vincular estacionamiento" modal :style="{ width: '95%', maxWidth: '350px' }">
+      <p class="text-sm text-surface-500 m-0 mb-3">Para {{ vehiculoEditando?.patente }}</p>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm">N° estacionamiento</label>
+        <InputText v-model="formEstacionamiento.numero" placeholder="Ej: 12" />
+      </div>
+      <div class="flex justify-between mt-3">
+        <Button v-if="vehiculoEditando?.estacionamientos?.length" label="Desvincular" severity="danger" variant="text" @click="desvincularEstacionamiento(vehiculoEditando); showEstacionamiento = false" />
+        <Button label="Vincular" :loading="enviando" @click="vincularEstacionamiento" />
+      </div>
+    </Dialog>
+
+    <ConfirmDialog />
+  </div>
+</template>

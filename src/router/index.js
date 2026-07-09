@@ -143,6 +143,12 @@ const routes = [
         component: () => import("../views/finanzas/PlantillasGastoView.vue"),
         meta: { cargos: ["PRESIDENTE", "TESORERO"] },
       },
+      {
+        path: "finanzas/categorias",
+        name: "Categorias",
+        component: () => import("../views/finanzas/CategoriasView.vue"),
+        meta: { cargos: ["PRESIDENTE", "TESORERO"] },
+      },
       // ── Gestión (cargos) ──────────────────────────
       {
         path: "miembros",
@@ -155,6 +161,12 @@ const routes = [
         name: "Anuncios",
         component: () => import("../views/gestion/AnunciosView.vue"),
         meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+      },
+      {
+        path: "notificaciones/plantillas",
+        name: "PlantillasNotificacion",
+        component: () => import("../views/admin/PlantillasNotificacionView.vue"),
+        meta: { roles: ["ADMINISTRADOR"] },
       },
       {
         path: "casos-admin",
@@ -198,6 +210,12 @@ const routes = [
         name: "Bitacora",
         component: () => import("../views/guardia/BitacoraView.vue"),
         meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"] },
+      },
+      {
+        path: "bitacora/checklist",
+        name: "ChecklistTemplates",
+        component: () => import("../views/guardia/ChecklistTemplatesView.vue"),
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
       },
       {
         path: "autorizaciones",
@@ -272,7 +290,8 @@ function rutaInicial(auth) {
   if (rol === "ADMINISTRADOR") return { name: "Dashboard" };
   if (rol === "GUARDIA") return { name: "GuardiaDashboard" };
   if (rol === "RESIDENTE") return { name: auth.contextDashboard };
-  return { name: "Login" };
+  // Fallback seguro: Menu es accesible por todos los autenticados
+  return { name: "Menu" };
 }
 
 router.beforeEach(async (to) => {
@@ -305,28 +324,33 @@ router.beforeEach(async (to) => {
   }
 
   // Si está autenticado pero sin datos de usuario (ej: sesión restaurada
-  // via cookie, donde refresh no devuelve roles), redirigir a login
-  // cuando intente acceder a rutas protegidas.
+  // via cookie), mostrar menú como fallback seguro
   if (auth.isAuthenticated && !auth.user?.roles?.length && !to.meta.public) {
-    return { name: "Login" };
+    return { name: "Menu" };
   }
 
   const userRoles = auth.user?.roles || [];
   const routeRoles = to.meta.roles;
   const routeCargos = to.meta.cargos;
 
-  const tieneRol =
-    !routeRoles ||
+  const necesitaRol = routeRoles?.length > 0;
+  const necesitaCargo = routeCargos?.length > 0;
+
+  if (!necesitaRol && !necesitaCargo) return;
+
+  const cumpleRol = necesitaRol && (
     routeRoles.some((r) => userRoles.includes(r)) ||
-    routeRoles.includes(auth.condominioActualRol);
+    routeRoles.includes(auth.condominioActualRol)
+  );
 
-  const tieneCargo =
-    !routeCargos ||
-    routeCargos.includes(auth.condominioActualCargo);
+  const cumpleCargo = necesitaCargo && routeCargos.includes(auth.condominioActualCargo);
 
-  if (!tieneRol || !tieneCargo) {
-    return rutaInicial(auth);
-  }
+  // Cargo match grants access independently of role
+  if (cumpleCargo) return;
+  // Role match grants access if no cargo is required, or as fallback on combined routes
+  if (cumpleRol) return;
+
+  return rutaInicial(auth);
 });
 
 export default router;

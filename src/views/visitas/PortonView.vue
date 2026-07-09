@@ -1,84 +1,14 @@
-<template>
-  <div class="p-4">
-    <h2 class="text-lg font-bold mb-4">Control de Acceso</h2>
-
-    <div class="card bg-base-100 shadow mb-4">
-      <div class="card-body p-4">
-        <p class="text-sm text-base-content/60 mb-2">
-          Ingrese la patente del vehículo
-        </p>
-        <div class="flex gap-2">
-          <input
-            v-model="patente"
-            type="text"
-            placeholder="Ej: AB1234"
-            class="input input-bordered flex-1 uppercase"
-            maxlength="10"
-            @keyup.enter="consultar"
-            @input="patente = patente.toUpperCase()"
-          />
-          <button
-            class="btn btn-primary"
-            :disabled="patente.length < 2 || loading"
-            @click="consultar"
-          >
-            <span
-              v-if="loading"
-              class="loading loading-spinner loading-sm"
-            ></span>
-            <span v-else>Buscar</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="errorMsg" class="alert alert-error mb-4 py-2">
-      <span class="text-sm">{{ errorMsg }}</span>
-    </div>
-
-    <div v-if="resultado" class="card bg-base-100 shadow mb-4">
-      <div class="card-body p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-2xl">🚗</span>
-          <p class="font-bold text-lg">Vehículo encontrado</p>
-        </div>
-        <div class="divider my-1"></div>
-        <p><span class="opacity-75">Patente:</span> <strong>{{ resultado.patente }}</strong></p>
-        <p><span class="opacity-75">Marca/Modelo:</span> {{ resultado.marca }} {{ resultado.modelo }} — {{ resultado.color }}</p>
-        <p v-if="resultado.estacionamientoNumero">
-          <span class="opacity-75">Estacionamiento:</span> Nº {{ resultado.estacionamientoNumero }}
-        </p>
-        <button
-          class="btn btn-sm btn-neutral mt-3 w-full"
-          @click="irARegistrarVisita"
-        >
-          Registrar como visita
-        </button>
-      </div>
-    </div>
-
-    <div v-else-if="noEncontrado" class="card bg-error text-error-content shadow mb-4">
-      <div class="card-body p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-2xl">❌</span>
-          <p class="font-bold text-lg">Patente no registrada</p>
-        </div>
-        <button
-          class="btn btn-sm btn-neutral mt-3 w-full"
-          @click="irARegistrarVisita"
-        >
-          Registrar como visita
-        </button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../../stores/authStore";
-import api from "../../services/api";
+import { useAuthStore } from "@/stores/authStore";
+import { vehiculosService } from "@/services/vehiculosService";
+
+import Card from "primevue/card";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import Message from "primevue/message";
+import Skeleton from "primevue/skeleton";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -86,33 +16,28 @@ const patente = ref("");
 const resultado = ref(null);
 const noEncontrado = ref(false);
 const loading = ref(false);
+const buscando = ref(false);
 const errorMsg = ref("");
 
 async function consultar() {
   const cid = auth.condominioActualId;
-  if (!cid) return;
-  if (patente.value.length < 2) return;
+  if (!cid || patente.value.length < 2) return;
   loading.value = true;
+  buscando.value = true;
   resultado.value = null;
   noEncontrado.value = false;
   errorMsg.value = "";
-
   try {
-    const res = await api.get(`/condominios/${cid}/vehiculos`);
+    const res = await vehiculosService.listar(cid);
     const vehiculos = res.data || [];
-    const encontrado = vehiculos.find(
-      (v) => v.patente?.toUpperCase() === patente.value,
-    );
-    if (encontrado) {
-      resultado.value = encontrado;
-    } else {
-      noEncontrado.value = true;
-    }
+    const encontrado = vehiculos.find((v) => v.patente?.toUpperCase() === patente.value);
+    encontrado ? (resultado.value = encontrado) : (noEncontrado.value = true);
   } catch (e) {
     console.error("Error al buscar vehículo:", e);
     errorMsg.value = "Error al consultar. Intente nuevamente.";
   } finally {
     loading.value = false;
+    setTimeout(() => { buscando.value = false; }, 300);
   }
 }
 
@@ -120,3 +45,55 @@ function irARegistrarVisita() {
   router.push({ name: "RegistrarVisita", query: { patente: patente.value } });
 }
 </script>
+
+<template>
+  <div class="p-4 flex flex-col gap-4">
+    <h1 class="text-xl font-bold m-0">Control de Acceso</h1>
+
+    <Card>
+      <template #content>
+        <div class="flex flex-col gap-2">
+          <label class="text-sm text-surface-400">Ingrese la patente del vehículo</label>
+          <div class="flex gap-2">
+            <InputText v-model="patente" placeholder="Ej: AB1234" class="flex-1 uppercase" maxlength="10" @keyup.enter="consultar" @input="patente = patente.toUpperCase()" />
+            <Button label="Buscar" icon="pi pi-search" :loading="loading && !buscando" :disabled="patente.length < 2" @click="consultar" />
+          </div>
+        </div>
+      </template>
+    </Card>
+
+    <Message v-if="errorMsg" severity="error" :closable="false">{{ errorMsg }}</Message>
+
+    <Skeleton v-if="buscando && loading" width="100%" height="120px" />
+
+    <Card v-if="resultado">
+      <template #title>
+        <div class="flex items-center gap-2">
+          <i class="pi pi-car text-primary"></i>
+          <span>Vehículo encontrado</span>
+        </div>
+      </template>
+      <template #content>
+        <div class="flex flex-col gap-1 text-sm">
+          <p class="m-0"><span class="text-surface-400">Patente:</span> <strong>{{ resultado.patente }}</strong></p>
+          <p class="m-0"><span class="text-surface-400">Marca/Modelo:</span> {{ resultado.marca }} {{ resultado.modelo }} — {{ resultado.color }}</p>
+          <p v-if="resultado.estacionamientoNumero" class="m-0"><span class="text-surface-400">Estacionamiento:</span> Nº {{ resultado.estacionamientoNumero }}</p>
+        </div>
+        <Button label="Registrar como visita" icon="pi pi-plus" class="w-full mt-3" severity="secondary" @click="irARegistrarVisita" />
+      </template>
+    </Card>
+
+    <Card v-if="noEncontrado">
+      <template #title>
+        <div class="flex items-center gap-2">
+          <i class="pi pi-exclamation-triangle text-danger"></i>
+          <span>Patente no registrada</span>
+        </div>
+      </template>
+      <template #content>
+        <p class="text-sm text-surface-500 m-0 mb-3">El vehículo con patente {{ patente }} no está registrado en el sistema.</p>
+        <Button label="Registrar como visita" icon="pi pi-plus" class="w-full" severity="secondary" @click="irARegistrarVisita" />
+      </template>
+    </Card>
+  </div>
+</template>

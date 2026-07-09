@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { authService } from "@/services/authService";
+import api from "@/services/api";
 import { accessToken } from "@/utils/tokenStore";
 import { condominiosService } from "@/services/condominiosService";
 import {
@@ -98,6 +99,19 @@ export const useAuthStore = defineStore("auth", () => {
       const { data } = await authService.refresh();
       accessToken.value = data.accessToken;
       scheduleProactiveRefresh();
+      // Cargar perfil y condominios después de restaurar el token
+      const meRes = await api.get("/me");
+      user.value = {
+        personaId: meRes.data.personaId,
+        nombre: meRes.data.nombre,
+        email: meRes.data.email,
+        roles: meRes.data.roles,
+      };
+      localStorage.setItem("user", JSON.stringify(user.value));
+      await fetchCondominios();
+      if (condominios.value.length === 1) {
+        seleccionarCondominio(condominios.value[0].id);
+      }
       return true;
     } catch {
       clearSession();

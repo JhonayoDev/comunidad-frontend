@@ -1,53 +1,79 @@
-import { ref, computed } from "vue";
+import { computed } from "vue";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useAuthStore } from "@/stores/authStore";
 import { notificacionesService } from "../services/notificacionesService";
-import { useAuthStore } from "../stores/authStore";
 
 export function useNotificaciones() {
   const auth = useAuthStore();
-  const condominioId = auth.condominioActualId;
+  const queryClient = useQueryClient();
 
-  const notificaciones = ref([]);
-  const loading = ref(false);
-  const error = ref(null);
+  const queryKey = computed(() => ["notificaciones", auth.condominioActualId]);
+
+  const { data: notificaciones, isLoading: loading, error: queryError, refetch: cargar } = useQuery({
+    queryKey: queryKey,
+    queryFn: async () => {
+      const cid = auth.condominioActualId;
+      if (!cid) return [];
+      const response = await notificacionesService.getTodas(cid);
+      return response.data;
+    },
+    enabled: !!auth.condominioActualId,
+  });
 
   const hayNoLeidas = computed(() =>
-    notificaciones.value.some((n) => !n.leida),
+    (notificaciones.value || []).some((n) => !n.leida),
   );
 
-  async function cargar() {
-    if (!condominioId) return;
-    loading.value = true;
-    error.value = null;
-    try {
-      const response = await notificacionesService.getTodas(condominioId);
-      notificaciones.value = response.data;
-    } catch (e) {
-      console.error("Error al cargar notificaciones", e);
-      error.value = "Error al cargar notificaciones";
-    } finally {
-      loading.value = false;
-    }
+  const error = computed(() => {
+    if (queryError.value) return "Error al cargar notificaciones";
+    return null;
+  });
+
+  const marcarLeidaMutation = useMutation({
+    mutationFn: async (notif) => {
+      const cid = auth.condominioActualId;
+      if (!cid || notif.leida) return;
+      await notificacionesService.marcarLeida(cid, notif.id);
+      return notif;
+    },
+    onMutate: async (notif) => {
+      await queryClient.cancelQueries({ queryKey: queryKey.value });
+      queryClient.setQueryData(queryKey.value, (old) => {
+        if (!old) return old;
+        return old.map((n) =>
+          n.id === notif.id ? { ...n, leida: true, fechaLectura: new Date().toISOString() } : n,
+        );
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKey.value });
+    },
+  });
+
+  const marcarTodasMutation = useMutation({
+    mutationFn: async () => {
+      const cid = auth.condominioActualId;
+      if (!cid) return;
+      await notificacionesService.marcarTodasLeidas(cid);
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: queryKey.value });
+      queryClient.setQueryData(queryKey.value, (old) => {
+        if (!old) return old;
+        return old.map((n) => ({ ...n, leida: true, fechaLectura: new Date().toISOString() }));
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKey.value });
+    },
+  });
+
+  function marcarLeida(notif) {
+    marcarLeidaMutation.mutate(notif);
   }
 
-  async function marcarLeida(notif) {
-    if (notif.leida || !condominioId) return;
-    try {
-      await notificacionesService.marcarLeida(condominioId, notif.id);
-      notif.leida = true;
-      notif.fechaLectura = new Date().toISOString();
-    } catch (e) {
-      console.error("Error al marcar notificación como leída", e);
-    }
-  }
-
-  async function marcarTodas() {
-    if (!condominioId) return;
-    try {
-      await notificacionesService.marcarTodasLeidas(condominioId);
-      notificaciones.value.forEach((n) => (n.leida = true));
-    } catch (e) {
-      console.error("Error al marcar todas como leídas", e);
-    }
+  function marcarTodas() {
+    marcarTodasMutation.mutate();
   }
 
   return {

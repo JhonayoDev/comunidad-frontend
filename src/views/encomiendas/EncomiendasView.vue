@@ -1,198 +1,22 @@
-<template>
-  <div class="p-4 flex flex-col gap-4">
-    <div class="flex items-center justify-between">
-      <h2 class="text-lg font-bold">Encomiendas</h2>
-      <button
-        class="btn btn-primary btn-sm"
-        @click="mostrarFormulario = !mostrarFormulario"
-      >
-        + Registrar
-      </button>
-    </div>
-
-    <!-- Formulario registro -->
-    <div v-if="mostrarFormulario" class="card bg-base-100 shadow">
-      <div class="card-body p-4 flex flex-col gap-3">
-        <h3 class="font-bold">Nueva encomienda</h3>
-
-        <div class="form-control">
-          <label class="label"
-            ><span class="label-text font-semibold">Casa destino *</span></label
-          >
-          <div v-if="loadingUnidades" class="flex justify-center py-2">
-            <span class="loading loading-spinner loading-sm"></span>
-          </div>
-          <select
-            v-else
-            v-model="form.unidadId"
-            class="select select-bordered"
-            :class="{ 'select-error': errores.unidadId }"
-          >
-            <option value="">Seleccione una casa</option>
-            <option v-for="u in unidades" :key="u.id" :value="u.id">
-              Casa {{ u.numero }} — {{ u.sectorNombre }}
-            </option>
-          </select>
-          <p v-if="errores.unidadId" class="text-error text-xs mt-1">
-            {{ errores.unidadId }}
-          </p>
-        </div>
-
-        <div class="form-control">
-          <label class="label"
-            ><span class="label-text font-semibold">Tipo *</span></label
-          >
-          <select
-            v-model="form.tipo"
-            class="select select-bordered"
-            :class="{ 'select-error': errores.tipo }"
-          >
-            <option value="">Seleccione tipo</option>
-            <option value="CARTA">Carta</option>
-            <option value="ENCOMIENDA">Encomienda / Paquete</option>
-          </select>
-          <p v-if="errores.tipo" class="text-error text-xs mt-1">
-            {{ errores.tipo }}
-          </p>
-        </div>
-
-        <div class="form-control">
-          <label class="label"
-            ><span class="label-text font-semibold"
-              >Nombre destinatario *</span
-            ></label
-          >
-          <input
-            v-model="form.nombreDestinatario"
-            type="text"
-            placeholder="Nombre del destinatario"
-            class="input input-bordered"
-            :class="{ 'input-error': errores.nombreDestinatario }"
-          />
-          <p
-            v-if="errores.nombreDestinatario"
-            class="text-error text-xs mt-1"
-          >
-            {{ errores.nombreDestinatario }}
-          </p>
-        </div>
-
-        <p v-if="errorGeneral" class="text-error text-sm">{{ errorGeneral }}</p>
-        <p v-if="mensajeExito" class="text-success text-sm">
-          {{ mensajeExito }}
-        </p>
-
-        <div class="flex gap-2">
-          <button class="btn btn-ghost flex-1" @click="cancelar">
-            Cancelar
-          </button>
-          <button
-            class="btn btn-primary flex-1"
-            :disabled="loadingForm"
-            @click="registrar"
-          >
-            <span
-              v-if="loadingForm"
-              class="loading loading-spinner loading-sm"
-            ></span>
-            <span v-else>Registrar</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filtros -->
-    <div class="flex gap-2">
-      <button
-        class="btn btn-sm"
-        :class="filtroEstado === 'PENDIENTE' ? 'btn-primary' : 'btn-ghost'"
-        @click="cambiarFiltro('PENDIENTE')"
-      >
-        Pendientes
-      </button>
-      <button
-        class="btn btn-sm"
-        :class="filtroEstado === 'ENTREGADA' ? 'btn-primary' : 'btn-ghost'"
-        @click="cambiarFiltro('ENTREGADA')"
-      >
-        Entregadas
-      </button>
-      <button
-        class="btn btn-sm"
-        :class="filtroEstado === '' ? 'btn-primary' : 'btn-ghost'"
-        @click="cambiarFiltro('')"
-      >
-        Todas
-      </button>
-    </div>
-
-    <div v-if="error" class="alert alert-warning py-2">
-      <span class="text-sm">⚠️ {{ error }}</span>
-    </div>
-
-    <div v-if="loading" class="flex justify-center py-8">
-      <span class="loading loading-spinner loading-md text-primary"></span>
-    </div>
-
-    <div v-else-if="encomiendas.length === 0" class="text-center py-12">
-      <p class="text-4xl mb-2">📦</p>
-      <p class="text-base-content/60 text-sm">No hay encomiendas</p>
-    </div>
-
-    <div v-else class="flex flex-col gap-2">
-      <div
-        v-for="e in encomiendas"
-        :key="e.id"
-        class="card bg-base-100 shadow-sm"
-      >
-        <div class="card-body p-4">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex-1 min-w-0">
-              <p class="font-bold">Casa {{ e.unidadNumero }}</p>
-              <p class="text-sm">
-                <span class="badge badge-xs badge-ghost">{{ e.tipo }}</span>
-                {{ e.nombreDestinatario }}
-              </p>
-              <p class="text-xs text-base-content/60">
-                {{ e.creadoPorNombre }}
-              </p>
-              <p class="text-xs text-base-content/40">
-                {{ formatFecha(e.creadoEn) }}
-              </p>
-            </div>
-            <div class="flex flex-col items-end gap-2">
-              <span
-                class="badge badge-sm"
-                :class="
-                  e.estado === 'PENDIENTE' ? 'badge-warning' : 'badge-success'
-                "
-              >
-                {{ e.estado === "PENDIENTE" ? "Pendiente" : "Entregada" }}
-              </span>
-              <button
-                v-if="e.estado === 'PENDIENTE'"
-                class="btn btn-outline btn-xs"
-                @click="handleEntregar(e)"
-              >
-                Entregar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from "vue";
-import { useAuthStore } from "../../stores/authStore";
-import { useEncomiendas } from "../../composables/useEncomiendas";
-import { unidadesService } from "../../services/unidadesService";
-import { encomiendasService } from "../../services/encomiendasService";
+import { useAuthStore } from "@/stores/authStore";
+import { useEncomiendas } from "@/composables/useEncomiendas";
+import { unidadesService } from "@/services/unidadesService";
+import { encomiendasService } from "@/services/encomiendasService";
+
+import Card from "primevue/card";
+import Button from "primevue/button";
+import Dialog from "primevue/dialog";
+import Select from "primevue/select";
+import InputText from "primevue/inputtext";
+import Tag from "primevue/tag";
+import Message from "primevue/message";
+import Skeleton from "primevue/skeleton";
+import Paginator from "primevue/paginator";
 
 const auth = useAuthStore();
-const { encomiendas, loading, error, cargar, entregar } = useEncomiendas();
+const { encomiendas, loading, error, cargar, entregar, pag } = useEncomiendas();
 
 const mostrarFormulario = ref(false);
 const loadingForm = ref(false);
@@ -203,22 +27,20 @@ const errores = ref({});
 const unidades = ref([]);
 const filtroEstado = ref("PENDIENTE");
 
-const form = ref({
-  unidadId: "",
-  tipo: "",
-  nombreDestinatario: "",
-});
+const form = ref({ unidadId: null, tipo: null, nombreDestinatario: "" });
+
+const tiposEncomienda = [
+  { label: "Carta", value: "CARTA" },
+  { label: "Encomienda / Paquete", value: "ENCOMIENDA" },
+];
 
 async function cargarUnidades() {
   const cid = auth.condominioActualId;
-  if (!cid) {
-    loadingUnidades.value = false;
-    return;
-  }
+  if (!cid) return;
   loadingUnidades.value = true;
   try {
-    const response = await unidadesService.getUnidades(cid);
-    unidades.value = response.data.filter((u) => u.tipo === "CASA");
+    const { data } = await unidadesService.getUnidades(cid);
+    unidades.value = data.filter((u) => u.tipo === "CASA");
   } catch (e) {
     console.error("Error al cargar unidades:", e);
   } finally {
@@ -228,6 +50,7 @@ async function cargarUnidades() {
 
 function cambiarFiltro(estado) {
   filtroEstado.value = estado;
+  pag.reiniciar();
   const params = estado ? { estado } : {};
   cargar(params);
 }
@@ -244,7 +67,6 @@ async function registrar() {
   errorGeneral.value = "";
   mensajeExito.value = "";
   if (!validar()) return;
-
   const cid = auth.condominioActualId;
   if (!cid) return;
   loadingForm.value = true;
@@ -275,22 +97,103 @@ async function handleEntregar(e) {
 
 function cancelar() {
   mostrarFormulario.value = false;
-  form.value = { unidadId: "", tipo: "", nombreDestinatario: "" };
+  form.value = { unidadId: null, tipo: null, nombreDestinatario: "" };
   errores.value = {};
 }
+
+const filtros = [
+  { label: "Pendientes", value: "PENDIENTE" },
+  { label: "Entregadas", value: "ENTREGADA" },
+  { label: "Todas", value: "" },
+];
 
 function formatFecha(fecha) {
   if (!fecha) return "";
   return new Date(fecha).toLocaleDateString("es-CL", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
+    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
   });
 }
 
-onMounted(() => {
-  cargarUnidades();
-  cargar({ estado: "PENDIENTE" });
-});
+onMounted(() => { cargarUnidades(); cargar({ estado: "PENDIENTE" }); });
 </script>
+
+<template>
+  <div class="p-4 flex flex-col gap-4">
+    <div class="flex items-center justify-between">
+      <h1 class="text-xl font-bold m-0">Encomiendas</h1>
+      <Button label="Registrar" icon="pi pi-plus" size="small" @click="mostrarFormulario = !mostrarFormulario" />
+    </div>
+
+    <Dialog v-model:visible="mostrarFormulario" header="Nueva encomienda" modal :style="{ width: '95%', maxWidth: '400px' }">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold">Casa destino *</label>
+          <Skeleton v-if="loadingUnidades" width="100%" height="2.5rem" />
+          <Select v-else v-model="form.unidadId" :options="unidades" optionLabel="label" optionValue="id" placeholder="Seleccione una casa" :class="{ 'p-invalid': errores.unidadId }" class="w-full">
+            <template #option="slotProps">
+              <span>Casa {{ slotProps.option.numero }} — {{ slotProps.option.sectorNombre }}</span>
+            </template>
+          </Select>
+          <small v-if="errores.unidadId" class="text-red-500">{{ errores.unidadId }}</small>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold">Tipo *</label>
+          <Select v-model="form.tipo" :options="tiposEncomienda" optionLabel="label" optionValue="value" placeholder="Seleccione tipo" :class="{ 'p-invalid': errores.tipo }" class="w-full" />
+          <small v-if="errores.tipo" class="text-red-500">{{ errores.tipo }}</small>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold">Nombre destinatario *</label>
+          <InputText v-model="form.nombreDestinatario" placeholder="Nombre del destinatario" :class="{ 'p-invalid': errores.nombreDestinatario }" />
+          <small v-if="errores.nombreDestinatario" class="text-red-500">{{ errores.nombreDestinatario }}</small>
+        </div>
+        <Message v-if="errorGeneral" severity="error" :closable="false">{{ errorGeneral }}</Message>
+        <Message v-if="mensajeExito" severity="success" :closable="false">{{ mensajeExito }}</Message>
+      </div>
+      <template #footer>
+        <Button label="Cancelar" severity="secondary" variant="text" @click="cancelar" />
+        <Button label="Registrar" :loading="loadingForm" @click="registrar" />
+      </template>
+    </Dialog>
+
+    <div class="flex gap-2">
+      <Button v-for="f in filtros" :key="f.value" :label="f.label" size="small" :severity="filtroEstado === f.value ? 'primary' : 'secondary'" variant="outlined" @click="cambiarFiltro(f.value)" />
+    </div>
+
+    <Message v-if="error" severity="warn" :closable="false">{{ error }}</Message>
+
+    <Skeleton v-if="loading" width="100%" height="300px" />
+
+    <div v-else-if="!encomiendas.length" class="text-center text-surface-400 py-8">
+      <i class="pi pi-box text-4xl block mb-2"></i>
+      <span>No hay encomiendas</span>
+    </div>
+
+    <div v-else class="flex flex-col gap-2">
+      <Card v-for="e in encomiendas" :key="e.id">
+        <template #content>
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <p class="font-bold m-0">Casa {{ e.unidadNumero }}</p>
+              <p class="text-sm m-0">
+                <Tag :value="e.tipo" size="small" class="mr-1" />
+                {{ e.nombreDestinatario }}
+              </p>
+              <p class="text-xs text-surface-400 m-0">{{ e.creadoPorNombre }}</p>
+              <p class="text-xs text-surface-300 m-0">{{ formatFecha(e.creadoEn) }}</p>
+            </div>
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              <Tag :value="e.estado === 'PENDIENTE' ? 'Pendiente' : 'Entregada'" :severity="e.estado === 'PENDIENTE' ? 'warn' : 'success'" size="small" />
+              <Button v-if="e.estado === 'PENDIENTE'" label="Entregar" size="small" severity="secondary" variant="outlined" @click="handleEntregar(e)" />
+            </div>
+          </div>
+        </template>
+      </Card>
+      <Paginator
+        :rows="pag.tamano.value"
+        :totalRecords="pag.totalElementos.value"
+        :first="pag.pagina.value * pag.tamano.value"
+        @page="pag.alCambiarPagina($event); cargar({ estado: filtroEstado.value || undefined })"
+      />
+    </div>
+  </div>
+</template>

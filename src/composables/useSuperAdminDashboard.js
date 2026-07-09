@@ -1,39 +1,39 @@
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
+import { useQuery } from "@tanstack/vue-query";
 import { condominiosService } from "@/services/condominiosService";
 
 export function useSuperAdminDashboard() {
-  const condominios = ref([]);
-  const loading = ref(false);
-  const error = ref(null);
   const busqueda = ref("");
 
-  async function cargar() {
-    loading.value = true;
-    error.value = null;
-    try {
+  const {
+    data: condominios,
+    isLoading: loading,
+    error: queryError,
+    refetch: cargar,
+  } = useQuery({
+    queryKey: ["superAdminCondominios"],
+    queryFn: async () => {
       const { data } = await condominiosService.getCondominios();
-      condominios.value = data;
-    } catch {
-      error.value = "No se pudo cargar la lista de condominios";
-    } finally {
-      loading.value = false;
-    }
-  }
+      return data;
+    },
+  });
 
-  const totalCondominios = computed(() => condominios.value.length);
+  const totalCondominios = computed(() => (condominios.value || []).length);
 
   const condominiosFiltrados = computed(() => {
     const termino = busqueda.value.trim().toLowerCase();
-    if (!termino) return condominios.value;
-    return condominios.value.filter((c) =>
+    if (!termino) return condominios.value || [];
+    return (condominios.value || []).filter((c) =>
       c.nombre.toLowerCase().includes(termino),
     );
   });
 
-  onMounted(cargar);
+  const error = computed(() => {
+    if (queryError.value) return "No se pudo cargar la lista de condominios";
+    return null;
+  });
 
   return {
-    condominios,
     condominiosFiltrados,
     totalCondominios,
     busqueda,

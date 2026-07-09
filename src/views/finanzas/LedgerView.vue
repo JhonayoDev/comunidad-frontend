@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { finanzasService } from "@/services/finanzasService";
+import { usePaginacion } from "@/composables/usePaginacion";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -10,12 +11,14 @@ import DatePicker from "primevue/datepicker";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
+import Paginator from "primevue/paginator";
 
 const auth = useAuthStore();
 
 const loading = ref(true);
 const error = ref(null);
 const movimientos = ref([]);
+const pagLedger = usePaginacion();
 const cuentas = ref([]);
 
 const filtroCuenta = ref(null);
@@ -29,10 +32,11 @@ async function cargar() {
   error.value = null;
   try {
     const [movRes, cuentasRes] = await Promise.all([
-      finanzasService.listarLedger(cid),
+      finanzasService.listarLedger(cid, pagLedger.paramsPaginacion.value),
       finanzasService.listarCuentas(cid),
     ]);
-    movimientos.value = movRes.data;
+    pagLedger.actualizar(movRes.data);
+    movimientos.value = pagLedger.contenido.value;
     cuentas.value = cuentasRes.data;
   } catch (e) {
     console.error("Error al cargar ledger", e);
@@ -45,14 +49,16 @@ async function cargar() {
 async function buscar() {
   const cid = auth.condominioActualId;
   if (!cid) return;
+  pagLedger.reiniciar();
   loading.value = true;
   try {
-    const params = {};
+    const params = { ...pagLedger.paramsPaginacion.value };
     if (filtroCuenta.value) params.cuentaId = filtroCuenta.value;
     if (filtroDesde.value) params.desde = formatearFecha(filtroDesde.value);
     if (filtroHasta.value) params.hasta = formatearFecha(filtroHasta.value);
     const { data } = await finanzasService.listarLedger(cid, params);
-    movimientos.value = data;
+    pagLedger.actualizar(data);
+    movimientos.value = pagLedger.contenido.value;
   } catch (e) {
     console.error("Error al buscar ledger", e);
   } finally {
@@ -145,6 +151,12 @@ onMounted(cargar);
             </span>
           </div>
         </div>
+        <Paginator
+          :rows="pagLedger.tamano.value"
+          :totalRecords="pagLedger.totalElementos.value"
+          :first="pagLedger.pagina.value * pagLedger.tamano.value"
+          @page="pagLedger.alCambiarPagina($event); cargar()"
+        />
       </div>
     </template>
   </div>

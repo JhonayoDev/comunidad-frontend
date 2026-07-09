@@ -1,55 +1,83 @@
 import { ref } from "vue";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { encomiendasService } from "../services/encomiendasService";
-
-const CACHE_KEY = "cache_encomiendas";
+import { usePaginacion } from "./usePaginacion";
 
 export function useEncomiendas() {
   const auth = useAuthStore();
-  const encomiendas = ref([]);
-  const loading = ref(false);
+  const queryClient = useQueryClient();
+  const pag = usePaginacion();
   const error = ref(null);
+  const filtrosActuales = ref({});
+
+  const encomiendasQuery = useQuery({
+    queryKey: ["encomiendas", auth.condominioActualId, pag.paramsPaginacion, filtrosActuales],
+    queryFn: async () => {
+      const cid = auth.condominioActualId;
+      if (!cid) return;
+      const response = await encomiendasService.getEncomiendas(cid, {
+        ...filtrosActuales.value,
+        ...pag.paramsPaginacion.value,
+      });
+      pag.actualizar(response.data);
+      return response.data;
+    },
+    enabled: !!auth.condominioActualId,
+  });
 
   async function cargar(filtros = {}) {
-    const cid = auth.condominioActualId;
-    if (!cid) return;
-    loading.value = true;
-    error.value = null;
-    try {
-      const response = await encomiendasService.getEncomiendas(cid, filtros);
-      encomiendas.value = response.data;
-      if (Object.keys(filtros).length === 0) {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(response.data));
-      }
-    } catch (e) {
-      console.error("Error al cargar encomiendas:", e);
-      const cache = localStorage.getItem(CACHE_KEY);
-      if (cache) {
-        encomiendas.value = JSON.parse(cache);
-        error.value = "Sin conexión — mostrando datos guardados";
-      } else {
-        error.value = "Sin conexión y no hay datos guardados";
-      }
-    } finally {
-      loading.value = false;
-    }
+    filtrosActuales.value = filtros;
+    await encomiendasQuery.refetch();
   }
 
-  async function entregar(encomienda, nombreRetira, rutRetira) {
-    const cid = auth.condominioActualId;
-    if (!cid) return "Error: selecciona un condominio";
-    try {
-      await encomiendasService.entregar(cid, encomienda.id, {
-        nombreRetira,
-        rutRetira,
+  const entregarMutation = useMutation({
+    mutationFn: async ({ encomienda, nombreRetira, rutRetira }) => {
+      const cid = auth.condominioActualId;
+      if (!cid) throw new Error("selecciona un condominio");
+      await encomiendasService.entregar(cid, encomienda.id, { nombreRetira, rutRetira });
+      return encomienda;
+    },
+    onMutate: async ({ encomienda }) => {
+      await queryClient.cancelQueries({ queryKey: ["encomiendas", auth.condominioActualId] });
+      const previousQueries = queryClient.getQueriesData({ queryKey: ["encomiendas", auth.condominioActualId] });
+      queryClient.setQueriesData({ queryKey: ["encomiendas", auth.condominioActualId] }, (old) => {
+        if (!old?.content) return old;
+        return { ...old, content: old.content.map((e) => e.id === encomienda.id ? { ...e, estado: "ENTREGADA" } : e) };
       });
-      encomienda.estado = "ENTREGADA";
+      return { previousQueries };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousQueries) {
+        for (const [key, data] of context.previousQueries) {
+          queryClient.setQueryData(key, data);
+        }
+      }
+      console.error("Error al entregar encomienda:", err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["encomiendas", auth.condominioActualId] });
+    },
+  });
+
+  async function entregar(encomienda, nombreRetira, rutRetira) {
+    try {
+      await entregarMutation.mutateAsync({ encomienda, nombreRetira, rutRetira });
       return true;
     } catch (e) {
-      console.error("Error al entregar encomienda:", e);
       return e.response?.data?.message || "Error al registrar entrega";
     }
   }
 
-  return { encomiendas, loading, error, cargar, entregar };
+  const loading = encomiendasQuery.isLoading;
+  const encomiendas = pag.contenido;
+
+  return {
+    encomiendas,
+    loading,
+    error,
+    cargar,
+    entregar,
+    pag,
+  };
 }

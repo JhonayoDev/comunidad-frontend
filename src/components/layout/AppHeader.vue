@@ -30,6 +30,13 @@
 
     <div class="flex align-items-center gap-1 ml-auto">
       <Button
+        :icon="esOscuro ? 'pi pi-moon' : 'pi pi-sun'"
+        severity="secondary"
+        text
+        rounded
+        @click="toggleTema"
+      />
+      <Button
         icon="pi pi-bell"
         severity="secondary"
         text
@@ -95,6 +102,21 @@ const { notifCount } = useNotificationBadge();
 const { selectedCondominioId, onCondominioChange } = useCondominioSelector();
 
 const drawerVisible = ref(false);
+const esOscuro = ref(false);
+
+function toggleTema() {
+  esOscuro.value = !esOscuro.value;
+  document.documentElement.classList.toggle("p-dark", esOscuro.value);
+  localStorage.setItem("theme", esOscuro.value ? "dark" : "light");
+}
+
+function initTema() {
+  const saved = localStorage.getItem("theme");
+  esOscuro.value = saved === "dark";
+  document.documentElement.classList.toggle("p-dark", esOscuro.value);
+}
+
+initTema();
 
 const showContextPills = computed(() => {
   return (

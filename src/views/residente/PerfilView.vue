@@ -13,6 +13,7 @@ import Password from "primevue/password";
 import Message from "primevue/message";
 import Divider from "primevue/divider";
 import Skeleton from "primevue/skeleton";
+import InputSwitch from "primevue/inputswitch";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -22,6 +23,61 @@ const loading = ref(true);
 const error = ref(null);
 
 const seccionActiva = ref(null);
+
+const preferencias = ref([]);
+const loadingPref = ref(false);
+const guardandoPref = ref({});
+
+const tipoLabels = {
+  VISITA_PREAUTORIZADA: "Visita preautorizada",
+  VISITA_INGRESADA: "Visita ingresada",
+  VISITA_RECHAZADA: "Visita rechazada",
+  ENCOMIENDA_RECIBIDA: "Encomienda recibida",
+  ENCOMIENDA_ENTREGADA: "Encomienda entregada",
+  RECLAMO_CREADO: "Reclamo creado",
+  RECLAMO_RESPONDIDO: "Reclamo respondido",
+  RECLAMO_CERRADO: "Reclamo cerrado",
+  RESERVA_CREADA: "Reserva creada",
+  RESERVA_APROBADA: "Reserva aprobada",
+  RESERVA_RECHAZADA: "Reserva rechazada",
+  GASTO_COMUN_GENERADO: "Gasto común generado",
+  PAGO_REGISTRADO: "Pago registrado",
+  DEUDA_VENCIDA: "Deuda vencida",
+  ANUNCIO_GENERAL_PUBLICADO: "Anuncio publicado",
+  DOCUMENTO_PUBLICADO: "Documento publicado",
+};
+
+async function cargarPreferencias() {
+  loadingPref.value = true;
+  try {
+    const { data } = await perfilService.listarPreferenciasNotificacion();
+    preferencias.value = data;
+  } catch (e) {
+    console.error("Error al cargar preferencias", e);
+  } finally {
+    loadingPref.value = false;
+  }
+}
+
+async function togglePref(tipo, canal) {
+  guardandoPref.value[`${tipo}-${canal}`] = true;
+  try {
+    const pref = preferencias.value.find((p) => p.tipo === tipo);
+    if (!pref) return;
+    await perfilService.actualizarPreferenciaNotificacion(tipo, {
+      enApp: pref.enApp,
+      email: pref.email,
+      push: pref.push,
+    });
+  } catch (e) {
+    console.error("Error al actualizar preferencia", e);
+    // revert local state
+    const pref = preferencias.value.find((p) => p.tipo === tipo);
+    if (pref) pref[canal] = !pref[canal];
+  } finally {
+    guardandoPref.value[`${tipo}-${canal}`] = false;
+  }
+}
 
 const iniciales = computed(() => {
   const nombre = me.value?.nombre || auth.user?.nombre || "U";
@@ -44,6 +100,7 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+  cargarPreferencias();
 });
 
 // Mis datos
@@ -329,6 +386,46 @@ async function solicitarEmail() {
               :loading="loadingEmail"
               @click="solicitarEmail"
             />
+          </div>
+        </template>
+      </Card>
+
+      <!-- Preferencias de notificación -->
+      <Card>
+        <template #title>
+          <div
+            class="flex items-center justify-between cursor-pointer"
+            @click="seccionActiva = seccionActiva === 'notificaciones' ? null : 'notificaciones'"
+          >
+            <div class="flex items-center gap-2">
+              <i class="pi pi-bell"></i>
+              <span>Preferencias de notificación</span>
+            </div>
+            <i
+              :class="seccionActiva === 'notificaciones' ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+              class="text-surface-400"
+            ></i>
+          </div>
+        </template>
+        <template v-if="seccionActiva === 'notificaciones'" #content>
+          <div v-if="loadingPref" class="flex flex-col gap-2 py-2">
+            <Skeleton v-for="i in 5" :key="i" width="100%" height="2.5rem" />
+          </div>
+          <div v-else class="flex flex-col gap-2 pt-2">
+            <div v-for="pref in preferencias" :key="pref.tipo" class="flex items-center justify-between py-1">
+              <span class="text-sm">{{ tipoLabels[pref.tipo] || pref.tipo }}</span>
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1 text-xs text-surface-500">
+                  <span>App</span>
+                  <InputSwitch v-model="pref.enApp" :disabled="guardandoPref[`${pref.tipo}-enApp`]" @change="togglePref(pref.tipo, 'enApp')" />
+                </div>
+                <div class="flex items-center gap-1 text-xs text-surface-500">
+                  <span>Email</span>
+                  <InputSwitch v-model="pref.email" :disabled="guardandoPref[`${pref.tipo}-email`]" @change="togglePref(pref.tipo, 'email')" />
+                </div>
+              </div>
+            </div>
+            <p v-if="!preferencias.length" class="text-sm text-surface-400 text-center py-2">No hay preferencias disponibles</p>
           </div>
         </template>
       </Card>

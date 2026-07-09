@@ -99,15 +99,13 @@ async function agregarSeguimiento() {
       nuevoEstado: formSeguimiento.value.nuevoEstado || null,
     });
     showSeguimiento.value = false;
-    await verDetalle(casoSeguimiento.value);
+    await verDetalle(casoActual.value);
   } catch (e) {
     console.error("Error al agregar seguimiento", e);
   } finally {
     enviando.value = false;
   }
 }
-
-let casoSeguimiento = null;
 
 async function abrirCerrar(c) {
   casoActual.value = c;

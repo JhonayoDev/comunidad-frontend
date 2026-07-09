@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { finanzasService } from "@/services/finanzasService";
 import { useUnidades } from "@/composables/useUnidades";
+import { usePaginacion } from "@/composables/usePaginacion";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -14,6 +15,7 @@ import Select from "primevue/select";
 import DatePicker from "primevue/datepicker";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
+import Paginator from "primevue/paginator";
 
 const auth = useAuthStore();
 const { unidades, cargarUnidades } = useUnidades();
@@ -21,6 +23,7 @@ const { unidades, cargarUnidades } = useUnidades();
 const loading = ref(true);
 const error = ref(null);
 const pagos = ref([]);
+const pagPagos = usePaginacion();
 const cuentas = ref([]);
 
 const showCrear = ref(false);
@@ -47,7 +50,7 @@ async function cargar() {
   loading.value = true;
   error.value = null;
   try {
-    const params = {};
+    const params = { ...pagPagos.paramsPaginacion.value };
     if (filtroUnidad.value) params.unidadId = filtroUnidad.value;
     if (filtroDesde.value) params.desde = formatearFecha(filtroDesde.value);
     if (filtroHasta.value) params.hasta = formatearFecha(filtroHasta.value);
@@ -55,7 +58,8 @@ async function cargar() {
       finanzasService.listarPagos(cid, params),
       finanzasService.listarCuentas(cid),
     ]);
-    pagos.value = pagosRes.data;
+    pagPagos.actualizar(pagosRes.data);
+    pagos.value = pagPagos.contenido.value;
     cuentas.value = cuentasRes.data;
   } catch (e) {
     console.error("Error al cargar pagos", e);
@@ -106,6 +110,7 @@ async function crearPago() {
 }
 
 function buscar() {
+  pagPagos.reiniciar();
   cargar();
 }
 
@@ -179,6 +184,12 @@ onMounted(() => {
             <span class="font-bold text-lg text-green-600">{{ p.monto?.toLocaleString("es-CL") }}</span>
           </div>
         </div>
+        <Paginator
+          :rows="pagPagos.tamano.value"
+          :totalRecords="pagPagos.totalElementos.value"
+          :first="pagPagos.pagina.value * pagPagos.tamano.value"
+          @page="pagPagos.alCambiarPagina($event); cargar()"
+        />
       </div>
     </template>
 

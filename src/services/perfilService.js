@@ -32,4 +32,12 @@ export const perfilService = {
   getMisDeudas(condominioId) {
     return api.get(`/condominios/${condominioId}/mis-deudas`);
   },
+
+  listarPreferenciasNotificacion() {
+    return api.get("/me/notificaciones/preferencias");
+  },
+
+  actualizarPreferenciaNotificacion(tipo, data) {
+    return api.put(`/me/notificaciones/preferencias/${tipo}`, data);
+  },
 };
