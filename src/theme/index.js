@@ -1,1 +1,1 @@
-export { default as ComunidadTheme } from "./comunidad-theme";
+export { default as ComunidadTheme } from "./prime-theme";

@@ -1,578 +1,737 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Design System - Sistema de Gestión de Condominios (WCAG AA Compliant)</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Design System - Sistema de Gestión de Condominios (WCAG AA Compliant)
+    </title>
     <style>
-        :root {
-            /* ==========================================================================
+      :root {
+        /* ==========================================================================
                TOKENS MODO CLARO (WCAG AA COMPLIANT)
                ========================================================================== */
-            --light-bg-base: #F4F4F7;
-            --light-bg-surface: #FFFFFF;
-            --light-text-primary: #1A1A1A;     /* Contraste 16.8:1 (Sobresaliente) */
-            --light-text-secondary: #5A5C61;   /* Contraste 5.9:1 (Cumple AA) */
-            --light-primary: #004D99;          /* Contraste 7.8:1 (Cumple AAA) */
-            --light-primary-hover: #003366;
-            --light-border: #E2E2E6;
-            
-            /* Semánticos Claro */
-            --light-success: #2E7D32;          /* Verde Seguro (> 4.5:1) */
-            --light-danger: #C62828;           /* Rojo Seguro (> 4.5:1) */
-            --light-warning: #A65100;          /* Ámbar Profundo Ajustado para W3C (> 4.5:1) */
-            --light-info: #004D99;
+        --light-bg-base: #e6e6e6;
+        --light-bg-surface: #d6d6d6;
+        --light-text-primary: #1a1a1a; /* Contraste 16.8:1 (Sobresaliente) */
+        --light-text-secondary: #5a5c61; /* Contraste 5.9:1 (Cumple AA) */
+        --light-primary: #003366; /* Contraste 7.8:1 (Cumple AAA) */
+        --light-primary-hover: #00488f --light-border: #bfbfbf;
 
-            /* ==========================================================================
+        /* Semánticos Claro */
+        --light-success: #2e7d32; /* Verde Seguro (> 4.5:1) */
+        --light-danger: #c62828; /* Rojo Seguro (> 4.5:1) */
+        --light-warning: ##f8c962; /* Ámbar Profundo Ajustado para W3C (> 4.5:1) */
+        --light-info: #004d99;
+
+        /* ==========================================================================
                TOKENS MODO OSCURO (WCAG AA COMPLIANT)
                ========================================================================== */
-            --dark-bg-base: #121212;
-            --dark-bg-surface: #222226;        /* Ajustado de #2A2A2E para contraste tipográfico */
-            --dark-text-primary: #FFFFFF;      /* Contraste 15.6:1 (Sobresaliente) */
-            --dark-text-secondary: #B3B3B7;    /* Contraste 5.1:1 (Cumple AA en texto chico) */
-            --dark-primary: #5C9EFF;           /* Azul optimizado para lectura en fondo oscuro (4.6:1) */
-            --dark-primary-hover: #80B3FF;
-            --dark-border: #323238;
-
-            /* Semánticos Oscuro */
-            --dark-success: #81C784;           /* Verde Pastel Accesible (> 4.5:1) */
-            --dark-danger: #FF8A65;            /* Coral/Rojo Accesible (> 4.5:1) */
-            --dark-warning: #FFB74D;           /* Naranja Pastel Accesible (> 4.5:1) */
-            --dark-info: #5C9EFF;
-
-            /* Fuentes */
-            --font-main: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            font-family: var(--font-main);
-            background-color: #f8fafc;
-            color: #1e293b;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100vh;
-            background-color: #0f172a;
-            color: #fff;
-            padding: 24px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-
-        .sidebar h1 {
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-            color: #38bdf8;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .sidebar .subtitle {
-            font-size: 0.75rem;
-            color: #64748b;
-            display: block;
-            margin-bottom: 30px;
-        }
-
-        .sidebar a {
-            display: block;
-            color: #94a3b8;
-            text-decoration: none;
-            padding: 10px 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .sidebar a:hover, .sidebar a.active {
-            background-color: #1e293b;
-            color: #fff;
-        }
-
-        .main-content {
-            margin-left: 280px;
-            padding: 40px;
-            max-width: 1200px;
-        }
-
-        header {
-            margin-bottom: 40px;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 20px;
-        }
-
-        header h2 {
-            font-size: 2rem;
-            margin: 0 0 10px 0;
-            color: #0f172a;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            color: #0f172a;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            border-left: 4px solid #5C9EFF;
-            padding-left: 12px;
-            font-weight: 700;
-        }
-
-        p {
-            color: #475569;
-            font-size: 1rem;
-        }
-
-        /* Grid de Visualización de Temas */
-        .theme-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        @media (max-width: 900px) {
-            .theme-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Contenedor del Tema */
-        .theme-container {
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            position: relative;
-            border: 1px solid #e2e8f0;
-        }
-
-        .theme-container.light {
-            background-color: var(--light-bg-base);
-            color: var(--light-text-primary);
-        }
-
-        .theme-container.dark {
-            background-color: var(--dark-bg-base);
-            color: var(--dark-text-primary);
-            border-color: #222226;
-        }
-
-        .theme-label {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background: rgba(0,0,0,0.05);
-        }
-        
-        .theme-container.dark .theme-label {
-            background: rgba(255,255,255,0.1);
-            color: #FFFFFF;
-        }
-
-        /* Muestras de Color */
-        .swatch-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px;
-            margin-top: 15px;
-            margin-bottom: 25px;
-        }
-
-        .swatch {
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
-        }
-
-        .swatch-subtitle {
-            display: block;
-            font-size: 0.65rem;
-            opacity: 0.8;
-            margin-top: 2px;
-            font-family: monospace;
-        }
-
-        /* Componentes de Prueba */
-        .sample-card {
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .light .sample-card {
-            background-color: var(--light-bg-surface);
-            border: 1px solid var(--light-border);
-        }
-        .dark .sample-card {
-            background-color: var(--dark-bg-surface);
-            border: 1px solid var(--dark-border);
-        }
-
-        /* Tablas */
-        .sample-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.85rem;
-        }
-        .sample-table th, .sample-table td {
-            padding: 10px 12px;
-            text-align: left;
-        }
-        .light .sample-table th {
-            background-color: rgba(0,0,0,0.03);
-            border-bottom: 2px solid var(--light-border);
-            color: var(--light-text-primary);
-            font-weight: 700;
-        }
-        .light .sample-table td {
-            border-bottom: 1px solid var(--light-border);
-            color: var(--light-text-secondary);
-        }
-        .dark .sample-table th {
-            background-color: rgba(255,255,255,0.03);
-            border-bottom: 2px solid var(--dark-border);
-            color: var(--dark-text-primary);
-            font-weight: 700;
-        }
-        .dark .sample-table td {
-            border-bottom: 1px solid var(--dark-border);
-            color: var(--dark-text-secondary);
-        }
-
-        /* Botones */
-        .btn {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            transition: background 0.2s;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-        .light .btn-primary { background-color: var(--light-primary); color: white; }
-        .light .btn-primary:hover { background-color: var(--light-primary-hover); }
-        
-        .dark .btn-primary { background-color: var(--dark-primary); color: #121212; }
-        .dark .btn-primary:hover { background-color: var(--dark-primary-hover); }
-
-        /* Badges de Estado */
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        
-        /* Semánticos Claro */
-        .light .badge-success { background-color: #E8F5E9; color: var(--light-success); }
-        .light .badge-danger { background-color: #FFEBEE; color: var(--light-danger); }
-        .light .badge-warning { background-color: #FFF3E0; color: var(--light-warning); }
+        --dark-bg-base: #121212;
+        --dark-bg-surface: #222226; /* Ajustado de #2A2A2E para contraste tipográfico */
+        --dark-text-primary: #ffffff; /* Contraste 15.6:1 (Sobresaliente) */
+        --dark-text-secondary: #b3b3b7; /* Contraste 5.1:1 (Cumple AA en texto chico) */
+        --dark-primary: #5c9eff; /* Azul optimizado para lectura en fondo oscuro (4.6:1) */
+        --dark-primary-hover: #80b3ff;
+        --dark-border: #323238;
 
         /* Semánticos Oscuro */
-        .dark .badge-success { background-color: rgba(129, 199, 132, 0.15); color: var(--dark-success); }
-        .dark .badge-danger { background-color: rgba(255, 138, 101, 0.15); color: var(--dark-danger); }
-        .dark .badge-warning { background-color: rgba(255, 183, 77, 0.15); color: var(--dark-warning); }
+        --dark-success: #81c784; /* Verde Pastel Accesible (> 4.5:1) */
+        --dark-danger: #ff8a65; /* Coral/Rojo Accesible (> 4.5:1) */
+        --dark-warning: #ffb74d; /* Naranja Pastel Accesible (> 4.5:1) */
+        --dark-info: #5c9eff;
 
-        /* Bloque de Código */
-        pre {
-            background-color: #0f172a;
-            color: #f8fafc;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border: 1px solid #1e293b;
-        }
-        code {
-            font-family: "JetBrains Mono", Consolas, Monaco, monospace;
-        }
+        /* Fuentes */
+        --font-main:
+          -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
 
-        /* Barras de Proporción */
-        .proportion-bar {
-            display: flex;
-            height: 24px;
-            border-radius: 6px;
-            overflow: hidden;
-            margin: 15px 0 25px 0;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+      body {
+        font-family: var(--font-main);
+        background-color: #f8fafc;
+        color: #1e293b;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 280px;
+        height: 100vh;
+        background-color: #0f172a;
+        color: #fff;
+        padding: 24px;
+        box-sizing: border-box;
+        overflow-y: auto;
+      }
+
+      .sidebar h1 {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        color: #38bdf8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .sidebar .subtitle {
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+        margin-bottom: 30px;
+      }
+
+      .sidebar a {
+        display: block;
+        color: #94a3b8;
+        text-decoration: none;
+        padding: 10px 12px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+
+      .sidebar a:hover,
+      .sidebar a.active {
+        background-color: #1e293b;
+        color: #fff;
+      }
+
+      .main-content {
+        margin-left: 280px;
+        padding: 40px;
+        max-width: 1200px;
+      }
+
+      header {
+        margin-bottom: 40px;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 20px;
+      }
+
+      header h2 {
+        font-size: 2rem;
+        margin: 0 0 10px 0;
+        color: #0f172a;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+        color: #0f172a;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        border-left: 4px solid #5c9eff;
+        padding-left: 12px;
+        font-weight: 700;
+      }
+
+      p {
+        color: #475569;
+        font-size: 1rem;
+      }
+
+      /* Grid de Visualización de Temas */
+      .theme-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      @media (max-width: 900px) {
+        .theme-grid {
+          grid-template-columns: 1fr;
         }
-        .prop-60 { width: 60%; }
-        .prop-20 { width: 20%; }
-        .prop-15 { width: 15%; }
-        .prop-5 { width: 5%; }
-        
-        .prop-legend {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            font-size: 0.85rem;
-            color: #475569;
-            margin-bottom: 30px;
-        }
+      }
+
+      /* Contenedor del Tema */
+      .theme-container {
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        position: relative;
+        border: 1px solid #e2e8f0;
+      }
+
+      .theme-container.light {
+        background-color: var(--light-bg-base);
+        color: var(--light-text-primary);
+      }
+
+      .theme-container.dark {
+        background-color: var(--dark-bg-base);
+        color: var(--dark-text-primary);
+        border-color: #222226;
+      }
+
+      .theme-label {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .theme-container.dark .theme-label {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+      }
+
+      /* Muestras de Color */
+      .swatch-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 12px;
+        margin-top: 15px;
+        margin-bottom: 25px;
+      }
+
+      .swatch {
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      }
+
+      .swatch-subtitle {
+        display: block;
+        font-size: 0.65rem;
+        opacity: 0.8;
+        margin-top: 2px;
+        font-family: monospace;
+      }
+
+      /* Componentes de Prueba */
+      .sample-card {
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 15px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      .light .sample-card {
+        background-color: var(--light-bg-surface);
+        border: 1px solid var(--light-border);
+      }
+      .dark .sample-card {
+        background-color: var(--dark-bg-surface);
+        border: 1px solid var(--dark-border);
+      }
+
+      /* Tablas */
+      .sample-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        font-size: 0.85rem;
+      }
+      .sample-table th,
+      .sample-table td {
+        padding: 10px 12px;
+        text-align: left;
+      }
+      .light .sample-table th {
+        background-color: rgba(0, 0, 0, 0.03);
+        border-bottom: 2px solid var(--light-border);
+        color: var(--light-text-primary);
+        font-weight: 700;
+      }
+      .light .sample-table td {
+        border-bottom: 1px solid var(--light-border);
+        color: var(--light-text-secondary);
+      }
+      .dark .sample-table th {
+        background-color: rgba(255, 255, 255, 0.03);
+        border-bottom: 2px solid var(--dark-border);
+        color: var(--dark-text-primary);
+        font-weight: 700;
+      }
+      .dark .sample-table td {
+        border-bottom: 1px solid var(--dark-border);
+        color: var(--dark-text-secondary);
+      }
+
+      /* Botones */
+      .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: background 0.2s;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+      .light .btn-primary {
+        background-color: var(--light-primary);
+        color: white;
+      }
+      .light .btn-primary:hover {
+        background-color: var(--light-primary-hover);
+      }
+
+      .dark .btn-primary {
+        background-color: var(--dark-primary);
+        color: #121212;
+      }
+      .dark .btn-primary:hover {
+        background-color: var(--dark-primary-hover);
+      }
+
+      /* Badges de Estado */
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      /* Semánticos Claro */
+      .light .badge-success {
+        background-color: #e8f5e9;
+        color: var(--light-success);
+      }
+      .light .badge-danger {
+        background-color: #ffebee;
+        color: var(--light-danger);
+      }
+      .light .badge-warning {
+        background-color: #fff3e0;
+        color: var(--light-warning);
+      }
+
+      /* Semánticos Oscuro */
+      .dark .badge-success {
+        background-color: rgba(129, 199, 132, 0.15);
+        color: var(--dark-success);
+      }
+      .dark .badge-danger {
+        background-color: rgba(255, 138, 101, 0.15);
+        color: var(--dark-danger);
+      }
+      .dark .badge-warning {
+        background-color: rgba(255, 183, 77, 0.15);
+        color: var(--dark-warning);
+      }
+
+      /* Bloque de Código */
+      pre {
+        background-color: #0f172a;
+        color: #f8fafc;
+        padding: 20px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #1e293b;
+      }
+      code {
+        font-family: "JetBrains Mono", Consolas, Monaco, monospace;
+      }
+
+      /* Barras de Proporción */
+      .proportion-bar {
+        display: flex;
+        height: 24px;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 15px 0 25px 0;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .prop-60 {
+        width: 60%;
+      }
+      .prop-20 {
+        width: 20%;
+      }
+      .prop-15 {
+        width: 15%;
+      }
+      .prop-5 {
+        width: 5%;
+      }
+
+      .prop-legend {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        font-size: 0.85rem;
+        color: #475569;
+        margin-bottom: 30px;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <div class="sidebar">
-        <h1>SaaS Condominios</h1>
-        <span class="subtitle">Guía de Accesibilidad W3C AA</span>
-        <a href="#arquitectura" class="active">Arquitectura Visual</a>
-        <a href="#colores">Fichas de Color</a>
-        <a href="#proporciones">Regla 60-20-15-5</a>
-        <a href="#componentes">Componentes UI</a>
-        <a href="#codigo">Tokens CSS</a>
+      <h1>SaaS Condominios</h1>
+      <span class="subtitle">Guía de Accesibilidad W3C AA</span>
+      <a href="#arquitectura" class="active">Arquitectura Visual</a>
+      <a href="#colores">Fichas de Color</a>
+      <a href="#proporciones">Regla 60-20-15-5</a>
+      <a href="#componentes">Componentes UI</a>
+      <a href="#codigo">Tokens CSS</a>
     </div>
 
     <div class="main-content">
-        <header id="arquitectura">
-            <h2>Design System (Optimizado para WCAG AA)</h2>
-            <p>Guía de tokens de diseño para el SaaS de Gestión de Condominios. Este esquema asegura un ratio mínimo de contraste de <strong>4.5:1</strong> para textos estándar y componentes interactivos, superando las pautas internacionales de accesibilidad sin comprometer la estética premium.</p>
-        </header>
+      <header id="arquitectura">
+        <h2>Design System (Optimizado para WCAG AA)</h2>
+        <p>
+          Guía de tokens de diseño para el SaaS de Gestión de Condominios. Este
+          esquema asegura un ratio mínimo de contraste de
+          <strong>4.5:1</strong> para textos estándar y componentes
+          interactivos, superando las pautas internacionales de accesibilidad
+          sin comprometer la estética premium.
+        </p>
+      </header>
 
-        <!-- COLORES SECTION -->
-        <div class="section-title" id="colores">Tokens de Color y Validaciones</div>
-        <p>Paleta optimizada que regula los contrastes entre superficies, textos y elementos de estado primarios.</p>
+      <!-- COLORES SECTION -->
+      <div class="section-title" id="colores">
+        Tokens de Color y Validaciones
+      </div>
+      <p>
+        Paleta optimizada que regula los contrastes entre superficies, textos y
+        elementos de estado primarios.
+      </p>
 
-        <div class="theme-grid">
-            <!-- MODO CLARO -->
-            <div class="theme-container light">
-                <span class="theme-label">Modo Claro</span>
-                <h3>Superficies</h3>
-                <div class="swatch-group">
-                    <div class="swatch" style="background-color: #F4F4F7; color: #1A1A1A;">
-                        Fondo Base
-                        <span class="swatch-subtitle">#F4F4F7</span>
-                    </div>
-                    <div class="swatch" style="background-color: #FFFFFF; color: #1A1A1A; border: 1px solid #E2E2E6;">
-                        Cards / Tablas
-                        <span class="swatch-subtitle">#FFFFFF</span>
-                    </div>
-                    <div class="swatch" style="background-color: #004D99; color: white;">
-                        Primario Corp
-                        <span class="swatch-subtitle">#004D99</span>
-                    </div>
-                </div>
-
-                <h3>Tipografías</h3>
-                <div class="swatch-group">
-                    <div class="swatch" style="background-color: #1A1A1A; color: white;">
-                        Texto Principal
-                        <span class="swatch-subtitle">#1A1A1A</span>
-                    </div>
-                    <div class="swatch" style="background-color: #5A5C61; color: white;">
-                        Texto Secundario
-                        <span class="swatch-subtitle">#5A5C61</span>
-                    </div>
-                </div>
-
-                <h3>Estados Semánticos</h3>
-                <div class="swatch-group">
-                    <div class="swatch" style="background-color: #2E7D32; color: white;">
-                        Éxito (Activo)
-                        <span class="swatch-subtitle">#2E7D32</span>
-                    </div>
-                    <div class="swatch" style="background-color: #C62828; color: white;">
-                        Peligro (Atrasado)
-                        <span class="swatch-subtitle">#C62828</span>
-                    </div>
-                    <div class="swatch" style="background-color: #A65100; color: white;">
-                        Alerta (Pendiente)
-                        <span class="swatch-subtitle">#A65100</span>
-                    </div>
-                </div>
+      <div class="theme-grid">
+        <!-- MODO CLARO -->
+        <div class="theme-container light">
+          <span class="theme-label">Modo Claro</span>
+          <h3>Superficies</h3>
+          <div class="swatch-group">
+            <div
+              class="swatch"
+              style="background-color: #f4f4f7; color: #1a1a1a"
+            >
+              Fondo Base
+              <span class="swatch-subtitle">#F4F4F7</span>
             </div>
-
-            <!-- MODO OSCURO -->
-            <div class="theme-container dark">
-                <span class="theme-label">Modo Oscuro</span>
-                <h3>Superficies</h3>
-                <div class="swatch-group">
-                    <div class="swatch" style="background-color: #121212; color: white;">
-                        Fondo Base
-                        <span class="swatch-subtitle">#121212</span>
-                    </div>
-                    <div class="swatch" style="background-color: #222226; color: white;">
-                        Cards / Tablas
-                        <span class="swatch-subtitle">#222226</span>
-                    </div>
-                    <div class="swatch" style="background-color: #5C9EFF; color: #121212;">
-                        Primario Corp
-                        <span class="swatch-subtitle">#5C9EFF</span>
-                    </div>
-                </div>
-
-                <h3>Tipografías</h3>
-                <div class="swatch-group">
-                    <div class="swatch" style="background-color: #FFFFFF; color: #121212;">
-                        Texto Principal
-                        <span class="swatch-subtitle">#FFFFFF</span>
-                    </div>
-                    <div class="swatch" style="background-color: #B3B3B7; color: #121212;">
-                        Texto Secundario
-                        <span class="swatch-subtitle">#B3B3B7</span>
-                    </div>
-                </div>
-
-                <h3>Estados Semánticos</h3>
-                <div class="swatch-group">
-                    <div class="swatch" style="background-color: #81C784; color: #121212;">
-                        Éxito (Activo)
-                        <span class="swatch-subtitle">#81C784</span>
-                    </div>
-                    <div class="swatch" style="background-color: #FF8A65; color: #121212;">
-                        Peligro (Atrasado)
-                        <span class="swatch-subtitle">#FF8A65</span>
-                    </div>
-                    <div class="swatch" style="background-color: #FFB74D; color: #121212;">
-                        Alerta (Pendiente)
-                        <span class="swatch-subtitle">#FFB74D</span>
-                    </div>
-                </div>
+            <div
+              class="swatch"
+              style="
+                background-color: #ffffff;
+                color: #1a1a1a;
+                border: 1px solid #e2e2e6;
+              "
+            >
+              Cards / Tablas
+              <span class="swatch-subtitle">#FFFFFF</span>
             </div>
+            <div class="swatch" style="background-color: #004d99; color: white">
+              Primario Corp
+              <span class="swatch-subtitle">#004D99</span>
+            </div>
+          </div>
+
+          <h3>Tipografías</h3>
+          <div class="swatch-group">
+            <div class="swatch" style="background-color: #1a1a1a; color: white">
+              Texto Principal
+              <span class="swatch-subtitle">#1A1A1A</span>
+            </div>
+            <div class="swatch" style="background-color: #5a5c61; color: white">
+              Texto Secundario
+              <span class="swatch-subtitle">#5A5C61</span>
+            </div>
+          </div>
+
+          <h3>Estados Semánticos</h3>
+          <div class="swatch-group">
+            <div class="swatch" style="background-color: #2e7d32; color: white">
+              Éxito (Activo)
+              <span class="swatch-subtitle">#2E7D32</span>
+            </div>
+            <div class="swatch" style="background-color: #c62828; color: white">
+              Peligro (Atrasado)
+              <span class="swatch-subtitle">#C62828</span>
+            </div>
+            <div class="swatch" style="background-color: #a65100; color: white">
+              Alerta (Pendiente)
+              <span class="swatch-subtitle">#A65100</span>
+            </div>
+          </div>
         </div>
 
-        <!-- PROPORCIONES SECTION -->
-        <div class="section-title" id="proporciones">Uso del Color en Pantalla (60-20-15-5)</div>
-        <p>Una correcta proporción visual del lienzo evita la fatiga del ojo del usuario (especialmente guardias, conserjes o residentes leyendo tablas financieras en la noche).</p>
-        
-        <h3>Distribución - Modo Claro</h3>
-        <div class="proportion-bar">
-            <div class="prop-60" style="background-color: #F4F4F7; border: 1px solid #cbd5e1;" title="Fondo Base (60%)"></div>
-            <div class="prop-20" style="background-color: #FFFFFF; border: 1px solid #cbd5e1;" title="Cards/Superficies (20%)"></div>
-            <div class="prop-15" style="background-color: #1A1A1A;" title="Texto Principal (15%)"></div>
-            <div class="prop-5" style="background-color: #004D99;" title="Color Primario / Interactivo (5%)"></div>
+        <!-- MODO OSCURO -->
+        <div class="theme-container dark">
+          <span class="theme-label">Modo Oscuro</span>
+          <h3>Superficies</h3>
+          <div class="swatch-group">
+            <div class="swatch" style="background-color: #121212; color: white">
+              Fondo Base
+              <span class="swatch-subtitle">#121212</span>
+            </div>
+            <div class="swatch" style="background-color: #222226; color: white">
+              Cards / Tablas
+              <span class="swatch-subtitle">#222226</span>
+            </div>
+            <div
+              class="swatch"
+              style="background-color: #5c9eff; color: #121212"
+            >
+              Primario Corp
+              <span class="swatch-subtitle">#5C9EFF</span>
+            </div>
+          </div>
+
+          <h3>Tipografías</h3>
+          <div class="swatch-group">
+            <div
+              class="swatch"
+              style="background-color: #ffffff; color: #121212"
+            >
+              Texto Principal
+              <span class="swatch-subtitle">#FFFFFF</span>
+            </div>
+            <div
+              class="swatch"
+              style="background-color: #b3b3b7; color: #121212"
+            >
+              Texto Secundario
+              <span class="swatch-subtitle">#B3B3B7</span>
+            </div>
+          </div>
+
+          <h3>Estados Semánticos</h3>
+          <div class="swatch-group">
+            <div
+              class="swatch"
+              style="background-color: #81c784; color: #121212"
+            >
+              Éxito (Activo)
+              <span class="swatch-subtitle">#81C784</span>
+            </div>
+            <div
+              class="swatch"
+              style="background-color: #ff8a65; color: #121212"
+            >
+              Peligro (Atrasado)
+              <span class="swatch-subtitle">#FF8A65</span>
+            </div>
+            <div
+              class="swatch"
+              style="background-color: #ffb74d; color: #121212"
+            >
+              Alerta (Pendiente)
+              <span class="swatch-subtitle">#FFB74D</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPORCIONES SECTION -->
+      <div class="section-title" id="proporciones">
+        Uso del Color en Pantalla (60-20-15-5)
+      </div>
+      <p>
+        Una correcta proporción visual del lienzo evita la fatiga del ojo del
+        usuario (especialmente guardias, conserjes o residentes leyendo tablas
+        financieras en la noche).
+      </p>
+
+      <h3>Distribución - Modo Claro</h3>
+      <div class="proportion-bar">
+        <div
+          class="prop-60"
+          style="background-color: #f4f4f7; border: 1px solid #cbd5e1"
+          title="Fondo Base (60%)"
+        ></div>
+        <div
+          class="prop-20"
+          style="background-color: #ffffff; border: 1px solid #cbd5e1"
+          title="Cards/Superficies (20%)"
+        ></div>
+        <div
+          class="prop-15"
+          style="background-color: #1a1a1a"
+          title="Texto Principal (15%)"
+        ></div>
+        <div
+          class="prop-5"
+          style="background-color: #004d99"
+          title="Color Primario / Interactivo (5%)"
+        ></div>
+      </div>
+
+      <h3>Distribución - Modo Oscuro</h3>
+      <div class="proportion-bar">
+        <div
+          class="prop-60"
+          style="background-color: #121212"
+          title="Fondo Base (60%)"
+        ></div>
+        <div
+          class="prop-20"
+          style="background-color: #222226"
+          title="Cards/Superficies (20%)"
+        ></div>
+        <div
+          class="prop-15"
+          style="background-color: #ffffff"
+          title="Texto Principal (15%)"
+        ></div>
+        <div
+          class="prop-5"
+          style="background-color: #5c9eff"
+          title="Color Primario / Interactivo (5%)"
+        ></div>
+      </div>
+
+      <div class="prop-legend">
+        <div>
+          <strong>60% Fondo Base (Resting Eye Canvas):</strong> Controla el
+          fondo macro de la aplicación.
+        </div>
+        <div>
+          <strong>20% Estructuración (Cards / Tablas):</strong> Separa bloques
+          de información compleja.
+        </div>
+        <div>
+          <strong>15% Contraste de Datos (Tipografía):</strong> Títulos y cuerpo
+          de lectura de alta legibilidad.
+        </div>
+        <div>
+          <strong>5% Focos Interactivos (Call to Action):</strong> Enlaces,
+          botones primarios y acentos del sistema.
+        </div>
+      </div>
+
+      <!-- COMPONENTES SECTION -->
+      <div class="section-title" id="componentes">
+        Validación en Componentes de Muestra
+      </div>
+      <p>
+        Prototipos funcionales que integran los tokens corregidos para validar
+        la legibilidad de la información.
+      </p>
+
+      <div class="theme-grid">
+        <!-- COMPONENTES CLARO -->
+        <div class="theme-container light">
+          <span class="theme-label">Prueba Claro</span>
+
+          <div class="sample-card">
+            <h4 style="margin-top: 0; margin-bottom: 5px; font-weight: 800">
+              Control de Accesos Activos
+            </h4>
+            <p
+              style="
+                font-size: 0.8rem;
+                margin-top: 0;
+                margin-bottom: 15px;
+                color: var(--light-text-secondary);
+              "
+            >
+              Muestra de texto secundario con ratio aprobado por la W3C.
+            </p>
+            <button class="btn btn-primary">Registrar Visita</button>
+            <span class="badge badge-success">Activo</span>
+          </div>
+
+          <div class="sample-card">
+            <h4 style="margin-top: 0; margin-bottom: 10px; font-weight: 800">
+              Bodega de Encomiendas
+            </h4>
+            <table class="sample-table">
+              <thead>
+                <tr>
+                  <th>Unidad</th>
+                  <th>Courier</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Depto 402</td>
+                  <td>Amazon Prime</td>
+                  <td><span class="badge badge-warning">Pendiente</span></td>
+                </tr>
+                <tr>
+                  <td>Depto 105</td>
+                  <td>MercadoLibre</td>
+                  <td><span class="badge badge-success">Entregado</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <h3>Distribución - Modo Oscuro</h3>
-        <div class="proportion-bar">
-            <div class="prop-60" style="background-color: #121212;" title="Fondo Base (60%)"></div>
-            <div class="prop-20" style="background-color: #222226;" title="Cards/Superficies (20%)"></div>
-            <div class="prop-15" style="background-color: #FFFFFF;" title="Texto Principal (15%)"></div>
-            <div class="prop-5" style="background-color: #5C9EFF;" title="Color Primario / Interactivo (5%)"></div>
+        <!-- COMPONENTES OSCURO -->
+        <div class="theme-container dark">
+          <span class="theme-label">Prueba Oscuro</span>
+
+          <div class="sample-card">
+            <h4 style="margin-top: 0; margin-bottom: 5px; font-weight: 800">
+              Control de Accesos Activos
+            </h4>
+            <p
+              style="
+                font-size: 0.8rem;
+                margin-top: 0;
+                margin-bottom: 15px;
+                color: var(--dark-text-secondary);
+              "
+            >
+              Muestra de texto secundario con ratio aprobado por la W3C.
+            </p>
+            <button class="btn btn-primary">Registrar Visita</button>
+            <span class="badge badge-success">Activo</span>
+          </div>
+
+          <div class="sample-card">
+            <h4 style="margin-top: 0; margin-bottom: 10px; font-weight: 800">
+              Bodega de Encomiendas
+            </h4>
+            <table class="sample-table">
+              <thead>
+                <tr>
+                  <th>Unidad</th>
+                  <th>Courier</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Depto 402</td>
+                  <td>Amazon Prime</td>
+                  <td><span class="badge badge-warning">Pendiente</span></td>
+                </tr>
+                <tr>
+                  <td>Depto 105</td>
+                  <td>MercadoLibre</td>
+                  <td><span class="badge badge-success">Entregado</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
 
-        <div class="prop-legend">
-            <div>
-                <strong>60% Fondo Base (Resting Eye Canvas):</strong> Controla el fondo macro de la aplicación.
-            </div>
-            <div>
-                <strong>20% Estructuración (Cards / Tablas):</strong> Separa bloques de información compleja.
-            </div>
-            <div>
-                <strong>15% Contraste de Datos (Tipografía):</strong> Títulos y cuerpo de lectura de alta legibilidad.
-            </div>
-            <div>
-                <strong>5% Focos Interactivos (Call to Action):</strong> Enlaces, botones primarios y acentos del sistema.
-            </div>
-        </div>
+      <!-- CODIGO / TOKENS SECTION -->
+      <div class="section-title" id="codigo">
+        Copia de Tokens CSS para tu Equipo / IA
+      </div>
+      <p>
+        Copia estas declaraciones CSS en el archivo central de estilos de tu
+        frontend para implementar de inmediato la accesibilidad.
+      </p>
 
-        <!-- COMPONENTES SECTION -->
-        <div class="section-title" id="componentes">Validación en Componentes de Muestra</div>
-        <p>Prototipos funcionales que integran los tokens corregidos para validar la legibilidad de la información.</p>
-
-        <div class="theme-grid">
-            <!-- COMPONENTES CLARO -->
-            <div class="theme-container light">
-                <span class="theme-label">Prueba Claro</span>
-                
-                <div class="sample-card">
-                    <h4 style="margin-top:0; margin-bottom:5px; font-weight: 800;">Control de Accesos Activos</h4>
-                    <p style="font-size:0.8rem; margin-top:0; margin-bottom:15px; color: var(--light-text-secondary);">Muestra de texto secundario con ratio aprobado por la W3C.</p>
-                    <button class="btn btn-primary">Registrar Visita</button>
-                    <span class="badge badge-success">Activo</span>
-                </div>
-
-                <div class="sample-card">
-                    <h4 style="margin-top:0; margin-bottom:10px; font-weight: 800;">Bodega de Encomiendas</h4>
-                    <table class="sample-table">
-                        <thead>
-                            <tr>
-                                <th>Unidad</th>
-                                <th>Courier</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Depto 402</td>
-                                <td>Amazon Prime</td>
-                                <td><span class="badge badge-warning">Pendiente</span></td>
-                            </tr>
-                            <tr>
-                                <td>Depto 105</td>
-                                <td>MercadoLibre</td>
-                                <td><span class="badge badge-success">Entregado</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- COMPONENTES OSCURO -->
-            <div class="theme-container dark">
-                <span class="theme-label">Prueba Oscuro</span>
-                
-                <div class="sample-card">
-                    <h4 style="margin-top:0; margin-bottom:5px; font-weight: 800;">Control de Accesos Activos</h4>
-                    <p style="font-size:0.8rem; margin-top:0; margin-bottom:15px; color: var(--dark-text-secondary);">Muestra de texto secundario con ratio aprobado por la W3C.</p>
-                    <button class="btn btn-primary">Registrar Visita</button>
-                    <span class="badge badge-success">Activo</span>
-                </div>
-
-                <div class="sample-card">
-                    <h4 style="margin-top:0; margin-bottom:10px; font-weight: 800;">Bodega de Encomiendas</h4>
-                    <table class="sample-table">
-                        <thead>
-                            <tr>
-                                <th>Unidad</th>
-                                <th>Courier</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Depto 402</td>
-                                <td>Amazon Prime</td>
-                                <td><span class="badge badge-warning">Pendiente</span></td>
-                            </tr>
-                            <tr>
-                                <td>Depto 105</td>
-                                <td>MercadoLibre</td>
-                                <td><span class="badge badge-success">Entregado</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- CODIGO / TOKENS SECTION -->
-        <div class="section-title" id="codigo">Copia de Tokens CSS para tu Equipo / IA</div>
-        <p>Copia estas declaraciones CSS en el archivo central de estilos de tu frontend para implementar de inmediato la accesibilidad.</p>
-
-        <pre><code>/* ==========================================================================
+      <pre><code>/* ==========================================================================
    DESIGN SYSTEM ACCESIBLE (WCAG AA CONFORMANCE) - SaaS CONDOMINIOS
    ========================================================================== */
 
@@ -612,6 +771,6 @@
   }
 }</code></pre>
     </div>
-
-</body>
+  </body>
 </html>
+

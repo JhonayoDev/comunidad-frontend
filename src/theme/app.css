@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--p-surface-100);
+
+  --color-surface: var(--p-surface-200);
+
+  --color-primary: var(--p-primary-color);
+
+  --color-text: var(--p-text-color);
+
+  --color-text-muted: var(--p-text-muted-color);
+
+  --color-border: var(--p-content-border-color);
+
+  --color-success: var(--p-success-color);
+
+  --color-warning: var(--p-warning-color);
+
+  --color-danger: var(--p-danger-color);
+
+  --color-info: var(--p-info-color);
+}
