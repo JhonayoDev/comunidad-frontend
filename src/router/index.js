@@ -1,37 +1,62 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "../stores/authStore";
+import AuthLayout from "../layouts/AuthLayout.vue";
 
 const routes = [
   // Rutas públicas — sin layout
   {
     path: "/login",
     name: "Login",
-    component: () => import("../views/auth/LoginView.vue"),
     meta: { public: true },
+    component: AuthLayout,
+    children: [
+      {
+        path: "",
+        component: () => import("../views/auth/LoginView.vue"),
+      },
+    ],
   },
   {
     path: "/recuperar-password",
     name: "ForgotPassword",
-    component: () => import("../views/auth/ForgotPasswordView.vue"),
     meta: { public: true },
+    component: AuthLayout,
+    children: [
+      {
+        path: "",
+        component: () => import("../views/auth/ForgotPasswordView.vue"),
+      },
+    ],
   },
   {
     path: "/reset-password",
     name: "ResetPassword",
-    component: () => import("../views/auth/ResetPasswordView.vue"),
     meta: { public: true },
+    component: AuthLayout,
+    children: [
+      {
+        path: "",
+        component: () => import("../views/auth/ResetPasswordView.vue"),
+      },
+    ],
   },
   {
     path: "/setup-password",
     name: "SetupPassword",
-    component: () => import("../views/auth/SetupPasswordView.vue"),
     meta: { public: true },
+    component: AuthLayout,
+    children: [
+      {
+        path: "",
+        component: () => import("../views/auth/SetupPasswordView.vue"),
+      },
+    ],
   },
 
   // Rutas privadas — con layout principal
   {
     path: "/",
-    component: () => import("../layouts/AppLayout.vue"),
+    component: () => import("../layouts/MainLayout.vue"),
     meta: { public: false },
     children: [
       {
@@ -74,7 +99,10 @@ const routes = [
         path: "dashboard",
         name: "Dashboard",
         component: () => import("../views/dashboard/AdminDashboardView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"],
+        },
       },
       {
         path: "vehiculos",
@@ -86,13 +114,19 @@ const routes = [
         path: "solicitudes-admin",
         name: "SolicitudesAdmin",
         component: () => import("../views/admin/SolicitudesAdminView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       {
         path: "residentes",
         name: "Residentes",
         component: () => import("../views/admin/ResidentesView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       // ── Finanzas (cargos) ─────────────────────────
       {
@@ -160,12 +194,16 @@ const routes = [
         path: "anuncios",
         name: "Anuncios",
         component: () => import("../views/gestion/AnunciosView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       {
         path: "notificaciones/plantillas",
         name: "PlantillasNotificacion",
-        component: () => import("../views/admin/PlantillasNotificacionView.vue"),
+        component: () =>
+          import("../views/admin/PlantillasNotificacionView.vue"),
         meta: { roles: ["ADMINISTRADOR"] },
       },
       {
@@ -209,19 +247,28 @@ const routes = [
         path: "bitacora",
         name: "Bitacora",
         component: () => import("../views/guardia/BitacoraView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"] },
+        meta: {
+          roles: ["GUARDIA", "ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"],
+        },
       },
       {
         path: "bitacora/checklist",
         name: "ChecklistTemplates",
         component: () => import("../views/guardia/ChecklistTemplatesView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["GUARDIA", "ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       {
         path: "autorizaciones",
         name: "Autorizaciones",
         component: () => import("../views/guardia/AutorizacionesView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["GUARDIA", "ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       // ── Residente ─────────────────────────────────
       {
@@ -338,12 +385,13 @@ router.beforeEach(async (to) => {
 
   if (!necesitaRol && !necesitaCargo) return;
 
-  const cumpleRol = necesitaRol && (
-    routeRoles.some((r) => userRoles.includes(r)) ||
-    routeRoles.includes(auth.condominioActualRol)
-  );
+  const cumpleRol =
+    necesitaRol &&
+    (routeRoles.some((r) => userRoles.includes(r)) ||
+      routeRoles.includes(auth.condominioActualRol));
 
-  const cumpleCargo = necesitaCargo && routeCargos.includes(auth.condominioActualCargo);
+  const cumpleCargo =
+    necesitaCargo && routeCargos.includes(auth.condominioActualCargo);
 
   // Cargo match grants access independently of role
   if (cumpleCargo) return;

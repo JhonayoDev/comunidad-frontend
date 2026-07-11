@@ -1,23 +1,53 @@
-@import "tailwindcss";
+/* ==========================================================================
+   TAILWIND THEME TOKENS
+   ==========================================================================
+   Traduce las variables CSS de PrimeVue (--p-*) a nombres cortos para
+   usar con Tailwind: bg-background, bg-surface, text-primary, etc.
+   ========================================================================== */
 
 @theme {
+  /* Fondo general de la página (body wrapper) */
   --color-background: var(--p-surface-100);
 
+  /* Fondo de tarjetas, cards y superficies elevadas */
   --color-surface: var(--p-surface-200);
 
+  /* Color principal de marca (botones, links, acentos) */
   --color-primary: var(--p-primary-color);
 
+  /* Color de texto principal */
   --color-text: var(--p-text-color);
 
+  /* Color de texto secundario / muted */
   --color-text-muted: var(--p-text-muted-color);
 
+  /* Color de bordes genéricos */
   --color-border: var(--p-content-border-color);
 
+  /* Semánticos: éxito, advertencia, peligro, información */
   --color-success: var(--p-success-color);
-
   --color-warning: var(--p-warning-color);
-
   --color-danger: var(--p-danger-color);
-
   --color-info: var(--p-info-color);
+}
+
+/* ==========================================================================
+   BROWSER FIXES
+   ==========================================================================
+   Corrige el color de autocompletado del navegador.
+   ========================================================================== */
+
+/* Evita que Chrome/Safari pinte los inputs autocompletados de verde/amarillo.
+   - text-fill-color: color del texto escrito (usa el mismo que PrimeVue)
+   - box-shadow con inset gigante: pinta el fondo sin perder el borde del input
+   - transition infinita: evita que Chrome revierta el estilo al hacer hover/focus */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--p-text-color);
+  -webkit-box-shadow: 0 0 0 1000px var(--p-surface-300) inset;
+  transition: background-color 9999s ease-in-out 0s;
 }

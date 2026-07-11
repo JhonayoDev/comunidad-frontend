@@ -1,8 +1,8 @@
 const colors = {
   light: {
-    background: "#e6e6e6",
+    background: "#F4F4F7",
 
-    surface: "#d6d6d6",
+    surface: "#FFFFFF",
 
     text: {
       primary: "#1a1a1a",
