@@ -3,53 +3,16 @@ import { useAuthStore } from "../stores/authStore";
 import AuthLayout from "../layouts/AuthLayout.vue";
 
 const routes = [
-  // Rutas públicas — sin layout
+  // Rutas públicas — con AuthLayout como layout compartido
   {
-    path: "/login",
-    name: "Login",
-    meta: { public: true },
+    path: "",
     component: AuthLayout,
-    children: [
-      {
-        path: "",
-        component: () => import("../views/auth/LoginView.vue"),
-      },
-    ],
-  },
-  {
-    path: "/recuperar-password",
-    name: "ForgotPassword",
     meta: { public: true },
-    component: AuthLayout,
     children: [
-      {
-        path: "",
-        component: () => import("../views/auth/ForgotPasswordView.vue"),
-      },
-    ],
-  },
-  {
-    path: "/reset-password",
-    name: "ResetPassword",
-    meta: { public: true },
-    component: AuthLayout,
-    children: [
-      {
-        path: "",
-        component: () => import("../views/auth/ResetPasswordView.vue"),
-      },
-    ],
-  },
-  {
-    path: "/setup-password",
-    name: "SetupPassword",
-    meta: { public: true },
-    component: AuthLayout,
-    children: [
-      {
-        path: "",
-        component: () => import("../views/auth/SetupPasswordView.vue"),
-      },
+      { path: "/login",              name: "Login",          component: () => import("../views/auth/LoginView.vue") },
+      { path: "/recuperar-password", name: "ForgotPassword",  component: () => import("../views/auth/ForgotPasswordView.vue") },
+      { path: "/reset-password",     name: "ResetPassword",   component: () => import("../views/auth/ResetPasswordView.vue") },
+      { path: "/setup-password",     name: "SetupPassword",    component: () => import("../views/auth/SetupPasswordView.vue") },
     ],
   },
 
