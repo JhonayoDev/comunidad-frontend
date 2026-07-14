@@ -3,6 +3,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
 import { encomiendasService } from "@/services/encomiendasService";
 import { autorizacionesService } from "@/services/autorizacionesService";
+import { computed } from "vue";
 
 export function useDashboardGuardia() {
   const auth = useAuthStore();
@@ -19,7 +20,10 @@ export function useDashboardGuardia() {
   const encomiendasQuery = useQuery({
     queryKey: ["encomiendasPendientes", auth.condominioActualId],
     queryFn: async () => {
-      const { data } = await encomiendasService.getEncomiendas(auth.condominioActualId, { estado: "PENDIENTE" });
+      const { data } = await encomiendasService.getEncomiendas(
+        auth.condominioActualId,
+        { estado: "PENDIENTE" },
+      );
       return data || [];
     },
     enabled: !!auth.condominioActualId,
@@ -28,21 +32,30 @@ export function useDashboardGuardia() {
   const autorizacionesQuery = useQuery({
     queryKey: ["autorizacionesPendientes", auth.condominioActualId],
     queryFn: async () => {
-      const { data } = await autorizacionesService.listar(auth.condominioActualId, { estado: "PENDIENTE" });
+      const { data } = await autorizacionesService.listar(
+        auth.condominioActualId,
+        { estado: "PENDIENTE" },
+      );
       return data || [];
     },
     enabled: !!auth.condominioActualId,
   });
 
-  const loading = dashboardQuery.isLoading || encomiendasQuery.isLoading || autorizacionesQuery.isLoading;
+  const loading =
+    dashboardQuery.isLoading ||
+    encomiendasQuery.isLoading ||
+    autorizacionesQuery.isLoading;
 
-  const error = dashboardQuery.isError || encomiendasQuery.isError || autorizacionesQuery.isError
-    ? "Error al cargar el dashboard"
-    : null;
+  const error =
+    dashboardQuery.isError ||
+    encomiendasQuery.isError ||
+    autorizacionesQuery.isError
+      ? "Error al cargar el dashboard"
+      : null;
 
-  const dashboard = dashboardQuery.data;
-  const encomiendas = encomiendasQuery.data;
-  const autorizaciones = autorizacionesQuery.data;
+  const dashboard = computed(() => dashboardQuery.data ?? []);
+  const encomiendas = computed(() => encomiendasQuery.data ?? []);
+  const autorizaciones = computed(() => autorizacionesQuery.data ?? []);
 
   function severityEstado(estado) {
     if (estado === "ACTIVO") return "success";
@@ -67,3 +80,4 @@ export function useDashboardGuardia() {
     severityEstado,
   };
 }
+

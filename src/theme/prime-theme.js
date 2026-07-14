@@ -148,11 +148,11 @@ export default definePreset(Aura, {
         },
 
         surface: {
-          0: colors.dark.background,
+          0: colors.dark.surface,
 
           50: "#181818",
 
-          100: colors.dark.surface,
+          100: colors.dark.background,
 
           200: colors.dark.border,
 

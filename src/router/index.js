@@ -9,6 +9,7 @@ const routes = [
     component: AuthLayout,
     meta: { public: true },
     children: [
+      { path: "",                    redirect: "/login" },
       { path: "/login",              name: "Login",          component: () => import("../views/auth/LoginView.vue") },
       { path: "/recuperar-password", name: "ForgotPassword",  component: () => import("../views/auth/ForgotPasswordView.vue") },
       { path: "/reset-password",     name: "ResetPassword",   component: () => import("../views/auth/ResetPasswordView.vue") },
