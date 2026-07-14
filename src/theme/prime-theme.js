@@ -106,7 +106,7 @@ export default definePreset(Aura, {
         primary: {
           color: colors.light.primary,
           hoverColor: colors.light.primaryHover,
-          activeColor: "#00264d",
+          activeColor: colors.light.primaryActive,
           inverseColor: "#ffffff",
         },
 
@@ -143,7 +143,7 @@ export default definePreset(Aura, {
         primary: {
           color: colors.dark.primary,
           hoverColor: colors.dark.primaryHover,
-          activeColor: "#9cc5ff",
+          activeColor: colors.dark.primaryActive,
           inverseColor: "#121212",
         },
 

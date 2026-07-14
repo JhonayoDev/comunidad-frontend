@@ -11,9 +11,11 @@ const colors = {
 
     border: "#bfbfbf",
 
-    primary: "#003366",
+    primary: "#5a5c61",
 
-    primaryHover: "#00488f",
+    primaryHover: "#1a1a1a",
+
+    primaryActive: "#00488f",
 
     success: "#2e7d32",
 
@@ -36,9 +38,11 @@ const colors = {
 
     border: "#323238",
 
-    primary: "#5c9eff",
+    primary: "#003366",
 
-    primaryHover: "#80b3ff",
+    primaryActive: "#b3b3b7",
+
+    primaryHover: "#004d99",
 
     success: "#81c784",
 

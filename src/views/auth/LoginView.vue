@@ -78,14 +78,16 @@ async function handleLogin() {
 </script>
 
 <template>
-  <Card class="max-w-sm w-full bg-surface">
-    <template #title> Comunidad </template>
+  <Card class="max-w-sm w-full bg-surface/75">
+    <template #title> <div class="primary-text">Comunidad</div> </template>
 
-    <template #subtitle> Sistema de gestión de condominios </template>
+    <template #subtitle>
+      <div class="secondary-text">Sistema de gestión de condominios</div>
+    </template>
 
     <template #content>
       <form @submit.prevent="handleLogin" class="space-y-6 mt-3">
-        <div class="flex flex-col gap-2">
+        <div class="primary-text flex flex-col gap-2">
           <label>Email</label>
           <InputText
             id="email"
@@ -95,12 +97,12 @@ async function handleLogin() {
             placeholder="usuario@comunidad.cl"
           />
         </div>
-        <div class="flex flex-col gap-2">
+        <div class="primary-text flex flex-col gap-2">
           <label>Contraseña</label>
           <Password v-model="password" :feedback="false" toggleMask fluid />
           <RouterLink
             to="/recuperar-password"
-            class="text-primary hover:text-primary-hover hover:underline transition-colors duration-200"
+            class="text-info hover:underline transition-colors duration-200"
           >
             ¿Olvidaste tu contraseña?
           </RouterLink>
@@ -122,4 +124,11 @@ async function handleLogin() {
   </Card>
 </template>
 
-<style scoped></style>
+<style scoped>
+.primary-text {
+  color: var(--p-surface-900);
+}
+.secondary-text {
+  color: var(--p-surface-600);
+}
+</style>
