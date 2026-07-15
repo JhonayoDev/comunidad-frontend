@@ -13,7 +13,7 @@
     <div class="flex align-items-center gap-1 ml-auto">
       <Button
         class="header-btn"
-        :icon="esOscuro ? 'pi pi-moon' : 'pi pi-sun'"
+        :icon="esOscuro ? 'pi pi-sun' : 'pi pi-moon'"
         severity="secondary"
         text
         rounded
