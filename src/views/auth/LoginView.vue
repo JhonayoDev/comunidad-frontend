@@ -102,7 +102,7 @@ async function handleLogin() {
           <Password v-model="password" :feedback="false" toggleMask fluid />
           <RouterLink
             to="/recuperar-password"
-            class="text-info hover:underline transition-colors duration-200"
+            class="text-info hover:underline duration-200"
           >
             ¿Olvidaste tu contraseña?
           </RouterLink>

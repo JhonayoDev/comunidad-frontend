@@ -108,6 +108,7 @@ export default definePreset(Aura, {
           hoverColor: colors.light.primaryHover,
           activeColor: colors.light.primaryActive,
           inverseColor: "#ffffff",
+          autoFillBox: colors.light.background,
         },
 
         /**
@@ -145,6 +146,7 @@ export default definePreset(Aura, {
           hoverColor: colors.dark.primaryHover,
           activeColor: colors.dark.primaryActive,
           inverseColor: "#121212",
+          autoFillBox: colors.dark.primaryActive,
         },
 
         surface: {

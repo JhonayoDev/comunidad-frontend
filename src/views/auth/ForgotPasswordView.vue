@@ -29,16 +29,24 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <Card class="max-w-sm w-full bg-surface">
-    <template #title> Recuperar contraseña </template>
+  <Card class="max-w-m w-full bg-surface/75">
+    <template #title>
+      <div class="primary-text">Recuperar contraseña</div>
+    </template>
 
     <template #subtitle>
-      Ingresa tu email para recibir un enlace de restablecimiento
+      <div class="secondary-text">
+        Ingresa tu email para recibir un enlace de restablecimiento
+      </div>
     </template>
 
     <template #content>
-      <form v-if="!enviado" @submit.prevent="handleSubmit" class="space-y-6 mt-3">
-        <div class="flex flex-col gap-2">
+      <form
+        v-if="!enviado"
+        @submit.prevent="handleSubmit"
+        class="space-y-6 mt-3"
+      >
+        <div class="primary-text flex flex-col gap-2">
           <label>Email</label>
           <InputText
             id="email"
@@ -61,6 +69,7 @@ async function handleSubmit() {
           fluid
         />
         <Button
+          class="primary-text"
           label="Volver al login"
           icon="pi pi-arrow-left"
           variant="text"
@@ -68,12 +77,13 @@ async function handleSubmit() {
           @click="router.push({ name: 'Login' })"
         />
       </form>
-      <div v-else class="flex flex-col items-center gap-3">
+      <div v-else class="primary-text flex flex-col items-center gap-3">
         <Message severity="success">
           Si el email está registrado, recibirás un enlace para restablecer tu
           contraseña.
         </Message>
         <Button
+          class="primary-text"
           label="Volver al login"
           icon="pi pi-arrow-left"
           fluid
@@ -84,4 +94,11 @@ async function handleSubmit() {
   </Card>
 </template>
 
-<style scoped></style>
+<style scoped>
+.primary-text {
+  color: var(--p-surface-900);
+}
+.secondary-text {
+  color: var(--p-surface-600);
+}
+</style>
