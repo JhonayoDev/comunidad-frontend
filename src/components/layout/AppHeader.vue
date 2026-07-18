@@ -1,16 +1,16 @@
 <template>
   <header
-    class="surface-card px-3 py-2 flex align-items-center justify-content-between shadow-1 w-full"
+    class="header-text surface-card px-3 py-2 flex align-items-center justify-content-between shadow-1 w-full bg-background/25 rounded-lg"
   >
-    <div class="flex align-items-center gap-3">
+    <div class="header-btn flex align-items-center gap-3">
       <img
-        src="../../assets/casa.png"
+        src="../../assets/casa.svg"
         alt="Logo"
-        class="w-10 h-10 border-circle overflow-hidden object-cover cursor-pointer"
+        class="header-btn w-10 h-10 border-circle overflow-hidden object-cover cursor-pointer"
         @click="goHome"
       />
       <div class="flex flex-col">
-        <span class="font-bold text-white text-sm">{{ auth.userName }}</span>
+        <span class="font-bold text-sm">{{ auth.userName }}</span>
         <Select
           v-if="auth.hasMultipleCondominios"
           v-model="selectedCondominioId"
@@ -22,7 +22,7 @@
           size="small"
           @change="onCondominioChange"
         />
-        <small v-else class="text-surface-400 text-xs">
+        <small v-else class="text-xs">
           {{ auth.condominioActualNombre || "Condominio" }}
         </small>
       </div>
@@ -30,13 +30,15 @@
 
     <div class="flex align-items-center gap-1 ml-auto">
       <Button
-        :icon="esOscuro ? 'pi pi-moon' : 'pi pi-sun'"
+        class="header-btn"
+        :icon="esOscuro ? 'pi pi-sun' : 'pi pi-moon'"
         severity="secondary"
         text
         rounded
         @click="toggleTema"
       />
       <Button
+        class="header-btn"
         icon="pi pi-bell"
         severity="secondary"
         text
@@ -51,6 +53,7 @@
         />
       </Button>
       <Button
+        class="header-btn"
         icon="pi pi-bars"
         severity="secondary"
         text
@@ -150,3 +153,19 @@ function goTo(name) {
   router.push({ name });
 }
 </script>
+<style scoped>
+.header-text {
+  color: var(--p-surface-900);
+}
+</style>
+
+<!--
+  Sin scoped para penetrar PrimeVue y forzar el color del icono.
+  El color del icono debe coincidir con el texto del header.
+  Cambia el valor de --p-surface-900 si quieres otro color.
+-->
+<style>
+button.header-btn .p-button-icon {
+  color: var(--p-surface-900) !important;
+}
+</style>

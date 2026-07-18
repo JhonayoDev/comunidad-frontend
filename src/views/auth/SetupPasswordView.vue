@@ -43,9 +43,11 @@ async function handleSubmit() {
   } catch (e) {
     const status = e.response?.status;
     if (status === 409) {
-      error.value = "El enlace ha expirado o ya fue utilizado. Solicita uno nuevo";
+      error.value =
+        "El enlace ha expirado o ya fue utilizado. Solicita uno nuevo";
     } else {
-      error.value = e.response?.data?.message || "Error al establecer la contraseña";
+      error.value =
+        e.response?.data?.message || "Error al establecer la contraseña";
     }
   } finally {
     loading.value = false;
@@ -54,56 +56,59 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="setup-container">
-    <Card class="setup-card">
-      <template #title> Establecer contraseña </template>
-      <template #subtitle> Crea una contraseña para tu cuenta </template>
-      <template #content>
-        <form v-if="!success" @submit.prevent="handleSubmit" class="setup-form">
-          <div class="field">
-            <label>Nueva contraseña</label>
-            <Password v-model="newPassword" :feedback="true" toggleMask fluid />
-          </div>
-          <div class="field">
-            <label>Confirmar contraseña</label>
-            <Password v-model="confirmPassword" :feedback="false" toggleMask fluid />
-          </div>
-          <Message v-if="error" severity="error">{{ error }}</Message>
-          <Button type="submit" label="Establecer" icon="pi pi-check" :loading="loading" fluid />
-          <Button label="Volver al login" icon="pi pi-arrow-left" variant="text" fluid @click="router.push({ name: 'Login' })" />
-        </form>
-        <div v-else class="flex flex-column align-items-center gap-3">
-          <Message severity="success">
-            Contraseña establecida exitosamente. Ahora puedes iniciar sesión.
-          </Message>
-          <Button label="Ir al login" icon="pi pi-sign-in" fluid @click="router.push({ name: 'Login' })" />
+  <Card class="max-w-sm w-full bg-surface">
+    <template #title> Establecer contraseña </template>
+
+    <template #subtitle> Crea una contraseña para tu cuenta </template>
+
+    <template #content>
+      <form v-if="!success" @submit.prevent="handleSubmit" class="space-y-6 mt-3">
+        <div class="flex flex-col gap-2">
+          <label>Nueva contraseña</label>
+          <Password v-model="newPassword" :feedback="true" toggleMask fluid />
         </div>
-      </template>
-    </Card>
-  </div>
+        <div class="flex flex-col gap-2">
+          <label>Confirmar contraseña</label>
+          <Password
+            v-model="confirmPassword"
+            :feedback="false"
+            toggleMask
+            fluid
+          />
+        </div>
+
+        <Message v-if="error" severity="error">
+          {{ error }}
+        </Message>
+
+        <Button
+          type="submit"
+          label="Establecer"
+          icon="pi pi-check"
+          :loading="loading"
+          fluid
+        />
+        <Button
+          label="Volver al login"
+          icon="pi pi-arrow-left"
+          variant="text"
+          fluid
+          @click="router.push({ name: 'Login' })"
+        />
+      </form>
+      <div v-else class="flex flex-col items-center gap-3">
+        <Message severity="success">
+          Contraseña establecida exitosamente. Ahora puedes iniciar sesión.
+        </Message>
+        <Button
+          label="Ir al login"
+          icon="pi pi-sign-in"
+          fluid
+          @click="router.push({ name: 'Login' })"
+        />
+      </div>
+    </template>
+  </Card>
 </template>
 
-<style scoped>
-.setup-container {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: var(--color-blue-200);
-}
-.setup-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--color-indigo-700);
-}
-.setup-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-</style>
+<style scoped></style>

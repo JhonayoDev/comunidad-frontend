@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useTurno } from "@/composables/useTurno";
@@ -11,18 +11,17 @@ import Badge from "primevue/badge";
 import Button from "primevue/button";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
-import Dialog from "primevue/dialog";
-import Select from "primevue/select";
-import Textarea from "primevue/textarea";
-import InputText from "primevue/inputtext";
+import TurnoCard from "@/components/bitacora/TurnoCard.vue";
+import NovedadDialog from "@/components/bitacora/NovedadDialog.vue";
 
 const router = useRouter();
 const auth = useAuthStore();
+const showNovedadDialog = ref(false);
 
 const {
-  turno, tiempoTranscurrido, turnoLoading, turnoError,
-  showNovedadDialog, enviandoNovedad, nuevaNovedad,
-  accionesLabels, clasificaciones,
+  turno, turnoLoading, turnoError,
+  enviandoNovedad,
+  accionesLabels, confirmMessages, eventoLabel,
   cargarTurno, ejecutarAccion, registrarNovedad,
   formatearFecha,
 } = useTurno();
@@ -64,42 +63,15 @@ onMounted(async () => {
     </template>
 
     <template v-else-if="dashboard">
-      <!-- Card: Estado de Turno -->
-      <Card>
-        <template #content>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <span
-                class="inline-block w-3 h-3 border-round"
-                :style="{ background: turno?.enTurno ? 'var(--p-green-500)' : 'var(--p-gray-400)' }"
-              ></span>
-              <div>
-                <p class="font-bold m-0">
-                  {{ turno?.enTurno ? "En turno" : "Sin turno activo" }}
-                </p>
-                <p v-if="turno?.enTurno" class="text-sm text-surface-500 m-0">
-                  {{ tiempoTranscurrido }} · desde {{ formatearFecha(turno?.ultimoEventoEn) }}
-                </p>
-                <p v-if="turno?.enColacion" class="text-sm text-yellow-600 m-0 font-medium">
-                  En colación
-                </p>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <Button
-                v-for="accion in turno?.accionesDisponibles || []"
-                :key="accion"
-                :label="accionesLabels[accion]?.label || accion"
-                :icon="accionesLabels[accion]?.icon"
-                :severity="accionesLabels[accion]?.severity"
-                size="small"
-                :loading="turnoLoading"
-                @click="ejecutarAccion(accion)"
-              />
-            </div>
-          </div>
-        </template>
-      </Card>
+      <TurnoCard
+        :turno="turno"
+        :loading="turnoLoading"
+        :acciones-labels="accionesLabels"
+        :confirm-messages="confirmMessages"
+        :evento-label="eventoLabel"
+        @action="ejecutarAccion"
+        @novedad="showNovedadDialog = true"
+      />
 
       <!-- Stats grid -->
       <div class="grid grid-cols-2 gap-3">
@@ -307,56 +279,11 @@ onMounted(async () => {
         </template>
       </Card>
 
-      <Dialog
+      <NovedadDialog
         v-model:visible="showNovedadDialog"
-        header="Registrar novedad"
-        :modal="true"
-        class="w-full max-w-md"
-      >
-        <div class="flex flex-col gap-4">
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium">Clasificación</label>
-            <Select
-              v-model="nuevaNovedad.clasificacion"
-              :options="clasificaciones"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecciona clasificación"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium">Descripción</label>
-            <Textarea
-              v-model="nuevaNovedad.observaciones"
-              rows="4"
-              placeholder="Describe la novedad..."
-              :autoResize="true"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium">Foto (opcional)</label>
-            <InputText
-              v-model="nuevaNovedad.fotoUrl"
-              placeholder="URL de la foto"
-            />
-          </div>
-        </div>
-        <template #footer>
-          <Button
-            label="Cancelar"
-            severity="secondary"
-            variant="text"
-            @click="showNovedadDialog = false"
-          />
-          <Button
-            label="Registrar"
-            icon="pi pi-check"
-            :disabled="!nuevaNovedad.observaciones.trim()"
-            :loading="enviandoNovedad"
-            @click="registrarNovedad"
-          />
-        </template>
-      </Dialog>
+        :loading="enviandoNovedad"
+        @register="registrarNovedad"
+      />
     </template>
   </div>
 </template>

@@ -1,37 +1,26 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "../stores/authStore";
+import AuthLayout from "../layouts/AuthLayout.vue";
 
 const routes = [
-  // Rutas públicas — sin layout
+  // Rutas públicas — con AuthLayout como layout compartido
   {
-    path: "/login",
-    name: "Login",
-    component: () => import("../views/auth/LoginView.vue"),
+    path: "",
+    component: AuthLayout,
     meta: { public: true },
-  },
-  {
-    path: "/recuperar-password",
-    name: "ForgotPassword",
-    component: () => import("../views/auth/ForgotPasswordView.vue"),
-    meta: { public: true },
-  },
-  {
-    path: "/reset-password",
-    name: "ResetPassword",
-    component: () => import("../views/auth/ResetPasswordView.vue"),
-    meta: { public: true },
-  },
-  {
-    path: "/setup-password",
-    name: "SetupPassword",
-    component: () => import("../views/auth/SetupPasswordView.vue"),
-    meta: { public: true },
+    children: [
+      { path: "",                    redirect: "/login" },
+      { path: "/login",              name: "Login",          component: () => import("../views/auth/LoginView.vue") },
+      { path: "/recuperar-password", name: "ForgotPassword",  component: () => import("../views/auth/ForgotPasswordView.vue") },
+      { path: "/reset-password",     name: "ResetPassword",   component: () => import("../views/auth/ResetPasswordView.vue") },
+      { path: "/setup-password",     name: "SetupPassword",    component: () => import("../views/auth/SetupPasswordView.vue") },
+    ],
   },
 
   // Rutas privadas — con layout principal
   {
     path: "/",
-    component: () => import("../layouts/AppLayout.vue"),
+    component: () => import("../layouts/MainLayout.vue"),
     meta: { public: false },
     children: [
       {
@@ -39,6 +28,61 @@ const routes = [
         name: "SuperAdminDashboard",
         component: () =>
           import("../views/superadmin/SuperAdminDashboardView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/planes",
+        name: "SaasPlanes",
+        component: () => import("../views/superadmin/SaasPlanesView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/auditoria",
+        name: "SaasAuditoria",
+        component: () => import("../views/superadmin/SaasAuditoriaView.vue"),
+        meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
+      },
+      {
+        path: "superadmin/condominios/:id",
+        name: "SaasCondominioDetail",
+        component: () => import("../views/superadmin/SaasCondominioDetailView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/usuarios",
+        name: "SaasUsuarios",
+        component: () => import("../views/superadmin/SaasUsuariosView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/suscripcion",
+        name: "SaasSuscripcion",
+        component: () => import("../views/superadmin/SaasSuscripcionView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/onboarding",
+        name: "SaasOnboarding",
+        component: () => import("../views/superadmin/SaasOnboardingView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/modulos",
+        name: "SaasModulos",
+        component: () => import("../views/superadmin/SaasModulosView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      // ── Permisos (SUPER_ADMIN) ────────────────────
+      {
+        path: "superadmin/permisos",
+        name: "PermisosMatrix",
+        component: () => import("../views/admin/permisos/PermisosMatrixView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/permisos/cargos",
+        name: "CargosPermisos",
+        component: () => import("../views/admin/permisos/CargosPermisosView.vue"),
         meta: { roles: ["SUPER_ADMIN"] },
       },
       // ── Compartidas ──────────────────────────────
@@ -61,6 +105,11 @@ const routes = [
           roles: ["RESIDENTE", "ADMINISTRADOR", "GUARDIA"],
         },
       },
+      {
+        path: "permisos",
+        name: "MisPermisos",
+        component: () => import("../views/admin/permisos/MisPermisosView.vue"),
+      },
       // ── Guardia / Admin ───────────────────────────
       {
         path: "encomiendas",
@@ -74,7 +123,10 @@ const routes = [
         path: "dashboard",
         name: "Dashboard",
         component: () => import("../views/dashboard/AdminDashboardView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"],
+        },
       },
       {
         path: "vehiculos",
@@ -86,13 +138,28 @@ const routes = [
         path: "solicitudes-admin",
         name: "SolicitudesAdmin",
         component: () => import("../views/admin/SolicitudesAdminView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       {
         path: "residentes",
         name: "Residentes",
         component: () => import("../views/admin/ResidentesView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
+      },
+      {
+        path: "unidades",
+        name: "Unidades",
+        component: () => import("../views/admin/UnidadesView.vue"),
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       // ── Finanzas (cargos) ─────────────────────────
       {
@@ -160,12 +227,16 @@ const routes = [
         path: "anuncios",
         name: "Anuncios",
         component: () => import("../views/gestion/AnunciosView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       {
         path: "notificaciones/plantillas",
         name: "PlantillasNotificacion",
-        component: () => import("../views/admin/PlantillasNotificacionView.vue"),
+        component: () =>
+          import("../views/admin/PlantillasNotificacionView.vue"),
         meta: { roles: ["ADMINISTRADOR"] },
       },
       {
@@ -173,6 +244,16 @@ const routes = [
         name: "CasosAdmin",
         component: () => import("../views/gestion/CasosAdminView.vue"),
         meta: { cargos: ["PRESIDENTE", "SECRETARIO"] },
+      },
+      // ── Archivos ───────────────────────────────────
+      {
+        path: "archivos",
+        name: "Archivos",
+        component: () => import("../views/storage/ArchivosView.vue"),
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "TESORERO"],
+        },
       },
       // ── Guardia ───────────────────────────────────
       {
@@ -209,19 +290,28 @@ const routes = [
         path: "bitacora",
         name: "Bitacora",
         component: () => import("../views/guardia/BitacoraView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"] },
+        meta: {
+          roles: ["GUARDIA", "ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"],
+        },
       },
       {
         path: "bitacora/checklist",
         name: "ChecklistTemplates",
         component: () => import("../views/guardia/ChecklistTemplatesView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["GUARDIA", "ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       {
         path: "autorizaciones",
         name: "Autorizaciones",
         component: () => import("../views/guardia/AutorizacionesView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["GUARDIA", "ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
       },
       // ── Residente ─────────────────────────────────
       {
@@ -285,6 +375,9 @@ function rutaInicial(auth) {
   if (rolesGlobales.includes("SUPER_ADMIN")) {
     return { name: "SuperAdminDashboard" };
   }
+  if (rolesGlobales.includes("SOPORTE")) {
+    return { name: "SaasAuditoria" };
+  }
 
   const rol = auth.condominioActualRol || rolesGlobales[0];
   if (rol === "ADMINISTRADOR") return { name: "Dashboard" };
@@ -338,12 +431,13 @@ router.beforeEach(async (to) => {
 
   if (!necesitaRol && !necesitaCargo) return;
 
-  const cumpleRol = necesitaRol && (
-    routeRoles.some((r) => userRoles.includes(r)) ||
-    routeRoles.includes(auth.condominioActualRol)
-  );
+  const cumpleRol =
+    necesitaRol &&
+    (routeRoles.some((r) => userRoles.includes(r)) ||
+      routeRoles.includes(auth.condominioActualRol));
 
-  const cumpleCargo = necesitaCargo && routeCargos.includes(auth.condominioActualCargo);
+  const cumpleCargo =
+    necesitaCargo && routeCargos.includes(auth.condominioActualCargo);
 
   // Cargo match grants access independently of role
   if (cumpleCargo) return;

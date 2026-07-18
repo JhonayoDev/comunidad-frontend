@@ -208,6 +208,22 @@ onMounted(cargar);
             Abierto por {{ detalle.abiertoPorNombre }} · {{ formatearFecha(detalle.abiertoEn) }}
           </div>
 
+          <Divider v-if="detalle.referencias?.length" align="left">
+            <span class="text-xs font-semibold text-surface-500">Recursos vinculados</span>
+          </Divider>
+          <div v-if="detalle.referencias?.length" class="flex flex-col gap-2">
+            <div
+              v-for="r in detalle.referencias"
+              :key="r.id"
+              class="p-2 surface-50 border-round text-sm flex items-center gap-2"
+            >
+              <i class="pi pi-link text-surface-400" />
+              <Tag :value="r.tipo" size="small" severity="info" />
+              <span class="text-xs text-surface-500 truncate">{{ r.descripcionSnapshot }}</span>
+              <span class="text-xs text-surface-400 ml-auto">{{ r.vinculadoPorNombre }} · {{ formatearFecha(r.vinculadoEn) }}</span>
+            </div>
+          </div>
+
           <Divider v-if="detalle.seguimientos?.length" align="left">
             <span class="text-xs font-semibold text-surface-500">Seguimientos</span>
           </Divider>

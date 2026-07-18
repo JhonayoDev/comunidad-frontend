@@ -33,7 +33,7 @@ function iconoPorTipo(tipo) {
 
 function formatFecha(fecha) {
   if (!fecha) return "";
-  return new Date(fecha).toLocaleDateString("es-CL", {
+  return new Date(fecha).toLocaleString("es-CL", {
     day: "2-digit",
     month: "short",
     hour: "2-digit",

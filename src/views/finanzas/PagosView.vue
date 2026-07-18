@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { finanzasService } from "@/services/finanzasService";
 import { useUnidades } from "@/composables/useUnidades";
@@ -13,6 +13,9 @@ import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
 import DatePicker from "primevue/datepicker";
+import Checkbox from "primevue/checkbox";
+import Divider from "primevue/divider";
+import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
 import Paginator from "primevue/paginator";
@@ -33,6 +36,12 @@ const filtroUnidad = ref(null);
 const filtroDesde = ref(null);
 const filtroHasta = ref(null);
 
+const cuotasDisponibles = ref([]);
+const cargosDisponibles = ref([]);
+const cuotasSeleccionadas = ref([]);
+const cargosSeleccionados = ref([]);
+const cargandoDeudas = ref(false);
+
 const form = ref({
   unidadId: null,
   cuentaDestinoId: null,
@@ -42,6 +51,16 @@ const form = ref({
   bancoOrigen: "",
   comprobanteUrl: "",
   observacion: "",
+});
+
+const totalCalculado = computed(() => {
+  const totalCuotas = cuotasDisponibles.value
+    .filter((c) => cuotasSeleccionadas.value.includes(c.id))
+    .reduce((sum, c) => sum + (c.monto || 0), 0);
+  const totalCargos = cargosDisponibles.value
+    .filter((c) => cargosSeleccionados.value.includes(c.id))
+    .reduce((sum, c) => sum + (c.monto || 0), 0);
+  return totalCuotas + totalCargos;
 });
 
 async function cargar() {
@@ -69,6 +88,59 @@ async function cargar() {
   }
 }
 
+async function cargarDeudasUnidad(unidadId) {
+  const cid = auth.condominioActualId;
+  if (!cid || !unidadId) {
+    cuotasDisponibles.value = [];
+    cargosDisponibles.value = [];
+    cuotasSeleccionadas.value = [];
+    cargosSeleccionados.value = [];
+    return;
+  }
+  cargandoDeudas.value = true;
+  try {
+    const unidad = unidades.value.find((u) => u.id === unidadId);
+    if (!unidad) return;
+
+    const [periodosRes, cargosRes] = await Promise.all([
+      finanzasService.listarGastosComunes(cid),
+      finanzasService.listarCargosAdicionales(cid, { estado: "PENDIENTE" }),
+    ]);
+
+    const cuotas = [];
+    for (const p of periodosRes.data) {
+      if (p.estado === "CERRADO") continue;
+      try {
+        const { data: detalle } = await finanzasService.obtenerGastoComun(cid, p.id);
+        for (const c of detalle.cuotas || []) {
+          if (c.unidadNumero === String(unidad.numero) && c.estadoPago !== "PAGADO") {
+            cuotas.push({ ...c, periodo: p.periodo });
+          }
+        }
+      } catch (e) {
+        console.warn("Error al cargar detalle de periodo", p.id, e);
+      }
+    }
+    cuotasDisponibles.value = cuotas;
+
+    const cargosPendientes = (cargosRes.data || []).filter(
+      (c) => String(c.unidadNumero) === String(unidad.numero) && c.estado !== "ANULADO" && c.estado !== "PAGADO",
+    );
+    cargosDisponibles.value = cargosPendientes;
+
+    cuotasSeleccionadas.value = [];
+    cargosSeleccionados.value = [];
+  } catch (e) {
+    console.error("Error al cargar deudas de la unidad", e);
+  } finally {
+    cargandoDeudas.value = false;
+  }
+}
+
+watch(() => form.value.unidadId, (nuevoId) => {
+  cargarDeudasUnidad(nuevoId);
+});
+
 function abrirCrear() {
   form.value = {
     unidadId: null,
@@ -80,6 +152,10 @@ function abrirCrear() {
     comprobanteUrl: "",
     observacion: "",
   };
+  cuotasDisponibles.value = [];
+  cargosDisponibles.value = [];
+  cuotasSeleccionadas.value = [];
+  cargosSeleccionados.value = [];
   showCrear.value = true;
 }
 
@@ -94,11 +170,17 @@ function formatearFecha(d) {
 async function crearPago() {
   const cid = auth.condominioActualId;
   if (!cid) return;
+  if (!cuotasSeleccionadas.value.length && !cargosSeleccionados.value.length) {
+    return;
+  }
   enviando.value = true;
   try {
     await finanzasService.crearPago(cid, {
       ...form.value,
+      monto: totalCalculado.value,
       fechaPago: formatearFecha(form.value.fechaPago),
+      cuotasGastoComunIds: cuotasSeleccionadas.value,
+      cargosAdicionalesIds: cargosSeleccionados.value,
     });
     showCrear.value = false;
     await cargar();
@@ -112,6 +194,25 @@ async function crearPago() {
 function buscar() {
   pagPagos.reiniciar();
   cargar();
+}
+
+function toggleCuota(cuotaId) {
+  const idx = cuotasSeleccionadas.value.indexOf(cuotaId);
+  if (idx === -1) cuotasSeleccionadas.value.push(cuotaId);
+  else cuotasSeleccionadas.value.splice(idx, 1);
+}
+
+function toggleCargo(cargoId) {
+  const idx = cargosSeleccionados.value.indexOf(cargoId);
+  if (idx === -1) cargosSeleccionados.value.push(cargoId);
+  else cargosSeleccionados.value.splice(idx, 1);
+}
+
+function estadoSeverity(estado) {
+  if (estado === "PAGADO") return "success";
+  if (estado === "VENCIDO") return "danger";
+  if (estado === "PENDIENTE") return "warn";
+  return "info";
 }
 
 onMounted(() => {
@@ -193,23 +294,90 @@ onMounted(() => {
       </div>
     </template>
 
-    <Dialog v-model:visible="showCrear" header="Registrar pago" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog v-model:visible="showCrear" header="Registrar pago" modal :style="{ width: '95%', maxWidth: '560px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Unidad</label>
-          <Select v-model="form.unidadId" :options="unidades" optionLabel="numero" optionValue="id" placeholder="Seleccionar" />
+          <label class="text-sm font-semibold">Unidad *</label>
+          <Select v-model="form.unidadId" :options="unidades" optionLabel="numero" optionValue="id" placeholder="Seleccionar unidad" />
         </div>
+
+        <Divider />
+        <label class="text-sm font-semibold">Deudas a pagar</label>
+
+        <div v-if="!form.unidadId" class="text-sm text-surface-400 py-2">
+          Selecciona una unidad para ver sus deudas pendientes
+        </div>
+
+        <template v-else-if="cargandoDeudas">
+          <Skeleton width="100%" height="80px" />
+        </template>
+
+        <template v-else-if="!cuotasDisponibles.length && !cargosDisponibles.length">
+          <p class="text-sm text-surface-400">No hay deudas pendientes para esta unidad</p>
+        </template>
+
+        <template v-else>
+          <div v-if="cuotasDisponibles.length" class="flex flex-col gap-2">
+            <span class="text-xs text-surface-500 font-semibold uppercase">Gastos Comunes</span>
+            <div
+              v-for="c in cuotasDisponibles"
+              :key="c.id"
+              class="flex items-center gap-2 p-2 surface-ground border-round cursor-pointer"
+              @click="toggleCuota(c.id)"
+            >
+              <Checkbox
+                :binary="true"
+                :modelValue="cuotasSeleccionadas.includes(c.id)"
+                @click.stop
+              />
+              <div class="flex-1 flex items-center justify-between text-sm">
+                <div>
+                  <span class="font-medium">{{ c.periodo }}</span>
+                  <Tag :value="c.estadoPago" :severity="estadoSeverity(c.estadoPago)" size="small" class="ml-2" />
+                </div>
+                <span>{{ c.monto?.toLocaleString("es-CL") }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="cargosDisponibles.length" class="flex flex-col gap-2">
+            <span class="text-xs text-surface-500 font-semibold uppercase mt-2">Cargos Adicionales</span>
+            <div
+              v-for="c in cargosDisponibles"
+              :key="c.id"
+              class="flex items-center gap-2 p-2 surface-ground border-round cursor-pointer"
+              @click="toggleCargo(c.id)"
+            >
+              <Checkbox
+                :binary="true"
+                :modelValue="cargosSeleccionados.includes(c.id)"
+                @click.stop
+              />
+              <div class="flex-1 flex items-center justify-between text-sm">
+                <div>
+                  <span class="font-medium">{{ c.descripcion }}</span>
+                  <span class="text-surface-400 ml-1">{{ c.categoriaNombre }}</span>
+                </div>
+                <span>{{ c.monto?.toLocaleString("es-CL") }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="totalCalculado > 0" class="flex justify-between items-center p-2 surface-card border-round font-bold">
+            <span>Total seleccionado</span>
+            <span class="text-green-600">{{ totalCalculado.toLocaleString("es-CL") }}</span>
+          </div>
+        </template>
+
+        <Divider />
+
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Cuenta destino</label>
+          <label class="text-sm">Cuenta destino *</label>
           <Select v-model="form.cuentaDestinoId" :options="cuentas" optionLabel="nombre" optionValue="id" placeholder="Seleccionar" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Monto</label>
-          <InputNumber v-model="form.monto" :min="0" class="w-full" />
-        </div>
-        <div class="flex flex-col gap-1">
           <label class="text-sm">Fecha pago</label>
-          <DatePicker v-model="form.fechaPago" />
+          <DatePicker v-model="form.fechaPago" class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">N° operación</label>
@@ -226,7 +394,12 @@ onMounted(() => {
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" variant="text" @click="showCrear = false" />
-        <Button label="Registrar" :loading="enviando" @click="crearPago" />
+        <Button
+          label="Registrar pago"
+          :loading="enviando"
+          :disabled="!form.unidadId || !form.cuentaDestinoId || (!cuotasSeleccionadas.length && !cargosSeleccionados.length)"
+          @click="crearPago"
+        />
       </template>
     </Dialog>
   </div>

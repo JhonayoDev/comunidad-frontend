@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
+@import "./theme/app.css";
 
 body {
   margin: 0;

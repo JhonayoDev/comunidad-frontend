@@ -20,4 +20,8 @@ export const casosService = {
   cerrar(condominioId, casoId, resumenCierre) {
     return api.patch(`/condominios/${condominioId}/casos/${casoId}/cerrar`, { resumenCierre });
   },
+
+  vincularRecurso(condominioId, casoId, data) {
+    return api.post(`/condominios/${condominioId}/casos/${casoId}/referencias`, data);
+  },
 };

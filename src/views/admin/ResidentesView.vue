@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { personasService } from "@/services/personasService";
 import { unidadesService } from "@/services/unidadesService";
@@ -73,8 +73,6 @@ const personasFiltradas = computed(() => {
     (p) => p.nombre?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q),
   );
 });
-
-import { computed } from "vue";
 
 function abrirCrear() {
   formPersona.value = { nombre: "", email: "" };

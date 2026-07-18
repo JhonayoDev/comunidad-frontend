@@ -55,11 +55,15 @@ async function handleLogin() {
       if (retryAfter) {
         error.value = `Demasiados intentos. Intenta en ${retryAfter} segundos`;
       } else {
-        error.value = "Demasiados intentos. Espera un momento e intenta nuevamente";
+        error.value =
+          "Demasiados intentos. Espera un momento e intenta nuevamente";
       }
     } else if (status === 401) {
       const msg = data?.message || "";
-      if (msg.toLowerCase().includes("inactiva") || msg.toLowerCase().includes("desactivad")) {
+      if (
+        msg.toLowerCase().includes("inactiva") ||
+        msg.toLowerCase().includes("desactivad")
+      ) {
         error.value = "Cuenta desactivada. Contacta al administrador";
       } else {
         error.value = "Credenciales incorrectas";
@@ -74,81 +78,57 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="login-container">
-    <Card class="login-card">
-      <template #title> Comunidad </template>
+  <Card class="max-w-sm w-full bg-surface/75">
+    <template #title> <div class="primary-text">Comunidad</div> </template>
 
-      <template #subtitle> Sistema de gestión de condominios </template>
+    <template #subtitle>
+      <div class="secondary-text">Sistema de gestión de condominios</div>
+    </template>
 
-      <template #content>
-        <form @submit.prevent="handleLogin" class="login-form">
-          <div class="field">
-            <label>Email</label>
-
-            <InputText
-              v-model="email"
-              type="email"
-              fluid
-              placeholder="usuario@comunidad.cl"
-            />
-          </div>
-
-          <div class="field">
-            <label>Contraseña</label>
-
-            <Password v-model="password" :feedback="false" toggleMask fluid />
-          </div>
-
-          <RouterLink to="/recuperar-password" class="forgot-link">
+    <template #content>
+      <form @submit.prevent="handleLogin" class="space-y-6 mt-3">
+        <div class="primary-text flex flex-col gap-2">
+          <label>Email</label>
+          <InputText
+            id="email"
+            v-model="email"
+            type="email"
+            fluid
+            placeholder="usuario@comunidad.cl"
+          />
+        </div>
+        <div class="primary-text flex flex-col gap-2">
+          <label>Contraseña</label>
+          <Password v-model="password" :feedback="false" toggleMask fluid />
+          <RouterLink
+            to="/recuperar-password"
+            class="text-info hover:underline duration-200"
+          >
             ¿Olvidaste tu contraseña?
           </RouterLink>
+        </div>
 
-          <Message v-if="error" severity="error">
-            {{ error }}
-          </Message>
+        <Message v-if="error" severity="error">
+          {{ error }}
+        </Message>
 
-          <Button
-            type="submit"
-            label="Ingresar"
-            icon="pi pi-sign-in"
-            :loading="loading"
-            fluid
-          />
-        </form>
-      </template>
-    </Card>
-  </div>
+        <Button
+          type="submit"
+          label="Ingresar"
+          icon="pi pi-sign-in"
+          :loading="loading"
+          fluid
+        />
+      </form>
+    </template>
+  </Card>
 </template>
 
 <style scoped>
-.login-container {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: var(--color-blue-200);
+.primary-text {
+  color: var(--p-surface-900);
 }
-
-.login-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--color-indigo-700);
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.forgot-link {
-  text-align: right;
-  font-size: 0.85rem;
+.secondary-text {
+  color: var(--p-surface-600);
 }
 </style>

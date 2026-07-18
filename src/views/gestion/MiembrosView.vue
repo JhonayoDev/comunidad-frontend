@@ -2,10 +2,12 @@
 import { ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { miembrosService } from "@/services/miembrosService";
+import { personasService } from "@/services/personasService";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
+import AutoComplete from "primevue/autocomplete";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import DatePicker from "primevue/datepicker";
@@ -42,6 +44,36 @@ const cargos = [
   { label: "Jardinero", value: "JARDINERO" },
 ];
 
+const personas = ref([]);
+const personasFiltradas = ref([]);
+const personaSeleccionada = ref(null);
+
+function buscarPersona(event) {
+  setTimeout(() => {
+    const q = event.query.toLowerCase();
+    personasFiltradas.value = personas.value.filter(
+      (p) => p.nombre?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q),
+    );
+  }, 100);
+}
+
+function onPersonaSelect() {
+  if (personaSeleccionada.value) {
+    form.value.personaId = personaSeleccionada.value.id;
+  }
+}
+
+async function cargarPersonas() {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  try {
+    const { data } = await personasService.listar(cid);
+    personas.value = data;
+  } catch (e) {
+    console.error("Error al cargar personas", e);
+  }
+}
+
 async function cargar() {
   const cid = auth.condominioActualId;
   if (!cid) return;
@@ -60,6 +92,7 @@ async function cargar() {
 
 function abrirAsignar() {
   form.value = { personaId: null, cargo: null, fechaInicio: new Date() };
+  personaSeleccionada.value = null;
   showAsignar.value = true;
 }
 
@@ -112,7 +145,7 @@ async function desactivar(m) {
   }
 }
 
-onMounted(cargar);
+onMounted(() => { cargar(); cargarPersonas(); });
 </script>
 
 <template>
@@ -161,8 +194,24 @@ onMounted(cargar);
     <Dialog v-model:visible="showAsignar" header="Asignar cargo" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-sm">ID Persona</label>
-          <InputText v-model="form.personaId" placeholder="UUID de la persona" />
+          <label class="text-sm">Persona *</label>
+          <AutoComplete
+            v-model="personaSeleccionada"
+            :suggestions="personasFiltradas"
+            @complete="buscarPersona"
+            @item-select="onPersonaSelect"
+            optionLabel="nombre"
+            placeholder="Buscar por nombre o email"
+            forceSelection
+            class="w-full"
+          >
+            <template #option="slotProps">
+              <div class="flex flex-col">
+                <span class="font-medium">{{ slotProps.option.nombre }}</span>
+                <span class="text-xs text-surface-400">{{ slotProps.option.email }}</span>
+              </div>
+            </template>
+          </AutoComplete>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Cargo</label>
