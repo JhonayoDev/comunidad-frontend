@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useTurno } from "@/composables/useTurno";
 import { useDashboardGuardia } from "@/composables/useDashboardGuardia";
+import ChecklistDialog from "@/components/bitacora/ChecklistDialog.vue";
 
 import Card from "primevue/card";
 import Tag from "primevue/tag";
@@ -19,17 +20,32 @@ const auth = useAuthStore();
 const showNovedadDialog = ref(false);
 
 const {
-  turno, turnoLoading, turnoError,
+  turno,
+  turnoLoading,
+  turnoError,
   enviandoNovedad,
-  accionesLabels, confirmMessages, eventoLabel,
-  cargarTurno, ejecutarAccion, registrarNovedad,
+  accionesLabels,
+  confirmMessages,
+  cargarTurno,
+  ejecutarAccion,
+  registrarNovedad,
   formatearFecha,
+  checklistDialogVisible,
+  checklistItems,
+  checklistLoading,
+  checklistTipo,
+  confirmarConChecklist,
+  cancelarChecklist,
 } = useTurno();
 
 const {
-  dashboard, encomiendas, autorizaciones,
-  loading, error,
-  cargarDashboard, severityEstado,
+  dashboard,
+  encomiendas,
+  autorizaciones,
+  loading,
+  error,
+  cargarDashboard,
+  severityEstado,
 } = useDashboardGuardia();
 
 const mergedError = computed(() => turnoError.value || error.value);
@@ -41,10 +57,7 @@ onMounted(async () => {
     loading.value = false;
     return;
   }
-  await Promise.all([
-    cargarDashboard(cid),
-    cargarTurno(cid),
-  ]);
+  await Promise.all([cargarDashboard(cid), cargarTurno(cid)]);
 });
 </script>
 
@@ -55,11 +68,17 @@ onMounted(async () => {
     </Message>
 
     <template v-if="loading">
-      <Card><template #content><Skeleton width="100%" height="5rem" /></template></Card>
+      <Card
+        ><template #content><Skeleton width="100%" height="5rem" /></template
+      ></Card>
       <div class="grid grid-cols-2 gap-3">
-        <Card v-for="i in 4" :key="i"><template #content><Skeleton width="100%" height="4rem" /></template></Card>
+        <Card v-for="i in 4" :key="i"
+          ><template #content><Skeleton width="100%" height="4rem" /></template
+        ></Card>
       </div>
-      <Card><template #content><Skeleton width="100%" height="8rem" /></template></Card>
+      <Card
+        ><template #content><Skeleton width="100%" height="8rem" /></template
+      ></Card>
     </template>
 
     <template v-else-if="dashboard">
@@ -68,9 +87,7 @@ onMounted(async () => {
         :loading="turnoLoading"
         :acciones-labels="accionesLabels"
         :confirm-messages="confirmMessages"
-        :evento-label="eventoLabel"
         @action="ejecutarAccion"
-        @novedad="showNovedadDialog = true"
       />
 
       <!-- Stats grid -->
@@ -94,7 +111,10 @@ onMounted(async () => {
         >
           <template #content>
             <div class="text-center">
-              <p class="text-3xl font-bold m-0" style="color: var(--p-primary-400)">
+              <p
+                class="text-3xl font-bold m-0"
+                style="color: var(--p-primary-400)"
+              >
                 {{ dashboard.encomiendas || encomiendas.length || 0 }}
               </p>
               <p class="text-xs text-surface-500 m-0 mt-1">Encomiendas</p>
@@ -104,7 +124,10 @@ onMounted(async () => {
         <Card>
           <template #content>
             <div class="text-center">
-              <p class="text-3xl font-bold m-0" style="color: var(--p-primary-400)">
+              <p
+                class="text-3xl font-bold m-0"
+                style="color: var(--p-primary-400)"
+              >
                 {{ dashboard.totalUnidades || 0 }}
               </p>
               <p class="text-xs text-surface-500 m-0 mt-1">Unidades</p>
@@ -114,7 +137,10 @@ onMounted(async () => {
         <Card>
           <template #content>
             <div class="text-center">
-              <p class="text-3xl font-bold m-0" style="color: var(--p-primary-400)">
+              <p
+                class="text-3xl font-bold m-0"
+                style="color: var(--p-primary-400)"
+              >
                 {{ dashboard.residentesActivos || 0 }}
               </p>
               <p class="text-xs text-surface-500 m-0 mt-1">Residentes</p>
@@ -133,7 +159,10 @@ onMounted(async () => {
         <template #content>
           <div class="flex flex-col gap-2">
             <div
-              v-for="(mov, idx) in dashboard.accesos.ultimosMovimientos.slice(0, 5)"
+              v-for="(mov, idx) in dashboard.accesos.ultimosMovimientos.slice(
+                0,
+                5,
+              )"
               :key="idx"
               class="flex items-center justify-between p-2 border-round hover:bg-emphasis"
             >
@@ -174,9 +203,12 @@ onMounted(async () => {
               <div class="flex items-center gap-3">
                 <i class="pi pi-inbox text-lg text-primary"></i>
                 <div>
-                  <p class="text-sm font-medium m-0">{{ env.descripcion || env.receptorNombre }}</p>
+                  <p class="text-sm font-medium m-0">
+                    {{ env.descripcion || env.receptorNombre }}
+                  </p>
                   <p class="text-xs text-surface-500 m-0">
-                    Casa {{ env.unidadNumero }} · {{ formatearFecha(env.fechaIngreso || env.fechaRecepcion) }}
+                    Casa {{ env.unidadNumero }} ·
+                    {{ formatearFecha(env.fechaIngreso || env.fechaRecepcion) }}
                   </p>
                 </div>
               </div>
@@ -206,7 +238,10 @@ onMounted(async () => {
               class="flex items-center justify-between p-2 border-round hover:bg-emphasis"
             >
               <div class="flex items-center gap-3">
-                <i class="pi pi-verified text-lg" style="color: var(--p-primary-400)"></i>
+                <i
+                  class="pi pi-verified text-lg"
+                  style="color: var(--p-primary-400)"
+                ></i>
                 <div>
                   <p class="text-sm font-medium m-0">{{ auth.nombre }}</p>
                   <p class="text-xs text-surface-500 m-0">
@@ -215,7 +250,12 @@ onMounted(async () => {
                 </div>
               </div>
               <span class="text-xs text-surface-400">
-                {{ new Date(auth.fechaInicio).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" }) }}
+                {{
+                  new Date(auth.fechaInicio).toLocaleTimeString("es-CL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                }}
               </span>
             </div>
           </div>
@@ -283,6 +323,14 @@ onMounted(async () => {
         v-model:visible="showNovedadDialog"
         :loading="enviandoNovedad"
         @register="registrarNovedad"
+      />
+      <ChecklistDialog
+        v-model:visible="checklistDialogVisible"
+        :items="checklistItems"
+        :loading="turnoLoading || checklistLoading"
+        :action-label="accionesLabels[checklistTipo]?.label || 'acción'"
+        @confirm="confirmarConChecklist"
+        @update:visible="cancelarChecklist"
       />
     </template>
   </div>

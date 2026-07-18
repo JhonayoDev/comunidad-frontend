@@ -44,7 +44,11 @@ async function iniciarTurno() {
   const cid = auth.condominioActualId;
   if (!cid) return;
   try {
-    await bitacoraService.registrarEvento(cid, { tipo: "TURNO_INICIO", clasificacion: "NORMAL", observaciones: "Inicio de turno" });
+    await bitacoraService.registrarEvento(cid, {
+      tipo: "TURNO_INICIO",
+      clasificacion: "NORMAL",
+      observaciones: "Inicio de turno",
+    });
     await Promise.all([cargarTurno(), cargarEventos()]);
   } catch (e) {
     console.error("Error al iniciar turno", e);
@@ -55,7 +59,11 @@ async function finalizarTurno() {
   const cid = auth.condominioActualId;
   if (!cid) return;
   try {
-    await bitacoraService.registrarEvento(cid, { tipo: "TURNO_FIN", clasificacion: "NORMAL", observaciones: "Fin de turno" });
+    await bitacoraService.registrarEvento(cid, {
+      tipo: "TURNO_FIN",
+      clasificacion: "NORMAL",
+      observaciones: "Fin de turno",
+    });
     await Promise.all([cargarTurno(), cargarEventos()]);
   } catch (e) {
     console.error("Error al finalizar turno", e);
@@ -64,7 +72,6 @@ async function finalizarTurno() {
 
 const clasificacionFilter = ref(null);
 const tipoFilter = ref(null);
-
 
 const clasificaciones = [
   { label: "Normal", value: "NORMAL" },
@@ -92,7 +99,10 @@ const tipoLabels = {
   TURNO_INICIO: { label: "Inicio de turno", icon: "pi pi-play" },
   TURNO_FIN: { label: "Fin de turno", icon: "pi pi-stop" },
   COLACION_SALIDA: { label: "Salida a colación", icon: "pi pi-clock" },
-  COLACION_REGRESO: { label: "Regreso de colación", icon: "pi pi-check-circle" },
+  COLACION_REGRESO: {
+    label: "Regreso de colación",
+    icon: "pi pi-check-circle",
+  },
   NOVEDAD: { label: "Novedad", icon: "pi pi-flag" },
 };
 
@@ -122,7 +132,8 @@ async function cargarEventos() {
   try {
     const params = { ...pagBitacora.paramsPaginacion.value };
     if (tipoFilter.value) params.tipo = tipoFilter.value.value;
-    if (clasificacionFilter.value) params.clasificacion = clasificacionFilter.value.value;
+    if (clasificacionFilter.value)
+      params.clasificacion = clasificacionFilter.value.value;
     const res = await bitacoraService.listar(cid, params);
     pagBitacora.actualizar(res.data);
     eventos.value = pagBitacora.contenido.value;
@@ -193,15 +204,43 @@ onMounted(() => {
       <template #content>
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <i :class="turno?.activo ? 'pi pi-play-circle text-green-500' : 'pi pi-stop-circle text-surface-400'" style="font-size:1.5rem"></i>
+            <i
+              :class="
+                turno?.activo
+                  ? 'pi pi-play-circle text-green-500'
+                  : 'pi pi-stop-circle text-surface-400'
+              "
+              style="font-size: 1.5rem"
+            ></i>
             <div>
-              <span class="text-sm font-medium">{{ turno?.activo ? 'Turno activo' : 'Sin turno activo' }}</span>
-              <span v-if="turno?.activo && turno.inicio" class="text-xs text-surface-400 ml-2">Desde {{ new Date(turno.inicio).toLocaleTimeString('es-CL') }}</span>
+              <span class="text-sm font-medium">{{
+                turno?.activo ? "Turno activo" : "Sin turno activo"
+              }}</span>
+              <span
+                v-if="turno?.activo && turno.inicio"
+                class="text-xs text-surface-400 ml-2"
+                >Desde
+                {{ new Date(turno.inicio).toLocaleTimeString("es-CL") }}</span
+              >
             </div>
           </div>
           <div class="flex gap-2">
-            <Button v-if="!turno?.activo" label="Iniciar turno" icon="pi pi-play" size="small" severity="success" @click="iniciarTurno" />
-            <Button v-if="turno?.activo" label="Finalizar turno" icon="pi pi-stop" size="small" severity="danger" @click="finalizarTurno" />
+            <Button
+              v-if="!turno?.activo"
+              label="Iniciar turno"
+              icon="pi pi-play"
+              size="small"
+              severity="success"
+              @click="iniciarTurno"
+            />
+            <Button
+              v-if="turno?.activo"
+              label="Finalizar turno"
+              icon="pi pi-stop"
+              size="small"
+              severity="danger"
+              @click="finalizarTurno"
+            />
           </div>
         </div>
       </template>
@@ -261,11 +300,12 @@ onMounted(() => {
               <span
                 class="inline-flex align-items-center justify-content-center w-2rem h-2rem border-round"
                 :style="{
-                  background: evento.clasificacion === 'EMERGENCIA'
-                    ? 'var(--p-red-100)'
-                    : evento.clasificacion === 'URGENTE'
-                      ? 'var(--p-yellow-100)'
-                      : 'var(--p-surface-100)',
+                  background:
+                    evento.clasificacion === 'EMERGENCIA'
+                      ? 'var(--p-red-100)'
+                      : evento.clasificacion === 'URGENTE'
+                        ? 'var(--p-yellow-100)'
+                        : 'var(--p-surface-100)',
                 }"
               >
                 <i
@@ -310,7 +350,10 @@ onMounted(() => {
         :rows="pagBitacora.tamano.value"
         :totalRecords="pagBitacora.totalElementos.value"
         :first="pagBitacora.pagina.value * pagBitacora.tamano.value"
-        @page="pagBitacora.alCambiarPagina($event); cargarEventos()"
+        @page="
+          pagBitacora.alCambiarPagina($event);
+          cargarEventos();
+        "
       />
     </template>
 
