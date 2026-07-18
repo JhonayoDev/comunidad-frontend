@@ -19,6 +19,10 @@ const auth = useAuthStore();
 const { encomiendas, loading, error, cargar, entregar, pag } = useEncomiendas();
 
 const mostrarFormulario = ref(false);
+const mostrarEntrega = ref(false);
+const encomiendaEntregando = ref(null);
+const nombreRetira = ref("");
+const rutRetira = ref("");
 const loadingForm = ref(false);
 const loadingUnidades = ref(false);
 const errorGeneral = ref("");
@@ -86,13 +90,20 @@ async function registrar() {
   }
 }
 
-async function handleEntregar(e) {
-  const nombreRetira = prompt("Nombre de quien retira:");
-  if (!nombreRetira) return;
-  const rutRetira = prompt("RUT de quien retira:");
-  if (!rutRetira) return;
-  const resultado = await entregar(e, nombreRetira, rutRetira);
-  if (resultado !== true) alert(resultado);
+function abrirEntrega(e) {
+  encomiendaEntregando.value = e;
+  nombreRetira.value = "";
+  rutRetira.value = "";
+  mostrarEntrega.value = true;
+}
+
+async function handleEntregar() {
+  if (!nombreRetira.value || !rutRetira.value) return;
+  const resultado = await entregar(encomiendaEntregando.value, nombreRetira.value, rutRetira.value);
+  if (resultado === true) {
+    mostrarEntrega.value = false;
+    encomiendaEntregando.value = null;
+  }
 }
 
 function cancelar() {
@@ -183,7 +194,7 @@ onMounted(() => { cargarUnidades(); cargar({ estado: "PENDIENTE" }); });
             </div>
             <div class="flex flex-col items-end gap-2 shrink-0">
               <Tag :value="e.estado === 'PENDIENTE' ? 'Pendiente' : 'Entregada'" :severity="e.estado === 'PENDIENTE' ? 'warn' : 'success'" size="small" />
-              <Button v-if="e.estado === 'PENDIENTE'" label="Entregar" size="small" severity="secondary" variant="outlined" @click="handleEntregar(e)" />
+              <Button v-if="e.estado === 'PENDIENTE'" label="Entregar" size="small" severity="secondary" variant="outlined" @click="abrirEntrega(e)" />
             </div>
           </div>
         </template>
@@ -194,6 +205,25 @@ onMounted(() => { cargarUnidades(); cargar({ estado: "PENDIENTE" }); });
         :first="pag.pagina.value * pag.tamano.value"
         @page="pag.alCambiarPagina($event); cargar({ estado: filtroEstado.value || undefined })"
       />
+    <Dialog v-model:visible="mostrarEntrega" header="Entregar encomienda" modal :style="{ width: '95%', maxWidth: '400px' }">
+      <div class="flex flex-col gap-3">
+        <p class="text-sm text-surface-500 m-0">
+          Entregando encomienda de <strong>{{ encomiendaEntregando?.nombreDestinatario }}</strong> — Casa {{ encomiendaEntregando?.unidadNumero }}
+        </p>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold">Nombre de quien retira *</label>
+          <InputText v-model="nombreRetira" placeholder="Nombre completo" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold">RUT de quien retira *</label>
+          <InputText v-model="rutRetira" placeholder="12.345.678-9" />
+        </div>
+      </div>
+      <template #footer>
+        <Button label="Cancelar" severity="secondary" variant="text" @click="mostrarEntrega = false" />
+        <Button label="Confirmar entrega" :loading="loading" :disabled="!nombreRetira || !rutRetira" @click="handleEntregar" />
+      </template>
+    </Dialog>
     </div>
   </div>
 </template>

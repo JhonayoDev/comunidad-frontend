@@ -4,13 +4,28 @@ import { useAuthStore } from "@/stores/authStore";
 
 const NAV_ITEMS_BY_ROLE = {
   SUPER_ADMIN: [
+    { label: "Dashboard", icon: "pi pi-home", routeName: "SuperAdminDashboard" },
     { label: "Condominios", icon: "pi pi-building", routeName: "SuperAdminDashboard" },
+    { label: "Planes", icon: "pi pi-tags", routeName: "SaasPlanes" },
+    { label: "Auditoría", icon: "pi pi-history", routeName: "SaasAuditoria" },
+    { label: "Permisos", icon: "pi pi-lock", routeName: "PermisosMatrix" },
+    { label: "Cargos Perm.", icon: "pi pi-users", routeName: "CargosPermisos" },
+    { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
+  ],
+  SOPORTE: [
+    { label: "Auditoría", icon: "pi pi-history", routeName: "SaasAuditoria" },
+    { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],
   ADMINISTRADOR: [
     { label: "Inicio", icon: "pi pi-home", routeName: "Dashboard" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
+    { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
     { label: "Visitas", icon: "pi pi-eye", routeName: "Visitas" },
     { label: "Portón", icon: "pi pi-shield", routeName: "Porton" },
     { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },
@@ -20,6 +35,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Anuncios", icon: "pi pi-megaphone", routeName: "Anuncios" },
     { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
     { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],
   GUARDIA: [
     { label: "Inicio", icon: "pi pi-home", routeName: "GuardiaDashboard" },
@@ -41,6 +57,7 @@ const RESIDENTE_ITEMS = [
   { label: "Encomiendas", icon: "pi pi-box", routeName: "MisEncomiendas" },
   { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
   { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
+  { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
 ];
 
 const CARGO_NAV_ITEMS = {
@@ -61,12 +78,14 @@ const CARGO_NAV_ITEMS = {
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
+    { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
     { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },
     { label: "Visitas", icon: "pi pi-eye", routeName: "Visitas" },
     { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
     { label: "Checklist", icon: "pi pi-check-square", routeName: "ChecklistTemplates" },
     { label: "Plantillas Notif.", icon: "pi pi-envelope", routeName: "PlantillasNotificacion" },
     { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],
   TESORERO: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
@@ -80,6 +99,7 @@ const CARGO_NAV_ITEMS = {
     { label: "Plantillas", icon: "pi pi-copy", routeName: "PlantillasGasto" },
     { label: "Categorías", icon: "pi pi-tag", routeName: "Categorias" },
     { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],
   SECRETARIO: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
@@ -92,12 +112,14 @@ const CARGO_NAV_ITEMS = {
     { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },
     { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
     { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],
   DELEGADO: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
     { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],
 };
 

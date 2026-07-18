@@ -17,6 +17,18 @@ export const bitacoraService = {
     return api.get(`/condominios/${condominioId}/bitacora/${id}`);
   },
 
+  porDia(condominioId, params = {}) {
+    return api.get(`/condominios/${condominioId}/bitacora/por-dia`, { params });
+  },
+
+  misEntradas(condominioId) {
+    return api.get(`/condominios/${condominioId}/bitacora/mis-entradas`);
+  },
+
+  miTurnoEntradas(condominioId) {
+    return api.get(`/condominios/${condominioId}/bitacora/mi-turno/entradas`);
+  },
+
   obtenerChecklist(condominioId, tipoEvento) {
     return api.get(`/condominios/${condominioId}/bitacora/checklist-templates/${tipoEvento}`);
   },

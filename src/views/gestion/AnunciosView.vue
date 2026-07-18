@@ -9,6 +9,7 @@ import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
+import DatePicker from "primevue/datepicker";
 import ToggleSwitch from "primevue/toggleswitch";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
@@ -158,6 +159,7 @@ onMounted(cargar);
 
     <Dialog v-model:visible="showCrear" header="Nuevo anuncio" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
+        <div class="text-xs text-surface-400 mb-1">{{ auth.condominioActualNombre }}</div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Título</label>
           <InputText v-model="form.titulo" />
@@ -173,6 +175,10 @@ onMounted(cargar);
         <div class="flex flex-col gap-1">
           <label class="text-sm">Prioridad</label>
           <Select v-model="form.prioridad" :options="prioridades" optionLabel="label" optionValue="value" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Fecha expiración (opcional)</label>
+          <DatePicker v-model="form.fechaExpiracion" showIcon class="w-full" />
         </div>
         <div class="flex items-center gap-2">
           <ToggleSwitch v-model="form.requiereConfirmacion" inputId="req" />

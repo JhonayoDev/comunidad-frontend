@@ -30,6 +30,61 @@ const routes = [
           import("../views/superadmin/SuperAdminDashboardView.vue"),
         meta: { roles: ["SUPER_ADMIN"] },
       },
+      {
+        path: "superadmin/planes",
+        name: "SaasPlanes",
+        component: () => import("../views/superadmin/SaasPlanesView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/auditoria",
+        name: "SaasAuditoria",
+        component: () => import("../views/superadmin/SaasAuditoriaView.vue"),
+        meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
+      },
+      {
+        path: "superadmin/condominios/:id",
+        name: "SaasCondominioDetail",
+        component: () => import("../views/superadmin/SaasCondominioDetailView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/usuarios",
+        name: "SaasUsuarios",
+        component: () => import("../views/superadmin/SaasUsuariosView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/suscripcion",
+        name: "SaasSuscripcion",
+        component: () => import("../views/superadmin/SaasSuscripcionView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/onboarding",
+        name: "SaasOnboarding",
+        component: () => import("../views/superadmin/SaasOnboardingView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/modulos",
+        name: "SaasModulos",
+        component: () => import("../views/superadmin/SaasModulosView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      // ── Permisos (SUPER_ADMIN) ────────────────────
+      {
+        path: "superadmin/permisos",
+        name: "PermisosMatrix",
+        component: () => import("../views/admin/permisos/PermisosMatrixView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/permisos/cargos",
+        name: "CargosPermisos",
+        component: () => import("../views/admin/permisos/CargosPermisosView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
       // ── Compartidas ──────────────────────────────
       {
         path: "notificaciones",
@@ -49,6 +104,11 @@ const routes = [
         meta: {
           roles: ["RESIDENTE", "ADMINISTRADOR", "GUARDIA"],
         },
+      },
+      {
+        path: "permisos",
+        name: "MisPermisos",
+        component: () => import("../views/admin/permisos/MisPermisosView.vue"),
       },
       // ── Guardia / Admin ───────────────────────────
       {
@@ -87,6 +147,15 @@ const routes = [
         path: "residentes",
         name: "Residentes",
         component: () => import("../views/admin/ResidentesView.vue"),
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO"],
+        },
+      },
+      {
+        path: "unidades",
+        name: "Unidades",
+        component: () => import("../views/admin/UnidadesView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
           cargos: ["PRESIDENTE", "SECRETARIO"],
@@ -175,6 +244,16 @@ const routes = [
         name: "CasosAdmin",
         component: () => import("../views/gestion/CasosAdminView.vue"),
         meta: { cargos: ["PRESIDENTE", "SECRETARIO"] },
+      },
+      // ── Archivos ───────────────────────────────────
+      {
+        path: "archivos",
+        name: "Archivos",
+        component: () => import("../views/storage/ArchivosView.vue"),
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "TESORERO"],
+        },
       },
       // ── Guardia ───────────────────────────────────
       {
@@ -295,6 +374,9 @@ function rutaInicial(auth) {
 
   if (rolesGlobales.includes("SUPER_ADMIN")) {
     return { name: "SuperAdminDashboard" };
+  }
+  if (rolesGlobales.includes("SOPORTE")) {
+    return { name: "SaasAuditoria" };
   }
 
   const rol = auth.condominioActualRol || rolesGlobales[0];

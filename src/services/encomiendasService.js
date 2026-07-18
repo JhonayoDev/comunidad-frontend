@@ -13,8 +13,12 @@ export const encomiendasService = {
     return api.post(`/condominios/${condominioId}/encomiendas`, data);
   },
 
-  entregar(condominioId, id) {
-    return api.post(`/condominios/${condominioId}/encomiendas/${id}/entregar`);
+  entregar(condominioId, id, data) {
+    return api.patch(`/condominios/${condominioId}/encomiendas/${id}/entregar`, data);
+  },
+
+  cerrar(condominioId, id) {
+    return api.patch(`/condominios/${condominioId}/encomiendas/${id}/cerrar`);
   },
 
   getMisEncomiendas(condominioId) {
