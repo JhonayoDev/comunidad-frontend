@@ -30,13 +30,13 @@ const headerInfo = computed(() => {
 
   if (props.turno?.enColacion) {
     return {
-      text: `En Colación -> desde ${hora}`,
+      text: `En Colación: desde ${hora}`,
       dotColor: "var(--p-yellow-500)",
     };
   }
   if (props.turno?.enTurno) {
     return {
-      text: `En turno -> desde ${hora}`,
+      text: `En turno: desde ${hora}`,
       dotColor: "var(--p-green-500)",
     };
   }
@@ -61,21 +61,31 @@ function handleClick(accion) {
 </script>
 
 <template>
-  <Card class="bg-surface/80">
+  <Card
+    class="bg-surface/75"
+    :pt="{
+      body: { class: 'p-2' },
+      title: { class: 'pt-2 px-0 pb-0' },
+      content: { class: 'p-0' },
+    }"
+  >
     <template #title>
-      <div class="flex items-center justify-between gap-2">
+      <div class="flex justify-between">
         <div class="flex items-center gap-2">
           <span
-            class="inline-block w-3 h-3 border-round"
+            class="w-2 h-8 border-round"
             :style="{ background: headerInfo.dotColor }"
           ></span>
-          <span class="font-bold">{{ headerInfo.text }}</span>
+          <span class="font-bold text-surface-900 text-sm">{{
+            headerInfo.text
+          }}</span>
         </div>
         <Button
           :icon="collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'"
           text
           rounded
           size="small"
+          class="text-surface-900"
           @click="collapsed = !collapsed"
         />
       </div>
@@ -100,3 +110,8 @@ function handleClick(accion) {
     </template>
   </Card>
 </template>
+<style scoped>
+.header-text {
+  color: var(--p-surface-900);
+}
+</style>

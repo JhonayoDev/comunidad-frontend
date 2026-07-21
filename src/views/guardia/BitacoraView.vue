@@ -4,6 +4,8 @@ import { ref, watch, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { bitacoraService } from "@/services/bitacoraService";
 import { usePaginacion } from "@/composables/usePaginacion";
+import { useTurno } from "@/composables/useTurno";
+import TurnoCard from "@/components/bitacora/TurnoCard.vue";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -23,52 +25,9 @@ const loading = ref(true);
 const error = ref(null);
 const showDialog = ref(false);
 const enviando = ref(false);
-const turno = ref(null);
-const loadingTurno = ref(false);
 
-async function cargarTurno() {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  loadingTurno.value = true;
-  try {
-    const { data } = await bitacoraService.miTurno(cid);
-    turno.value = data;
-  } catch {
-    turno.value = null;
-  } finally {
-    loadingTurno.value = false;
-  }
-}
-
-async function iniciarTurno() {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  try {
-    await bitacoraService.registrarEvento(cid, {
-      tipo: "TURNO_INICIO",
-      clasificacion: "NORMAL",
-      observaciones: "Inicio de turno",
-    });
-    await Promise.all([cargarTurno(), cargarEventos()]);
-  } catch (e) {
-    console.error("Error al iniciar turno", e);
-  }
-}
-
-async function finalizarTurno() {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  try {
-    await bitacoraService.registrarEvento(cid, {
-      tipo: "TURNO_FIN",
-      clasificacion: "NORMAL",
-      observaciones: "Fin de turno",
-    });
-    await Promise.all([cargarTurno(), cargarEventos()]);
-  } catch (e) {
-    console.error("Error al finalizar turno", e);
-  }
-}
+const { turno, turnoLoading, accionesLabels, confirmMessages, ejecutarAccion } =
+  useTurno();
 
 const clasificacionFilter = ref(null);
 const tipoFilter = ref(null);
@@ -179,7 +138,6 @@ watch([tipoFilter, clasificacionFilter], () => {
 });
 
 onMounted(() => {
-  cargarTurno();
   cargarEventos();
 });
 </script>
@@ -189,6 +147,14 @@ onMounted(() => {
     <Message v-if="error" severity="error" :closable="false">
       {{ error }}
     </Message>
+    <TurnoCard
+      v-if="auth.condominioActualRol === 'GUARDIA' && turno"
+      :turno="turno"
+      :loading="turnoLoading"
+      :acciones-labels="accionesLabels"
+      :confirm-messages="confirmMessages"
+      @action="ejecutarAccion"
+    />
 
     <div class="flex items-center justify-between">
       <h2 class="text-xl font-bold m-0">Bitácora</h2>
@@ -200,71 +166,29 @@ onMounted(() => {
       />
     </div>
 
-    <Card v-if="auth.condominioActualRol === 'GUARDIA' && !loadingTurno">
-      <template #content>
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <i
-              :class="
-                turno?.activo
-                  ? 'pi pi-play-circle text-green-500'
-                  : 'pi pi-stop-circle text-surface-400'
-              "
-              style="font-size: 1.5rem"
-            ></i>
-            <div>
-              <span class="text-sm font-medium">{{
-                turno?.activo ? "Turno activo" : "Sin turno activo"
-              }}</span>
-              <span
-                v-if="turno?.activo && turno.inicio"
-                class="text-xs text-surface-400 ml-2"
-                >Desde
-                {{ new Date(turno.inicio).toLocaleTimeString("es-CL") }}</span
-              >
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <Button
-              v-if="!turno?.activo"
-              label="Iniciar turno"
-              icon="pi pi-play"
-              size="small"
-              severity="success"
-              @click="iniciarTurno"
-            />
-            <Button
-              v-if="turno?.activo"
-              label="Finalizar turno"
-              icon="pi pi-stop"
-              size="small"
-              severity="danger"
-              @click="finalizarTurno"
-            />
-          </div>
-        </div>
-      </template>
-    </Card>
-
-    <div class="flex gap-2">
-      <Select
-        v-model="tipoFilter"
-        :options="tiposEvento"
-        optionLabel="label"
-        placeholder="Todos los tipos"
-        class="w-11rem"
-        clearable
-        showClear
-      />
-      <Select
-        v-model="clasificacionFilter"
-        :options="clasificaciones"
-        optionLabel="label"
-        placeholder="Todas las clasificaciones"
-        class="w-12rem"
-        clearable
-        showClear
-      />
+    <div class="flex flex-col sm:flex-row gap-2">
+      <div class="w-full sm:flex-1">
+        <Select
+          v-model="tipoFilter"
+          :options="tiposEvento"
+          optionLabel="label"
+          placeholder="Todos los tipos"
+          fluid
+          clearable
+          showClear
+        />
+      </div>
+      <div class="w-full sm:flex-1">
+        <Select
+          v-model="clasificacionFilter"
+          :options="clasificaciones"
+          optionLabel="label"
+          placeholder="Todas las clasificaciones"
+          fluid
+          clearable
+          showClear
+        />
+      </div>
     </div>
 
     <template v-if="loading">
