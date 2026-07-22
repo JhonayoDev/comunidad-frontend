@@ -6,6 +6,7 @@ import { bitacoraService } from "@/services/bitacoraService";
 import { usePaginacion } from "@/composables/usePaginacion";
 import { useTurno } from "@/composables/useTurno";
 import TurnoCard from "@/components/bitacora/TurnoCard.vue";
+import EventoCard from "@/components/bitacora/EventoCard.vue";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -13,7 +14,6 @@ import Dialog from "primevue/dialog";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 import InputText from "primevue/inputtext";
-import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Paginator from "primevue/paginator";
@@ -53,35 +53,6 @@ const nuevaNovedad = ref({
   observaciones: "",
   fotoUrl: "",
 });
-
-const tipoLabels = {
-  TURNO_INICIO: { label: "Inicio de turno", icon: "pi pi-play" },
-  TURNO_FIN: { label: "Fin de turno", icon: "pi pi-stop" },
-  COLACION_SALIDA: { label: "Salida a colación", icon: "pi pi-clock" },
-  COLACION_REGRESO: {
-    label: "Regreso de colación",
-    icon: "pi pi-check-circle",
-  },
-  NOVEDAD: { label: "Novedad", icon: "pi pi-flag" },
-};
-
-function severityClasificacion(clas) {
-  if (clas === "EMERGENCIA") return "danger";
-  if (clas === "URGENTE") return "warn";
-  if (clas === "NORMAL") return "success";
-  return "info";
-}
-
-function formatearFecha(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString("es-CL", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 async function cargarEventos() {
   const cid = auth.condominioActualId;
@@ -214,61 +185,11 @@ onMounted(() => {
 
     <template v-else>
       <div class="flex flex-col gap-3">
-        <Card
+        <EventoCard
           v-for="evento in eventos"
           :key="evento.id"
-          class="cursor-pointer hover:surface-hover transition-shadow"
-        >
-          <template #content>
-            <div class="flex items-start gap-3">
-              <span
-                class="inline-flex align-items-center justify-content-center w-2rem h-2rem border-round"
-                :style="{
-                  background:
-                    evento.clasificacion === 'EMERGENCIA'
-                      ? 'var(--p-red-100)'
-                      : evento.clasificacion === 'URGENTE'
-                        ? 'var(--p-yellow-100)'
-                        : 'var(--p-surface-100)',
-                }"
-              >
-                <i
-                  class="pi"
-                  :class="tipoLabels[evento.tipo]?.icon || 'pi-circle'"
-                  style="font-size: 0.9rem"
-                ></i>
-              </span>
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <p class="text-sm font-medium m-0">
-                    {{ tipoLabels[evento.tipo]?.label || evento.tipo }}
-                  </p>
-                  <div class="flex items-center gap-2">
-                    <Tag
-                      :value="evento.clasificacion"
-                      :severity="severityClasificacion(evento.clasificacion)"
-                    />
-                    <span class="text-xs text-surface-400">
-                      {{ formatearFecha(evento.registradoEn) }}
-                    </span>
-                  </div>
-                </div>
-                <p
-                  v-if="evento.observaciones"
-                  class="text-sm text-surface-600 m-0 mt-2"
-                >
-                  {{ evento.observaciones }}
-                </p>
-                <p
-                  v-if="evento.registradoPorNombre"
-                  class="text-xs text-surface-400 m-0 mt-1"
-                >
-                  {{ evento.registradoPorNombre }}
-                </p>
-              </div>
-            </div>
-          </template>
-        </Card>
+          :evento="evento"
+        />
       </div>
       <Paginator
         :rows="pagBitacora.tamano.value"

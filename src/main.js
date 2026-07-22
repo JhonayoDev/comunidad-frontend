@@ -30,6 +30,16 @@ app.use(PrimeVue, {
       },
     },
   },
+  pt: {
+    card: {
+      // Estandarizas tus paddings
+      body: { class: "p-2" },
+      title: { class: "pt-2 px-0 pb-0" },
+      content: { class: "p-0" },
+    },
+    // Puedes hacer lo mismo con otros componentes:
+    // button: { root: { class: '...' } }
+  },
 });
 
 app.use(ConfirmationService);

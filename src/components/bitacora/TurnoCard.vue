@@ -61,14 +61,7 @@ function handleClick(accion) {
 </script>
 
 <template>
-  <Card
-    class="bg-surface/75"
-    :pt="{
-      body: { class: 'p-2' },
-      title: { class: 'pt-2 px-0 pb-0' },
-      content: { class: 'p-0' },
-    }"
-  >
+  <Card class="bg-surface/75">
     <template #title>
       <div class="flex justify-between">
         <div class="flex items-center gap-2">
@@ -85,7 +78,7 @@ function handleClick(accion) {
           text
           rounded
           size="small"
-          class="text-surface-900"
+          class="text-boton-accion"
           @click="collapsed = !collapsed"
         />
       </div>

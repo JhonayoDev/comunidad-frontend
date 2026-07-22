@@ -24,7 +24,7 @@
   --color-primary: var(--p-primary-color);
   --color-primary-hover: var(--p-primary-hover-color);
   --color-primary-active: var(--p-primary-active-color);
-
+  --color-boton-accion: var(--p-primary-boton-accion);
   /* =========================================
      TEXTOS
      ========================================= */
