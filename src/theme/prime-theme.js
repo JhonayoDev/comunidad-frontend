@@ -218,5 +218,30 @@ export default definePreset(Aura, {
         selectedFocusColor: "{primary.textResaltado}",
       },
     },
+    //TODO: revisar los tokens para poder ajustar bien los colores
+    datepicker: {
+      panel: {
+        background: "color-mix(in srgb, {primary.surface} 98%)",
+        bordercolor:
+          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
+      },
+      header: {
+        background: "color-mix(in srgb, {primary.surface} 98%)",
+        color: "#c53b3b",
+      },
+      title: {
+        color: "#c53b3b",
+      },
+      weekday: {
+        color: "{primary.textSecondary}", // días de la semana (lu, ma, mi...)
+      },
+      date: {
+        color: "{primary.textSecondary}", // días de la semana (lu, ma, mi...)
+        hoverbackground: "{primary.hoverColor}", // hover sobre un día
+        hovercolor: "{primary.textPrincipal}",
+        selectedbackground: "{primary.color}", // fondo del día seleccionado
+        selectedcolor: "#ffffff",
+      },
+    },
   },
 });

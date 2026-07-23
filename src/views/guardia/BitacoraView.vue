@@ -7,6 +7,7 @@ import { usePaginacion } from "@/composables/usePaginacion";
 import { useTurno } from "@/composables/useTurno";
 import TurnoCard from "@/components/bitacora/TurnoCard.vue";
 import EventoCard from "@/components/bitacora/EventoCard.vue";
+import FiltroFechas from "@/components/FiltroFechas.vue";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -31,6 +32,7 @@ const { turno, turnoLoading, accionesLabels, confirmMessages, ejecutarAccion } =
 
 const clasificacionFilter = ref(null);
 const tipoFilter = ref(null);
+const rangoFechas = ref(null);
 
 const clasificaciones = [
   { label: "Normal", value: "NORMAL" },
@@ -54,6 +56,10 @@ const nuevaNovedad = ref({
   fotoUrl: "",
 });
 
+function formatearDateLocal(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 async function cargarEventos() {
   const cid = auth.condominioActualId;
   if (!cid) return;
@@ -64,6 +70,12 @@ async function cargarEventos() {
     if (tipoFilter.value) params.tipo = tipoFilter.value.value;
     if (clasificacionFilter.value)
       params.clasificacion = clasificacionFilter.value.value;
+    if (rangoFechas.value?.[0]) {
+      params.desde = `${formatearDateLocal(rangoFechas.value[0])}T00:00:00`;
+    }
+    if (rangoFechas.value?.[1]) {
+      params.hasta = `${formatearDateLocal(rangoFechas.value[1])}T23:59:59`;
+    }
     const res = await bitacoraService.listar(cid, params);
     pagBitacora.actualizar(res.data);
     eventos.value = pagBitacora.contenido.value;
@@ -103,7 +115,7 @@ async function registrarNovedad() {
   }
 }
 
-watch([tipoFilter, clasificacionFilter], () => {
+watch([tipoFilter, clasificacionFilter, rangoFechas], () => {
   pagBitacora.reiniciar();
   cargarEventos();
 });
@@ -161,6 +173,7 @@ onMounted(() => {
         />
       </div>
     </div>
+    <FiltroFechas v-model="rangoFechas" />
 
     <template v-if="loading">
       <div class="flex flex-col gap-3">
@@ -175,9 +188,11 @@ onMounted(() => {
     <template v-else-if="!eventos.length">
       <Card>
         <template #content>
-          <div class="flex flex-column align-items-center gap-2 py-4">
-            <i class="pi pi-book text-4xl text-surface-300"></i>
-            <p class="text-surface-400 m-0">No hay eventos registrados</p>
+          <div
+            class="flex flex-column align-items-center gap-2 py-4 text-text/75"
+          >
+            <i class="pi pi-book text-4xl"></i>
+            <p class="m-0">No hay eventos registrados</p>
           </div>
         </template>
       </Card>

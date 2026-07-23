@@ -25,7 +25,7 @@ function colorBar(clas) {
   if (clas === "EMERGENCIA") return "var(--p-danger-600)";
   if (clas === "URGENTE") return "var(--p-warning-600)";
   if (clas === "NORMAL") return "var(--p-success-600)";
-  return "var(--p-primary-600)";
+  return "var(--p-info-600)";
 }
 
 function severityTag(clas) {

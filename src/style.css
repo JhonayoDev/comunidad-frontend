@@ -16,3 +16,14 @@ body {
   display: flex;
   flex-direction: column;
 }
+/* style.css */
+
+@layer primevue {
+  /* Resuelve el conflicto entre min-width: 441px y width: 306px */
+  .p-datepicker-panel {
+    min-width: unset !important;
+    width: auto !important;
+    max-width: calc(100vw - 2rem);
+  }
+}
+
