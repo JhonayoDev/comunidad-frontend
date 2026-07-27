@@ -245,6 +245,20 @@ const routes = [
         component: () => import("../views/gestion/CasosAdminView.vue"),
         meta: { cargos: ["PRESIDENTE", "SECRETARIO"] },
       },
+      // ── Personal ────────────────────────────────────
+      {
+        path: "personal",
+        name: "Personal",
+        component: () => import("../views/admin/PersonalView.vue"),
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+      },
+      // ── Reglas de Notificación ──────────────────────
+      {
+        path: "notificaciones/reglas",
+        name: "ReglasNotificacion",
+        component: () => import("../views/gestion/ReglasNotificacionView.vue"),
+        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"] },
+      },
       // ── Archivos ───────────────────────────────────
       {
         path: "archivos",
