@@ -10,21 +10,48 @@ export function useTurno() {
   const turnoError = ref(null);
   const enviandoNovedad = ref(false);
 
+  // ─── Estado del checklist dialog ──────────────────────────────────────
+  const checklistDialogVisible = ref(false);
+  const checklistItems = ref([]);
+  const checklistTipo = ref(null);
+  const checklistLoading = ref(false);
+
   const accionesLabels = {
-    TURNO_INICIO: { label: "Iniciar turno", icon: "pi pi-play", severity: "success" },
-    TURNO_FIN: { label: "Finalizar turno", icon: "pi pi-stop", severity: "danger" },
-    COLACION_SALIDA: { label: "Salir a colación", icon: "pi pi-clock", severity: "warn" },
-    COLACION_REGRESO: { label: "Regresar de colación", icon: "pi pi-check-circle", severity: "info" },
-    NOVEDAD: { label: "Registrar novedad", icon: "pi pi-pencil", severity: "help" },
+    TURNO_INICIO: {
+      label: "Iniciar turno",
+      icon: "pi pi-play",
+      severity: "success",
+    },
+    TURNO_FIN: {
+      label: "Finalizar turno",
+      icon: "pi pi-stop",
+      severity: "danger",
+    },
+    COLACION_SALIDA: {
+      label: "Salir a colación",
+      icon: "pi pi-clock",
+      severity: "warn",
+    },
+    COLACION_REGRESO: {
+      label: "Regresar de colación",
+      icon: "pi pi-check-circle",
+      severity: "info",
+    },
+    NOVEDAD: {
+      label: "Registrar novedad",
+      icon: "pi pi-pencil",
+      severity: "help",
+    },
   };
 
   const confirmMessages = {
-    TURNO_INICIO: "¿Seguro que deseas iniciar tu turno?",
-    TURNO_FIN: "¿Seguro que deseas finalizar tu turno?",
-    COLACION_SALIDA: "¿Seguro que deseas comenzar tu hora de colación?",
-    COLACION_REGRESO: "¿Seguro que deseas registrar tu regreso de colación?",
+    TURNO_INICIO: "¿Desea iniciar su turno?",
+    TURNO_FIN: "¿Desea finalizar su turno?",
+    COLACION_SALIDA: "¿Desea comenzar su hora de colación?",
+    COLACION_REGRESO: "¿Desea registrar su regreso de colación?",
   };
 
+  //TODO: REVISAR LA SALIDA PARA EL HEADER DE LA CARD
   function eventoLabel(turno) {
     if (!turno?.enTurno) return null;
     const hora = formatearFecha(turno.ultimoEventoEn);
@@ -46,14 +73,30 @@ export function useTurno() {
   function formatearFecha(iso) {
     if (!iso) return "";
     const d = new Date(iso);
-    return d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString("es-CL", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   const accionMutation = useMutation({
-    mutationFn: async (tipo) => {
+    mutationFn: async (payload) => {
       const cid = auth.condominioActualId;
       if (!cid) throw new Error("No hay condominio seleccionado");
-      await bitacoraService.registrarEvento(cid, { tipo, clasificacion: "NORMAL" });
+      if (typeof payload === "string") {
+        await bitacoraService.registrarEvento(cid, {
+          tipo: payload,
+          clasificacion: "NORMAL",
+        });
+      } else {
+        await bitacoraService.registrarEvento(cid, {
+          tipo: payload.tipo,
+          clasificacion: "NORMAL",
+          ...(payload.respuestas?.length
+            ? { respuestas: payload.respuestas }
+            : {}),
+        });
+      }
     },
     onMutate: () => {
       turnoLoading.value = true;
@@ -61,11 +104,13 @@ export function useTurno() {
     },
     onError: (e) => {
       console.error("Error al registrar acción de turno", e);
-      turnoError.value = "Error al registrar acción de turno";
+      turnoError.value = "Error al registrar acción en turno";
     },
     onSettled: () => {
       turnoLoading.value = false;
-      queryClient.invalidateQueries({ queryKey: ["miTurno", auth.condominioActualId] });
+      queryClient.invalidateQueries({
+        queryKey: ["miTurno", auth.condominioActualId],
+      });
     },
   });
 
@@ -85,12 +130,53 @@ export function useTurno() {
     },
     onSettled: () => {
       enviandoNovedad.value = false;
-      queryClient.invalidateQueries({ queryKey: ["miTurno", auth.condominioActualId] });
+      queryClient.invalidateQueries({
+        queryKey: ["miTurno", auth.condominioActualId],
+      });
     },
   });
 
   async function ejecutarAccion(tipo) {
+    const cid = auth.condominioActualId;
+    if (!cid) throw new Error("No hay condominio seleccionado");
+
+    // Verificar si existe checklist para este tipo de evento
+    checklistLoading.value = true;
+    try {
+      const res = await bitacoraService.obtenerChecklist(cid, tipo);
+      const items = res?.data?.items;
+      if (items && items.length > 0) {
+        // Hay checklist → mostrar diálogo, pausar registro
+        checklistItems.value = items;
+        checklistTipo.value = tipo;
+        checklistDialogVisible.value = true;
+        return;
+      }
+    } catch (e) {
+      // Si falla la consulta del checklist, registrar igual (sin respuestas)
+      console.error("Error al verificar checklist para " + tipo, e);
+    } finally {
+      checklistLoading.value = false;
+    }
+
+    // Sin checklist → registrar directamente
     await accionMutation.mutateAsync(tipo);
+  }
+
+  async function confirmarConChecklist(respuestas) {
+    if (!checklistTipo.value) return;
+    await accionMutation.mutateAsync({
+      tipo: checklistTipo.value,
+      respuestas,
+    });
+    checklistDialogVisible.value = false;
+    checklistTipo.value = null;
+  }
+
+  function cancelarChecklist() {
+    checklistDialogVisible.value = false;
+    checklistTipo.value = null;
+    checklistItems.value = [];
   }
 
   async function registrarNovedad(data) {
@@ -109,5 +195,12 @@ export function useTurno() {
     ejecutarAccion,
     registrarNovedad,
     formatearFecha,
+
+    checklistDialogVisible,
+    checklistItems,
+    checklistLoading,
+    checklistTipo,
+    confirmarConChecklist,
+    cancelarChecklist,
   };
 }

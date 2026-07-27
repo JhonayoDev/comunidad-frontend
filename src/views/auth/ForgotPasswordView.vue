@@ -34,18 +34,15 @@ async function handleSubmit() {
       <div class="primary-text">Recuperar contraseña</div>
     </template>
 
-    <template #subtitle>
-      <div class="secondary-text">
-        Ingresa tu email para recibir un enlace de restablecimiento
-      </div>
-    </template>
-
     <template #content>
       <form
         v-if="!enviado"
         @submit.prevent="handleSubmit"
         class="space-y-6 mt-3"
       >
+        <div class="secondary-text">
+          Ingresa tu email para recibir un enlace de restablecimiento
+        </div>
         <div class="primary-text flex flex-col gap-2">
           <label>Email</label>
           <InputText

@@ -42,7 +42,7 @@ const colors = {
 
     primaryActive: "#b3b3b7",
 
-    primaryHover: "#004d99",
+    primaryHover: "#b3b3b7",
 
     success: "#81c784",
 

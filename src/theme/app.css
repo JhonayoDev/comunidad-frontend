@@ -6,31 +6,49 @@
    ========================================================================== */
 
 @theme {
-  /* Fondo general de la página (body wrapper) */
-  --color-background: var(--p-surface-100);
+  /* =========================================
+     FONDOS Y SUPERFICIES
+     ========================================= */
+  /* Usa los que definiste explícitamente en colorScheme.primary */
+  --color-background: var(--p-primary-background);
+  --color-surface: var(--p-primary-surface);
 
-  /* Fondo de tarjetas, cards y superficies elevadas */
-  --color-surface: var(--p-surface-200);
+  /* Si prefieres usar la escala surface que armaste con 'colors.js':
+     --color-background: var(--p-surface-100); 
+     --color-surface: var(--p-surface-50); 
+  */
 
-  /* Color principal de marca (botones, links, acentos) */
+  /* =========================================
+     COLORES PRINCIPALES Y ACENTOS
+     ========================================= */
   --color-primary: var(--p-primary-color);
+  --color-primary-hover: var(--p-primary-hover-color);
+  --color-primary-active: var(--p-primary-active-color);
+  --color-boton-accion: var(--p-primary-boton-accion);
+  /* =========================================
+     TEXTOS
+     ========================================= */
+  /* Conectados a tus nombres personalizados: textPrincipal y textSecondary */
+  --color-text: var(--p-primary-text-principal);
+  --color-text-muted: var(--p-primary-text-secondary);
+  --color-text-highlight: var(--p-primary-text-resaltado);
+  --color-text-inverse: var(--p-primary-inverse-color);
 
-  /* Color de texto principal */
-  --color-text: var(--p-text-color);
+  /* =========================================
+     BORDES
+     ========================================= */
+  /* Conectado al border de tu colorScheme.primary */
+  --color-border: var(--p-primary-border);
 
-  /* Color de texto secundario / muted */
-  --color-text-muted: var(--p-text-muted-color);
-
-  /* Color de bordes genéricos */
-  --color-border: var(--p-content-border-color);
-
-  /* Semánticos: éxito, advertencia, peligro, información */
-  --color-success: var(--p-success-color);
-  --color-warning: var(--p-warning-color);
-  --color-danger: var(--p-danger-color);
-  --color-info: var(--p-info-color);
+  /* =========================================
+     SEMÁNTICOS (ESTADOS)
+     ========================================= */
+  /* Apuntamos al tono 500 de las escalas que acabamos de completar */
+  --color-success: var(--p-success-500);
+  --color-warning: var(--p-warning-500);
+  --color-danger: var(--p-danger-500);
+  --color-info: var(--p-info-500);
 }
-
 /* ==========================================================================
    BROWSER FIXES
    ==========================================================================
