@@ -1,0 +1,71 @@
+/* ==========================================================================
+   TAILWIND THEME TOKENS
+   ==========================================================================
+   Traduce las variables CSS de PrimeVue (--p-*) a nombres cortos para
+   usar con Tailwind: bg-background, bg-surface, text-primary, etc.
+   ========================================================================== */
+
+@theme {
+  /* =========================================
+     FONDOS Y SUPERFICIES
+     ========================================= */
+  /* Usa los que definiste explícitamente en colorScheme.primary */
+  --color-background: var(--p-primary-background);
+  --color-surface: var(--p-primary-surface);
+
+  /* Si prefieres usar la escala surface que armaste con 'colors.js':
+     --color-background: var(--p-surface-100); 
+     --color-surface: var(--p-surface-50); 
+  */
+
+  /* =========================================
+     COLORES PRINCIPALES Y ACENTOS
+     ========================================= */
+  --color-primary: var(--p-primary-color);
+  --color-primary-hover: var(--p-primary-hover-color);
+  --color-primary-active: var(--p-primary-active-color);
+  --color-boton-accion: var(--p-primary-boton-accion);
+  /* =========================================
+     TEXTOS
+     ========================================= */
+  /* Conectados a tus nombres personalizados: textPrincipal y textSecondary */
+  --color-text: var(--p-primary-text-principal);
+  --color-text-muted: var(--p-primary-text-secondary);
+  --color-text-highlight: var(--p-primary-text-resaltado);
+  --color-text-inverse: var(--p-primary-inverse-color);
+
+  /* =========================================
+     BORDES
+     ========================================= */
+  /* Conectado al border de tu colorScheme.primary */
+  --color-border: var(--p-primary-border);
+
+  /* =========================================
+     SEMÁNTICOS (ESTADOS)
+     ========================================= */
+  /* Apuntamos al tono 500 de las escalas que acabamos de completar */
+  --color-success: var(--p-success-500);
+  --color-warning: var(--p-warning-500);
+  --color-danger: var(--p-danger-500);
+  --color-info: var(--p-info-500);
+}
+/* ==========================================================================
+   BROWSER FIXES
+   ==========================================================================
+   Corrige el color de autocompletado del navegador.
+   ========================================================================== */
+
+/* Evita que Chrome/Safari pinte los inputs autocompletados de verde/amarillo.
+   - text-fill-color: color del texto escrito (usa el mismo que PrimeVue)
+   - box-shadow con inset gigante: pinta el fondo sin perder el borde del input
+   - transition infinita: evita que Chrome revierta el estilo al hacer hover/focus */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--p-text-color);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-primary-autoFillBox) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}

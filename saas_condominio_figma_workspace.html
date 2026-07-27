@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figma Workspace - SaaS Condominios UI</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            light: '#004D99', // WCAG AAA Compliant (>7:1)
+                            dark: '#5C9EFF',  // WCAG AA Compliant (>4.5:1)
+                        },
+                        // Light Mode System (Optimizado WCAG AA)
+                        syslight: {
+                            bg: '#F4F4F7',
+                            surface: '#FFFFFF',
+                            text: '#1A1A1A',
+                            secondary: '#5A5C61', // Ajustado de #626469 para mejor legibilidad
+                            border: '#E2E2E6',
+                        },
+                        // Dark Mode System (Optimizado WCAG AA)
+                        sysdark: {
+                            bg: '#121212',
+                            surface: '#222226', // Ajustado a gris profundo seguro
+                            text: '#FFFFFF',
+                            secondary: '#B3B3B7', // Ajustado para contraste seguro de 5.1:1
+                            border: '#323238',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Figma Grid Pattern */
+        .figma-canvas {
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .dark .figma-canvas {
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+        }
+        /* Custom Scrollbar for Figma feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col font-sans bg-[#F3F3F3] text-gray-900 select-none">
+
+    <!-- TOPBAR (Estilo Figma) -->
+    <div class="h-12 bg-[#2C2C2C] text-white flex items-center justify-between px-4 border-b border-[#1E1E1E] z-10 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-6 h-6 bg-blue-500 rounded flex items-center justify-center font-bold text-xs text-white">FC</div>
+            <span class="text-xs text-gray-400">/</span>
+            <span class="font-semibold text-xs tracking-wide">SaaS Condominios — WCAG AA Prototyping</span>
+            <span class="bg-emerald-600 text-[10px] px-1.5 py-0.5 rounded text-white font-bold"><i class="fa-solid fa-check"></i> W3C AA OK</span>
+        </div>
+
+        <!-- Figma Tools (Modo / Dispositivo Switcher) -->
+        <div class="flex items-center gap-1 bg-[#1E1E1E] rounded-md p-0.5 border border-[#3e3e3e]">
+            <!-- Dispositivo -->
+            <button onclick="setDevice('desktop')" id="btn-dev-desktop" class="px-3 py-1 text-xs rounded transition-all bg-[#2C2C2C] text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-laptop text-[11px]"></i> Desktop
+            </button>
+            <button onclick="setDevice('mobile')" id="btn-dev-mobile" class="px-3 py-1 text-xs rounded transition-all text-gray-400 hover:text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-mobile-screen text-[11px]"></i> Móvil
+            </button>
+            <div class="w-px h-4 bg-[#3e3e3e] mx-1"></div>
+            <!-- Tema -->
+            <button onclick="setTheme('light')" id="btn-theme-light" class="px-3 py-1 text-xs rounded transition-all text-gray-400 hover:text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-sun text-[11px]"></i> Claro
+            </button>
+            <button onclick="setTheme('dark')" id="btn-theme-dark" class="px-3 py-1 text-xs rounded transition-all bg-[#2C2C2C] text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-moon text-[11px]"></i> Oscuro
+            </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span class="text-[11px] text-[#A3A3A3] flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Listo para Frontend</span>
+            <div class="w-8 h-8 rounded-full bg-[#525252] border border-[#6b6b6b] flex items-center justify-center text-xs font-bold text-white">JD</div>
+        </div>
+    </div>
+
+    <!-- WORKSPACE -->
+    <div class="flex flex-1 overflow-hidden relative">
+
+        <!-- PANEL DE CAPAS / MÓDULOS (Figma Left Sidebar) -->
+        <div class="w-64 bg-[#FFFFFF] border-r border-gray-200 flex flex-col shrink-0 z-10 transition-colors duration-200" id="figma-left">
+            <div class="p-3 border-b border-gray-100 flex items-center justify-between">
+                <span class="text-[11px] font-bold tracking-wider text-gray-400 uppercase">Módulos del SaaS</span>
+                <i class="fa-solid fa-layer-group text-xs text-gray-400"></i>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-2 space-y-1">
+                <!-- Modulo 1 -->
+                <button onclick="setModule('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2 text-left text-xs font-medium rounded-md bg-blue-50 text-blue-700">
+                    <span class="w-4 flex justify-center text-[14px]"><i class="fa-solid fa-gauge"></i></span>
+                    <span class="truncate">Portal Residente (Home)</span>
+                </button>
+                <!-- Modulo 2 -->
+                <button onclick="setModule('accesos')" id="nav-accesos" class="w-full flex items-center gap-3 px-3 py-2 text-left text-xs font-medium rounded-md text-gray-600 hover:bg-gray-50">
+                    <span class="w-4 flex justify-center text-[14px]"><i class="fa-solid fa-id-card"></i></span>
+                    <span class="truncate">Control de Acceso</span>
+                </button>
+                <!-- Modulo 3 -->
+                <button onclick="setModule('encomiendas')" id="nav-encomiendas" class="w-full flex items-center gap-3 px-3 py-2 text-left text-xs font-medium rounded-md text-gray-600 hover:bg-gray-50">
+                    <span class="w-4 flex justify-center text-[14px]"><i class="fa-solid fa-box-open"></i></span>
+                    <span class="truncate">Recepción Encomiendas</span>
+                </button>
+                <!-- Modulo 4 -->
+                <button onclick="setModule('finanzas')" id="nav-finanzas" class="w-full flex items-center gap-3 px-3 py-2 text-left text-xs font-medium rounded-md text-gray-600 hover:bg-gray-50">
+                    <span class="w-4 flex justify-center text-[14px]"><i class="fa-solid fa-chart-line"></i></span>
+                    <span class="truncate">Finanzas del Condominio</span>
+                </button>
+
+                <div class="pt-4 pb-2 px-3">
+                    <span class="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Tokens de Contraste</span>
+                </div>
+                
+                <!-- Display Tokens en Sidebar -->
+                <div class="p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-[11px] text-gray-500 space-y-1.5">
+                    <div class="flex justify-between"><span>Base:</span><span id="label-token-bg" class="font-mono text-gray-800">#121212</span></div>
+                    <div class="flex justify-between"><span>Card:</span><span id="label-token-surface" class="font-mono text-gray-800">#222226</span></div>
+                    <div class="flex justify-between"><span>Acento:</span><span id="label-token-primary" class="font-mono text-blue-600">#5C9EFF</span></div>
+                    <div class="border-t border-gray-200 my-1 pt-1"></div>
+                    <div class="flex justify-between"><span>WCAG Ratio:</span><span class="text-emerald-600 font-bold">Compliant AA ✓</span></div>
+                </div>
+            </div>
+
+            <!-- Ayuda -->
+            <div class="p-3 bg-gray-50 border-t border-gray-100 text-[11px] text-gray-500">
+                <p><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> Diseñado bajo estándares de contraste W3C WCAG 2.1.</p>
+            </div>
+        </div>
+
+        <!-- CANVAS DE PREVIEW (Figma Area Central) -->
+        <div class="flex-1 figma-canvas bg-[#EBEBEB] dark:bg-[#1E1E1E] transition-colors duration-200 overflow-auto flex items-center justify-center p-8 relative">
+
+            <!-- MARCO DE DISPOSITIVO (Contenedor UI simulando Pantalla) -->
+            <div id="device-frame" class="transition-all duration-300 w-full max-w-[1100px] h-[580px] bg-white dark:bg-[#121212] rounded-xl shadow-2xl border-4 border-gray-300 dark:border-zinc-800 overflow-hidden flex flex-col relative">
+                
+                <!-- Barra del Navegador Simulada (Solo para Vista Desktop) -->
+                <div id="browser-bar" class="bg-gray-100 dark:bg-[#1e1e21] h-10 border-b border-gray-200 dark:border-[#2d2d30] flex items-center px-4 gap-3 select-none shrink-0">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-red-400 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-400 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-400 inline-block"></span>
+                    </div>
+                    <div class="bg-white dark:bg-[#222226] flex-1 max-w-sm rounded px-3 py-1 text-[11px] text-gray-400 dark:text-zinc-500 flex items-center justify-between border border-gray-200 dark:border-zinc-700/50">
+                        <span class="truncate">condominio-saas.com/app/dashboard</span>
+                        <i class="fa-solid fa-arrows-rotate text-[9px]"></i>
+                    </div>
+                </div>
+
+                <!-- Barra de Estado Móvil Simulada (Solo para Vista Móvil) -->
+                <div id="mobile-notch" class="hidden bg-white dark:bg-[#121212] h-7 px-6 items-center justify-between text-xs font-semibold select-none shrink-0 text-gray-800 dark:text-white transition-colors">
+                    <span>10:05</span>
+                    <div class="w-20 h-4 bg-black rounded-b-xl mx-auto absolute left-1/2 -translate-x-1/2 top-0"></div>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-signal text-[10px]"></i>
+                        <i class="fa-solid fa-wifi text-[10px]"></i>
+                        <i class="fa-solid fa-battery-three-quarters text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- CONTENIDO DEL SAAS (Se inyecta la UI del SaaS aquí) -->
+                <div id="saas-content" class="flex-1 overflow-auto flex bg-[#F4F4F7] dark:bg-[#121212] transition-colors duration-200 text-[#1A1A1A] dark:text-white">
+                    
+                    <!-- SIDEBAR DE LA APP SAAS (Vista Desktop) -->
+                    <aside id="saas-sidebar" class="w-56 bg-white dark:bg-[#222226] border-r border-[#E2E2E6] dark:border-[#323238] flex flex-col shrink-0 p-4 justify-between transition-colors">
+                        <div class="space-y-6">
+                            <!-- Logo Condominio -->
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-[#004D99] dark:bg-[#5C9EFF] flex items-center justify-center text-white dark:text-[#121212] text-sm font-bold">
+                                    <i class="fa-solid fa-building-user"></i>
+                                </div>
+                                <div class="leading-none">
+                                    <h4 class="font-extrabold text-xs tracking-wider uppercase text-[#004D99] dark:text-[#5C9EFF]">Tu Condominio</h4>
+                                    <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7] font-semibold">SaaS de Administración</span>
+                                </div>
+                            </div>
+
+                            <!-- Navegación Primaria -->
+                            <nav class="space-y-1">
+                                <span class="text-[10px] font-bold text-[#5A5C61] dark:text-[#B3B3B7] tracking-wider uppercase block px-2.5 mb-2">Panel</span>
+                                <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-50 dark:bg-zinc-800/60 text-[#004D99] dark:text-[#5C9EFF]">
+                                    <i class="fa-solid fa-house"></i> Portal Residente
+                                </a>
+                                <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#5A5C61] dark:text-[#B3B3B7] hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                    <i class="fa-solid fa-circle-info"></i> Mis Finanzas
+                                </a>
+                                <a href="#" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#5A5C61] dark:text-[#B3B3B7] hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                    <i class="fa-solid fa-qrcode"></i> Autorizaciones
+                                </a>
+                            </nav>
+                        </div>
+
+                        <!-- Info Usuario Bottom -->
+                        <div class="flex items-center gap-3 p-1.5 bg-gray-50 dark:bg-zinc-800/40 rounded-xl border border-gray-100 dark:border-zinc-700/50">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-bold text-[#004D99] dark:text-[#5C9EFF]">JD</div>
+                            <div class="leading-tight truncate">
+                                <h5 class="text-xs font-bold truncate">JhonayoDev</h5>
+                                <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7] font-semibold">Dpto 402 • Residente</span>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- CUERPO DE PANTALLA PRINCIPAL DE LA APP -->
+                    <main class="flex-1 flex flex-col overflow-hidden">
+                        
+                        <!-- Header de la Aplicación -->
+                        <header class="h-14 bg-white dark:bg-[#222226] border-b border-[#E2E2E6] dark:border-[#323238] flex items-center justify-between px-6 shrink-0 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <h1 id="app-module-title" class="text-base font-extrabold tracking-tight">Portal Residente</h1>
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-right leading-none">
+                                    <span class="text-[10px] text-[#5A5C61] dark:text-[#B3B3B7] font-bold block uppercase">Condominio Activo</span>
+                                    <span class="text-xs font-bold">Parque del Sol - Torre A</span>
+                                </div>
+                                <button class="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-sm"><i class="fa-regular fa-bell"></i></button>
+                            </div>
+                        </header>
+
+                        <!-- Contenido Interno Dinámico del Módulo -->
+                        <div class="flex-1 p-6 overflow-y-auto space-y-6" id="app-dynamic-view">
+                            <!-- El contenido se cargará interactivamente vía Javascript -->
+                        </div>
+                    </main>
+
+                    <!-- TAB BAR INFERIOR (Solo para Vista Móvil) -->
+                    <nav id="saas-tabbar" class="hidden h-14 bg-white dark:bg-[#222226] border-t border-[#E2E2E6] dark:border-[#323238] items-center justify-around px-2 shrink-0 transition-colors select-none">
+                        <button class="flex flex-col items-center gap-0.5 text-[#004D99] dark:text-[#5C9EFF]">
+                            <i class="fa-solid fa-house text-sm"></i>
+                            <span class="text-[10px] font-bold">Inicio</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-0.5 text-[#5A5C61] dark:text-[#B3B3B7]">
+                            <i class="fa-solid fa-qrcode text-sm"></i>
+                            <span class="text-[10px] font-medium">Accesos</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-0.5 text-[#5A5C61] dark:text-[#B3B3B7]">
+                            <i class="fa-solid fa-box-open text-sm"></i>
+                            <span class="text-[10px] font-medium">Paquetes</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-0.5 text-[#5A5C61] dark:text-[#B3B3B7]">
+                            <i class="fa-solid fa-chart-line text-sm"></i>
+                            <span class="text-[10px] font-medium">Finanzas</span>
+                        </button>
+                    </nav>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PANEL DE CONTROL / INSPECTOR (Figma Right Sidebar) -->
+        <div class="w-72 bg-[#FFFFFF] border-l border-gray-200 flex flex-col shrink-0 z-10" id="figma-right">
+            <div class="p-3 border-b border-gray-100 flex items-center justify-between">
+                <span class="text-[11px] font-bold tracking-wider text-gray-400 uppercase">Inspector de Código</span>
+                <i class="fa-solid fa-code text-xs text-gray-400"></i>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">Clases Tailwind Utilizadas</label>
+                    <div class="bg-[#1E1E1E] text-[#61AEEF] p-3 rounded-lg font-mono text-[11px] overflow-x-auto space-y-2">
+                        <div>
+                            <span class="text-orange-400">// Contenedor Card</span><br>
+                            <span class="text-green-400" id="code-card">bg-white dark:bg-[#222226] border border-gray-200 dark:border-[#323238] rounded-xl shadow-sm</span>
+                        </div>
+                        <div>
+                            <span class="text-orange-400">// Texto Primario</span><br>
+                            <span class="text-green-400" id="code-text">text-[#1A1A1A] dark:text-white</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">Proporciones Aplicadas</label>
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="font-medium text-gray-600">60% Fondo Base</span>
+                            <span class="font-mono text-gray-400">F4F4F7 / 121212</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-1.5 rounded">
+                            <div class="bg-gray-500 h-full rounded w-3/5"></div>
+                        </div>
+                        
+                        <div class="flex justify-between text-xs">
+                            <span class="font-medium text-gray-600">20% Superficie Cards</span>
+                            <span class="font-mono text-gray-400">FFFFFF / 222226</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-1.5 rounded">
+                            <div class="bg-[#004D99] h-full rounded w-1/5"></div>
+                        </div>
+
+                        <div class="flex justify-between text-xs">
+                            <span class="font-medium text-gray-600">5% Foco Interactivo</span>
+                            <span class="font-mono text-gray-400">004D99 / 5C9EFF</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-1.5 rounded">
+                            <div class="bg-blue-400 h-full rounded w-[5%]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-xs text-emerald-800">
+                    <i class="fa-solid fa-circle-check mr-1"></i> Este diseño aprueba el nivel <strong>WCAG AA (AA Conformance)</strong> del consorcio W3C.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Variables de estado del prototipo
+        let currentTheme = 'dark'; // 'light' | 'dark'
+        let currentDevice = 'desktop'; // 'desktop' | 'mobile'
+        let currentModule = 'dashboard'; // 'dashboard' | 'accesos' | 'encomiendas' | 'finanzas'
+
+        // Contenidos dinámicos para simular la vista del SaaS
+        const modulesData = {
+            dashboard: {
+                title: "Portal Residente (Home)",
+                html: `
+                    <!-- Fila Superior de KPIs rápidos -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-4 rounded-xl transition-colors">
+                            <span class="text-[10px] font-bold text-[#5A5C61] dark:text-[#B3B3B7] uppercase tracking-wider block mb-1">Gasto Común Actual</span>
+                            <div class="flex items-baseline justify-between">
+                                <h3 class="text-xl font-extrabold text-[#1A1A1A] dark:text-white">$124.500 CLP</h3>
+                                <span class="text-[10px] bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-[#FF8A65] font-bold px-2 py-0.5 rounded">Pendiente</span>
+                            </div>
+                            <span class="text-[10px] text-[#5A5C61] dark:text-[#B3B3B7] mt-1 block">Vence el: 15-07-2026</span>
+                        </div>
+
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-4 rounded-xl transition-colors">
+                            <span class="text-[10px] font-bold text-[#5A5C61] dark:text-[#B3B3B7] uppercase tracking-wider block mb-1">Encomiendas</span>
+                            <div class="flex items-baseline justify-between">
+                                <h3 class="text-xl font-extrabold text-emerald-800 dark:text-[#81C784]">2 Pendientes</h3>
+                                <span class="text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-[#FFB74D] font-bold px-2 py-0.5 rounded">Por Retirar</span>
+                            </div>
+                            <span class="text-[10px] text-[#5A5C61] dark:text-[#B3B3B7] mt-1 block">Recibido en conserjería hoy</span>
+                        </div>
+
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-4 rounded-xl transition-colors">
+                            <span class="text-[10px] font-bold text-[#5A5C61] dark:text-[#B3B3B7] uppercase tracking-wider block mb-1">Visitas del Mes</span>
+                            <div class="flex items-baseline justify-between">
+                                <h3 class="text-xl font-extrabold text-[#1A1A1A] dark:text-white">12 Registros</h3>
+                                <span class="text-[10px] text-[#004D99] dark:text-[#5C9EFF] font-bold">Ver Historial</span>
+                            </div>
+                            <span class="text-[10px] text-[#5A5C61] dark:text-[#B3B3B7] mt-1 block">Último acceso: Ayer 19:40</span>
+                        </div>
+                    </div>
+
+                    <!-- Fila Inferior con detalles -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Card Encomiendas -->
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-5 rounded-xl transition-colors">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-extrabold text-sm">Mis Encomiendas Recientes</h4>
+                                <i class="fa-solid fa-box text-[#004D99] dark:text-[#5C9EFF] text-xs"></i>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-lg">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded bg-amber-500/10 text-amber-600 dark:text-[#FFB74D] flex items-center justify-center text-sm"><i class="fa-solid fa-box"></i></div>
+                                        <div class="leading-none">
+                                            <h5 class="text-xs font-bold">Paquete Amazon (Caja Grande)</h5>
+                                            <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7]">Recepción: Hoy, 09:12 AM</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] bg-amber-100 dark:bg-amber-955/30 text-amber-800 dark:text-[#FFB74D] font-bold px-2 py-1 rounded">Por Retirar</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-lg">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded bg-blue-500/10 text-[#004D99] dark:text-[#5C9EFF] flex items-center justify-center text-sm"><i class="fa-solid fa-envelope"></i></div>
+                                        <div class="leading-none">
+                                            <h5 class="text-xs font-bold">Sobre MercadoLibre</h5>
+                                            <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7]">Recepción: Ayer, 15:45 PM</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] bg-emerald-100 dark:bg-emerald-950/30 text-emerald-800 dark:text-[#81C784] font-bold px-2 py-1 rounded">Entregado</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Accesos Rápidos -->
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-5 rounded-xl transition-colors">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-extrabold text-sm">Acciones y Accesos Rápidos</h4>
+                                <i class="fa-solid fa-bolt text-amber-500 text-xs"></i>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button class="p-3 bg-blue-50 dark:bg-blue-900/20 text-[#004D99] dark:text-[#5C9EFF] font-bold text-xs rounded-xl border border-blue-100 dark:border-blue-900/30 hover:opacity-90 flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-qrcode text-lg"></i>
+                                    Pre-autorizar Visita
+                                </button>
+                                <button class="p-3 bg-gray-50 dark:bg-zinc-800/60 text-gray-700 dark:text-zinc-300 font-bold text-xs rounded-xl border border-gray-100 dark:border-zinc-700/50 hover:opacity-90 flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-calendar-days text-lg"></i>
+                                    Reservar Quincho
+                                </button>
+                                <button class="p-3 bg-gray-50 dark:bg-zinc-800/60 text-gray-700 dark:text-zinc-300 font-bold text-xs rounded-xl border border-gray-100 dark:border-zinc-700/50 hover:opacity-90 flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                                    Reportar Falla
+                                </button>
+                                <button class="p-3 bg-gray-50 dark:bg-zinc-800/60 text-gray-700 dark:text-zinc-300 font-bold text-xs rounded-xl border border-gray-100 dark:border-zinc-700/50 hover:opacity-90 flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-file-invoice-dollar text-lg"></i>
+                                    Historial de Pagos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            accesos: {
+                title: "Control de Acceso de Visitas",
+                html: `
+                    <!-- Botonera / Buscador -->
+                    <div class="flex items-center justify-between gap-4 flex-wrap bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-4 rounded-xl">
+                        <div class="relative flex-1 max-w-sm">
+                            <input type="text" placeholder="Buscar visita o patente..." class="w-full text-xs bg-[#F4F4F7] dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 rounded-lg pl-8 pr-3 py-2 outline-none text-[#1A1A1A] dark:text-white">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-[10px] text-gray-400"></i>
+                        </div>
+                        <button class="bg-[#004D99] dark:bg-[#5C9EFF] text-white dark:text-[#121212] font-bold text-xs px-4 py-2 rounded-lg hover:opacity-95">
+                            + Pre-autorizar Visita QR
+                        </button>
+                    </div>
+
+                    <!-- Lista de Visitas Activas -->
+                    <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] rounded-xl overflow-hidden transition-colors">
+                        <div class="p-4 border-b border-gray-100 dark:border-zinc-700/50 flex justify-between items-center">
+                            <h4 class="font-bold text-sm">Visitas Registradas en el Condominio</h4>
+                            <span class="text-[10px] font-bold text-[#004D99] dark:text-[#5C9EFF] uppercase">En Tiempo Real</span>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-gray-50 dark:bg-zinc-800/40 text-gray-500 dark:text-[#B3B3B7] font-bold uppercase text-[10px] border-b border-gray-100 dark:border-zinc-700/50">
+                                    <tr>
+                                        <th class="p-3">Visitante</th>
+                                        <th class="p-3">Departamento</th>
+                                        <th class="p-3">Tipo / Vehículo</th>
+                                        <th class="p-3">Ingreso</th>
+                                        <th class="p-3 text-right">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-zinc-700/50">
+                                    <tr>
+                                        <td class="p-3 font-semibold">Carlos Gómez (Familiar)</td>
+                                        <td class="p-3">Dpto 402 - Torre A</td>
+                                        <td class="p-3"><span class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 px-2 py-0.5 rounded">Patente: AB-CD-12</span></td>
+                                        <td class="p-3 text-[#5A5C61] dark:text-[#B3B3B7]">Hoy, 10:15 AM</td>
+                                        <td class="p-3 text-right"><button class="text-xs font-bold text-[#004D99] dark:text-[#5C9EFF] hover:underline">Marcar Salida</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold">Rapi / PedidosYa (Delivery)</td>
+                                        <td class="p-3">Dpto 105 - Torre B</td>
+                                        <td class="p-3"><span class="bg-amber-500/10 text-amber-800 dark:text-[#FFB74D] px-2 py-0.5 rounded font-bold">Motocicleta</span></td>
+                                        <td class="p-3 text-[#5A5C61] dark:text-[#B3B3B7]">Hoy, 09:40 AM</td>
+                                        <td class="p-3 text-right"><span class="text-xs text-[#5A5C61] dark:text-[#B3B3B7] font-semibold">Salió</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold">Eduardo Silva (Personal Técnico)</td>
+                                        <td class="p-3">Espacios Comunes</td>
+                                        <td class="p-3"><span class="bg-blue-500/10 text-[#004D99] dark:text-[#5C9EFF] px-2 py-0.5 rounded font-bold">Mantenimiento</span></td>
+                                        <td class="p-3 text-[#5A5C61] dark:text-[#B3B3B7]">Ayer, 14:00 PM</td>
+                                        <td class="p-3 text-right"><span class="text-xs text-[#5A5C61] dark:text-[#B3B3B7] font-semibold">Salió</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `
+            },
+            encomiendas: {
+                title: "Recepción de Encomiendas",
+                html: `
+                    <!-- Split Form / Lista -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Formulario de Registro (Vista Conserje) -->
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-5 rounded-xl transition-colors space-y-4">
+                            <h4 class="font-extrabold text-sm border-b border-gray-100 dark:border-zinc-700/50 pb-2">Registrar Nuevo Paquete</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Departamento</label>
+                                    <input type="text" placeholder="Ej: 402-A" class="w-full text-xs bg-[#F4F4F7] dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none text-[#1A1A1A] dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Courier / Empresa</label>
+                                    <select class="w-full text-xs bg-[#F4F4F7] dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none text-[#1A1A1A] dark:text-white">
+                                        <option>Amazon</option>
+                                        <option>MercadoLibre</option>
+                                        <option>Starken / Chilexpress</option>
+                                        <option>Correos de Chile</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Descripción corta</label>
+                                    <input type="text" placeholder="Caja, sobre, bolsa, etc." class="w-full text-xs bg-[#F4F4F7] dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 outline-none text-[#1A1A1A] dark:text-white">
+                                </div>
+                                <button class="w-full bg-[#004D99] dark:bg-[#5C9EFF] text-white dark:text-[#121212] font-bold text-xs py-2 rounded-lg hover:opacity-95">
+                                    Registrar & Notificar Residente
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Encomiendas en Bodega -->
+                        <div class="md:col-span-2 bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] rounded-xl overflow-hidden transition-colors flex flex-col justify-between">
+                            <div>
+                                <div class="p-4 border-b border-gray-100 dark:border-zinc-700/50 flex justify-between items-center">
+                                    <h4 class="font-extrabold text-sm">Encomiendas en Bodega</h4>
+                                    <span class="text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-[#FFB74D] font-bold px-2 py-0.5 rounded">Conserje Activo: Turno A</span>
+                                </div>
+                                <div class="divide-y divide-gray-100 dark:divide-zinc-700/50">
+                                    <!-- Paquete 1 -->
+                                    <div class="p-4 flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-[#FFB74D] flex items-center justify-center text-sm"><i class="fa-solid fa-box"></i></div>
+                                            <div class="leading-none">
+                                                <h5 class="text-xs font-bold">Paquete Amazon (Caja Grande)</h5>
+                                                <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7] block mt-1">Destinatario: JhonayoDev (Dpto 402) • Recibido por Guardia A</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-xs font-bold bg-[#004D99]/10 dark:bg-[#5C9EFF]/10 text-[#004D99] dark:text-[#5C9EFF] px-2.5 py-1.5 rounded-lg">Entregar</button>
+                                        </div>
+                                    </div>
+                                    <!-- Paquete 2 -->
+                                    <div class="p-4 flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 rounded-lg bg-blue-500/10 text-[#004D99] dark:text-[#5C9EFF] flex items-center justify-center text-sm"><i class="fa-solid fa-envelope"></i></div>
+                                            <div class="leading-none">
+                                                <h5 class="text-xs font-bold">Sobre Chilexpress (Correspondencia)</h5>
+                                                <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7] block mt-1">Destinatario: María Pérez (Dpto 201) • Recibido por Guardia A</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button class="text-xs font-bold bg-[#004D99]/10 dark:bg-[#5C9EFF]/10 text-[#004D99] dark:text-[#5C9EFF] px-2.5 py-1.5 rounded-lg">Entregar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-gray-50 dark:bg-zinc-800/20 border-t border-gray-100 dark:border-zinc-700/50 text-[10px] text-[#5A5C61] dark:text-[#B3B3B7] flex justify-between items-center">
+                                <span>Total Encomiendas en Bodega: 2 paquetes</span>
+                                <span class="text-[#004D99] dark:text-[#5C9EFF] font-bold hover:underline cursor-pointer">Ver Historial Completo</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            finanzas: {
+                title: "Finanzas del Condominio",
+                html: `
+                    <!-- KPIs de Finanzas -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-4 rounded-xl transition-colors">
+                            <span class="text-[10px] font-bold text-[#5A5C61] dark:text-[#B3B3B7] uppercase tracking-wider block mb-1">Recaudación Mensual</span>
+                            <h3 class="text-lg font-extrabold text-emerald-800 dark:text-[#81C784]">94.2%</h3>
+                            <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7] mt-0.5 block">98/104 Unidades pagadas</span>
+                        </div>
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-4 rounded-xl transition-colors">
+                            <span class="text-[10px] font-bold text-[#5A5C61] dark:text-[#B3B3B7] uppercase tracking-wider block mb-1">Morosidad Actual</span>
+                            <h3 class="text-lg font-extrabold text-red-800 dark:text-[#FF8A65]">5.8%</h3>
+                            <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7] mt-0.5 block">6 Unidades con deuda</span>
+                        </div>
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-4 rounded-xl transition-colors">
+                            <span class="text-[10px] font-bold text-[#5A5C61] dark:text-[#B3B3B7] uppercase tracking-wider block mb-1">Caja Chica</span>
+                            <h3 class="text-lg font-extrabold text-[#1A1A1A] dark:text-white">$2.450.000</h3>
+                            <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7] mt-0.5 block">Fondo de emergencias</span>
+                        </div>
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-4 rounded-xl transition-colors">
+                            <span class="text-[10px] font-bold text-[#5A5C61] dark:text-[#B3B3B7] uppercase tracking-wider block mb-1">Egresos Totales</span>
+                            <h3 class="text-lg font-extrabold text-[#5A5C61] dark:text-[#B3B3B7]">$1.840.000</h3>
+                            <span class="text-[9px] text-[#5A5C61] dark:text-[#B3B3B7] mt-0.5 block">Mantención y proveedores</span>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico e Historial de Finanzas -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Historial Egresos / Gastos -->
+                        <div class="md:col-span-2 bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] rounded-xl overflow-hidden transition-colors">
+                            <div class="p-4 border-b border-gray-100 dark:border-zinc-700/50 flex justify-between items-center">
+                                <h4 class="font-bold text-sm">Registro de Gastos Recientes (Egresos)</h4>
+                                <button class="bg-[#004D99] dark:bg-[#5C9EFF] text-white dark:text-[#121212] font-bold text-[10px] px-3 py-1.5 rounded">Registrar Gasto</button>
+                            </div>
+                            
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-gray-50 dark:bg-zinc-800/40 text-[#5A5C61] dark:text-[#B3B3B7] font-bold uppercase text-[10px] border-b border-gray-100 dark:border-zinc-700/50">
+                                    <tr>
+                                        <th class="p-3">Detalle / Concepto</th>
+                                        <th class="p-3">Categoría</th>
+                                        <th class="p-3">Monto</th>
+                                        <th class="p-3">Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-zinc-700/50">
+                                    <tr>
+                                        <td class="p-3 font-semibold">Reparación de Ascensor Torre B</td>
+                                        <td class="p-3"><span class="bg-red-500/10 text-red-800 dark:text-[#FF8A65] px-2 py-0.5 rounded font-bold">Mantenimiento</span></td>
+                                        <td class="p-3 font-extrabold text-[#1A1A1A] dark:text-white">$450.000 CLP</td>
+                                        <td class="p-3 text-[#5A5C61] dark:text-[#B3B3B7]">03-07-2026</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold">Químicos para Mantención de Piscina</td>
+                                        <td class="p-3"><span class="bg-blue-500/10 text-[#004D99] dark:text-[#5C9EFF] px-2 py-0.5 rounded font-bold">Servicios</span></td>
+                                        <td class="p-3 font-extrabold text-[#1A1A1A] dark:text-white">$120.000 CLP</td>
+                                        <td class="p-3 text-[#5A5C61] dark:text-[#B3B3B7]">29-06-2026</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold">Pago Sueldo Conserjería</td>
+                                        <td class="p-3"><span class="bg-emerald-500/10 text-emerald-800 dark:text-[#81C784] px-2 py-0.5 rounded font-bold">Personal</span></td>
+                                        <td class="p-3 font-extrabold text-[#1A1A1A] dark:text-white">$1.270.000 CLP</td>
+                                        <td class="p-3 text-[#5A5C61] dark:text-[#B3B3B7]">28-06-2026</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mini Gráfico de Barras Proporcional -->
+                        <div class="bg-white dark:bg-[#222226] border border-[#E2E2E6] dark:border-[#323238] p-5 rounded-xl transition-colors space-y-4 flex flex-col justify-between">
+                            <div class="space-y-1">
+                                <h4 class="font-extrabold text-sm">Distribución de Gastos</h4>
+                                <span class="text-[10px] text-[#5A5C61] dark:text-[#B3B3B7]">Porcentaje por categoría del mes</span>
+                            </div>
+                            
+                            <!-- Gráfico de barras simulado -->
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold mb-1">
+                                        <span>Personal</span>
+                                        <span>69%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 dark:bg-zinc-800 h-2 rounded overflow-hidden">
+                                        <div class="bg-emerald-600 dark:bg-[#81C784] h-full rounded" style="width: 69%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold mb-1">
+                                        <span>Mantenimiento</span>
+                                        <span>24%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 dark:bg-zinc-800 h-2 rounded overflow-hidden">
+                                        <div class="bg-red-600 dark:bg-[#FF8A65] h-full rounded" style="width: 24%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold mb-1">
+                                        <span>Insumos</span>
+                                        <span>7%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 dark:bg-zinc-800 h-2 rounded overflow-hidden">
+                                        <div class="bg-blue-600 dark:bg-[#5C9EFF] h-full rounded" style="width: 7%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-[10px] text-[#5A5C61] dark:text-[#B3B3B7] leading-normal italic text-center mt-2">La categoría Personal mantiene el mayor egreso debido a la contratación de personal de conserjería nocturna.</p>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        // Cambiar entre dispositivo Móvil y Desktop
+        function setDevice(device) {
+            currentDevice = device;
+            
+            const frame = document.getElementById('device-frame');
+            const browserBar = document.getElementById('browser-bar');
+            const mobileNotch = document.getElementById('mobile-notch');
+            const saasSidebar = document.getElementById('saas-sidebar');
+            const saasTabbar = document.getElementById('saas-tabbar');
+
+            // Actualizar botones de la cabecera Figma
+            document.getElementById('btn-dev-desktop').className = device === 'desktop' ? "px-3 py-1 text-xs rounded transition-all bg-[#2C2C2C] text-white flex items-center gap-1.5" : "px-3 py-1 text-xs rounded transition-all text-gray-400 hover:text-white flex items-center gap-1.5";
+            document.getElementById('btn-dev-mobile').className = device === 'mobile' ? "px-3 py-1 text-xs rounded transition-all bg-[#2C2C2C] text-white flex items-center gap-1.5" : "px-3 py-1 text-xs rounded transition-all text-gray-400 hover:text-white flex items-center gap-1.5";
+
+            if (device === 'desktop') {
+                frame.style.maxWidth = '1100px';
+                frame.style.height = '580px';
+                browserBar.classList.remove('hidden');
+                mobileNotch.classList.add('hidden');
+                saasSidebar.classList.remove('hidden');
+                saasTabbar.classList.add('hidden');
+            } else {
+                frame.style.maxWidth = '375px';
+                frame.style.height = '620px';
+                browserBar.classList.add('hidden');
+                mobileNotch.classList.remove('hidden');
+                mobileNotch.classList.add('flex');
+                saasSidebar.classList.add('hidden');
+                saasTabbar.classList.remove('hidden');
+                saasTabbar.classList.add('flex');
+            }
+        }
+
+        // Cambiar el tema del Prototipo (Light / Dark)
+        function setTheme(theme) {
+            currentTheme = theme;
+            const body = document.body;
+            const frame = document.getElementById('device-frame');
+
+            // Actualizar botones del header Figma
+            document.getElementById('btn-theme-light').className = theme === 'light' ? "px-3 py-1 text-xs rounded transition-all bg-[#2C2C2C] text-white flex items-center gap-1.5" : "px-3 py-1 text-xs rounded transition-all text-gray-400 hover:text-white flex items-center gap-1.5";
+            document.getElementById('btn-theme-dark').className = theme === 'dark' ? "px-3 py-1 text-xs rounded transition-all bg-[#2C2C2C] text-white flex items-center gap-1.5" : "px-3 py-1 text-xs rounded transition-all text-gray-400 hover:text-white flex items-center gap-1.5";
+
+            if (theme === 'light') {
+                body.classList.remove('dark');
+                frame.classList.remove('dark');
+                
+                // Actualizar valores del Design System en el Inspector
+                document.getElementById('label-token-bg').innerText = "#F4F4F7";
+                document.getElementById('label-token-surface').innerText = "#FFFFFF";
+                document.getElementById('label-token-primary').innerText = "#004D99";
+                document.getElementById('label-token-primary').className = "font-mono text-blue-600";
+            } else {
+                body.classList.add('dark');
+                frame.classList.add('dark');
+                
+                // Actualizar valores del Design System en el Inspector
+                document.getElementById('label-token-bg').innerText = "#121212";
+                document.getElementById('label-token-surface').innerText = "#222226";
+                document.getElementById('label-token-primary').innerText = "#5C9EFF";
+                document.getElementById('label-token-primary').className = "font-mono text-blue-400";
+            }
+        }
+
+        // Navegar entre los módulos del SaaS
+        function setModule(mod) {
+            currentModule = mod;
+            const modData = modulesData[mod];
+            
+            // Actualizar título e inyectar el HTML
+            document.getElementById('app-module-title').innerText = modData.title;
+            document.getElementById('app-dynamic-view').innerHTML = modData.html;
+
+            // Actualizar el estado activo del navegador en el Sidebar de Figma (izquierda)
+            const navItems = ['dashboard', 'accesos', 'encomiendas', 'finanzas'];
+            navItems.forEach(item => {
+                const btn = document.getElementById(`nav-${item}`);
+                if (item === mod) {
+                    btn.className = "w-full flex items-center gap-3 px-3 py-2 text-left text-xs font-semibold rounded-md bg-blue-50 text-blue-700 dark:bg-zinc-800 dark:text-[#5C9EFF]";
+                } else {
+                    btn.className = "w-full flex items-center gap-3 px-3 py-2 text-left text-xs font-medium rounded-md text-gray-600 hover:bg-gray-50 dark:text-zinc-400 dark:hover:bg-zinc-800/40";
+                }
+            });
+        }
+
+        // Inicializar Prototipo en Modo Oscuro + Dashboard
+        setTheme('dark');
+        setDevice('desktop');
+        setModule('dashboard');
+    </script>
+</body>
+</html>

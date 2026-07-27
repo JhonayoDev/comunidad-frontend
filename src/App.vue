@@ -1,7 +1,8 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <HelloWorld />
+  <ConfirmDialog />
+  <RouterView />
 </template>
+
+<script setup>
+import ConfirmDialog from "primevue/confirmdialog";
+</script>
