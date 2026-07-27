@@ -20,9 +20,25 @@ export function useNotificaciones() {
     enabled: !!auth.condominioActualId,
   });
 
-  const hayNoLeidas = computed(() =>
-    (notificaciones.value || []).some((n) => !n.leida),
-  );
+  const syncQueryKey = computed(() => ["notificaciones-sync", auth.condominioActualId]);
+
+  const { data: syncData, isLoading: syncLoading, refetch: refreshSync } = useQuery({
+    queryKey: syncQueryKey,
+    queryFn: async () => {
+      const cid = auth.condominioActualId;
+      if (!cid) return { noLeidas: 0, notificaciones: [] };
+      const response = await notificacionesService.getSync(cid);
+      return response.data;
+    },
+    enabled: !!auth.condominioActualId,
+    refetchInterval: 120000,
+  });
+
+  const noLeidasCount = computed(() => syncData.value?.noLeidas || 0);
+
+  const syncNotificaciones = computed(() => syncData.value?.notificaciones || []);
+
+  const hayNoLeidas = computed(() => noLeidasCount.value > 0);
 
   const error = computed(() => {
     if (queryError.value) return "Error al cargar notificaciones";
@@ -32,7 +48,7 @@ export function useNotificaciones() {
   const marcarLeidaMutation = useMutation({
     mutationFn: async (notif) => {
       const cid = auth.condominioActualId;
-      if (!cid || notif.leida) return;
+      if (!cid || notif.leido) return;
       await notificacionesService.marcarLeida(cid, notif.id);
       return notif;
     },
@@ -41,12 +57,13 @@ export function useNotificaciones() {
       queryClient.setQueryData(queryKey.value, (old) => {
         if (!old) return old;
         return old.map((n) =>
-          n.id === notif.id ? { ...n, leida: true, fechaLectura: new Date().toISOString() } : n,
+          n.id === notif.id ? { ...n, leido: true, fechaLectura: new Date().toISOString() } : n,
         );
       });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKey.value });
+      queryClient.invalidateQueries({ queryKey: syncQueryKey.value });
     },
   });
 
@@ -60,11 +77,12 @@ export function useNotificaciones() {
       await queryClient.cancelQueries({ queryKey: queryKey.value });
       queryClient.setQueryData(queryKey.value, (old) => {
         if (!old) return old;
-        return old.map((n) => ({ ...n, leida: true, fechaLectura: new Date().toISOString() }));
+        return old.map((n) => ({ ...n, leido: true, fechaLectura: new Date().toISOString() }));
       });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKey.value });
+      queryClient.invalidateQueries({ queryKey: syncQueryKey.value });
     },
   });
 
@@ -81,7 +99,11 @@ export function useNotificaciones() {
     loading,
     error,
     hayNoLeidas,
+    noLeidasCount,
+    syncNotificaciones,
+    syncLoading,
     cargar,
+    refreshSync,
     marcarLeida,
     marcarTodas,
   };

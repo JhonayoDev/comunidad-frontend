@@ -4,6 +4,7 @@ import { authService } from "@/services/authService";
 import api from "@/services/api";
 import { accessToken } from "@/utils/tokenStore";
 import { condominiosService } from "@/services/condominiosService";
+import { permisosService } from "@/services/permisosService";
 import {
   scheduleProactiveRefresh,
   clearProactiveRefresh,
@@ -43,6 +44,9 @@ export const useAuthStore = defineStore("auth", () => {
   const condominioActualCargo = computed(
     () => condominioActual.value?.cargo || null,
   );
+
+  const permisos = ref([]);
+  const permisosRol = ref(null);
 
   const CARGO_LABELS = {
     PRESIDENTE: "Presidente",
@@ -118,6 +122,7 @@ export const useAuthStore = defineStore("auth", () => {
       if (condominios.value.length === 1) {
         seleccionarCondominio(condominios.value[0].id);
       } else if (condominioActual.value?.id) {
+        fetchPermisos(condominioActual.value.id);
         push.inicializar(condominioActual.value.id);
       }
       return true;
@@ -137,12 +142,31 @@ export const useAuthStore = defineStore("auth", () => {
     activeContext.value = ctx;
   }
 
+  async function fetchPermisos(cid) {
+    if (!cid) {
+      permisos.value = [];
+      permisosRol.value = null;
+      return;
+    }
+    try {
+      const { data } = await permisosService.getPermisos(cid);
+      permisos.value = data.permisos || [];
+      permisosRol.value = data.rolEnCondominio || null;
+    } catch (e) {
+      console.error("Error al cargar permisos:", e);
+      permisos.value = [];
+      permisosRol.value = null;
+    }
+  }
+
   function seleccionarCondominio(id) {
     const encontrado = condominios.value.find((c) => c.id === id);
     if (!encontrado) return;
     condominioActual.value = encontrado;
     activeContext.value = "residente";
     localStorage.setItem("condominioActual", JSON.stringify(encontrado));
+
+    fetchPermisos(encontrado.id);
 
     // Re-inicializar push con el nuevo condominio si ya hay sesión activa
     if (accessToken.value && encontrado?.id) {
@@ -169,6 +193,8 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
     condominios.value = [];
     condominioActual.value = null;
+    permisos.value = [];
+    permisosRol.value = null;
     localStorage.removeItem("user");
     localStorage.removeItem("condominios");
     localStorage.removeItem("condominioActual");
@@ -186,6 +212,9 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActualNombre,
     condominioActualRol,
     condominioActualCargo,
+    permisos,
+    permisosRol,
+    fetchPermisos,
     activeContext,
     contextos,
     contextDashboard,

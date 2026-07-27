@@ -9,6 +9,10 @@ export const notificacionesService = {
     return api.get(`/condominios/${condominioId}/notificaciones/badge`);
   },
 
+  getSync(condominioId) {
+    return api.get(`/condominios/${condominioId}/notificaciones/sync`);
+  },
+
   marcarLeida(condominioId, notificacionId) {
     return api.patch(
       `/condominios/${condominioId}/notificaciones/${notificacionId}/leida`,

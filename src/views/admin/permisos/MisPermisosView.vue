@@ -1,23 +1,17 @@
 <script setup>
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useAuthStore } from "@/stores/authStore";
-import {
-  PERMISOS, ROLES, CARGOS, MODULOS, permisosEfectivos,
-} from "@/data/permisosMock";
+import { PERMISOS, MODULOS } from "@/data/permisosMock";
 
 import Card from "primevue/card";
 import Tag from "primevue/tag";
-import Divider from "primevue/divider";
-import Message from "primevue/message";
 
 const auth = useAuthStore();
-const rol = ref(auth.condominioActualRol || auth.user?.roles?.[0] || "RESIDENTE");
-const cargo = ref(auth.condominioActualCargo || null);
-
-const permisosEf = computed(() => permisosEfectivos(rol.value, cargo.value));
 
 const permisosDetalle = computed(() => {
-  return permisosEf.value.map((cod) => PERMISOS.find((p) => p.codigo === cod)).filter(Boolean);
+  return (auth.permisos || [])
+    .map((cod) => PERMISOS.find((p) => p.codigo === cod))
+    .filter(Boolean);
 });
 
 const agrupados = computed(() => {
@@ -31,9 +25,6 @@ const agrupados = computed(() => {
 
 const totalPermisos = computed(() => PERMISOS.length);
 const totalPropios = computed(() => permisosDetalle.value.length);
-
-const rolInfo = computed(() => ROLES.find((r) => r.codigo === rol.value));
-const cargoInfo = computed(() => CARGOS.find((c) => c.codigo === cargo.value));
 </script>
 
 <template>
@@ -45,11 +36,11 @@ const cargoInfo = computed(() => CARGOS.find((c) => c.codigo === cargo.value));
         <div class="flex flex-wrap gap-3 items-center">
           <div>
             <span class="text-sm text-surface-500">Rol:</span>
-            <Tag :value="rolInfo?.nombre || rol" severity="info" class="ml-1" />
+            <Tag :value="auth.condominioActualRol || auth.user?.roles?.[0] || '—'" severity="info" class="ml-1" />
           </div>
-          <div v-if="cargoInfo">
+          <div v-if="auth.condominioActualCargo">
             <span class="text-sm text-surface-500">Cargo:</span>
-            <Tag :value="cargoInfo.nombre" severity="warn" class="ml-1" />
+            <Tag :value="auth.condominioActualCargo" severity="warn" class="ml-1" />
           </div>
           <div class="text-sm text-surface-400 ml-auto">
             {{ totalPropios }} de {{ totalPermisos }} permisos

@@ -2,7 +2,9 @@ import { ref } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { encomiendasService } from "../services/encomiendasService";
+import { archivosService } from "../services/archivosService";
 import { usePaginacion } from "./usePaginacion";
+import { comprimirImagen } from "../utils/imageCompressor";
 
 export function useEncomiendas() {
   const auth = useAuthStore();
@@ -29,6 +31,60 @@ export function useEncomiendas() {
   async function cargar(filtros = {}) {
     filtrosActuales.value = filtros;
     await encomiendasQuery.refetch();
+  }
+
+  const registrarMutation = useMutation({
+    mutationFn: async ({ formData, archivo }) => {
+      const cid = auth.condominioActualId;
+      if (!cid) throw new Error("selecciona un condominio");
+
+      let fileId = null;
+
+      if (archivo) {
+        const compressed = await comprimirImagen(archivo);
+
+        const solicitud = await archivosService.solicitarUrl(cid, {
+          categoria: "ENCOMIENDA",
+          nombreArchivo: archivo.name,
+          contentType: "image/jpeg",
+          recursoTipo: "ENCOMIENDA",
+          recursoId: null,
+        });
+        const { fileId: fid, uploadUrl, method } = solicitud.data;
+
+        await fetch(uploadUrl, { method, body: compressed, headers: { "Content-Type": "image/jpeg" } });
+
+        await archivosService.confirmar(cid, { fileId: fid, tamanoBytes: compressed.size });
+
+        fileId = fid;
+      }
+
+      await encomiendasService.registrar(cid, { ...formData, fileId });
+    },
+    onError: (err) => {
+      console.error("Error al registrar encomienda:", err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["encomiendas", auth.condominioActualId] });
+    },
+  });
+
+  const detalleQuery = useQuery({
+    queryKey: ["encomienda-detalle", auth.condominioActualId, ref(null)],
+    queryFn: () => null,
+    enabled: false,
+  });
+
+  async function obtenerDetalle(encomiendaId) {
+    const cid = auth.condominioActualId;
+    if (!cid) return null;
+    try {
+      const { data } = await encomiendasService.getEncomienda(cid, encomiendaId);
+      return data;
+    } catch (e) {
+      console.error("Error al obtener detalle de encomienda:", e);
+      return null;
+    }
   }
 
   const entregarMutation = useMutation({
@@ -60,6 +116,15 @@ export function useEncomiendas() {
     },
   });
 
+  async function registrar(formData, archivo) {
+    try {
+      await registrarMutation.mutateAsync({ formData, archivo });
+      return true;
+    } catch (e) {
+      return e.response?.data?.message || "Error al registrar encomienda";
+    }
+  }
+
   async function entregar(encomienda, nombreRetira, rutRetira) {
     try {
       await entregarMutation.mutateAsync({ encomienda, nombreRetira, rutRetira });
@@ -77,7 +142,9 @@ export function useEncomiendas() {
     loading,
     error,
     cargar,
+    registrar,
     entregar,
+    obtenerDetalle,
     pag,
   };
 }

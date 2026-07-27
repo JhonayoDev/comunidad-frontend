@@ -4,6 +4,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { encomiendasService } from "../../services/encomiendasService";
 
 import Card from "primevue/card";
+import Dialog from "primevue/dialog";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
@@ -12,6 +13,10 @@ const auth = useAuthStore();
 const encomiendas = ref([]);
 const loading = ref(true);
 const error = ref(null);
+
+const mostrarDetalle = ref(false);
+const cargandoDetalle = ref(false);
+const detalle = ref(null);
 
 function severityEncomienda(estado) {
   if (estado === "ENTREGADA") return "info";
@@ -49,6 +54,21 @@ async function cargar() {
   }
 }
 
+async function abrirDetalle(e) {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  cargandoDetalle.value = true;
+  mostrarDetalle.value = true;
+  try {
+    const { data } = await encomiendasService.getEncomienda(cid, e.id);
+    detalle.value = data;
+  } catch (err) {
+    console.error("Error al cargar detalle", err);
+  } finally {
+    cargandoDetalle.value = false;
+  }
+}
+
 onMounted(() => cargar());
 </script>
 
@@ -80,7 +100,7 @@ onMounted(() => cargar());
     </template>
 
     <template v-else>
-      <Card v-for="e in encomiendas" :key="e.id">
+      <Card v-for="e in encomiendas" :key="e.id" class="cursor-pointer" @click="abrirDetalle(e)">
         <template #content>
           <div class="flex items-start justify-between gap-2">
             <div class="flex-1">
@@ -104,5 +124,26 @@ onMounted(() => cargar());
         </template>
       </Card>
     </template>
+
+    <Dialog v-model:visible="mostrarDetalle" :header="detalle ? `Encomienda — Casa ${detalle.unidadNumero}` : 'Detalle'" modal :style="{ width: '95%', maxWidth: '500px' }">
+      <Skeleton v-if="cargandoDetalle" width="100%" height="300px" />
+      <div v-else-if="detalle" class="flex flex-col gap-3">
+        <div v-if="detalle.imagenUrl" class="w-full">
+          <img :src="detalle.imagenUrl" alt="Foto encomienda" class="w-full h-64 object-cover border-round" />
+        </div>
+        <div v-else class="flex flex-col items-center py-4 text-surface-400">
+          <i class="pi pi-camera text-3xl mb-1"></i>
+          <span class="text-sm">Sin fotografía</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-sm">
+          <span class="text-surface-500">Tipo:</span><span class="font-medium">{{ detalle.tipo }}</span>
+          <span class="text-surface-500">Destinatario:</span><span class="font-medium">{{ detalle.nombreDestinatario }}</span>
+          <span class="text-surface-500">Estado:</span><Tag :value="detalle.estado" :severity="detalle.estado === 'PENDIENTE' ? 'warn' : 'success'" size="small" />
+          <span class="text-surface-500">Recibida:</span><span>{{ formatFecha(detalle.creadoEn) }}</span>
+          <span v-if="detalle.nombreRetira" class="text-surface-500">Retirada por:</span>
+          <span v-if="detalle.nombreRetira">{{ detalle.nombreRetira }} {{ detalle.rutRetira ? `(${detalle.rutRetira})` : '' }}</span>
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
