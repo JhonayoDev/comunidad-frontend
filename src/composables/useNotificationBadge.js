@@ -1,21 +1,26 @@
-import { useQuery } from "@tanstack/vue-query";
-import { useAuthStore } from "@/stores/authStore";
-import { perfilService } from "@/services/perfilService";
+/**
+ * useNotificationBadge.js
+ *
+ * Composable de badge de notificaciones con polling adaptativo.
+ *
+ * El polling es gestionado por PushManager según el estado del permiso:
+ * - 'granted':       Sin polling. Badge actualizado vía Push Event o visibilitychange.
+ * - 'default':       Polling cada 2 min (moderado).
+ * - 'denied':        Polling cada 5 min (lento).
+ * - 'no-soportado':  Polling cada 2 min (moderado).
+ *
+ * Uso:
+ *
+ *   const { notifCount } = useNotificationBadge();
+ *
+ * La inicialización del PushManager se maneja automáticamente desde authStore
+ * (login / tryRestoreSession / seleccionarCondominio).
+ */
+
+import { usePushNotifications } from "./usePushNotifications";
 
 export function useNotificationBadge() {
-  const auth = useAuthStore();
+  const { badgeCount } = usePushNotifications();
 
-  const { data: notifCount, refetch: actualizarBadge } = useQuery({
-    queryKey: ["notificacionesBadge", auth.condominioActualId],
-    queryFn: async () => {
-      const cid = auth.condominioActualId;
-      if (!cid) return 0;
-      const { data } = await perfilService.getBadgeNotificaciones(cid);
-      return data.noLeidas;
-    },
-    refetchInterval: 30_000,
-    enabled: !!auth.condominioActualId,
-  });
-
-  return { notifCount, actualizarBadge };
+  return { notifCount: badgeCount };
 }

@@ -81,10 +81,25 @@ async function handleLogout() {
       </template>
     </Card>
 
-    <!-- Sesión -->
+    <!-- Configuración -->
     <Card>
-      <template #title>Sesión</template>
+      <template #title>Configuración</template>
       <template #content>
+        <Button
+          label="Perfil"
+          icon="pi pi-user"
+          variant="text"
+          class="w-full justify-content-start"
+          @click="goTo('Perfil')"
+        />
+        <Button
+          label="Notificaciones Push"
+          icon="pi pi-bell"
+          variant="text"
+          class="w-full justify-content-start"
+          @click="goTo('Configuracion')"
+        />
+        <Divider class="my-2" />
         <Button
           label="Cerrar sesión"
           icon="pi pi-sign-out"

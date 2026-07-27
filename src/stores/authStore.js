@@ -8,8 +8,12 @@ import {
   scheduleProactiveRefresh,
   clearProactiveRefresh,
 } from "@/utils/refreshScheduler";
+import { usePushNotifications } from "@/composables/usePushNotifications";
 
 export const useAuthStore = defineStore("auth", () => {
+  // Composable de notificaciones push — estado compartido reactivo
+  const push = usePushNotifications();
+
   // Datos de sesión — no contienen tokens
   const user = ref(JSON.parse(localStorage.getItem("user") || "null"));
   const condominios = ref(
@@ -89,6 +93,8 @@ export const useAuthStore = defineStore("auth", () => {
 
     if (condominios.value.length === 1) {
       seleccionarCondominio(condominios.value[0].id);
+    } else if (condominioActual.value?.id) {
+      push.inicializar(condominioActual.value.id);
     }
   }
 
@@ -111,6 +117,8 @@ export const useAuthStore = defineStore("auth", () => {
       await fetchCondominios();
       if (condominios.value.length === 1) {
         seleccionarCondominio(condominios.value[0].id);
+      } else if (condominioActual.value?.id) {
+        push.inicializar(condominioActual.value.id);
       }
       return true;
     } catch {
@@ -135,10 +143,17 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActual.value = encontrado;
     activeContext.value = "residente";
     localStorage.setItem("condominioActual", JSON.stringify(encontrado));
+
+    // Re-inicializar push con el nuevo condominio si ya hay sesión activa
+    if (accessToken.value && encontrado?.id) {
+      push.inicializar(encontrado.id);
+    }
   }
 
   async function logout() {
     try {
+      // Dar de baja push antes de limpiar la sesión
+      await push.destruir();
       await authService.logout(accessToken.value);
     } catch {
       // Si falla en el servidor, limpiamos igualmente en el cliente
@@ -149,6 +164,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   function clearSession() {
     clearProactiveRefresh();
+    push.destruir();
     accessToken.value = null;
     user.value = null;
     condominios.value = [];

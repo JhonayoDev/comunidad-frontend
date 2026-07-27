@@ -10,18 +10,20 @@ export default defineConfig({
     vue(),
     tailwindcss(),
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "public",
+      filename: "service-worker.js",
       registerType: "autoUpdate",
-      manifest: {
-        name: "Comunidad App",
-        short_name: "Comunidad",
-        description: "Gestión de condominio",
-        theme_color: "#1e40af",
-        background_color: "#ffffff",
-        display: "standalone",
-        icons: [
-          { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
-          { src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },
-        ],
+      manifest: false,
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
+      injectManifest: {
+        injectionPoint: undefined,
+      },
+      workbox: {
+        globPatterns: [],
       },
     }),
   ],

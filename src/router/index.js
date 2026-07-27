@@ -356,6 +356,12 @@ const routes = [
         component: () => import("../views/residente/CasosView.vue"),
         meta: { roles: ["RESIDENTE"] },
       },
+      {
+        path: "configuracion",
+        name: "Configuracion",
+        component: () => import("../views/residente/ConfiguracionView.vue"),
+        meta: { roles: ["RESIDENTE", "ADMINISTRADOR", "GUARDIA"] },
+      },
     ],
   },
 
