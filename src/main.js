@@ -12,6 +12,7 @@ import { ComunidadTheme } from "./theme";
 
 import "primeicons/primeicons.css";
 import "./style.css";
+import { vPermiso } from "./directives/permiso";
 
 const app = createApp(App);
 
@@ -139,5 +140,7 @@ app.use(PrimeVue, {
 
 app.use(ConfirmationService);
 app.use(VueQueryPlugin, { queryClient });
+
+app.directive("permiso", vPermiso);
 
 app.mount("#app");

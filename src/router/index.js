@@ -431,11 +431,23 @@ router.beforeEach(async (to) => {
   const userRoles = auth.user?.roles || [];
   const routeRoles = to.meta.roles;
   const routeCargos = to.meta.cargos;
+  const routePermiso = to.meta.permiso;
+  const routePermisos = to.meta.permisos;
 
   const necesitaRol = routeRoles?.length > 0;
   const necesitaCargo = routeCargos?.length > 0;
+  const necesitaPermiso = !!(routePermiso || routePermisos?.length);
 
-  if (!necesitaRol && !necesitaCargo) return;
+  if (!necesitaRol && !necesitaCargo && !necesitaPermiso) return;
+
+  if (necesitaPermiso) {
+    const userPermisos = auth.permisos || [];
+    const hasPermiso = routePermiso
+      ? userPermisos.includes(routePermiso)
+      : routePermisos.some((p) => userPermisos.includes(p));
+    if (!hasPermiso) return rutaInicial(auth);
+    if (!necesitaRol && !necesitaCargo) return;
+  }
 
   const cumpleRol =
     necesitaRol &&
@@ -445,9 +457,7 @@ router.beforeEach(async (to) => {
   const cumpleCargo =
     necesitaCargo && routeCargos.includes(auth.condominioActualCargo);
 
-  // Cargo match grants access independently of role
   if (cumpleCargo) return;
-  // Role match grants access if no cargo is required, or as fallback on combined routes
   if (cumpleRol) return;
 
   return rutaInicial(auth);

@@ -37,21 +37,7 @@
         rounded
         @click="toggleTema"
       />
-      <Button
-        class="header-btn"
-        icon="pi pi-bell"
-        severity="secondary"
-        text
-        rounded
-        @click="goTo('Notificaciones')"
-      >
-        <Badge
-          v-if="notifCount > 0"
-          :value="notifCount"
-          severity="danger"
-          class="ml-1"
-        />
-      </Button>
+      <NotificacionPopover />
       <Button
         class="header-btn"
         icon="pi pi-bars"
@@ -89,19 +75,17 @@ import { ref, computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useNavigation } from "@/composables/useNavigation";
-import { useNotificationBadge } from "@/composables/useNotificationBadge";
 import { useCondominioSelector } from "@/composables/useCondominioSelector";
+import NotificacionPopover from "./NotificacionPopover.vue";
 import MenuView from "@/views/menu/MenuView.vue";
 import Drawer from "primevue/drawer";
 import Button from "primevue/button";
 import Select from "primevue/select";
-import Badge from "primevue/badge";
 
 const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
 const { switchContext } = useNavigation();
-const { notifCount } = useNotificationBadge();
 const { selectedCondominioId, onCondominioChange } = useCondominioSelector();
 
 const drawerVisible = ref(false);

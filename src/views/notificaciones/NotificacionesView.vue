@@ -1,32 +1,44 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "../../stores/authStore";
-import { notificacionesService } from "../../services/notificacionesService";
-
+import { ref, computed } from "vue";
+import { useNotificaciones } from "@/composables/useNotificaciones";
 import Card from "primevue/card";
 import Button from "primevue/button";
 import Badge from "primevue/badge";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
+import Paginator from "primevue/paginator";
 
-const router = useRouter();
-const auth = useAuthStore();
+const {
+  notificaciones, loading, error, hayNoLeidas,
+  marcarLeida, marcarTodas,
+} = useNotificaciones();
 
-const notificaciones = ref([]);
-const loading = ref(true);
-const error = ref(null);
+const expandedId = ref(null);
+const pagina = ref(0);
+const tamano = ref(10);
 
-const hayNoLeidas = computed(() =>
-  notificaciones.value.some((n) => !n.leido),
-);
+function toggleExpand(id) {
+  expandedId.value = expandedId.value === id ? null : id;
+}
 
 function iconoPorTipo(tipo) {
   const iconos = {
-    ENCOMIENDA: "pi pi-box",
-    VISITA: "pi pi-sign-in",
-    AVISO: "pi pi-megaphone",
-    SISTEMA: "pi pi-cog",
+    ENCOMIENDA_RECIBIDA: "pi pi-box",
+    ENCOMIENDA_ENTREGADA: "pi pi-box",
+    VISITA_PREAUTORIZADA: "pi pi-sign-in",
+    VISITA_INGRESADA: "pi pi-sign-in",
+    VISITA_RECHAZADA: "pi pi-sign-in",
+    ANUNCIO_GENERAL_PUBLICADO: "pi pi-megaphone",
+    DOCUMENTO_PUBLICADO: "pi pi-file",
+    DEUDA_VENCIDA: "pi pi-exclamation-triangle",
+    RECLAMO_CREADO: "pi pi-comment",
+    RECLAMO_RESPONDIDO: "pi pi-comment",
+    RECLAMO_CERRADO: "pi pi-comment",
+    PAGO_REGISTRADO: "pi pi-credit-card",
+    GASTO_COMUN_GENERADO: "pi pi-calendar",
+    RESERVA_CREADA: "pi pi-calendar-plus",
+    RESERVA_APROBADA: "pi pi-check-circle",
+    RESERVA_RECHAZADA: "pi pi-times-circle",
   };
   return iconos[tipo] || "pi pi-bell";
 }
@@ -41,49 +53,24 @@ function formatFecha(fecha) {
   });
 }
 
-async function cargar() {
-  const cid = auth.condominioActualId;
-  if (!cid) {
-    error.value = "Selecciona un condominio primero";
-    loading.value = false;
-    return;
-  }
-  loading.value = true;
-  error.value = null;
-  try {
-    const response = await notificacionesService.getTodas(cid);
-    notificaciones.value = response.data;
-  } catch (e) {
-    console.error("Error al cargar notificaciones", e);
-    error.value = "Error al cargar notificaciones";
-  } finally {
-    loading.value = false;
-  }
+const paginadas = computed(() => {
+  const lista = notificaciones.value || [];
+  const inicio = pagina.value * tamano.value;
+  return lista.slice(inicio, inicio + tamano.value);
+});
+
+const totalRegistros = computed(() => (notificaciones.value || []).length);
+
+function alCambiarPagina(event) {
+  pagina.value = event.page;
 }
 
-async function marcarLeida(notif) {
-  const cid = auth.condominioActualId;
-  if (notif.leido || !cid) return;
-  try {
-    await notificacionesService.marcarLeida(cid, notif.id);
-    notif.leido = true;
-  } catch (e) {
-    console.error("Error al marcar como leída", e);
+function handleMarcarLeida(n) {
+  if (!n.leido) {
+    marcarLeida(n);
   }
+  toggleExpand(n.id);
 }
-
-async function marcarTodas() {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  try {
-    await notificacionesService.marcarTodasLeidas(cid);
-    notificaciones.value.forEach((n) => (n.leido = true));
-  } catch (e) {
-    console.error("Error al marcar todas como leídas", e);
-  }
-}
-
-onMounted(() => cargar());
 </script>
 
 <template>
@@ -118,7 +105,7 @@ onMounted(() => cargar());
       </Card>
     </template>
 
-    <template v-else-if="notificaciones.length === 0">
+    <template v-else-if="paginadas.length === 0">
       <Card>
         <template #content>
           <div class="flex flex-col items-center py-6 gap-2">
@@ -131,33 +118,44 @@ onMounted(() => cargar());
 
     <template v-else>
       <Card
-        v-for="notif in notificaciones"
+        v-for="notif in paginadas"
         :key="notif.id"
         :class="notif.leido ? 'opacity-60' : ''"
         class="cursor-pointer"
-        @click="marcarLeida(notif)"
+        @click="handleMarcarLeida(notif)"
       >
         <template #content>
           <div class="flex items-start gap-3">
             <i
               :class="iconoPorTipo(notif.tipo)"
-              class="text-2xl mt-1 text-primary"
+              class="text-2xl mt-1 text-primary shrink-0"
             ></i>
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-2">
                 <span class="font-semibold text-sm truncate">{{ notif.titulo }}</span>
-                <Badge v-if="!notif.leido" value="Nueva" severity="info" />
+                <Badge v-if="!notif.leido" value="Nueva" severity="info" class="shrink-0" />
               </div>
-              <p class="text-sm text-surface-500 mt-1">
-                {{ notif.mensaje }}
-              </p>
               <p class="text-xs text-surface-400 mt-1">
                 {{ formatFecha(notif.fechaCreacion) }}
               </p>
+              <div v-if="expandedId === notif.id" class="mt-2 pt-2 border-t border-surface-200">
+                <p class="text-sm text-surface-600">{{ notif.mensaje }}</p>
+              </div>
+              <div v-else class="mt-1">
+                <p class="text-sm text-surface-500 truncate">{{ notif.mensaje }}</p>
+              </div>
             </div>
           </div>
         </template>
       </Card>
+
+      <Paginator
+        v-if="totalRegistros > tamano"
+        :rows="tamano"
+        :totalRecords="totalRegistros"
+        :first="pagina * tamano"
+        @page="alCambiarPagina"
+      />
     </template>
   </div>
 </template>
