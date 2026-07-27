@@ -259,6 +259,13 @@ const routes = [
         component: () => import("../views/gestion/ReglasNotificacionView.vue"),
         meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"] },
       },
+      // ── Almacenamiento (Admin Config) ──────────────
+      {
+        path: "configuracion-almacenamiento",
+        name: "ConfiguracionAlmacenamiento",
+        component: () => import("../views/admin/ConfiguracionAlmacenamientoView.vue"),
+        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], permiso: "ALMACENAMIENTO_CONFIGURAR" },
+      },
       // ── Archivos ───────────────────────────────────
       {
         path: "archivos",
