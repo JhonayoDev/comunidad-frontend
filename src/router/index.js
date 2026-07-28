@@ -296,6 +296,12 @@ const routes = [
         meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
       },
       {
+        path: "visitas/busqueda",
+        name: "BusquedaDetalle",
+        component: () => import("../views/visitas/BusquedaDetalleView.vue"),
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
+      },
+      {
         path: "visitas/nueva",
         name: "RegistrarVisita",
         component: () => import("../views/visitas/RegistrarVisitaView.vue"),

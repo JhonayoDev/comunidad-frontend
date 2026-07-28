@@ -14,6 +14,7 @@ import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import TurnoCard from "@/components/bitacora/TurnoCard.vue";
 import NovedadDialog from "@/components/bitacora/NovedadDialog.vue";
+import BuscadorPatenteCard from "@/components/visitas/BuscadorPatenteCard.vue";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -89,6 +90,8 @@ onMounted(async () => {
         :confirm-messages="confirmMessages"
         @action="ejecutarAccion"
       />
+
+      <BuscadorPatenteCard compact />
 
       <!-- Stats grid -->
       <div class="grid grid-cols-2 gap-3">
@@ -273,13 +276,7 @@ onMounted(async () => {
               severity="primary"
               @click="router.push({ name: 'RegistrarVisita' })"
             />
-            <Button
-              label="Consultar patente"
-              icon="pi pi-search"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Porton' })"
-            />
+
             <Button
               label="Accesos activos"
               icon="pi pi-shield"

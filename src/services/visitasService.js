@@ -21,7 +21,5 @@ export const visitasService = {
     return api.get(`/condominios/${condominioId}/accesos/frecuentes`, { params: { patente } });
   },
 
-  consultaRapida(condominioId, patente) {
-    return api.get(`/condominios/${condominioId}/busqueda/por-patente`, { params: { patente } });
-  },
+
 };
