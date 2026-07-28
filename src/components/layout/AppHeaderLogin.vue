@@ -11,8 +11,9 @@
     </div>
 
     <div class="flex align-items-center gap-1 ml-auto">
+      <!-- Agregamos la clase reutilizable btn-no-bg -->
       <Button
-        class="header-btn"
+        class="btn-no-bg"
         :icon="esOscuro ? 'pi pi-sun' : 'pi pi-moon'"
         severity="secondary"
         text
@@ -46,7 +47,7 @@ initTema();
 
 <style scoped>
 .header-text {
-  color: var(--p-surface-900);
+  color: var(--p-primary-text-principal);
 }
 </style>
 
@@ -55,8 +56,13 @@ initTema();
   El color del icono debe coincidir con el texto del header.
   Cambia el valor de --p-surface-900 si quieres otro color.
 -->
-<style>
-button.header-btn .p-button-icon {
-  color: var(--p-surface-900) !important;
+<style scoped>
+.header-text {
+  color: var(--p-primary-text-principal);
+}
+
+/* Asegura el color del icono adaptado al tema actual sin afectar fondos */
+:deep(.btn-no-bg .p-button-icon) {
+  color: var(--p-primary-text-principal);
 }
 </style>

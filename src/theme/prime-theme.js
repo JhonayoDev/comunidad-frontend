@@ -202,10 +202,26 @@ export default definePreset(Aura, {
    * ===============================================================
    */
   components: {
-    // Aquí dejas solo lo específico del desplegable del Select
+    button: {
+      text: {
+        secondary: {
+          hoverBackground: "transparent",
+          activeBackground: "transparent",
+        },
+      },
+    },
+    popover: {
+      root: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        borderColor: "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
+        color: "{primary.textPrincipal}",
+        gutter: "10px",
+        arrowOffset: "1.25rem",
+      },
+    },
     select: {
       overlay: {
-        background: "color-mix(in srgb, {primary.surface} 98%)",
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
         color: "{primary.textPrincipal}",
       },
       option: {
@@ -221,12 +237,12 @@ export default definePreset(Aura, {
     //TODO: revisar los tokens para poder ajustar bien los colores
     datepicker: {
       panel: {
-        background: "color-mix(in srgb, {primary.surface} 98%)",
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
         bordercolor:
           "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
       },
       header: {
-        background: "color-mix(in srgb, {primary.surface} 98%)",
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
         color: "#c53b3b",
       },
       title: {

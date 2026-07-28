@@ -7,7 +7,8 @@ import Badge from "primevue/badge";
 import Popover from "primevue/popover";
 
 const router = useRouter();
-const { notifCount, syncNotificaciones, syncLoading, refreshSync } = useNotificationBadge();
+const { notifCount, syncNotificaciones, syncLoading, refreshSync } =
+  useNotificationBadge();
 
 const op = ref(null);
 
@@ -62,7 +63,7 @@ function timeAgo(fecha) {
 <template>
   <div>
     <Button
-      class="header-btn"
+      class="btn-no-bg header-btn"
       icon="pi pi-bell"
       severity="secondary"
       text
@@ -77,12 +78,19 @@ function timeAgo(fecha) {
       />
     </Button>
 
-    <Popover ref="op" :style="{ width: '320px' }">
+    <Popover
+      class="shadow-lg"
+      ref="op"
+      :style="{ width: '320px' }"
+    >
       <div class="flex flex-col gap-1">
-        <div class="flex items-center justify-between px-1 pb-2 border-b border-surface-200">
+        <div
+          class="flex items-center justify-between px-1 pb-2 border-b border-border"
+        >
           <span class="font-bold text-sm">Notificaciones</span>
           <Button
-            v-if="notifCount > 0"
+            class="btn-no-bg header-btn text-text-muted"
+            v-if="notifCount >= 0"
             label="Ver todas"
             size="small"
             link
@@ -94,8 +102,12 @@ function timeAgo(fecha) {
           <div v-for="i in 3" :key="i" class="flex items-center gap-2">
             <div class="w-8 h-8 bg-surface-200 border-round animate-pulse" />
             <div class="flex-1 space-y-1">
-              <div class="h-3 bg-surface-200 border-round w-3/4 animate-pulse" />
-              <div class="h-2 bg-surface-100 border-round w-1/2 animate-pulse" />
+              <div
+                class="h-3 bg-surface-200 border-round w-3/4 animate-pulse"
+              />
+              <div
+                class="h-2 bg-surface-100 border-round w-1/2 animate-pulse"
+              />
             </div>
           </div>
         </div>
@@ -113,11 +125,18 @@ function timeAgo(fecha) {
             :key="n.id"
             class="flex items-start gap-2 px-1 py-2 border-b border-surface-100 last:border-b-0 cursor-pointer hover:bg-surface-50 transition-colors duration-150 rounded"
           >
-            <i :class="iconoPorTipo(n.tipo)" class="text-lg mt-1 text-primary shrink-0" />
+            <i
+              :class="iconoPorTipo(n.tipo)"
+              class="text-lg mt-1 text-primary shrink-0"
+            />
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium m-0 truncate">{{ n.titulo }}</p>
-              <p class="text-xs text-surface-400 m-0 truncate">{{ n.mensaje }}</p>
-              <p class="text-xs text-surface-300 m-0 mt-1">{{ timeAgo(n.fechaCreacion) }}</p>
+              <p class="text-xs text-surface-400 m-0 truncate">
+                {{ n.mensaje }}
+              </p>
+              <p class="text-xs text-surface-300 m-0 mt-1">
+                {{ timeAgo(n.fechaCreacion) }}
+              </p>
             </div>
           </div>
         </template>
