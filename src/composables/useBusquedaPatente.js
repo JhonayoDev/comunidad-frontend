@@ -9,95 +9,96 @@ const tipoConfig = {
   VEHICULO_FRECUENTE: { label: "Frecuente", severity: "warn", icon: "pi pi-history" },
   DESCONOCIDO: { label: "Desconocido", severity: "danger", icon: "pi pi-exclamation-triangle" },
   PERSONA_RESIDENTE: { label: "Residente", severity: "success", icon: "pi pi-user" },
-  AUTORIZACION_SIN_VEHICULO: { label: "Sin vehículo", severity: "info", icon: "pi pi-user" },
 };
 
 export function useBusquedaPatente() {
   const auth = useAuthStore();
   const patente = ref("");
-  const resultado = ref(null);
+  const resultados = ref([]);
+  const indiceSeleccionado = ref(-1);
   const loading = ref(false);
   const errorMsg = ref("");
   const successMsg = ref("");
+  const hayMas = ref(false);
 
-  const ingresoDialogVisible = ref(false);
-  const registrando = ref(false);
-  const ingresoForm = ref({
-    unidadId: null,
-    tipo: null,
-    cantidadPersonas: 1,
+  const accesoSalida = ref(null);
+  const salidaDialogVisible = ref(false);
+  const confirmandoSalida = ref(false);
+  const salidaError = ref("");
+
+  const resultadoSeleccionado = computed(() => {
+    if (indiceSeleccionado.value < 0 || indiceSeleccionado.value >= resultados.value.length) return null;
+    return resultados.value[indiceSeleccionado.value];
   });
-  const erroresForm = ref({});
-  const registrandoSalida = ref(false);
 
   const tipoInfo = computed(() => {
-    if (!resultado.value) return null;
-    return tipoConfig[resultado.value.tipoResultado] || { label: resultado.value.tipoResultado, severity: "info", icon: "pi pi-info" };
+    if (!resultadoSeleccionado.value) return null;
+    return tipoConfig[resultadoSeleccionado.value.tipoResultado]
+      || { label: resultadoSeleccionado.value.tipoResultado, severity: "info", icon: "pi pi-info" };
   });
+
+  function tipoLabel(res) {
+    if (!res) return "";
+    return tipoConfig[res.tipoResultado]?.label || res.tipoResultado;
+  }
+
+  function tipoSeverity(res) {
+    if (!res) return "info";
+    return tipoConfig[res.tipoResultado]?.severity || "info";
+  }
 
   async function consultar() {
     const cid = auth.condominioActualId;
     if (!cid || patente.value.length < 2) return;
     loading.value = true;
-    resultado.value = null;
+    resultados.value = [];
+    indiceSeleccionado.value = -1;
+    accesoSalida.value = null;
     errorMsg.value = "";
     successMsg.value = "";
+    hayMas.value = false;
     try {
-      const { data } = await busquedaService.porPatente(cid, patente.value);
-      resultado.value = data;
+      const [busquedaRes, accesosRes] = await Promise.all([
+        busquedaService.porPatente(cid, patente.value),
+        accesosService.listar(cid, { estado: "ACTIVO" }),
+      ]);
+      const envelope = busquedaRes.data;
+      resultados.value = envelope.resultados || [];
+      hayMas.value = envelope.hayMas || false;
+
+      const activo = (accesosRes.data || []).find(
+        (a) => a.patenteVisitante?.toUpperCase() === patente.value.toUpperCase()
+      );
+      accesoSalida.value = activo || null;
+
+      if (resultados.value.length === 1 && resultados.value[0].tipoResultado !== "DESCONOCIDO") {
+        indiceSeleccionado.value = 0;
+      }
     } catch (e) {
-      console.error("Error al buscar por patente:", e);
+      console.error("Error al consultar:", e);
       errorMsg.value = "Error al consultar. Intente nuevamente.";
     } finally {
       loading.value = false;
     }
   }
 
-  function tieneAccion(accion) {
-    return resultado.value?.acciones?.includes(accion);
+  function tieneAccion(accion, res) {
+    const target = res || resultadoSeleccionado.value;
+    return target?.acciones?.includes(accion);
   }
 
-  function abrirDialogIngreso() {
-    ingresoForm.value = { unidadId: null, tipo: null, cantidadPersonas: 1 };
-    erroresForm.value = {};
-    ingresoDialogVisible.value = true;
+  function toggleExpand(idx) {
+    indiceSeleccionado.value = indiceSeleccionado.value === idx ? -1 : idx;
   }
 
-  async function confirmarIngreso() {
-    const errs = {};
-    if (!ingresoForm.value.unidadId) errs.unidadId = "Seleccione unidad destino";
-    if (!ingresoForm.value.tipo) errs.tipo = "Seleccione tipo de visita";
-    if (!ingresoForm.value.cantidadPersonas || ingresoForm.value.cantidadPersonas < 1) {
-      errs.cantidadPersonas = "Mínimo 1 persona";
-    }
-    erroresForm.value = errs;
-    if (Object.keys(errs).length) return;
-
-    const cid = auth.condominioActualId;
-    if (!cid) return;
-    registrando.value = true;
-    try {
-      const body = {
-        unidadId: ingresoForm.value.unidadId,
-        nombreVisitante: resultado.value.titulo || patente.value,
-        tipo: ingresoForm.value.tipo,
-        cantidadPersonas: Number(ingresoForm.value.cantidadPersonas),
-        patenteVisitante: patente.value,
-      };
-      if (resultado.value.tipoResultado === "PREAUTORIZACION" && resultado.value.referenciaId) {
-        body.autorizacionId = resultado.value.referenciaId;
-      }
-      await accesosService.registrarIngreso(cid, body);
-      successMsg.value = "Ingreso registrado correctamente";
-      ingresoDialogVisible.value = false;
-      resultado.value = null;
-      patente.value = "";
-    } catch (e) {
-      console.error("Error al registrar ingreso:", e);
-      errorMsg.value = e.response?.data?.message || "Error al registrar ingreso";
-    } finally {
-      registrando.value = false;
-    }
+  function limpiar() {
+    resultados.value = [];
+    indiceSeleccionado.value = -1;
+    accesoSalida.value = null;
+    patente.value = "";
+    errorMsg.value = "";
+    successMsg.value = "";
+    hayMas.value = false;
   }
 
   function cerrarMensajes() {
@@ -105,21 +106,63 @@ export function useBusquedaPatente() {
     successMsg.value = "";
   }
 
+  let debounceId = null;
+  function buscarMas(nuevaPatente) {
+    if (debounceId) clearTimeout(debounceId);
+    if (nuevaPatente.length < 2) return;
+    if (nuevaPatente === patente.value) return;
+    debounceId = setTimeout(() => {
+      patente.value = nuevaPatente;
+      consultar();
+    }, 400);
+  }
+
+  function abrirDialogSalida() {
+    salidaError.value = "";
+    salidaDialogVisible.value = true;
+  }
+
+  async function confirmarSalida(observacion) {
+    const cid = auth.condominioActualId;
+    if (!cid || !accesoSalida.value) return;
+    confirmandoSalida.value = true;
+    try {
+      const body = observacion ? { observacion } : {};
+      await accesosService.registrarSalida(cid, accesoSalida.value.id, body);
+      successMsg.value = "Salida registrada correctamente";
+      salidaDialogVisible.value = false;
+      limpiar();
+    } catch (e) {
+      console.error("Error al registrar salida:", e);
+      salidaError.value = e.response?.data?.message || "Error al registrar salida";
+    } finally {
+      confirmandoSalida.value = false;
+    }
+  }
+
   return {
     patente,
-    resultado,
+    resultados,
+    resultadoSeleccionado,
+    indiceSeleccionado,
     loading,
     errorMsg,
     successMsg,
     tipoInfo,
-    ingresoDialogVisible,
-    registrando,
-    ingresoForm,
-    erroresForm,
+    hayMas,
+    accesoSalida,
+    salidaDialogVisible,
+    confirmandoSalida,
+    salidaError,
     consultar,
+    limpiar,
     tieneAccion,
-    abrirDialogIngreso,
-    confirmarIngreso,
+    toggleExpand,
+    abrirDialogSalida,
+    confirmarSalida,
     cerrarMensajes,
+    buscarMas,
+    tipoLabel,
+    tipoSeverity,
   };
 }

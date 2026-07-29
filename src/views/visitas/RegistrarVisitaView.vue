@@ -1,34 +1,33 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { visitasService } from "@/services/visitasService";
-import { unidadesService } from "@/services/unidadesService";
+import { useUnidades } from "@/composables/useUnidades";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import InputNumber from "primevue/inputnumber";
 import Select from "primevue/select";
+import AutoComplete from "primevue/autocomplete";
 import Textarea from "primevue/textarea";
 import Message from "primevue/message";
-import Skeleton from "primevue/skeleton";
 
 const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
 
 const loading = ref(false);
-const loadingUnidades = ref(false);
 const errorGeneral = ref("");
-const unidades = ref([]);
 
 const form = ref({
   patente: route.query.patente || "",
-  nombreVisitante: "",
+  nombreVisitante: route.query.nombre || "",
   cantidadPersonas: 1,
   tipo: null,
-  unidadId: null,
+  unidadNumero: route.query.unidad || "",
+  autorizacionId: route.query.autorizacionId || null,
   observacion: "",
 });
 
@@ -43,18 +42,44 @@ const categorias = [
   { value: "OTRO", label: "Otro" },
 ];
 
-async function cargarUnidades() {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  loadingUnidades.value = true;
-  try {
-    const { data } = await unidadesService.getUnidades(cid);
-    unidades.value = data.filter((u) => u.tipo === "CASA");
-  } catch (e) {
-    console.error("Error al cargar unidades:", e);
-  } finally {
-    loadingUnidades.value = false;
+const { unidades, loading: loadingUnidades } = useUnidades();
+
+const todasUnidades = computed(() => unidades.value || []);
+
+const unidadesVisibles = computed(() =>
+  (unidades.value || []).filter((u) =>
+    ["CASA", "DEPARTAMENTO", "OTRO"].includes(u.tipo)
+  )
+);
+
+const sugerenciasUnidades = ref([]);
+
+function buscarUnidad(event) {
+  const query = (event.query || "").toLowerCase();
+  if (!query) {
+    sugerenciasUnidades.value = [];
+    return;
   }
+  sugerenciasUnidades.value = unidadesVisibles.value.filter((u) => {
+    const num = (u.numero || "").toLowerCase();
+    const sector = (u.sectorNombre || "").toLowerCase();
+    return num.includes(query) || sector.includes(query);
+  });
+}
+
+function onUnidadSelect(event) {
+  if (event.value?.numero) {
+    form.value.unidadNumero = event.value.numero;
+  }
+}
+
+function formatUnidadSugerencia(unidad) {
+  const base = unidad.sectorNombre
+    ? `${unidad.numero} — ${unidad.sectorNombre}`
+    : unidad.numero;
+  if (unidad.tipo === "CASA") return `Casa ${base}`;
+  if (unidad.tipo === "DEPARTAMENTO") return `Depto ${base}`;
+  return `${unidad.tipo} ${base}`;
 }
 
 function validar() {
@@ -62,7 +87,7 @@ function validar() {
   if (!form.value.nombreVisitante) errores.value.nombreVisitante = "Campo obligatorio";
   if (!form.value.cantidadPersonas || form.value.cantidadPersonas < 1) errores.value.cantidadPersonas = "Mínimo 1 persona";
   if (!form.value.tipo) errores.value.tipo = "Seleccione un tipo";
-  if (!form.value.unidadId) errores.value.unidadId = "Seleccione una casa destino";
+  if (!form.value.unidadNumero) errores.value.unidadNumero = "Ingrese la casa destino";
   return Object.keys(errores.value).length === 0;
 }
 
@@ -71,14 +96,24 @@ async function registrar() {
   if (!validar()) return;
   const cid = auth.condominioActualId;
   if (!cid) return;
+
+  const rawUnidad = form.value.unidadNumero;
+  const unidadNumero = typeof rawUnidad === "object" ? rawUnidad?.numero || "" : rawUnidad;
+  const unidad = todasUnidades.value.find((u) => u.numero === unidadNumero);
+  if (!unidad) {
+    errores.value.unidadNumero = `Casa "${form.value.unidadNumero}" no encontrada. Verifique el número.`;
+    return;
+  }
+
   const body = {
-    unidadId: form.value.unidadId,
+    unidadId: unidad.id,
     nombreVisitante: form.value.nombreVisitante,
     tipo: form.value.tipo,
     cantidadPersonas: Number(form.value.cantidadPersonas),
   };
   if (form.value.patente) body.patenteVisitante = form.value.patente;
   if (form.value.observacion) body.observacion = form.value.observacion;
+  if (form.value.autorizacionId) body.autorizacionId = form.value.autorizacionId;
   loading.value = true;
   try {
     await visitasService.registrarIngreso(cid, body);
@@ -94,8 +129,6 @@ async function registrar() {
     loading.value = false;
   }
 }
-
-onMounted(cargarUnidades);
 </script>
 
 <template>
@@ -107,7 +140,7 @@ onMounted(cargarUnidades);
         <div class="flex flex-col gap-3">
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Patente</label>
-            <InputText v-model="form.patente" placeholder="Ej: AB1234A (opcional)" class="uppercase" maxlength="7" @input="form.patente = form.patente.toUpperCase()" />
+            <InputText v-model="form.patente" placeholder="Ej: AB1234A (opcional)" class="uppercase" maxlength="10" @input="form.patente = form.patente.toUpperCase()" />
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Nombre visitante *</label>
@@ -126,13 +159,25 @@ onMounted(cargarUnidades);
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Casa destino *</label>
-            <Skeleton v-if="loadingUnidades" width="100%" height="2.5rem" />
-            <Select v-else v-model="form.unidadId" :options="unidades" optionLabel="label" optionValue="id" placeholder="Seleccione una casa" :class="{ 'p-invalid': errores.unidadId }" class="w-full">
+            <AutoComplete
+              v-model="form.unidadNumero"
+              :suggestions="sugerenciasUnidades"
+              @complete="buscarUnidad"
+              @item-select="onUnidadSelect"
+              @clear="sugerenciasUnidades = []"
+              optionLabel="numero"
+              forceSelection
+              placeholder="Escriba el número (ej: 32, A-101)"
+              :class="{ 'p-invalid': errores.unidadNumero }"
+              class="w-full"
+              :loading="loadingUnidades"
+            >
               <template #option="slotProps">
-                <span>Casa {{ slotProps.option.numero }} — {{ slotProps.option.sectorNombre }}</span>
+                <span>{{ formatUnidadSugerencia(slotProps.option) }}</span>
               </template>
-            </Select>
-            <small v-if="errores.unidadId" class="text-red-500">{{ errores.unidadId }}</small>
+            </AutoComplete>
+            <small v-if="errores.unidadNumero" class="text-red-500">{{ errores.unidadNumero }}</small>
+            <small v-else class="text-surface-400">Escriba el número de casa y seleccione de las sugerencias</small>
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Observación (opcional)</label>
