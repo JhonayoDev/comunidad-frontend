@@ -99,12 +99,15 @@ export default definePreset(Aura, {
         primary: {
           background: "#F4F4F7",
           surface: "#FFFFFF",
+          backgroundInverse: "#222226",
           color: "#003366",
           border: "#004d99",
+          borderSecondary: "#b0cfef",
           hoverColor: "{primary-500}",
           activeColor: "#00488f",
           textPrincipal: "#1a1a1a",
           textSecondary: "#5a5c61",
+          textInverse: "{info-50}",
           textResaltado: "#b0cfef",
           botonAccion: "{primary.textPrincipal}",
           inverseColor: "#121212",
@@ -150,12 +153,15 @@ export default definePreset(Aura, {
         primary: {
           background: "#121212",
           surface: "#222226",
+          backgroundInverse: "#F4F4F7",
           color: "#003366",
           border: "#004d99",
+          borderSecondary: "#b0cfef",
           hoverColor: "{primary-500}",
           activeColor: "#00488f",
           textPrincipal: "#ffffff",
           textSecondary: "#b3b3b7",
+          textInverse: "{info-600}",
           textResaltado: "#b0cfef",
           botonAccion: "{primary.textPrincipal}",
           inverseColor: "#121212",
@@ -202,10 +208,27 @@ export default definePreset(Aura, {
    * ===============================================================
    */
   components: {
-    // Aquí dejas solo lo específico del desplegable del Select
+    button: {
+      text: {
+        secondary: {
+          hoverBackground: "transparent",
+          activeBackground: "transparent",
+        },
+      },
+    },
+    popover: {
+      root: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        borderColor:
+          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
+        color: "{primary.textPrincipal}",
+        gutter: "10px",
+        arrowOffset: "1.25rem",
+      },
+    },
     select: {
       overlay: {
-        background: "color-mix(in srgb, {primary.surface} 98%)",
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
         color: "{primary.textPrincipal}",
       },
       option: {
@@ -218,15 +241,42 @@ export default definePreset(Aura, {
         selectedFocusColor: "{primary.textResaltado}",
       },
     },
+    autocomplete: {
+      overlay: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        color: "{primary.textPrincipal}",
+      },
+      option: {
+        color: "{primary.textSecondary}",
+        focusBackground: "{primary.hoverColor}",
+        focusColor: "{primary.textPrincipal}",
+        selectedBackground: "{primary.hoverColor}",
+        selectedColor: "{primary.textPrincipal}",
+        selectedFocusBackground: "{primary.hoverColor}",
+        selectedFocusColor: "{primary.textResaltado}",
+      },
+      dropdown: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        color: "{primary.textPrincipal}",
+        hoverBackground: "{primary.hoverColor}",
+        hoverColor: "{primary.textPrincipal}",
+        activeBackground: "{primary.activeColor}",
+        activeColor: "{primary.textPrincipal}",
+      },
+      chip: {
+        focusBackground: "{primary.hoverColor}",
+        focusColor: "{primary.textPrincipal}",
+      },
+    },
     //TODO: revisar los tokens para poder ajustar bien los colores
     datepicker: {
       panel: {
-        background: "color-mix(in srgb, {primary.surface} 98%)",
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
         bordercolor:
           "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
       },
       header: {
-        background: "color-mix(in srgb, {primary.surface} 98%)",
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
         color: "#c53b3b",
       },
       title: {

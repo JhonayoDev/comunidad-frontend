@@ -30,7 +30,7 @@
 
     <div class="flex align-items-center gap-1 ml-auto">
       <Button
-        class="header-btn"
+        class="btn-no-bg header-btn"
         :icon="esOscuro ? 'pi pi-sun' : 'pi pi-moon'"
         severity="secondary"
         text
@@ -39,7 +39,7 @@
       />
       <NotificacionPopover />
       <Button
-        class="header-btn"
+        class="btn-no-bg header-btn"
         icon="pi pi-bars"
         severity="secondary"
         text
@@ -54,6 +54,7 @@
     class="flex gap-1 px-3 pb-2 overflow-x-auto surface-ground border-bottom-1 surface-border"
   >
     <Button
+      class="btn-no-bg header-btn"
       v-for="ctx in auth.contextos"
       :key="ctx.key"
       :label="ctx.label"
@@ -139,7 +140,7 @@ function goTo(name) {
 </script>
 <style scoped>
 .header-text {
-  color: var(--p-surface-900);
+  color: var(--p-primary-text-principal);
 }
 </style>
 
@@ -150,6 +151,6 @@ function goTo(name) {
 -->
 <style>
 button.header-btn .p-button-icon {
-  color: var(--p-surface-900) !important;
+  color: var(--p-primary-text-principal) !important;
 }
 </style>

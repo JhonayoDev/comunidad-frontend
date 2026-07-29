@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
+import TarjetaAccesosActivos from "@/components/stats/TarjetaAccesosActivos.vue";
 
 import Card from "primevue/card";
 import Tag from "primevue/tag";
@@ -114,7 +115,7 @@ onMounted(cargar);
           <div class="flex items-center gap-2">
             <i class="pi pi-shield"></i>
             <span>Accesos</span>
-            <Badge :value="dashboard.accesos.activosAhora" severity="success" />
+            <TarjetaAccesosActivos variant="badge" />
           </div>
         </template>
         <template #content>

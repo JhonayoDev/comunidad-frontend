@@ -7,8 +7,8 @@ body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
-  background: var(--p-surface-ground);
-  color: var(--p-text-color);
+  background: var(--p-primary-background);
+  color: var(--p-primary-text-principal);
 }
 
 #app {
@@ -19,11 +19,85 @@ body {
 /* style.css */
 
 @layer primevue {
-  /* Resuelve el conflicto entre min-width: 441px y width: 306px */
+  /* Resuelve el conflicto del Datepicker */
   .p-datepicker-panel {
     min-width: unset !important;
     width: auto !important;
     max-width: calc(100vw - 2rem);
   }
+
+  /* --- 1. COMPORTAMIENTO PARA DISPOSITIVOS TÁCTILES REALES --- */
+  @media (pointer: coarse), (hover: none) {
+    .p-button,
+    button {
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+    }
+
+    /* Anulamos las variables del tema de PrimeVue cuando el botón está enfocado o presionado */
+    .p-button:not(.btn-no-bg) {
+      --p-button-primary-hover-background: var(--p-button-primary-background);
+      --p-button-primary-hover-border-color: var(
+        --p-button-primary-border-color
+      );
+      --p-button-primary-hover-color: var(--p-button-primary-color);
+    }
+
+    /* Forzamos que :focus, :focus-visible, :active y :hover mantengan el color base */
+    .p-button:not(.btn-no-bg):not(:disabled):hover,
+    .p-button:not(.btn-no-bg):not(:disabled):focus,
+    .p-button:not(.btn-no-bg):not(:disabled):focus-visible,
+    .p-button:not(.btn-no-bg):not(:disabled):active {
+      background-color: var(--p-button-primary-background) !important;
+      border-color: var(--p-button-primary-border-color) !important;
+      color: var(--p-primary-text-principal) !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    /* Desactivar el fondo oscuro/claro que genera la onda Ripple de PrimeVue en movil */
+    .p-ink {
+      display: none !important;
+    }
+  }
+
+  /* --- 2. BOTONES TRANSPARENTES (Como el del Tema Sol/Luna) --- */
+  .p-button.btn-no-bg,
+  .p-button.btn-no-bg:not(:disabled):hover,
+  .p-button.btn-no-bg:not(:disabled):active,
+  .p-button.btn-no-bg:not(:disabled):focus,
+  .p-button.btn-no-bg:not(:disabled):focus-visible {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  /* --- 3. BOTON CON 95% DE OPACIDAD (body-btn) --- */
+  .p-button.body-btn {
+    color: var(--p-primary-text-principal) !important;
+    opacity: 0.85 !important;
+  }
 }
 
+/* --- 3. SOLO PARA COMPUTADORAS CON RATÓN FÍSICO --- */
+@media (hover: hover) and (pointer: fine) {
+  .p-button:hover,
+  button:hover {
+    cursor: pointer;
+  }
+
+  .p-button:not(.btn-no-bg):not(:disabled):hover {
+    background-color: var(--p-button-primary-hover-background) !important;
+    border-color: var(--p-button-primary-hover-border-color) !important;
+    color: var(--p-primary-text-principal) !important;
+  }
+}
+/* Cursor pointer solo donde hay mouse físico */
+@media (hover: hover) {
+  .p-button:hover,
+  button:hover {
+    cursor: pointer;
+  }
+}

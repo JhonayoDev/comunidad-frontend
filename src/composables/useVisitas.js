@@ -2,56 +2,46 @@ import { ref } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { visitasService } from "../services/visitasService";
 
-const CACHE_KEY = "cache_visitas";
+let peticionId = 0;
 
 export function useVisitas() {
   const auth = useAuthStore();
   const visitas = ref([]);
   const loading = ref(false);
   const error = ref(null);
+  const pagina = ref(0);
+  const tamano = ref(20);
+  const totalElementos = ref(0);
 
   async function cargar(filtros = {}) {
     const cid = auth.condominioActualId;
     if (!cid) return;
+    const id = ++peticionId;
     loading.value = true;
     error.value = null;
     try {
-      const { patente, nombre, ...params } = filtros;
+      const params = { page: pagina.value, size: tamano.value, ...filtros };
+      Object.keys(params).forEach((k) => { if (params[k] == null || params[k] === "") delete params[k]; });
       const response = await visitasService.getVisitas(cid, params);
-      let data = response.data;
-      if (patente) {
-        data = data.filter(v =>
-          v.patenteVisitante?.toUpperCase().includes(patente.toUpperCase())
-        );
-      }
-      if (nombre) {
-        data = data.filter(v =>
-          v.nombreVisitante?.toLowerCase().includes(nombre.toLowerCase())
-        );
-      }
+      if (id !== peticionId) return;
+      const data = Array.isArray(response.data) ? response.data : response.data?.content || [];
+      totalElementos.value = response.data?.totalElements ?? data.length;
       visitas.value = data;
-      if (Object.keys(params).length === 0 && !patente && !nombre) {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(response.data));
-      }
     } catch (e) {
+      if (id !== peticionId) return;
       console.error("Error al cargar visitas:", e);
-      const cache = localStorage.getItem(CACHE_KEY);
-      if (cache) {
-        visitas.value = JSON.parse(cache);
-        error.value = "Sin conexión — mostrando datos guardados";
-      } else {
-        error.value = "Sin conexión y no hay datos guardados";
-      }
+      error.value = "Error al cargar visitas";
     } finally {
-      loading.value = false;
+      if (id === peticionId) loading.value = false;
     }
   }
 
-  async function registrarSalida(visita) {
+  async function registrarSalida(visita, observacion) {
     const cid = auth.condominioActualId;
     if (!cid) return "Error: selecciona un condominio";
     try {
-      await visitasService.registrarSalida(cid, visita.id);
+      const body = observacion ? { observacion } : undefined;
+      await visitasService.registrarSalida(cid, visita.id, body);
       visita.estado = "FINALIZADO";
       visita.fechaSalida = new Date().toISOString();
       return true;
@@ -61,5 +51,11 @@ export function useVisitas() {
     }
   }
 
-  return { visitas, loading, error, cargar, registrarSalida };
+  function alCambiarPagina(event) {
+    pagina.value = event.page;
+    tamano.value = event.rows;
+    cargar({ estado: "ACTIVO" });
+  }
+
+  return { visitas, loading, error, pagina, tamano, totalElementos, cargar, registrarSalida, alCambiarPagina };
 }
