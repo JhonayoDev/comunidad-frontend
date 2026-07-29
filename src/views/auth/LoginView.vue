@@ -26,7 +26,11 @@ onMounted(() => {
   }
 });
 
-async function handleLogin() {
+async function handleLogin(event) {
+  if (event?.target) {
+    event.target.blur();
+  }
+
   loading.value = true;
   error.value = "";
 
@@ -86,7 +90,7 @@ async function handleLogin() {
     </template>
 
     <template #content>
-      <form @submit.prevent="handleLogin" class="space-y-6 mt-3">
+      <form @submit.prevent="handleLogin($event)" class="space-y-6 mt-3">
         <div class="primary-text flex flex-col gap-2">
           <label>Email</label>
           <InputText
@@ -112,6 +116,7 @@ async function handleLogin() {
           {{ error }}
         </Message>
 
+        <!-- Botón estándar de PrimeVue: responderá perfectamente en celular y PC -->
         <Button
           type="submit"
           label="Ingresar"
@@ -123,7 +128,6 @@ async function handleLogin() {
     </template>
   </Card>
 </template>
-
 <style scoped>
 .primary-text {
   color: var(--p-primary-text-principal);
