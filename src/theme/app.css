@@ -12,6 +12,7 @@
   /* Usa los que definiste explícitamente en colorScheme.primary */
   --color-background: var(--p-primary-background);
   --color-surface: var(--p-primary-surface);
+  --color-background-inverse: var(--p-primary-background-inverse);
 
   /* Si prefieres usar la escala surface que armaste con 'colors.js':
      --color-background: var(--p-surface-100); 
@@ -32,14 +33,14 @@
   --color-text: var(--p-primary-text-principal);
   --color-text-muted: var(--p-primary-text-secondary);
   --color-text-highlight: var(--p-primary-text-resaltado);
-  --color-text-inverse: var(--p-primary-inverse-color);
+  --color-text-inverse: var(--p-primary-text-inverse);
 
   /* =========================================
      BORDES
      ========================================= */
   /* Conectado al border de tu colorScheme.primary */
   --color-border: var(--p-primary-border);
-
+  --color-border-secondary: var(--p-primary-border-secondary);
   /* =========================================
      SEMÁNTICOS (ESTADOS)
      ========================================= */

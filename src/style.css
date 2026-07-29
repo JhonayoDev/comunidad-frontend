@@ -73,6 +73,12 @@ body {
     box-shadow: none !important;
     outline: none !important;
   }
+
+  /* --- 3. BOTON CON 95% DE OPACIDAD (body-btn) --- */
+  .p-button.body-btn {
+    color: var(--p-primary-text-principal) !important;
+    opacity: 0.85 !important;
+  }
 }
 
 /* --- 3. SOLO PARA COMPUTADORAS CON RATÓN FÍSICO --- */

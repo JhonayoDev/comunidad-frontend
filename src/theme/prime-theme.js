@@ -99,12 +99,15 @@ export default definePreset(Aura, {
         primary: {
           background: "#F4F4F7",
           surface: "#FFFFFF",
+          backgroundInverse: "#222226",
           color: "#003366",
           border: "#004d99",
+          borderSecondary: "#b0cfef",
           hoverColor: "{primary-500}",
           activeColor: "#00488f",
           textPrincipal: "#1a1a1a",
           textSecondary: "#5a5c61",
+          textInverse: "{info-50}",
           textResaltado: "#b0cfef",
           botonAccion: "{primary.textPrincipal}",
           inverseColor: "#121212",
@@ -150,12 +153,15 @@ export default definePreset(Aura, {
         primary: {
           background: "#121212",
           surface: "#222226",
+          backgroundInverse: "#F4F4F7",
           color: "#003366",
           border: "#004d99",
+          borderSecondary: "#b0cfef",
           hoverColor: "{primary-500}",
           activeColor: "#00488f",
           textPrincipal: "#ffffff",
           textSecondary: "#b3b3b7",
+          textInverse: "{info-600}",
           textResaltado: "#b0cfef",
           botonAccion: "{primary.textPrincipal}",
           inverseColor: "#121212",
@@ -213,7 +219,8 @@ export default definePreset(Aura, {
     popover: {
       root: {
         background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        borderColor: "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
+        borderColor:
+          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
         color: "{primary.textPrincipal}",
         gutter: "10px",
         arrowOffset: "1.25rem",
