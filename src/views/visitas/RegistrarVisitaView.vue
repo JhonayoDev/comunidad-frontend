@@ -24,6 +24,8 @@ const errorGeneral = ref("");
 const form = ref({
   patente: route.query.patente || "",
   nombreVisitante: route.query.nombre || "",
+  rutVisitante: "",
+  telefonoVisitante: "",
   cantidadPersonas: 1,
   tipo: null,
   autorizacionId: route.query.autorizacionId || null,
@@ -115,6 +117,8 @@ async function registrar() {
     cantidadPersonas: Number(form.value.cantidadPersonas),
   };
   if (form.value.patente) body.patenteVisitante = form.value.patente;
+  if (form.value.rutVisitante) body.rutVisitante = form.value.rutVisitante;
+  if (form.value.telefonoVisitante) body.telefonoVisitante = form.value.telefonoVisitante;
   if (form.value.observacion) body.observacion = form.value.observacion;
   if (form.value.autorizacionId)
     body.autorizacionId = form.value.autorizacionId;
@@ -164,6 +168,22 @@ async function registrar() {
             <small v-if="errores.nombreVisitante" class="text-red-500">{{
               errores.nombreVisitante
             }}</small>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold">RUT visitante <span class="text-text-muted font-normal">(opcional)</span></label>
+            <InputText
+              v-model="form.rutVisitante"
+              placeholder="Ej: 12.345.678-9"
+              maxlength="20"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-semibold">Teléfono visitante <span class="text-text-muted font-normal">(opcional)</span></label>
+            <InputText
+              v-model="form.telefonoVisitante"
+              placeholder="Ej: +56 9 1234 5678"
+              maxlength="20"
+            />
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Cantidad de personas *</label>
