@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { visitasService } from "../services/visitasService";
 
-const CACHE_KEY = "cache_visitas";
+let peticionId = 0;
 
 export function useVisitas() {
   const auth = useAuthStore();
@@ -16,39 +16,23 @@ export function useVisitas() {
   async function cargar(filtros = {}) {
     const cid = auth.condominioActualId;
     if (!cid) return;
+    const id = ++peticionId;
     loading.value = true;
     error.value = null;
     try {
-      const { patente, nombre, ...params } = filtros;
-      const response = await visitasService.getVisitas(cid, { ...params, page: pagina.value, size: tamano.value });
-      let data = Array.isArray(response.data) ? response.data : response.data?.content || [];
+      const params = { page: pagina.value, size: tamano.value, ...filtros };
+      Object.keys(params).forEach((k) => { if (params[k] == null || params[k] === "") delete params[k]; });
+      const response = await visitasService.getVisitas(cid, params);
+      if (id !== peticionId) return;
+      const data = Array.isArray(response.data) ? response.data : response.data?.content || [];
       totalElementos.value = response.data?.totalElements ?? data.length;
-      if (patente) {
-        data = data.filter((v) =>
-          v.patenteVisitante?.toUpperCase().includes(patente.toUpperCase()),
-        );
-      }
-      if (nombre) {
-        data = data.filter((v) =>
-          v.nombreVisitante?.toLowerCase().includes(nombre.toLowerCase()),
-        );
-      }
       visitas.value = data;
-      if (Object.keys(params).length === 0 && !patente && !nombre) {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-      }
     } catch (e) {
+      if (id !== peticionId) return;
       console.error("Error al cargar visitas:", e);
-      const cache = localStorage.getItem(CACHE_KEY);
-      if (cache) {
-        visitas.value = JSON.parse(cache);
-        totalElementos.value = visitas.value.length;
-        error.value = "Sin conexión — mostrando datos guardados";
-      } else {
-        error.value = "Sin conexión y no hay datos guardados";
-      }
+      error.value = "Error al cargar visitas";
     } finally {
-      loading.value = false;
+      if (id === peticionId) loading.value = false;
     }
   }
 

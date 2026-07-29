@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useTurno } from "@/composables/useTurno";
 import { useDashboardGuardia } from "@/composables/useDashboardGuardia";
+import TarjetaAccesosActivos from "@/components/stats/TarjetaAccesosActivos.vue";
 import ChecklistDialog from "@/components/bitacora/ChecklistDialog.vue";
 
 import Card from "primevue/card";
@@ -19,6 +20,7 @@ import BuscadorPatenteCard from "@/components/visitas/BuscadorPatenteCard.vue";
 const router = useRouter();
 const auth = useAuthStore();
 const showNovedadDialog = ref(false);
+
 
 const {
   turno,
@@ -51,14 +53,9 @@ const {
 
 const mergedError = computed(() => turnoError.value || error.value);
 
-onMounted(async () => {
-  const cid = auth.condominioActualId;
-  if (!cid) {
-    error.value = "Selecciona un condominio primero";
-    loading.value = false;
-    return;
-  }
-  await Promise.all([cargarDashboard(cid), cargarTurno(cid)]);
+onMounted(() => {
+  cargarDashboard();
+  cargarTurno();
 });
 </script>
 
@@ -95,19 +92,7 @@ onMounted(async () => {
 
       <!-- Stats grid -->
       <div class="grid grid-cols-2 gap-3">
-        <Card
-          class="cursor-pointer hover:surface-hover transition-shadow"
-          @click="router.push({ name: 'Visitas' })"
-        >
-          <template #content>
-            <div class="text-center">
-              <p class="text-3xl font-bold m-0 text-green-600">
-                {{ dashboard.accesos?.activosAhora || 0 }}
-              </p>
-              <p class="text-xs text-surface-500 m-0 mt-1">Accesos activos</p>
-            </div>
-          </template>
-        </Card>
+        <TarjetaAccesosActivos @click="router.push({ name: 'Visitas' })" />
         <Card
           class="cursor-pointer hover:surface-hover transition-shadow"
           @click="router.push({ name: 'Encomiendas' })"
