@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useVisitas } from "../../composables/useVisitas";
 
+import ConfirmarSalidaDialog from "@/components/visitas/ConfirmarSalidaDialog.vue";
 import Card from "primevue/card";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
@@ -10,10 +11,11 @@ import Select from "primevue/select";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
+import Paginator from "primevue/paginator";
 
 const router = useRouter();
 
-const { visitas, loading, error, cargar, registrarSalida } = useVisitas();
+const { visitas, loading, error, pagina, tamano, totalElementos, cargar, registrarSalida, alCambiarPagina } = useVisitas();
 
 const filtros = ref({ patente: "", nombre: "", estado: "ACTIVO" });
 
@@ -23,6 +25,12 @@ const estadosFiltro = [
   { label: "Con salida", value: "FINALIZADO" },
 ];
 
+const indiceExpandido = ref(-1);
+const salidaDialogVisible = ref(false);
+const salidaTarget = ref(null);
+const salidaLoading = ref(false);
+const salidaError = ref("");
+
 let timeout = null;
 function buscar() {
   clearTimeout(timeout);
@@ -31,18 +39,40 @@ function buscar() {
     if (filtros.value.patente) params.patente = filtros.value.patente;
     if (filtros.value.nombre) params.nombre = filtros.value.nombre;
     if (filtros.value.estado !== "") params.estado = filtros.value.estado;
+    pagina.value = 0;
     cargar(params);
   }, 400);
 }
 
-async function handleSalida(visita) {
-  const resultado = await registrarSalida(visita);
-  if (resultado !== true) alert(resultado);
-}
-
 function limpiarFiltros() {
   filtros.value = { patente: "", nombre: "", estado: "ACTIVO" };
+  pagina.value = 0;
   cargar({ estado: "ACTIVO" });
+}
+
+function toggleExpand(idx) {
+  indiceExpandido.value = indiceExpandido.value === idx ? -1 : idx;
+}
+
+function infoCompacta(v) {
+  if (!v) return "";
+  const partes = [];
+  if (v.unidadNumero) partes.push(`Casa ${v.unidadNumero}`);
+  if (v.nombreVisitante) partes.push(v.nombreVisitante);
+  return partes.join(" · ");
+}
+
+function tipoLabel(t) {
+  const labels = { VISITA: "Visita", DELIVERY: "Delivery", UBER: "Uber/Taxi", SERVICIO: "Servicio", TECNICO: "Técnico", OTRO: "Otro" };
+  return labels[t] || t;
+}
+
+function estadoLabel(e) {
+  return e === "ACTIVO" ? "Activa" : "Salió";
+}
+
+function estadoSeverity(e) {
+  return e === "ACTIVO" ? "success" : "info";
 }
 
 function formatFecha(fecha) {
@@ -52,8 +82,28 @@ function formatFecha(fecha) {
   });
 }
 
-function estadoSeverity(e) {
-  return e === "ACTIVO" ? "success" : "info";
+function abrirDialogSalida(visita) {
+  salidaTarget.value = visita;
+  salidaError.value = "";
+  salidaDialogVisible.value = true;
+}
+
+async function onSalidaConfirm(observacion) {
+  if (!salidaTarget.value) return;
+  salidaLoading.value = true;
+  salidaError.value = "";
+  const resultado = await registrarSalida(salidaTarget.value, observacion || undefined);
+  salidaLoading.value = false;
+  if (resultado !== true) {
+    salidaError.value = resultado;
+  } else {
+    salidaDialogVisible.value = false;
+    salidaTarget.value = null;
+  }
+}
+
+function onSalidaCancel() {
+  salidaDialogVisible.value = false;
 }
 
 onMounted(() => cargar({ estado: "ACTIVO" }));
@@ -83,28 +133,93 @@ onMounted(() => cargar({ estado: "ACTIVO" }));
 
     <Skeleton v-if="loading" width="100%" height="300px" />
 
-    <div v-else-if="!visitas.length" class="text-center text-surface-400 py-8">
+    <div v-else-if="!visitas.length" class="text-center text-text-muted py-8">
       <i class="pi pi-inbox text-4xl block mb-2"></i>
       <span>No hay visitas registradas</span>
     </div>
 
-    <div v-else class="flex flex-col gap-2">
-      <Card v-for="visita in visitas" :key="visita.id">
-        <template #content>
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex-1 min-w-0">
-              <p class="font-semibold m-0">{{ visita.nombreVisitante }}</p>
-              <p v-if="visita.patenteVisitante" class="text-sm font-mono text-surface-500 m-0">{{ visita.patenteVisitante }}</p>
-              <p class="text-xs text-surface-400 m-0">{{ visita.tipo }}</p>
-              <p class="text-xs text-surface-300 m-0">{{ formatFecha(visita.fechaIngreso) }}</p>
-            </div>
-            <div class="flex flex-col items-end gap-2 shrink-0">
-              <Tag :value="visita.estado === 'ACTIVO' ? 'Activa' : 'Salió'" :severity="estadoSeverity(visita.estado)" size="small" />
-              <Button v-if="visita.estado === 'ACTIVO'" label="Registrar salida" size="small" severity="secondary" variant="outlined" @click="handleSalida(visita)" />
-            </div>
+    <div v-else class="flex flex-col gap-1">
+      <div v-for="(v, idx) in visitas" :key="v.id">
+        <div
+          class="flex items-center justify-between gap-2 p-3 border rounded-lg cursor-pointer transition-colors select-none"
+          :class="
+            indiceExpandido === idx
+              ? 'border-border bg-background rounded-b-none'
+              : 'border-border-secondary bg-surface/90 hover:bg-background/95'
+          "
+          @click="toggleExpand(idx)"
+        >
+          <div class="flex items-center gap-1 text-xs min-w-0 flex-1 overflow-hidden">
+            <span class="text-text font-semibold whitespace-nowrap">{{ v.patenteVisitante || '—' }}</span>
+            <span v-if="infoCompacta(v)" class="text-text-muted truncate min-w-0">· {{ infoCompacta(v) }}</span>
           </div>
-        </template>
-      </Card>
+          <div class="flex items-center gap-2 shrink-0">
+            <Tag :value="estadoLabel(v.estado)" :severity="estadoSeverity(v.estado)" size="small" />
+            <i
+              :class="indiceExpandido === idx ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+              class="text-xs"
+            ></i>
+          </div>
+        </div>
+
+        <div
+          v-if="indiceExpandido === idx"
+          class="border border-t-0 border-primary rounded-b-lg p-3 bg-surface"
+        >
+          <div class="flex flex-col gap-2 text-sm">
+            <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+              <span class="text-text-muted">Nombre:</span>
+              <span class="font-medium">{{ v.nombreVisitante }}</span>
+              <span v-if="v.rutVisitante" class="text-text-muted">RUT:</span>
+              <span v-if="v.rutVisitante">{{ v.rutVisitante }}</span>
+              <span v-if="v.telefonoVisitante" class="text-text-muted">Teléfono:</span>
+              <span v-if="v.telefonoVisitante">{{ v.telefonoVisitante }}</span>
+              <span class="text-text-muted">Tipo:</span>
+              <span>{{ tipoLabel(v.tipo) }}</span>
+              <span class="text-text-muted">Unidad:</span>
+              <span>Casa {{ v.unidadNumero }}</span>
+              <span v-if="v.cantidadPersonas" class="text-text-muted">Personas:</span>
+              <span v-if="v.cantidadPersonas">{{ v.cantidadPersonas }}</span>
+              <span class="text-text-muted">Ingreso:</span>
+              <span>{{ formatFecha(v.fechaIngreso) }}</span>
+              <span v-if="v.fechaSalida" class="text-text-muted">Salida:</span>
+              <span v-if="v.fechaSalida">{{ formatFecha(v.fechaSalida) }}</span>
+              <span class="text-text-muted">Registró:</span>
+              <span>{{ v.registradoPorNombre }}</span>
+            </div>
+            <p v-if="v.observacion" class="m-0 text-sm">
+              <span class="text-text-muted">Observación:</span> {{ v.observacion }}
+            </p>
+          </div>
+          <div v-if="v.estado === 'ACTIVO'" class="flex gap-2 mt-3">
+            <Button
+              label="Registrar salida"
+              icon="pi pi-sign-out"
+              severity="warn"
+              size="small"
+              @click.stop="abrirDialogSalida(v)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <Paginator
+        :rows="tamano"
+        :totalRecords="totalElementos"
+        :first="pagina * tamano"
+        @page="alCambiarPagina($event); indiceExpandido = -1"
+        class="mt-2"
+      />
     </div>
+
+    <ConfirmarSalidaDialog
+      v-model:visible="salidaDialogVisible"
+      :acceso="salidaTarget"
+      :patente="salidaTarget?.patenteVisitante || ''"
+      :loading="salidaLoading"
+      :error="salidaError"
+      @confirm="onSalidaConfirm"
+      @cancel="onSalidaCancel"
+    />
   </div>
 </template>

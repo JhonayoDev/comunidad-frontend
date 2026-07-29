@@ -5,8 +5,8 @@ export const visitasService = {
     return api.post(`/condominios/${condominioId}/accesos/ingresar`, data);
   },
 
-  registrarSalida(condominioId, id) {
-    return api.patch(`/condominios/${condominioId}/accesos/${id}/salida`);
+  registrarSalida(condominioId, id, data) {
+    return api.patch(`/condominios/${condominioId}/accesos/${id}/salida`, data);
   },
 
   getVisitas(condominioId, filtros = {}) {
@@ -16,10 +16,4 @@ export const visitasService = {
   getVisita(condominioId, id) {
     return api.get(`/condominios/${condominioId}/accesos/${id}`);
   },
-
-  getVisitasFrecuentes(condominioId, patente) {
-    return api.get(`/condominios/${condominioId}/accesos/frecuentes`, { params: { patente } });
-  },
-
-
 };
