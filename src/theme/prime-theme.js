@@ -241,6 +241,33 @@ export default definePreset(Aura, {
         selectedFocusColor: "{primary.textResaltado}",
       },
     },
+    autocomplete: {
+      overlay: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        color: "{primary.textPrincipal}",
+      },
+      option: {
+        color: "{primary.textSecondary}",
+        focusBackground: "{primary.hoverColor}",
+        focusColor: "{primary.textPrincipal}",
+        selectedBackground: "{primary.hoverColor}",
+        selectedColor: "{primary.textPrincipal}",
+        selectedFocusBackground: "{primary.hoverColor}",
+        selectedFocusColor: "{primary.textResaltado}",
+      },
+      dropdown: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        color: "{primary.textPrincipal}",
+        hoverBackground: "{primary.hoverColor}",
+        hoverColor: "{primary.textPrincipal}",
+        activeBackground: "{primary.activeColor}",
+        activeColor: "{primary.textPrincipal}",
+      },
+      chip: {
+        focusBackground: "{primary.hoverColor}",
+        focusColor: "{primary.textPrincipal}",
+      },
+    },
     //TODO: revisar los tokens para poder ajustar bien los colores
     datepicker: {
       panel: {

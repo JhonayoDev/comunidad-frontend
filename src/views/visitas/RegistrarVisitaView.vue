@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { visitasService } from "@/services/visitasService";
@@ -26,12 +26,13 @@ const form = ref({
   nombreVisitante: route.query.nombre || "",
   cantidadPersonas: 1,
   tipo: null,
-  unidadNumero: route.query.unidad || "",
   autorizacionId: route.query.autorizacionId || null,
   observacion: "",
 });
 
 const errores = ref({});
+
+const unidadSeleccionada = ref(null);
 
 const categorias = [
   { value: "VISITA", label: "Visita personal" },
@@ -48,11 +49,23 @@ const todasUnidades = computed(() => unidades.value || []);
 
 const unidadesVisibles = computed(() =>
   (unidades.value || []).filter((u) =>
-    ["CASA", "DEPARTAMENTO", "OTRO"].includes(u.tipo)
-  )
+    ["CASA", "DEPARTAMENTO", "OTRO"].includes(u.tipo),
+  ),
 );
 
 const sugerenciasUnidades = ref([]);
+
+watch(
+  todasUnidades,
+  (list) => {
+    const num = route.query.unidad;
+    if (num && list.length && !unidadSeleccionada.value) {
+      const found = list.find((u) => u.numero === num);
+      if (found) unidadSeleccionada.value = found;
+    }
+  },
+  { immediate: true },
+);
 
 function buscarUnidad(event) {
   const query = (event.query || "").toLowerCase();
@@ -67,12 +80,6 @@ function buscarUnidad(event) {
   });
 }
 
-function onUnidadSelect(event) {
-  if (event.value?.numero) {
-    form.value.unidadNumero = event.value.numero;
-  }
-}
-
 function formatUnidadSugerencia(unidad) {
   const base = unidad.sectorNombre
     ? `${unidad.numero} — ${unidad.sectorNombre}`
@@ -84,10 +91,13 @@ function formatUnidadSugerencia(unidad) {
 
 function validar() {
   errores.value = {};
-  if (!form.value.nombreVisitante) errores.value.nombreVisitante = "Campo obligatorio";
-  if (!form.value.cantidadPersonas || form.value.cantidadPersonas < 1) errores.value.cantidadPersonas = "Mínimo 1 persona";
+  if (!form.value.nombreVisitante)
+    errores.value.nombreVisitante = "Campo obligatorio";
+  if (!form.value.cantidadPersonas || form.value.cantidadPersonas < 1)
+    errores.value.cantidadPersonas = "Mínimo 1 persona";
   if (!form.value.tipo) errores.value.tipo = "Seleccione un tipo";
-  if (!form.value.unidadNumero) errores.value.unidadNumero = "Ingrese la casa destino";
+  if (!unidadSeleccionada.value)
+    errores.value.unidadNumero = "Seleccione una casa de la lista";
   return Object.keys(errores.value).length === 0;
 }
 
@@ -96,24 +106,18 @@ async function registrar() {
   if (!validar()) return;
   const cid = auth.condominioActualId;
   if (!cid) return;
-
-  const rawUnidad = form.value.unidadNumero;
-  const unidadNumero = typeof rawUnidad === "object" ? rawUnidad?.numero || "" : rawUnidad;
-  const unidad = todasUnidades.value.find((u) => u.numero === unidadNumero);
-  if (!unidad) {
-    errores.value.unidadNumero = `Casa "${form.value.unidadNumero}" no encontrada. Verifique el número.`;
-    return;
-  }
+  if (!unidadSeleccionada.value) return;
 
   const body = {
-    unidadId: unidad.id,
+    unidadId: unidadSeleccionada.value.id,
     nombreVisitante: form.value.nombreVisitante,
     tipo: form.value.tipo,
     cantidadPersonas: Number(form.value.cantidadPersonas),
   };
   if (form.value.patente) body.patenteVisitante = form.value.patente;
   if (form.value.observacion) body.observacion = form.value.observacion;
-  if (form.value.autorizacionId) body.autorizacionId = form.value.autorizacionId;
+  if (form.value.autorizacionId)
+    body.autorizacionId = form.value.autorizacionId;
   loading.value = true;
   try {
     await visitasService.registrarIngreso(cid, body);
@@ -121,7 +125,9 @@ async function registrar() {
   } catch (e) {
     const data = e.response?.data;
     if (data?.fields) {
-      data.fields.forEach((f) => { errores.value[f.field] = f.message; });
+      data.fields.forEach((f) => {
+        errores.value[f.field] = f.message;
+      });
     } else {
       errorGeneral.value = data?.message || "Error al registrar la visita";
     }
@@ -140,33 +146,61 @@ async function registrar() {
         <div class="flex flex-col gap-3">
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Patente</label>
-            <InputText v-model="form.patente" placeholder="Ej: AB1234A (opcional)" class="uppercase" maxlength="10" @input="form.patente = form.patente.toUpperCase()" />
+            <InputText
+              v-model="form.patente"
+              placeholder="Ej: AB1234A (opcional)"
+              class="uppercase"
+              maxlength="10"
+              @input="form.patente = form.patente.toUpperCase()"
+            />
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Nombre visitante *</label>
-            <InputText v-model="form.nombreVisitante" placeholder="Nombre de quien ingresa" :class="{ 'p-invalid': errores.nombreVisitante }" />
-            <small v-if="errores.nombreVisitante" class="text-red-500">{{ errores.nombreVisitante }}</small>
+            <InputText
+              v-model="form.nombreVisitante"
+              placeholder="Nombre de quien ingresa"
+              :class="{ 'p-invalid': errores.nombreVisitante }"
+            />
+            <small v-if="errores.nombreVisitante" class="text-red-500">{{
+              errores.nombreVisitante
+            }}</small>
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Cantidad de personas *</label>
-            <InputNumber v-model="form.cantidadPersonas" :min="1" :class="{ 'p-invalid': errores.cantidadPersonas }" class="w-full" />
-            <small v-if="errores.cantidadPersonas" class="text-red-500">{{ errores.cantidadPersonas }}</small>
+            <InputNumber
+              v-model="form.cantidadPersonas"
+              :min="1"
+              :class="{ 'p-invalid': errores.cantidadPersonas }"
+              class="w-full"
+            />
+            <small v-if="errores.cantidadPersonas" class="text-red-500">{{
+              errores.cantidadPersonas
+            }}</small>
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Tipo *</label>
-            <Select v-model="form.tipo" :options="categorias" optionLabel="label" optionValue="value" placeholder="Seleccione un tipo" :class="{ 'p-invalid': errores.tipo }" class="w-full" />
-            <small v-if="errores.tipo" class="text-red-500">{{ errores.tipo }}</small>
+            <Select
+              v-model="form.tipo"
+              :options="categorias"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccione un tipo"
+              :class="{ 'p-invalid': errores.tipo }"
+              class="w-full"
+            />
+            <small v-if="errores.tipo" class="text-red-500">{{
+              errores.tipo
+            }}</small>
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Casa destino *</label>
             <AutoComplete
-              v-model="form.unidadNumero"
+              v-model="unidadSeleccionada"
               :suggestions="sugerenciasUnidades"
               @complete="buscarUnidad"
-              @item-select="onUnidadSelect"
-              @clear="sugerenciasUnidades = []"
-              optionLabel="numero"
+              :optionLabel="formatUnidadSugerencia"
               forceSelection
+              showClear
               placeholder="Escriba el número (ej: 32, A-101)"
               :class="{ 'p-invalid': errores.unidadNumero }"
               class="w-full"
@@ -176,17 +210,39 @@ async function registrar() {
                 <span>{{ formatUnidadSugerencia(slotProps.option) }}</span>
               </template>
             </AutoComplete>
-            <small v-if="errores.unidadNumero" class="text-red-500">{{ errores.unidadNumero }}</small>
-            <small v-else class="text-surface-400">Escriba el número de casa y seleccione de las sugerencias</small>
+            <small v-if="errores.unidadNumero" class="text-red-500">{{
+              errores.unidadNumero
+            }}</small>
+            <small v-else class="text-text-muted"
+              >Escriba el número de casa y seleccione de las sugerencias</small
+            >
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold">Observación (opcional)</label>
-            <Textarea v-model="form.observacion" rows="2" placeholder="Observaciones adicionales" />
+            <Textarea
+              v-model="form.observacion"
+              rows="2"
+              placeholder="Observaciones adicionales"
+            />
           </div>
-          <Message v-if="errorGeneral" severity="error" :closable="false">{{ errorGeneral }}</Message>
+          <Message v-if="errorGeneral" severity="error" :closable="false">{{
+            errorGeneral
+          }}</Message>
           <div class="flex gap-2 mt-1">
-            <Button label="Cancelar" severity="secondary" variant="text" class="flex-1" @click="$router.back()" />
-            <Button label="Registrar ingreso" icon="pi pi-check" :loading="loading" class="flex-1" @click="registrar" />
+            <Button
+              label="Cancelar"
+              severity="secondary"
+              variant="text"
+              class="flex-1 border border-border text-text-muted"
+              @click="$router.back()"
+            />
+            <Button
+              label="Registrar ingreso"
+              icon="pi pi-check"
+              :loading="loading"
+              class="flex-1"
+              @click="registrar"
+            />
           </div>
         </div>
       </template>
