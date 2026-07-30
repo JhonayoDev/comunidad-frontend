@@ -6,7 +6,7 @@ import Card from "primevue/card";
 import Badge from "primevue/badge";
 
 const props = defineProps({
-  pollingMs: { type: Number, default: 15_000 },
+  pollingMs: { type: Number, default: 10000_000 },
   variant: { type: String, default: "card" },
 });
 
@@ -45,7 +45,9 @@ onUnmounted(() => {
   >
     <template #content>
       <div class="text-center">
-        <p class="text-3xl font-bold m-0 text-green-600">{{ accesosActivos }}</p>
+        <p class="text-3xl font-bold m-0 text-green-600">
+          {{ accesosActivos }}
+        </p>
         <p class="text-xs text-surface-500 m-0 mt-1">Accesos activos</p>
       </div>
     </template>
