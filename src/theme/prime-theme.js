@@ -97,8 +97,8 @@ export default definePreset(Aura, {
          * focus, checkbox, links, etc.
          */
         primary: {
-          background: "#F4F4F7",
-          surface: "#FFFFFF",
+          background: "#FFFFFF",
+          surface: "#F4F4F7",
           backgroundInverse: "#222226",
           color: "#003366",
           border: "#004d99",
