@@ -2,6 +2,7 @@
 import { ref, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { unidadesService } from "@/services/unidadesService";
+import { encomiendasService } from "@/services/encomiendasService";
 import Dialog from "primevue/dialog";
 import AutoComplete from "primevue/autocomplete";
 import Select from "primevue/select";
@@ -21,6 +22,8 @@ const emit = defineEmits(["update:visible", "register"]);
 const auth = useAuthStore();
 const unidades = ref([]);
 const loadingUnidades = ref(false);
+const accesos = ref([]);
+const accesoSeleccionado = ref(null);
 const errores = ref({});
 const previewUrl = ref(null);
 const archivo = ref(null);
@@ -28,6 +31,9 @@ const unidadSeleccionada = ref(null);
 const sugerenciasUnidades = ref([]);
 
 const form = ref({ tipo: null, nombreDestinatario: "" });
+
+const mostrarCampoAcceso = computed(() => accesos.value.length > 1);
+const accesoRequerido = computed(() => accesos.value.length > 1);
 
 const tiposEncomienda = [
   { label: "Carta", value: "CARTA" },
@@ -54,6 +60,23 @@ async function cargarUnidades() {
   }
 }
 
+async function cargarAccesos() {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  try {
+    const { data } = await encomiendasService.getAccesosEncomiendas(cid);
+    accesos.value = (data || []).filter((a) => a.activo);
+    if (accesos.value.length === 1) {
+      accesoSeleccionado.value = accesos.value[0];
+    } else {
+      accesoSeleccionado.value = null;
+    }
+  } catch (e) {
+    console.error("Error al cargar accesos de encomiendas:", e);
+    accesos.value = [];
+  }
+}
+
 function buscarUnidad(event) {
   const query = (event.query || "").toLowerCase();
   if (!query) {
@@ -77,10 +100,13 @@ watch(
       form.value = { tipo: null, nombreDestinatario: "" };
       unidadSeleccionada.value = null;
       sugerenciasUnidades.value = [];
+      accesoSeleccionado.value = null;
+      accesos.value = [];
       errores.value = {};
       archivo.value = null;
       previewUrl.value = null;
       cargarUnidades();
+      cargarAccesos();
     }
   },
 );
@@ -90,6 +116,7 @@ function validar() {
   if (!unidadSeleccionada.value) errores.value.unidadId = "Seleccione una casa";
   if (!form.value.tipo) errores.value.tipo = "Seleccione un tipo";
   if (!form.value.nombreDestinatario.trim()) errores.value.nombreDestinatario = "Campo obligatorio";
+  if (accesoRequerido.value && !accesoSeleccionado.value) errores.value.accesoId = "Seleccione un punto de recepción";
   return Object.keys(errores.value).length === 0;
 }
 
@@ -114,6 +141,7 @@ function handleRegister() {
       unidadId: unidadSeleccionada.value.id,
       tipo: form.value.tipo,
       nombreDestinatario: form.value.nombreDestinatario,
+      accesoId: accesoSeleccionado.value?.id || null,
     },
     archivo: archivo.value,
   });
@@ -183,6 +211,19 @@ function handleRegister() {
           </AutoComplete>
           <small v-if="errores.unidadId" class="text-red-500">{{ errores.unidadId }}</small>
           <small v-else class="text-text-muted">Escriba el número y seleccione de las sugerencias</small>
+        </div>
+
+        <div v-if="mostrarCampoAcceso" class="flex flex-col gap-1">
+          <label class="text-sm">Punto de recepción <span class="text-text-muted">(obligatorio)</span></label>
+          <Select
+            v-model="accesoSeleccionado"
+            :options="accesos"
+            optionLabel="nombre"
+            placeholder="Seleccione punto de recepción"
+            :class="{ 'p-invalid': errores.accesoId }"
+            class="w-full"
+          />
+          <small v-if="errores.accesoId" class="text-red-500">{{ errores.accesoId }}</small>
         </div>
 
         <div class="flex flex-col gap-1">

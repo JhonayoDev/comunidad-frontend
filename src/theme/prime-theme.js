@@ -209,6 +209,23 @@ export default definePreset(Aura, {
    */
   components: {
     button: {
+      outlined: {
+        primary: {
+          color: "{primary.textPrincipal}",
+          borderColor: "{primary.border}",
+          hoverBackground: "color-mix(in srgb, {primary.color} 8%, transparent)",
+          activeBackground:
+            "color-mix(in srgb, {primary.color} 16%, transparent)",
+        },
+        secondary: {
+          color: "{primary.textSecondary}",
+          borderColor: "{primary.borderSecondary}",
+          hoverBackground:
+            "color-mix(in srgb, {primary.textSecondary} 8%, transparent)",
+          activeBackground:
+            "color-mix(in srgb, {primary.textSecondary} 16%, transparent)",
+        },
+      },
       text: {
         secondary: {
           hoverBackground: "transparent",
