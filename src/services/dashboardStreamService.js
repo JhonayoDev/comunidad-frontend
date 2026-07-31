@@ -105,7 +105,7 @@ function conectar() {
 
       streamVivo.value = true;
       intentos = 0;
-      notificarEstado("conectado");
+      notificarEstado("conectado", { condominioId: condominioActual });
 
       const reader = respuesta.body.getReader();
       const decoder = new TextDecoder();

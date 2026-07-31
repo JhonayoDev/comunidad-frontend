@@ -1,39 +1,23 @@
 <script setup>
-import { useAuthStore } from "@/stores/authStore";
-import { visitasService } from "@/services/visitasService";
-import { useQuery } from "@tanstack/vue-query";
-import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
+import { computed } from "vue";
+import { metricas } from "@/composables/useMetricasTiempoReal";
 import Card from "primevue/card";
 import Badge from "primevue/badge";
 
 const props = defineProps({
-  pollingMs: { type: Number, default: 10000_000 },
   variant: { type: String, default: "card" },
+  conteoInicial: { type: Number, default: 0 },
 });
 
 const emit = defineEmits(["click"]);
 
-const auth = useAuthStore();
-const { refetchIntervalMetrica } = useMetricasTiempoReal();
-
-// Query canónica ["conteoActivos", cid] — la misma que usa useDashboardGuardia.
-// El stream SSE actualiza el dato al instante vía setQueryData; el intervalo
-// reactivo baja a 60s mientras el stream esté vivo (fallback 30s).
-const { data } = useQuery({
-  queryKey: ["conteoActivos", auth.condominioActualId],
-  queryFn: async () => {
-    const { data } = await visitasService.getConteoActivos(
-      auth.condominioActualId,
-    );
-    return data;
-  },
-  enabled: !!auth.condominioActualId,
-  refetchOnMount: "always",
-  refetchOnWindowFocus: true,
-  refetchInterval: refetchIntervalMetrica,
-  retry: 3,
-  retryDelay: 1_000,
-});
+// Conteo en vivo vía SSE (`visitasActivas`). Antes del primer evento se muestra
+// `conteoInicial` (sembrado desde el snapshot del dashboard) — no se fetchea
+// `GET /accesos/conteo-activos` solo para contar (mismas condiciones que la
+// tarjeta de encomiendas).
+const activos = computed(
+  () => metricas.visitasActivas ?? props.conteoInicial ?? 0,
+);
 </script>
 
 <template>
@@ -45,7 +29,7 @@ const { data } = useQuery({
     <template #content>
       <div class="text-center">
         <p class="text-3xl font-bold m-0 text-green-600">
-          {{ data?.activosAhora ?? 0 }}
+          {{ activos }}
         </p>
         <p class="text-xs text-text/85 m-0 mt-1">Visitas</p>
       </div>
@@ -54,7 +38,7 @@ const { data } = useQuery({
 
   <Badge
     v-else
-    :value="data?.activosAhora ?? 0"
+    :value="activos"
     severity="success"
     class="cursor-pointer"
     @click="emit('click')"

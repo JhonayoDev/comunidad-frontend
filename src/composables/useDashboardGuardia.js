@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
-import { encomiendasService } from "@/services/encomiendasService";
 import { autorizacionesService } from "@/services/autorizacionesService";
-import { visitasService } from "@/services/visitasService";
 import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
 import { computed } from "vue";
 
@@ -20,19 +18,6 @@ export function useDashboardGuardia() {
     enabled: !!auth.condominioActualId,
   });
 
-  const encomiendasQuery = useQuery({
-    queryKey: ["encomiendasPendientes", auth.condominioActualId],
-    queryFn: async () => {
-      const { data } = await encomiendasService.getActivas(
-        auth.condominioActualId,
-      );
-      return data || [];
-    },
-    enabled: !!auth.condominioActualId,
-    refetchOnWindowFocus: true,
-    refetchInterval: refetchIntervalMetrica,
-  });
-
   const autorizacionesQuery = useQuery({
     queryKey: ["autorizacionesPendientes", auth.condominioActualId],
     queryFn: async () => {
@@ -43,40 +28,18 @@ export function useDashboardGuardia() {
       return data || [];
     },
     enabled: !!auth.condominioActualId,
-  });
-
-  const conteoActivosQuery = useQuery({
-    queryKey: ["conteoActivos", auth.condominioActualId],
-    queryFn: async () => {
-      const { data } = await visitasService.getConteoActivos(auth.condominioActualId);
-      return data;
-    },
-    enabled: !!auth.condominioActualId,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
     refetchInterval: refetchIntervalMetrica,
-    retry: 3,
-    retryDelay: 1_000,
   });
 
-  const loading =
-    dashboardQuery.isLoading ||
-    encomiendasQuery.isLoading ||
-    autorizacionesQuery.isLoading ||
-    conteoActivosQuery.isLoading;
+  const loading = dashboardQuery.isLoading || autorizacionesQuery.isLoading;
 
   const error =
-    dashboardQuery.isError ||
-    encomiendasQuery.isError ||
-    autorizacionesQuery.isError ||
-    conteoActivosQuery.isError
+    dashboardQuery.isError || autorizacionesQuery.isError
       ? "Error al cargar el dashboard"
       : null;
 
-  const dashboard = computed(() => dashboardQuery.data ?? []);
-  const encomiendas = computed(() => encomiendasQuery.data ?? []);
+  const dashboard = computed(() => dashboardQuery.data);
   const autorizaciones = computed(() => autorizacionesQuery.data ?? []);
-  const accesosActivos = computed(() => conteoActivosQuery.data?.activosAhora ?? 0);
 
   function severityEstado(estado) {
     if (estado === "ACTIVO") return "success";
@@ -87,16 +50,12 @@ export function useDashboardGuardia() {
 
   function cargarDashboard() {
     dashboardQuery.refetch();
-    encomiendasQuery.refetch();
     autorizacionesQuery.refetch();
-    conteoActivosQuery.refetch();
   }
 
   return {
     dashboard,
-    encomiendas,
     autorizaciones,
-    accesosActivos,
     loading,
     error,
     cargarDashboard,

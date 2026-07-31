@@ -35,9 +35,16 @@ import {
   iniciarStream,
   detenerStream,
 } from "@/services/dashboardStreamService";
+import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
 
 const router = useRouter();
 const auth = useAuthStore();
+
+// Registra la suscripción SSE app-wide (eventos y estado) para que `metricas`
+// se pueble en cualquier rol con dashboard (GUARDIA o ADMIN), no solo cuando
+// se monta el dashboard del guardia. Es idempotente: la suscripción real es
+// singleton a nivel de módulo (asegurarSuscripcion()).
+useMetricasTiempoReal();
 
 // ─── Stream SSE de métricas (dashboard operativo) ────────────────────────────
 // Conexión app-wide: se mantiene mientras el usuario tenga un condominio

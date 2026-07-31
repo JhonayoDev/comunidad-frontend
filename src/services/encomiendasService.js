@@ -5,10 +5,6 @@ export const encomiendasService = {
     return api.get(`/condominios/${condominioId}/encomiendas`, { params: filtros });
   },
 
-  getActivas(condominioId) {
-    return api.get(`/condominios/${condominioId}/encomiendas/activas`);
-  },
-
   getEncomienda(condominioId, id) {
     return api.get(`/condominios/${condominioId}/encomiendas/${id}`);
   },

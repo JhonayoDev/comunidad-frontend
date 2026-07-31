@@ -4,12 +4,12 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useTurno } from "@/composables/useTurno";
 import { useDashboardGuardia } from "@/composables/useDashboardGuardia";
+import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
 import TarjetaAccesosActivos from "@/components/stats/TarjetaAccesosActivos.vue";
 import TarjetaEncomiendasPendientes from "@/components/stats/TarjetaEncomiendasPendientes.vue";
 import ChecklistDialog from "@/components/bitacora/ChecklistDialog.vue";
 
 import Card from "primevue/card";
-import Tag from "primevue/tag";
 import Badge from "primevue/badge";
 import Button from "primevue/button";
 import Message from "primevue/message";
@@ -43,13 +43,14 @@ const {
 
 const {
   dashboard,
-  encomiendas,
   autorizaciones,
   loading,
   error,
   cargarDashboard,
   severityEstado,
 } = useDashboardGuardia();
+
+const { estaVivo } = useMetricasTiempoReal();
 
 const mergedError = computed(() => turnoError.value || error.value);
 
@@ -80,6 +81,19 @@ onMounted(() => {
     </template>
 
     <template v-else-if="dashboard">
+      <!-- Estado de la conexión SSE: las tarjetas de métricas se alimentan en
+           vivo por el stream; si cae, los conteos quedan en el último valor
+           conocido hasta que se reanude (fallback de polling a 60s). -->
+      <div class="flex items-center gap-2 self-start">
+        <span
+          class="w-2.5 h-2.5 rounded-full"
+          :class="estaVivo ? 'bg-green-500' : 'bg-amber-500'"
+        ></span>
+        <span class="text-xs text-surface-500">
+          {{ estaVivo ? "Conexión en vivo" : "Reconectando…" }}
+        </span>
+      </div>
+
       <TurnoCard
         :turno="turno"
         :loading="turnoLoading"
@@ -92,8 +106,12 @@ onMounted(() => {
 
       <!-- Stats grid -->
       <div class="grid grid-cols-2 gap-3">
-        <TarjetaAccesosActivos @click="router.push({ name: 'Visitas' })" />
+        <TarjetaAccesosActivos
+          :conteo-inicial="dashboard.accesos?.activosAhora ?? 0"
+          @click="router.push({ name: 'Visitas' })"
+        />
         <TarjetaEncomiendasPendientes
+          :conteo-inicial="dashboard.encomiendas || 0"
           @click="router.push({ name: 'Encomiendas' })"
         />
         <Card>
@@ -151,43 +169,6 @@ onMounted(() => {
                 </div>
               </div>
               <span class="text-xs text-surface-400">{{ mov.tipo }}</span>
-            </div>
-          </div>
-        </template>
-      </Card>
-
-      <!-- Encomiendas pendientes -->
-      <Card
-        v-if="encomiendas.length > 0"
-        class="cursor-pointer hover:surface-hover transition-shadow"
-        @click="router.push({ name: 'Encomiendas' })"
-      >
-        <template #title>
-          <div class="flex items-center justify-between">
-            <span>Encomiendas pendientes</span>
-            <Badge :value="encomiendas.length" severity="warn" />
-          </div>
-        </template>
-        <template #content>
-          <div class="flex flex-col gap-2">
-            <div
-              v-for="env in encomiendas.slice(0, 4)"
-              :key="env.id"
-              class="flex items-center justify-between p-2 border-round hover:bg-emphasis"
-            >
-              <div class="flex items-center gap-3">
-                <i class="pi pi-inbox text-lg text-primary"></i>
-                <div>
-                  <p class="text-sm font-medium m-0">
-                    {{ env.nombreDestinatario || env.tipo }}
-                  </p>
-                  <p class="text-xs text-surface-500 m-0">
-                    Casa {{ env.unidadNumero }} ·
-                    {{ formatearFecha(env.creadoEn) }}
-                  </p>
-                </div>
-              </div>
-              <Tag :value="env.tipo" severity="info" />
             </div>
           </div>
         </template>
