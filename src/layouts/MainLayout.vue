@@ -24,14 +24,37 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, watchEffect } from "vue";
 import { useRouter } from "vue-router";
 import fondoweb from "@/assets/fondoweb.webp";
 import AppHeader from "@/components/layout/AppHeader.vue";
 import AppFooter from "@/components/layout/AppFooter.vue";
 import NotificationBanner from "@/components/NotificationBanner.vue";
+import { useAuthStore } from "@/stores/authStore";
+import {
+  iniciarStream,
+  detenerStream,
+} from "@/services/dashboardStreamService";
 
 const router = useRouter();
+const auth = useAuthStore();
+
+// ─── Stream SSE de métricas (dashboard operativo) ────────────────────────────
+// Conexión app-wide: se mantiene mientras el usuario tenga un condominio
+// seleccionado y permiso de dashboard operativo (GUARDIA o ADMIN). Al cambiar
+// condominio o cerrar sesión, el stream se aborta y limpia automáticamente.
+watchEffect(() => {
+  const cid = auth.condominioActualId;
+  const tienePermisoDashboard = (auth.permisos || []).some(
+    (cod) => cod === "DASHBOARD_GUARDIA" || cod === "DASHBOARD_ADMIN",
+  );
+
+  if (cid && tienePermisoDashboard) {
+    iniciarStream(cid);
+  } else {
+    detenerStream();
+  }
+});
 
 // ─── Navegación desde Service Worker ──────────────────────────────────────────
 // Cuando el usuario toca una notificación push nativa, el SW envía un mensaje
@@ -51,6 +74,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("comunidad:navegar", onNavegacionDesdeSW);
+  detenerStream();
 });
 
 // ─── Banner de notificaciones ─────────────────────────────────────────────────

@@ -66,6 +66,7 @@ export function useEncomiendas() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["encomiendas", auth.condominioActualId] });
+      queryClient.invalidateQueries({ queryKey: ["encomiendasPendientes", auth.condominioActualId] });
     },
   });
 
@@ -113,6 +114,7 @@ export function useEncomiendas() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["encomiendas", auth.condominioActualId] });
+      queryClient.invalidateQueries({ queryKey: ["encomiendasPendientes", auth.condominioActualId] });
     },
   });
 

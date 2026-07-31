@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useTurno } from "@/composables/useTurno";
 import { useDashboardGuardia } from "@/composables/useDashboardGuardia";
 import TarjetaAccesosActivos from "@/components/stats/TarjetaAccesosActivos.vue";
+import TarjetaEncomiendasPendientes from "@/components/stats/TarjetaEncomiendasPendientes.vue";
 import ChecklistDialog from "@/components/bitacora/ChecklistDialog.vue";
 
 import Card from "primevue/card";
@@ -20,7 +21,6 @@ import BuscadorPatenteCard from "@/components/visitas/BuscadorPatenteCard.vue";
 const router = useRouter();
 const auth = useAuthStore();
 const showNovedadDialog = ref(false);
-
 
 const {
   turno,
@@ -93,22 +93,9 @@ onMounted(() => {
       <!-- Stats grid -->
       <div class="grid grid-cols-2 gap-3">
         <TarjetaAccesosActivos @click="router.push({ name: 'Visitas' })" />
-        <Card
-          class="cursor-pointer hover:surface-hover transition-shadow"
+        <TarjetaEncomiendasPendientes
           @click="router.push({ name: 'Encomiendas' })"
-        >
-          <template #content>
-            <div class="text-center">
-              <p
-                class="text-3xl font-bold m-0"
-                style="color: var(--p-primary-400)"
-              >
-                {{ dashboard.encomiendas || encomiendas.length || 0 }}
-              </p>
-              <p class="text-xs text-surface-500 m-0 mt-1">Encomiendas</p>
-            </div>
-          </template>
-        </Card>
+        />
         <Card>
           <template #content>
             <div class="text-center">
@@ -192,15 +179,15 @@ onMounted(() => {
                 <i class="pi pi-inbox text-lg text-primary"></i>
                 <div>
                   <p class="text-sm font-medium m-0">
-                    {{ env.descripcion || env.receptorNombre }}
+                    {{ env.nombreDestinatario || env.tipo }}
                   </p>
                   <p class="text-xs text-surface-500 m-0">
                     Casa {{ env.unidadNumero }} ·
-                    {{ formatearFecha(env.fechaIngreso || env.fechaRecepcion) }}
+                    {{ formatearFecha(env.creadoEn) }}
                   </p>
                 </div>
               </div>
-              <Tag value="Pendiente" severity="warn" />
+              <Tag :value="env.tipo" severity="info" />
             </div>
           </div>
         </template>
@@ -252,36 +239,16 @@ onMounted(() => {
 
       <!-- Acceso rápido -->
       <Card>
-        <template #title>Acceso rápido</template>
+        <template #title>
+          <span class="text-text/90">Acceso rápido</span>
+        </template>
         <template #content>
           <div class="grid grid-cols-3 gap-2">
             <Button
-              label="Registrar visita"
+              label="Visita"
               icon="pi pi-user-plus"
               severity="primary"
               @click="router.push({ name: 'RegistrarVisita' })"
-            />
-
-            <Button
-              label="Accesos activos"
-              icon="pi pi-shield"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Visitas' })"
-            />
-            <Button
-              label="Encomiendas"
-              icon="pi pi-box"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Encomiendas' })"
-            />
-            <Button
-              label="Autorizaciones"
-              icon="pi pi-verified"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Autorizaciones' })"
             />
             <Button
               label="Bitácora"
@@ -289,6 +256,13 @@ onMounted(() => {
               severity="secondary"
               variant="outlined"
               @click="router.push({ name: 'Bitacora' })"
+            />
+            <Button
+              label="Autorizaciones"
+              icon="pi pi-verified"
+              severity="secondary"
+              variant="outlined"
+              @click="router.push({ name: 'Autorizaciones' })"
             />
             <Button
               label="Solicitudes"

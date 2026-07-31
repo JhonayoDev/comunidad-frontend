@@ -1,8 +1,12 @@
 <script setup>
+import { computed } from "vue";
 import { useAuthStore } from "@/stores/authStore";
-import { visitasService } from "@/services/visitasService";
+import { encomiendasService } from "@/services/encomiendasService";
 import { useQuery } from "@tanstack/vue-query";
-import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
+import {
+  useMetricasTiempoReal,
+  metricas,
+} from "@/composables/useMetricasTiempoReal";
 import Card from "primevue/card";
 import Badge from "primevue/badge";
 
@@ -16,24 +20,25 @@ const emit = defineEmits(["click"]);
 const auth = useAuthStore();
 const { refetchIntervalMetrica } = useMetricasTiempoReal();
 
-// Query canónica ["conteoActivos", cid] — la misma que usa useDashboardGuardia.
-// El stream SSE actualiza el dato al instante vía setQueryData; el intervalo
-// reactivo baja a 60s mientras el stream esté vivo (fallback 30s).
+// Query canónica ["encomiendasPendientes", cid]. El SSE invalida la query al
+// llegar el evento; mientras tanto, `metricas.encomiendasPendientes` da el
+// conteo al instante sin esperar el refetch.
 const { data } = useQuery({
-  queryKey: ["conteoActivos", auth.condominioActualId],
+  queryKey: ["encomiendasPendientes", auth.condominioActualId],
   queryFn: async () => {
-    const { data } = await visitasService.getConteoActivos(
+    const { data } = await encomiendasService.getActivas(
       auth.condominioActualId,
     );
-    return data;
+    return data || [];
   },
   enabled: !!auth.condominioActualId,
-  refetchOnMount: "always",
   refetchOnWindowFocus: true,
   refetchInterval: refetchIntervalMetrica,
-  retry: 3,
-  retryDelay: 1_000,
 });
+
+const pendientes = computed(
+  () => metricas.encomiendasPendientes ?? data?.length ?? 0,
+);
 </script>
 
 <template>
@@ -44,18 +49,21 @@ const { data } = useQuery({
   >
     <template #content>
       <div class="text-center">
-        <p class="text-3xl font-bold m-0 text-green-600">
-          {{ data?.activosAhora ?? 0 }}
+        <p
+          class="text-3xl font-bold m-0"
+          style="color: var(--p-primary-400)"
+        >
+          {{ pendientes }}
         </p>
-        <p class="text-xs text-text/85 m-0 mt-1">Visitas</p>
+        <p class="text-xs text-surface-500 m-0 mt-1">Encomiendas</p>
       </div>
     </template>
   </Card>
 
   <Badge
     v-else
-    :value="data?.activosAhora ?? 0"
-    severity="success"
+    :value="pendientes"
+    severity="warn"
     class="cursor-pointer"
     @click="emit('click')"
   />

@@ -4,10 +4,12 @@ import { dashboardService } from "@/services/dashboardService";
 import { encomiendasService } from "@/services/encomiendasService";
 import { autorizacionesService } from "@/services/autorizacionesService";
 import { visitasService } from "@/services/visitasService";
+import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
 import { computed } from "vue";
 
 export function useDashboardGuardia() {
   const auth = useAuthStore();
+  const { refetchIntervalMetrica } = useMetricasTiempoReal();
 
   const dashboardQuery = useQuery({
     queryKey: ["dashboardGuardia", auth.condominioActualId],
@@ -21,13 +23,14 @@ export function useDashboardGuardia() {
   const encomiendasQuery = useQuery({
     queryKey: ["encomiendasPendientes", auth.condominioActualId],
     queryFn: async () => {
-      const { data } = await encomiendasService.getEncomiendas(
+      const { data } = await encomiendasService.getActivas(
         auth.condominioActualId,
-        { estado: "PENDIENTE" },
       );
       return data || [];
     },
     enabled: !!auth.condominioActualId,
+    refetchOnWindowFocus: true,
+    refetchInterval: refetchIntervalMetrica,
   });
 
   const autorizacionesQuery = useQuery({
@@ -51,7 +54,7 @@ export function useDashboardGuardia() {
     enabled: !!auth.condominioActualId,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
-    refetchInterval: 15_000,
+    refetchInterval: refetchIntervalMetrica,
     retry: 3,
     retryDelay: 1_000,
   });
