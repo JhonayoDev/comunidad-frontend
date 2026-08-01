@@ -16,6 +16,7 @@ export function useDashboardGuardia() {
       return data;
     },
     enabled: !!auth.condominioActualId,
+    refetchInterval: refetchIntervalMetrica,
   });
 
   const autorizacionesQuery = useQuery({

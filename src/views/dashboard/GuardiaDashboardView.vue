@@ -83,7 +83,8 @@ onMounted(() => {
     <template v-else-if="dashboard">
       <!-- Estado de la conexión SSE: las tarjetas de métricas se alimentan en
            vivo por el stream; si cae, los conteos quedan en el último valor
-           conocido hasta que se reanude (fallback de polling a 60s). -->
+           conocido. Solo si no se recupera en la gracia (1 min) se activa el
+           polling de respaldo a 2 min (no inunda de peticiones). -->
       <div class="flex items-center gap-2 self-start">
         <span
           class="w-2.5 h-2.5 rounded-full"

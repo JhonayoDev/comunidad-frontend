@@ -14,9 +14,9 @@ El frontend ya consume el stream SSE de métricas del dashboard operativo:
 - **Auth:** `Authorization: Bearer <JWT>` + permiso `DASHBOARD_GUARDIA` o `DASHBOARD_ADMIN`
 - **Cliente:** `src/services/dashboardStreamService.js` (fetch + ReadableStream), reconexión con backoff 1s→30s
 - **Integración:** `src/composables/useMetricasTiempoReal.js` (clave → queryKey) montado app-wide en `MainLayout.vue`
-- **Fallback:** con stream vivo **no hay polling** (el SSE es la fuente primaria). Solo si el stream cae, el polling de respaldo sube a 60s.
+- **Fallback:** con stream vivo **no hay polling** (el SSE es la fuente primaria). Si el stream cae, hay una gracia de 1 min sin polling (le da tiempo a la reconexión con backoff) y solo si sigue caído el polling de respaldo sube a 2 min.
 - **Conteo de encomiendas:** la tarjeta lee `metricas.encomiendasPendientes` (SSE); la lista completa `GET /encomiendas/activas` ya NO se pide desde el dashboard del guardia. Antes del primer evento se siembra desde `dashboard.encomiendas` (snapshot real del backend).
-- **Stale-safety:** `metricas` se limpia en CADA conexión del stream (primera o reconexión). Un valor SSE viejo (p. ej. un `0` publicado antes de que existieran datos) nunca enmascara el seed del snapshot; las cards vuelven a `conteoInicial` hasta el primer evento fresco. Al reconectar también se invalida `["dashboardGuardia", cid]` para reconciliar el seed con el snapshot.
+- **Stale-safety:** `metricas` se limpia SOLO al cambiar de condominio. En la reconexión del MISMO condominio NO se resetea (el backend envía `SNAPSHOT_INICIAL` como primer frame y repuebla al instante); un valor SSE viejo nunca enmascara el seed porque el snapshot llega primero. Al reconectar también se invalida `["dashboardGuardia", cid]` para reconciliar el seed con el snapshot.
 
 Esta prueba verifica que el backend desplegado cumple el contrato y que el flujo completo (evento → tarjeta actualizada) funciona en staging y prod.
 
@@ -115,7 +115,7 @@ Con el `curl` del §4.1 corriendo, desde la app (u otro `curl`):
 ### 4.8 Fallback (UC-6)
 
 - Desactivar el permiso `DASHBOARD_*` del usuario (o forzar 403 en el stream).
-- **Esperado:** la app sigue funcionando con polling de respaldo a 60s (`refetchIntervalMetrica` = 60s) solo para `autorizacionesPendientes`, sin errores visibles al usuario. El conteo de visitas y de encomiendas queda congelado en el último valor SSE hasta que el stream vuelva (no hay endpoints livianos de conteo); su valor inicial se siembra desde el snapshot (`dashboard.accesos.activosAhora` y `dashboard.encomiendas` respectivamente).
+- **Esperado:** durante la **gracia de 1 min** la app NO hace polling (le da tiempo a la reconexión con backoff de recuperarse sola); si el stream sigue caído pasada la gracia, degrada a **polling de respaldo de 2 min** (`refetchIntervalMetrica` = 120s) solo para `autorizacionesPendientes` y el snapshot del dashboard, sin errores visibles al usuario. El conteo de visitas y de encomiendas queda congelado en el último valor SSE hasta que el stream vuelva (no hay endpoints livianos de conteo); su valor inicial se siembra desde el snapshot (`dashboard.accesos.activosAhora` y `dashboard.encomiendas` respectivamente).
 
 ### 4.9 Sin polling con stream vivo (control de tráfico)
 
@@ -135,7 +135,7 @@ Con el `curl` del §4.1 corriendo, desde la app (u otro `curl`):
 | E | Los eventos llegan SOLO al condominio correspondiente (§4.5) | ☐ |
 | F | La tarjeta de visitas/encomiendas se actualiza en < 2s en otra pestaña (§4.6) | ☐ |
 | G | Reconexión con backoff y refetch del snapshot al reconectar (§4.7) | ☐ |
-| H | Con stream caído, la app degrada a polling 60s sin romperse (§4.8) | ☐ |
+| H | Con stream caído, la app respeta la gracia de 1 min y degrada a polling de 2 min sin romperse (§4.8) | ☐ |
 | I | En reposo con stream vivo no hay polling de métricas (§4.9) | ☐ |
 | J | Un valor SSE viejo (p. ej. `0` de antes de existir datos) no enmascara el seed: tras reconectar, las cards muestran el snapshot hasta el primer evento (§4.7) | ☐ |
 

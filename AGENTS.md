@@ -18,7 +18,7 @@ Alinear todos los módulos del frontend (GUARDIA y RESIDENTE) con los endpoints 
 - Eliminados todos los datos mock de todos los servicios
 - **`encomiendasService.js`**: `getMisEncomiendas` usa URL correcta `/condominios/{cid}/mis-encomiendas`
 - **`perfilService.js`**: agregado `actualizarMe(data)` → `PUT /me`
-- **`useNotificaciones.js`**: corregido — usa `getTodas(condominioId)`, `marcarLeida(condominioId, notif.id)`, `marcarTodasLeidas(condominioId)`, obtiene `condominioId` del authStore
+- **`useNotificaciones.js`**: corregido — usa `getTodas(condominioId)`, `getSync(condominioId)` (con `refetchInterval: 120000`), `marcarLeida(condominioId, notif.id)`, `marcarTodasLeidas(condominioId)`, obtiene `condominioId` del authStore
 - **`RegistrarVisitaView`**: `tipo` usa enum API (`VISITA`, `DELIVERY`, `UBER`, `SERVICIO`, `TECNICO`, `OTRO`); campo `nombreVisitante`; single `unidadId`; eliminado `buscarFrecuente`
 - **`EncomiendasView`**: formulario usa `tipo` (CARTA/ENCOMIENDA) + `nombreDestinatario`; entregar pide `nombreRetira` + `rutRetira`;
 - **`useEncomiendas`**: `entregar(encomienda, nombreRetira, rutRetira)` envía body al backend
@@ -26,8 +26,8 @@ Alinear todos los módulos del frontend (GUARDIA y RESIDENTE) con los endpoints 
 - **`PortonView`**: migrado a usar `<BuscadorPatenteCard />` con `GET /busqueda/por-patente`
 - **`RegistrarVisitaView`**: migrado a `useUnidades` con TanStack Query; cambiado Select por AutoComplete para búsqueda por número de casa; acepta pre-fill desde BuscadorPatenteCard
 - **`useBusquedaPatente.js`**: creado — orquesta búsqueda por patente + detección de acceso activo para salida rápida; botón "Registrar ingreso" navega a RegistrarVisitaView con datos pre-rellenados
-- **`BuscadorPatenteCard.vue`**: creado — componente reutilizable con props `compact` para dashboard/vista completa; función `extraerUnidadDeResultado` parsea subtitulo/detalle para pre-fill de casa
-- **`ConfirmarSalidaDialog.vue`**: creado — subcomponente presentacional para salida rápida con datos del acceso activo
+- **`BuscadorPatenteCard.vue`** (`src/components/visitas/`): creado — componente reutilizable con props `compact` para dashboard/vista completa; función `extraerUnidadDeResultado` parsea subtitulo/detalle para pre-fill de casa
+- **`ConfirmarSalidaDialog.vue`** (`src/components/visitas/`): creado — subcomponente presentacional para salida rápida con datos del acceso activo
 - **`VisitasView`**: template usa `nombreVisitante`, `patenteVisitante`, `tipo`, `fechaIngreso`, `fechaSalida`, `estado`; migrado a PrimeVue
 - **`GuardiaDashboardView`**: movimientos usan `nombre`, `unidad`, `fecha`; agregados `console.error` en catch blocks
 - **`BitacoraView`**: `registradoPorNombre` (no `realizadoPorNombre`), `registradoEn` (no `realizadoEn`); agregados `console.error`
@@ -36,34 +36,35 @@ Alinear todos los módulos del frontend (GUARDIA y RESIDENTE) con los endpoints 
 - **`NotificacionesView`**: migrado a PrimeVue; usa `notif.id` (no `notificacionId`); pasa `condominioId` en llamadas API
 - **`MisEncomiendasView`**: migrado a PrimeVue; usa `tipo`, `nombreDestinatario`, `unidadNumero`, `creadoEn`; pasa `condominioId`
 - **`PerfilView`**: migrado a PrimeVue + `<Password>`; usa `perfilService.actualizarMe({nombre, telefono})` real; carga perfil de `GET /me`
-- **`TarjetaEncomiendasPendientes.vue`**: creado — card reutilizable para conteo de encomiendas pendientes (espejo de `TarjetaAccesosActivos`) usando `GET /encomiendas/activas`
+- **`TarjetaEncomiendasPendientes.vue`**: creado — card reutilizable para conteo de encomiendas pendientes; en F1 usaba `GET /encomiendas/activas`, hoy conteo en vivo solo vía SSE (`metricas.encomiendasPendientes`) con seed desde `conteoInicial`
 - **`encomiendasService.js`**: `getActivas()` agregado en F1 y luego **eliminado** (sin callers tras quitar la lista del dashboard del guardia)
 - **`useDashboardGuardia.js`**: `encomiendasQuery` (via `getActivas()`, arregla bug PageResponse vs array) creado en F1 y luego **eliminado**
 - **`GuardiaDashboardView.vue`**: usa `TarjetaEncomiendasPendientes`; lista pendientes con campos reales (`nombreDestinatario`, `unidadNumero`, `tipo`, `creadoEn`)
-- **`useEncomiendas.js`**: invalida `encomiendasPendientes` al registrar/entregar
+- **`useEncomiendas.js`**: invalida `["encomiendas", cid]` al registrar/entregar (con optimistic update + rollback en entregar)
 - **`REQUERIMIENTOS_STATS_TIEMPO_REAL.md`**: creado — informe de requerimientos SSE para estadísticas en tiempo real (entregable al backend, fase F2/F3)
 - **`sseParser.js`**: creado — parser SSE puro e incremental (frames, `data` multilínea, `:ping`, CRLF) para leer el stream con `fetch()` + `ReadableStream` (EventSource no soporta headers)
 - **`dashboardStreamService.js`**: creado — cliente SSE singleton vía `fetch()` + `ReadableStream` con `Authorization: Bearer`, dedupe por condominio, reconexión con backoff (1s→30s), `streamVivo` ref compartido a nivel de módulo
-- **`useMetricasTiempoReal.js`**: creado — registro `clave SSE → queryKey` (visitasActivas soloConteo / autorizacionesPendientes invalidate / encomiendasPendientes soloConteo), `refetchIntervalMetrica` computed reactivo (**sin polling con stream vivo**; fallback 60s si cae), refetch del snapshot al reconectar, **no resetea `metricas` al reconectar el MISMO condominio** (el backend envía `SNAPSHOT_INICIAL` como primer frame y repuebla al instante; solo se limpia al cambiar de condominio), invalida `["dashboardGuardia", cid]` al reconectar
+- **`useMetricasTiempoReal.js`**: creado — registro `clave SSE → queryKey` (visitasActivas soloConteo / autorizacionesPendientes invalidate / encomiendasPendientes soloConteo), `refetchIntervalMetrica` computed reactivo (**sin polling con stream vivo**; **gracia 1 min sin polling y luego fallback a 2 min solo si el stream sigue caído** — no inunda de peticiones), refetch del snapshot al reconectar, **no resetea `metricas` al reconectar el MISMO condominio** (el backend envía `SNAPSHOT_INICIAL` como primer frame y repuebla al instante; solo se limpia al cambiar de condominio), invalida `["dashboardGuardia", cid]` al reconectar
 - **`MainLayout.vue`**: stream SSE conectado app-wide con `watchEffect` cuando hay condominio + permiso `DASHBOARD_GUARDIA` o `DASHBOARD_ADMIN`; se aborta al cambiar condominio/cerrar sesión; también invoca `useMetricasTiempoReal()` app-wide para que la suscripción a eventos/estado quede registrada en cualquier rol (arregla el badge del admin, que nunca registraba la suscripción por no montar el dashboard del guardia)
 - **`SOLICITUD_SNAPSHOT_INICIAL_SSE.md`**: creado — solicitud al backend para publicar un snapshot de métricas (todas las claves) al suscribirse al stream, evitando que las cards queden stale entre el fetch del snapshot y el primer evento de cambio. **Backend lo implementó y verificó** (informe de vuelta): `SNAPSHOT_INICIAL` como primer frame del stream
 - **`TarjetaAccesosActivos.vue`**: conteo en vivo solo vía SSE (`metricas.visitasActivas`); antes del primer evento muestra `conteoInicial` (sembrado desde `dashboard.accesos.activosAhora`) — ya NO consulta `GET /accesos/conteo-activos` (endpoint eliminado del service). Mismas condiciones que la tarjeta de encomiendas
 - **`TarjetaEncomiendasPendientes.vue`**: conteo en vivo solo vía SSE (`metricas.encomiendasPendientes`); antes del primer evento muestra `conteoInicial` (sembrado desde `dashboard.encomiendas`) — ya NO consulta `GET /encomiendas/activas` (eliminada la lista completa del dashboard del guardia)
 - **`GuardiaDashboardView.vue`**: eliminada la sección "Encomiendas pendientes" (lista) y su query `encomiendas/activas`; quedan visitas, unidades, residentes y autorizaciones; agregado indicador visual de conexión SSE (`estaVivo` de `useMetricasTiempoReal`) sobre la grilla de tarjetas
-- **`AdminDashboardView.vue`**: el badge de accesos también recibe `:conteo-inicial` desde `dashboard.accesos.activosAhora` (seed del snapshot)
-- **`useDashboardGuardia.js`**: polling reactivo vía `refetchIntervalMetrica()` (sin polling con stream vivo / 60s fallback); eliminado `encomiendasQuery` y `conteoActivosQuery`; `dashboard = computed(() => dashboardQuery.data)` (sin fallback `?? []` — el `[]` truthy enmascaraba el snapshot y renderizaba `conteo-inicial` 0)
+- **`AdminDashboardView.vue`**: el badge de accesos también recibe `:conteo-inicial` desde `dashboard.accesos.activosAhora` (seed del snapshot); NO usa composables de métricas — el conteo en vivo del badge llega porque `TarjetaAccesosActivos` importa el reactive `metricas` y la suscripción app-wide en `MainLayout.vue` lo puebla
+- **`useDashboardGuardia.js`**: polling reactivo vía `refetchIntervalMetrica()` (sin polling con stream vivo; gracia 1 min y fallback a 2 min si el stream sigue caído); eliminado `encomiendasQuery` y `conteoActivosQuery`; `dashboard = computed(() => dashboardQuery.data)` (sin fallback `?? []` — el `[]` truthy enmascaraba el snapshot y renderizaba `conteo-inicial` 0)
 - **`visitasService.js`**: eliminado `getConteoActivos` (sin callers tras mover la tarjeta de visitas a SSE puro)
 - **`vite.config.js`**: `devOptions.enabled: false` para el PWA en dev — el SW (solo push, no cachea) se reinstalaba constantemente con `autoUpdate`; en producción el build lo incluye igual
 - Agregados `console.error` en catch blocks de todas las vistas
 - Corregido bug de loading infinito en `cargarUnidades()` (resuelve spinner cuando `!cid`)
+- **Sistema de respaldo probado**: `useMetricasTiempoReal` con gracia de 1 min sin polling y fallback a 2 min solo si el stream sigue caído; cubierto por tests (`useMetricasTiempoReal.test.js`) y verificado en vivo contra el backend real (snapshot + eventos de cambio + `:ping`)
 - Build pasa con `pnpm build`
 
 ## Blocked
 - **SolicitudesView**: no existe `SolicitudesController` en el backend — llama a `/condominios/{cid}/solicitudes-registro` que devuelve 404
 
 ## Componentes Creados
-- **`BuscadorPatenteCard.vue`**: Componente reutilizable para búsqueda por patente. Props: `compact`. Consulta en paralelo `/busqueda/por-patente` + `GET /accesos?estado=ACTIVO` para detectar si hay acceso activo que permita salida rápida.
-- **`ConfirmarSalidaDialog.vue`**: Subcomponente del BuscadorPatenteCard. Dialog modal que muestra datos del acceso activo (visitante, unidad, fecha ingreso, tipo, personas) y permite confirmar salida con observación opcional.
+- **`BuscadorPatenteCard.vue`** (`src/components/visitas/`): Componente reutilizable para búsqueda por patente. Props: `compact`. Consulta en paralelo `/busqueda/por-patente` + `GET /accesos?estado=ACTIVO` para detectar si hay acceso activo que permita salida rápida.
+- **`ConfirmarSalidaDialog.vue`** (`src/components/visitas/`): Subcomponente del BuscadorPatenteCard. Dialog modal que muestra datos del acceso activo (visitante, unidad, fecha ingreso, tipo, personas) y permite confirmar salida con observación opcional.
 - **`TarjetaEncomiendasPendientes.vue`**: Card reutilizable para conteo de encomiendas pendientes. Props: `variant` ('card'|'badge'), `conteoInicial` (seed del snapshot). Emite `click`. Conteo en vivo solo vía SSE (`metricas.encomiendasPendientes`) — no fetchea la lista completa.
 - **`TarjetaAccesosActivos.vue`**: Card reutilizable para conteo de visitas activas. Props: `variant` ('card'|'badge'), `conteoInicial` (seed del snapshot). Emite `click`. Conteo en vivo solo vía SSE (`metricas.visitasActivas`) — no fetchea `GET /accesos/conteo-activos` (eliminado).
 
@@ -87,13 +88,13 @@ El guardia busca una patente → si hay un acceso ACTIVO con esa patente, aparec
 - `ConfirmarSalidaDialog` es subcomponente presentacional — toda la lógica vive en `useBusquedaPatente`
 - El botón "Registrar ingreso" en `BuscadorPatenteCard` navega a `RegistrarVisitaView` con datos pre-rellenados, evitando lógica duplicada de ingreso
 - `RegistrarVisitaView` usa `AutoComplete` de PrimeVue para buscar casa por número con sugerencias al escribir
-- **Con stream SSE vivo NO hay polling** de métricas (el SSE es la fuente primaria); el polling de respaldo solo sube a 60s cuando el stream cae. Reducción de tráfico: 0 requests de `conteo-activos`/`encomiendas/activas` en reposo
+- **Con stream SSE vivo NO hay polling** de métricas (el SSE es la fuente primaria); si el stream cae, hay una gracia de 1 min sin polling (le da tiempo a la reconexión con backoff) y solo si sigue caído se activa el polling de respaldo a 2 min. Reducción de tráfico: 0 requests de `conteo-activos`/`encomiendas/activas` en reposo
 - **Al reconectar el SSE** se invalidan las queries registradas (refetch del snapshot) para reconciliar deltas perdidos sin depender del polling
 - **Eliminada la sección "Encomiendas pendientes"** del dashboard del guardia y con ella la petición `GET /encomiendas/activas` (lista completa). El conteo de la tarjeta sale del SSE (`metricas.encomiendasPendientes`) y antes del primer evento se siembra desde `dashboard.encomiendas` (snapshot ya real, no hardcodeado)
 - **Ambas tarjetas de métricas (visitas y encomiendas) trabajan 100% con SSE** — misma condición y misma fuente primaria. El seed del snapshot es la única lectura inicial: `dashboard.accesos.activosAhora` (visitas) y `dashboard.encomiendas` (encomiendas). El fallback `dashboardQuery.data ?? []` se eliminó porque el `[]` (truthy) enmascaraba el snapshot y hacía renderizar `conteo-inicial = 0` en recargas con stream caído
 
 ## Next Steps
-- **Verificar SNAPSHOT_INICIAL en dev**: el backend local en ejecución debe reiniciarse para servir el snapshot (las clases se recompilaron a las 19:23 pero el proceso arrancó a las 18:32). Checklist en `docs/verificacion-sse-staging-prod.md` (endpoint, auth, streaming sin buffering, multi-tenant, E2E, reconexión, fallback)
+- **Verificar SNAPSHOT_INICIAL en dev**: ✅ verificado en vivo (backend reiniciado) — primer frame `event: metrica` con `tipoEvento: SNAPSHOT_INICIAL` y las 3 claves (visitasActivas 7, encomiendasPendientes 7, autorizacionesPendientes 0) coincidiendo con `GET /dashboard/guardia`; evento de cambio `ENCOMIENDA_RECIBIDA` incrementa el conteo; `:ping` cada ~15s. Pendiente verificar en staging/prod según checklist en `docs/verificacion-sse-staging-prod.md`
 - Verificar que todas las vistas funcionan contra la API real
 - Solicitar al backend: crear `SolicitudesController` para `/condominios/{cid}/solicitudes-registro`
 - Solicitar al backend (mejora): crear endpoint `GET /condominios/{cid}/vehiculos/consulta-rapida?patente=X`
@@ -118,21 +119,23 @@ El guardia busca una patente → si hay un acceso ACTIVO con esa patente, aparec
 - `.env` apunta a `https://apicomunidad.ideaspace.dpdns.org/api/v1`
 
 ## Relevant Files
-- `src/services/encomiendasService.js`: Fixed `getMisEncomiendas` URL
+- `src/services/encomiendasService.js`: `getEncomiendas`, `getEncomienda`, `registrar`, `entregar` (PATCH `.../{id}/entregar`), `cerrar` (PATCH `.../{id}/cerrar`), `getMisEncomiendas` (URL corregida `/condominios/{cid}/mis-encomiendas`), `getAccesosEncomiendas` (`/encomiendas/accesos`); **`getActivas` eliminado**
 - `src/services/perfilService.js`: Added `actualizarMe()`
-- `src/composables/useNotificaciones.js`: Fixed method calls, added condominioId
+- `src/composables/useNotificaciones.js`: Fixed method calls, added condominioId; usa `getTodas`, `getSync` (polling 120s), `marcarLeida`, `marcarTodasLeidas`
+- `src/services/notificacionesService.js`: `getTodas`, `getBadge`, `getSync`, `marcarLeida` (PATCH `.../{id}/leida`), `marcarTodasLeidas` (PATCH `.../todas-leidas`), `listarPlantillas`, `guardarPlantilla`, `restaurarPlantilla`
 - `src/views/notificaciones/NotificacionesView.vue`: PrimeVue migration, field fixes
 - `src/views/encomiendas/MisEncomiendasView.vue`: PrimeVue migration, field fixes
 - `src/views/residente/PerfilView.vue`: PrimeVue migration, real API
 - `src/views/residente/InicioView.vue`: Added console.error
 - `src/components/stats/TarjetaEncomiendasPendientes.vue`: Reusable pending-packages count card — conteo solo vía SSE (`metricas.encomiendasPendientes`), seed desde `conteoInicial`, sin `GET /encomiendas/activas`
 - `src/components/stats/TarjetaAccesosActivos.vue`: Reusable active-visits count card — conteo solo vía SSE (`metricas.visitasActivas`), seed desde `conteoInicial`, sin `GET /accesos/conteo-activos`
-- `src/composables/useDashboardGuardia.js`: `encomiendasQuery` y `conteoActivosQuery` eliminados; `autorizacionesQuery` con `refetchIntervalMetrica` (sin polling con stream vivo / 60s fallback); `dashboard = computed(() => dashboardQuery.data)` (sin fallback `?? []`)
+- `src/composables/useDashboardGuardia.js`: `encomiendasQuery` y `conteoActivosQuery` eliminados; `dashboardQuery` y `autorizacionesQuery` con `refetchIntervalMetrica` (sin polling con stream vivo; gracia 1 min / fallback 2 min); `dashboard = computed(() => dashboardQuery.data)` (sin fallback `?? []`)
 - `src/services/visitasService.js`: `getConteoActivos` eliminado (sin callers)
 - `src/views/dashboard/GuardiaDashboardView.vue`: indicador visual de conexión SSE (`estaVivo`) + `conteo-inicial` en tarjeta de accesos
 - `src/utils/sseParser.js`: Pure incremental SSE frame parser (frames, multiline data, `:ping`, CRLF) — tested with Vitest
+- `src/composables/__tests__/useMetricasTiempoReal.test.js`: prueba el sistema de respaldo con módulos reales + timers falsos — stream vivo sin polling, gracia de 1 min sin polling, fallback a 2 min tras la gracia, vuelve a SSE al reconectar, parpadeo breve no activa polling
 - `src/services/dashboardStreamService.js`: SSE client via `fetch()` + `ReadableStream`, reconnect backoff, dedupe by condominio, `streamVivo` singleton ref
-- `src/composables/useMetricasTiempoReal.js`: clave→queryKey registry + `refetchIntervalMetrica` (60s vivo / 30s fallback)
+- `src/composables/useMetricasTiempoReal.js`: clave→queryKey registry + `refetchIntervalMetrica` (sin polling con stream vivo; gracia 1 min / fallback 2 min)
 - `src/layouts/MainLayout.vue`: app-wide SSE mount via `watchEffect` (condominio + permiso `DASHBOARD_*`)
 - `REQUERIMIENTOS_STATS_TIEMPO_REAL.md`: SSE requirements report for the backend team
 - `docs/verificacion-sse-staging-prod.md`: Pending SSE verification checklist for staging/prod

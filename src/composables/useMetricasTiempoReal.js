@@ -1,4 +1,4 @@
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
 import { queryClient } from "@/queryClient";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -18,7 +18,12 @@ import {
 // UC-5 (extensión): agregar una métrica nueva = sumar una entrada aquí y que el
 // backend publique la `clave`. No hay cambios de transporte.
 
-const INTERVALO_FALLBACK_MS = 60_000;
+// El SSE es la fuente primaria: mientras está vivo NO hay polling. Solo si el
+// stream cae y se mantiene caído más allá de un período de gracia (tiempo para
+// que la reconexión con backoff se recupere por sí sola), se activa un polling
+// de respaldo con intervalo espaciado (2 min) para no inundar de peticiones.
+const GRACIA_POLLING_MS = 60_000;
+const INTERVALO_FALLBACK_MS = 120_000;
 
 const METRICAS = {
   visitasActivas: {
@@ -32,6 +37,30 @@ const METRICAS = {
     invalidar: true,
   },
 };
+
+// Estado de gracia de caída: durante `GRACIA_POLLING_MS` con el stream caído NO
+// se pollea (se le da tiempo a la reconexión con backoff de recuperarse sola).
+// Pasado ese plazo sin recuperarse, se activa el polling de respaldo de 2 min.
+// `graciaExpirada` es un ref compartido a nivel de módulo (igual que `metricas`)
+// para que todas las instancias del composable observen el mismo estado.
+const graciaExpirada = ref(false);
+let timerGracia = null;
+
+function cancelarGracia() {
+  if (timerGracia) {
+    clearTimeout(timerGracia);
+    timerGracia = null;
+  }
+  graciaExpirada.value = false;
+}
+
+function iniciarGracia() {
+  if (timerGracia || graciaExpirada.value) return;
+  timerGracia = setTimeout(() => {
+    timerGracia = null;
+    graciaExpirada.value = true;
+  }, GRACIA_POLLING_MS);
+}
 
 // Últimos valores conocidos por clave (lectura instantánea en las cards).
 // Se limpian SOLO al cambiar de condominio (evita filtrar conteos del
@@ -105,6 +134,8 @@ function asegurarSuscripcion() {
 
   suscribirEstado((estado, payload) => {
     if (estado === "conectado") {
+      // El stream se recuperó: cancela la gracia de caída y vuelve a SSE puro.
+      cancelarGracia();
       const cid = payload?.condominioId;
 
       // Limpiar SOLO al conectar a un condominio distinto (primera vez o
@@ -130,6 +161,9 @@ function asegurarSuscripcion() {
       }
       estadoAnterior = "conectado";
     } else {
+      // Reconectando o error: inicia la gracia (idempotente — solo la primera
+      // vez; no se reinicia con cada intento de backoff del stream).
+      iniciarGracia();
       estadoAnterior = estado;
     }
   });
@@ -138,8 +172,9 @@ function asegurarSuscripcion() {
 /**
  * Composable de integración SSE ↔ TanStack Query.
  *
- * Con el stream SSE vivo NO hay polling (el SSE es la fuente primaria). Solo
- * si el stream cae, el intervalo de respaldo sube a 60s (UC-6).
+ * Con el stream SSE vivo NO hay polling (el SSE es la fuente primaria). Solo si
+ * el stream cae y no se recupera en la gracia (1 min), el intervalo de respaldo
+ * sube a 2 min para no inundar de peticiones (UC-6).
  */
 export function useMetricasTiempoReal() {
   asegurarSuscripcion();
@@ -147,12 +182,19 @@ export function useMetricasTiempoReal() {
   const auth = useAuthStore();
   const estaVivo = computed(() => streamVivo.value);
 
-  // Intervalo reactivo: `false` (sin polling) mientras el stream está vivo;
-  // 60s cuando cae. Al cambiar `streamVivo`, TanStack Query re-evalúa este ref
-  // sin reiniciar la query ni tocar el componente (UC-6).
-  const refetchIntervalMetrica = computed(() =>
-    streamVivo.value ? false : INTERVALO_FALLBACK_MS,
-  );
+  // Intervalo reactivo de respaldo:
+  //   - `false` mientras el stream está vivo (SSE es la fuente primaria).
+  //   - `false` durante la gracia de caída: se le da tiempo a la reconexión
+  //     (backoff 1s→30s) de recuperarse sola sin disparar peticiones.
+  //   - `INTERVALO_FALLBACK_MS` (2 min) solo si el stream sigue caído pasada
+  //     la gracia — polling espaciado que no inunda de requests.
+  // TanStack Query re-evalúa este ref reactivamente al cambiar `streamVivo`
+  // o `graciaExpirada`, sin reiniciar la query ni tocar el componente (UC-6).
+  const refetchIntervalMetrica = computed(() => {
+    if (streamVivo.value) return false;
+    if (!graciaExpirada.value) return false;
+    return INTERVALO_FALLBACK_MS;
+  });
 
   return { estaVivo, refetchIntervalMetrica, metricas };
 }
