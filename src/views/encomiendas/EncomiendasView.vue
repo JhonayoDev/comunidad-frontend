@@ -1,300 +1,392 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { useEncomiendas } from "@/composables/useEncomiendas";
-import { unidadesService } from "@/services/unidadesService";
+import { encomiendasService } from "@/services/encomiendasService";
+import RegistrarEncomiendaDialog from "@/components/encomiendas/RegistrarEncomiendaDialog.vue";
+import DetalleEncomiendaDialog from "@/components/encomiendas/DetalleEncomiendaDialog.vue";
+import EntregarEncomiendaDialog from "@/components/encomiendas/EntregarEncomiendaDialog.vue";
+import BuscadorEncomiendas from "@/components/encomiendas/BuscadorEncomiendas.vue";
 
-import Card from "primevue/card";
 import Button from "primevue/button";
-import Dialog from "primevue/dialog";
 import Select from "primevue/select";
-import InputText from "primevue/inputtext";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Paginator from "primevue/paginator";
 
 const auth = useAuthStore();
-const { encomiendas, loading, error, cargar, registrar, entregar, obtenerDetalle, pag } = useEncomiendas();
+const { encomiendas, loading, error, cargar, registrar, entregar, pag } =
+  useEncomiendas();
 
 const mostrarFormulario = ref(false);
-const mostrarEntrega = ref(false);
 const mostrarDetalle = ref(false);
+const encomiendaDetalleId = ref(null);
+const mostrarEntrega = ref(false);
 const encomiendaEntregando = ref(null);
-const encomiendaDetalle = ref(null);
-const cargandoDetalle = ref(false);
-
-const nombreRetira = ref("");
-const rutRetira = ref("");
 const loadingForm = ref(false);
-const loadingUnidades = ref(false);
 const errorGeneral = ref("");
-const mensajeExito = ref("");
-const errores = ref({});
-const unidades = ref([]);
+const loadingEntrega = ref(false);
+const errorEntrega = ref("");
+
+const indiceExpandido = ref(-1);
 const filtroEstado = ref("PENDIENTE");
+const filtroBusqueda = ref({ casa: "", nombre: "" });
+const filtroAcceso = ref("");
+const accesos = ref([]);
+const busquedaVisible = ref(false);
 
-const form = ref({ unidadId: null, tipo: null, nombreDestinatario: "" });
+const encomiendasFiltradas = computed(() => {
+  if (!filtroAcceso.value) return encomiendas.value;
+  return (encomiendas.value || []).filter(
+    (e) => e.accesoId === filtroAcceso.value,
+  );
+});
 
-const archivo = ref(null);
-const previewUrl = ref(null);
-const subiendo = ref(false);
+const opcionesAccesos = computed(() => [
+  { nombre: "Todas", id: "" },
+  ...accesos.value,
+]);
 
-const tiposEncomienda = [
-  { label: "Carta", value: "CARTA" },
-  { label: "Encomienda / Paquete", value: "ENCOMIENDA" },
+const filtros = [
+  { label: "Todas", value: "" },
+  { label: "Pendientes", value: "PENDIENTE" },
+  { label: "Entregadas", value: "ENTREGADA" },
 ];
 
-async function cargarUnidades() {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  loadingUnidades.value = true;
-  try {
-    const { data } = await unidadesService.getUnidades(cid);
-    unidades.value = data.filter((u) => u.tipo === "CASA");
-  } catch (e) {
-    console.error("Error al cargar unidades:", e);
-  } finally {
-    loadingUnidades.value = false;
-  }
+function cambiarFiltro() {
+  pag.reiniciar();
+  buscar();
 }
 
-function cambiarFiltro(estado) {
-  filtroEstado.value = estado;
-  pag.reiniciar();
-  const params = estado ? { estado } : {};
+function buscar() {
+  const params = {};
+  if (filtroEstado.value) params.estado = filtroEstado.value;
+  if (filtroBusqueda.value.casa)
+    params.unidadNumero = filtroBusqueda.value.casa;
+  if (filtroBusqueda.value.nombre)
+    params.destinatario = filtroBusqueda.value.nombre;
   cargar(params);
 }
 
-function validar() {
-  errores.value = {};
-  if (!form.value.unidadId) errores.value.unidadId = "Seleccione una casa";
-  if (!form.value.tipo) errores.value.tipo = "Seleccione un tipo";
-  if (!form.value.nombreDestinatario) errores.value.nombreDestinatario = "Campo obligatorio";
-  return Object.keys(errores.value).length === 0;
-}
-
-function onFileChange(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  archivo.value = file;
-  const reader = new FileReader();
-  reader.onload = (e) => { previewUrl.value = e.target.result; };
-  reader.readAsDataURL(file);
-}
-
-function quitarFoto() {
-  archivo.value = null;
-  previewUrl.value = null;
-}
-
-async function handleRegistrar() {
-  errorGeneral.value = "";
-  mensajeExito.value = "";
-  if (!validar()) return;
-  loadingForm.value = true;
-  const resultado = await registrar({ ...form.value }, archivo.value);
-  if (resultado === true) {
-    mensajeExito.value = "Encomienda registrada correctamente";
-    cancelar();
-    cargar({ estado: filtroEstado.value || undefined });
-  } else {
-    errorGeneral.value = typeof resultado === "string" ? resultado : "Error al registrar";
+function toggleBusqueda() {
+  busquedaVisible.value = !busquedaVisible.value;
+  if (!busquedaVisible.value) {
+    filtroBusqueda.value = { casa: "", nombre: "" };
+    buscarDesdeBuscador();
   }
-  loadingForm.value = false;
+}
+
+function buscarDesdeBuscador() {
+  pag.reiniciar();
+  buscar();
+}
+
+function toggleExpand(idx) {
+  indiceExpandido.value = indiceExpandido.value === idx ? -1 : idx;
+}
+
+function abrirDetalle(e) {
+  encomiendaDetalleId.value = e.id;
+  mostrarDetalle.value = true;
 }
 
 function abrirEntrega(e) {
   encomiendaEntregando.value = e;
-  nombreRetira.value = "";
-  rutRetira.value = "";
+  errorEntrega.value = "";
   mostrarEntrega.value = true;
 }
 
-async function handleEntregar() {
-  if (!nombreRetira.value || !rutRetira.value) return;
-  const resultado = await entregar(encomiendaEntregando.value, nombreRetira.value, rutRetira.value);
+async function handleRegistrar({ formData, archivo }) {
+  errorGeneral.value = "";
+  loadingForm.value = true;
+  const resultado = await registrar(formData, archivo);
+  if (resultado === true) {
+    mostrarFormulario.value = false;
+    buscar();
+  } else {
+    errorGeneral.value =
+      typeof resultado === "string" ? resultado : "Error al registrar";
+  }
+  loadingForm.value = false;
+}
+
+async function handleEntregar({ nombreRetira, rutRetira }) {
+  if (!encomiendaEntregando.value) return;
+  loadingEntrega.value = true;
+  errorEntrega.value = "";
+  const resultado = await entregar(
+    encomiendaEntregando.value,
+    nombreRetira,
+    rutRetira,
+  );
   if (resultado === true) {
     mostrarEntrega.value = false;
     encomiendaEntregando.value = null;
+  } else {
+    errorEntrega.value =
+      typeof resultado === "string" ? resultado : "Error al registrar entrega";
   }
+  loadingEntrega.value = false;
 }
-
-async function abrirDetalle(e) {
-  cargandoDetalle.value = true;
-  mostrarDetalle.value = true;
-  encomiendaDetalle.value = await obtenerDetalle(e.id);
-  cargandoDetalle.value = false;
-}
-
-function cancelar() {
-  mostrarFormulario.value = false;
-  form.value = { unidadId: null, tipo: null, nombreDestinatario: "" };
-  errores.value = {};
-  quitarFoto();
-}
-
-const filtros = [
-  { label: "Pendientes", value: "PENDIENTE" },
-  { label: "Entregadas", value: "ENTREGADA" },
-  { label: "Todas", value: "" },
-];
 
 function formatFecha(fecha) {
   if (!fecha) return "";
   return new Date(fecha).toLocaleDateString("es-CL", {
-    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
-onMounted(() => { cargarUnidades(); cargar({ estado: "PENDIENTE" }); });
+function estadoLabel(e) {
+  const labels = { PENDIENTE: "Pendiente", ENTREGADA: "Entregada" };
+  return labels[e] || e;
+}
+
+function estadoSeverity(e) {
+  return e === "PENDIENTE" ? "warn" : "success";
+}
+
+function tipoLabel(t) {
+  const labels = { CARTA: "Carta", ENCOMIENDA: "Encomienda" };
+  return labels[t] || t;
+}
+
+function infoCompacta(e) {
+  const partes = [];
+  if (e.unidadNumero) partes.push(`Casa ${e.unidadNumero}`);
+  if (e.nombreDestinatario) partes.push(e.nombreDestinatario);
+  return partes.join(" · ");
+}
+
+onMounted(async () => {
+  cargar({ estado: "PENDIENTE" });
+  try {
+    const cid = auth.condominioActualId;
+    if (cid) {
+      const { data } = await encomiendasService.getAccesosEncomiendas(cid);
+      accesos.value = (data || []).filter((a) => a.activo);
+    }
+  } catch (e) {
+    console.error("Error al cargar accesos:", e);
+  }
+});
 </script>
 
 <template>
   <div class="p-4 flex flex-col gap-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-bold m-0">Encomiendas</h1>
-      <Button label="Registrar" icon="pi pi-plus" size="small" @click="mostrarFormulario = !mostrarFormulario" />
+      <Button
+        label="Registrar"
+        icon="pi pi-plus"
+        size="small"
+        @click="mostrarFormulario = !mostrarFormulario"
+      />
     </div>
-
-    <Dialog v-model:visible="mostrarFormulario" header="Nueva encomienda" modal :style="{ width: '95%', maxWidth: '400px' }">
-      <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-semibold">Casa destino *</label>
-          <Skeleton v-if="loadingUnidades" width="100%" height="2.5rem" />
-          <Select v-else v-model="form.unidadId" :options="unidades" optionLabel="label" optionValue="id" placeholder="Seleccione una casa" :class="{ 'p-invalid': errores.unidadId }" class="w-full">
-            <template #option="slotProps">
-              <span>Casa {{ slotProps.option.numero }} — {{ slotProps.option.sectorNombre }}</span>
-            </template>
-          </Select>
-          <small v-if="errores.unidadId" class="text-red-500">{{ errores.unidadId }}</small>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-semibold">Tipo *</label>
-          <Select v-model="form.tipo" :options="tiposEncomienda" optionLabel="label" optionValue="value" placeholder="Seleccione tipo" :class="{ 'p-invalid': errores.tipo }" class="w-full" />
-          <small v-if="errores.tipo" class="text-red-500">{{ errores.tipo }}</small>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-semibold">Nombre destinatario *</label>
-          <InputText v-model="form.nombreDestinatario" placeholder="Nombre del destinatario" :class="{ 'p-invalid': errores.nombreDestinatario }" />
-          <small v-if="errores.nombreDestinatario" class="text-red-500">{{ errores.nombreDestinatario }}</small>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-semibold">Fotografía (opcional)</label>
-          <div v-if="!previewUrl" class="flex gap-2">
-            <Button label="Tomar foto" icon="pi pi-camera" size="small" severity="secondary" variant="outlined" @click="$refs.fileInput.click()" />
-            <Button label="Seleccionar" icon="pi pi-image" size="small" severity="secondary" variant="outlined" @click="$refs.fileInput.click()" />
-          </div>
-          <div v-else class="relative">
-            <img :src="previewUrl" alt="Preview" class="w-full h-40 object-cover border-round" />
-            <Button icon="pi pi-times" severity="danger" text rounded size="small" class="absolute top-1 right-1" @click="quitarFoto" />
-          </div>
-          <input ref="fileInput" type="file" accept="image/*" capture="environment" class="hidden" @change="onFileChange" />
-        </div>
-
-        <Message v-if="errorGeneral" severity="error" :closable="false">{{ errorGeneral }}</Message>
-        <Message v-if="mensajeExito" severity="success" :closable="false">{{ mensajeExito }}</Message>
+    <div class="flex items-end gap-2">
+      <div class="flex flex-col gap-1 flex-1 min-w-0 sm:w-40">
+        <label class="text-sm font-semibold">Estado</label>
+        <Select
+          v-model="filtroEstado"
+          :options="filtros"
+          optionLabel="label"
+          optionValue="value"
+          size="small"
+          class="w-full"
+          @change="cambiarFiltro"
+        />
       </div>
-      <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="cancelar" />
-        <Button label="Registrar" :loading="loadingForm" @click="handleRegistrar" />
-      </template>
-    </Dialog>
-
-    <div class="flex gap-2">
-      <Button v-for="f in filtros" :key="f.value" :label="f.label" size="small" :severity="filtroEstado === f.value ? 'primary' : 'secondary'" variant="outlined" @click="cambiarFiltro(f.value)" />
+      <div
+        v-if="accesos.length > 1"
+        class="flex flex-col gap-1 min-w-0 sm:w-44"
+      >
+        <label class="text-sm font-semibold">Punto de recepción</label>
+        <Select
+          v-model="filtroAcceso"
+          :options="opcionesAccesos"
+          optionLabel="nombre"
+          optionValue="id"
+          size="small"
+          class="w-full"
+        />
+      </div>
+      <Button
+        icon="pi pi-search"
+        size="small"
+        :severity="busquedaVisible ? 'primary' : 'secondary'"
+        variant="outlined"
+        class="rounded-lg shrink-0"
+        aria-label="Buscar"
+        :aria-pressed="busquedaVisible"
+        @click="toggleBusqueda"
+      />
     </div>
 
-    <Message v-if="error" severity="warn" :closable="false">{{ error }}</Message>
+    <BuscadorEncomiendas
+      v-if="busquedaVisible"
+      v-model:casa="filtroBusqueda.casa"
+      v-model:nombre="filtroBusqueda.nombre"
+      @buscar="buscarDesdeBuscador"
+    />
+
+    <Message v-if="error" severity="warn" :closable="false">{{
+      error
+    }}</Message>
 
     <Skeleton v-if="loading" width="100%" height="300px" />
 
-    <div v-else-if="!encomiendas.length" class="text-center text-surface-400 py-8">
+    <div
+      v-else-if="!encomiendasFiltradas.length"
+      class="text-center text-text-muted py-8"
+    >
       <i class="pi pi-box text-4xl block mb-2"></i>
       <span>No hay encomiendas</span>
     </div>
 
-    <div v-else class="flex flex-col gap-2">
-      <Card v-for="e in encomiendas" :key="e.id" class="cursor-pointer" @click="abrirDetalle(e)">
-        <template #content>
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex-1 min-w-0">
-              <p class="font-bold m-0">Casa {{ e.unidadNumero }}</p>
-              <p class="text-sm m-0">
-                <Tag :value="e.tipo" size="small" class="mr-1" />
-                {{ e.nombreDestinatario }}
-              </p>
-              <p class="text-xs text-surface-400 m-0">{{ e.creadoPorNombre }}</p>
-              <p class="text-xs text-surface-300 m-0">{{ formatFecha(e.creadoEn) }}</p>
-            </div>
-            <div class="flex flex-col items-end gap-2 shrink-0">
-              <Tag :value="e.estado === 'PENDIENTE' ? 'Pendiente' : 'Entregada'" :severity="e.estado === 'PENDIENTE' ? 'warn' : 'success'" size="small" />
-              <Button v-if="e.estado === 'PENDIENTE'" label="Entregar" size="small" severity="secondary" variant="outlined" @click.stop="abrirEntrega(e)" />
-            </div>
+    <div v-else class="flex flex-col gap-1">
+      <div v-for="(e, idx) in encomiendasFiltradas" :key="e.id">
+        <div
+          class="flex items-center justify-between gap-2 p-3 border rounded-lg cursor-pointer transition-colors select-none"
+          :class="
+            indiceExpandido === idx
+              ? 'border-border bg-background rounded-b-none'
+              : 'border-border-secondary bg-surface/90 hover:bg-background/95'
+          "
+          @click="toggleExpand(idx)"
+        >
+          <div
+            class="flex items-center gap-1 text-xs min-w-0 flex-1 overflow-hidden"
+          >
+            <span class="text-text font-semibold whitespace-nowrap">{{
+              infoCompacta(e)
+            }}</span>
+            <span class="text-text-muted hidden sm:inline truncate min-w-0"
+              >· {{ tipoLabel(e.tipo) }}</span
+            >
           </div>
-        </template>
-      </Card>
+          <div class="flex items-center gap-2 shrink-0">
+            <Tag
+              :value="tipoLabel(e.tipo)"
+              size="small"
+              class="hidden sm:inline-flex"
+            />
+            <Tag
+              v-if="e.accesoNombre"
+              :value="e.accesoNombre"
+              severity="info"
+              size="small"
+            />
+            <Tag
+              :value="estadoLabel(e.estado)"
+              :severity="estadoSeverity(e.estado)"
+              size="small"
+            />
+            <i
+              :class="
+                indiceExpandido === idx
+                  ? 'pi pi-chevron-up'
+                  : 'pi pi-chevron-down'
+              "
+              class="text-xs"
+            />
+          </div>
+        </div>
+
+        <div
+          v-if="indiceExpandido === idx"
+          class="border border-t-0 border-primary rounded-b-lg p-3 bg-surface"
+        >
+          <div class="flex flex-col gap-2 text-sm">
+            <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+              <span class="text-text-muted">Tipo:</span>
+              <span class="font-medium">{{ tipoLabel(e.tipo) }}</span>
+
+              <span class="text-text-muted">Destinatario:</span>
+              <span class="font-medium">{{ e.nombreDestinatario }}</span>
+
+              <span class="text-text-muted">Casa:</span>
+              <span class="font-medium">{{ e.unidadNumero }}</span>
+
+              <span v-if="e.accesoNombre" class="text-text-muted"
+                >Recepción:</span
+              >
+              <span v-if="e.accesoNombre">{{ e.accesoNombre }}</span>
+
+              <span class="text-text-muted">Recibida:</span>
+              <span>{{ formatFecha(e.creadoEn) }}</span>
+
+              <span class="text-text-muted">Registró:</span>
+              <span>{{ e.creadoPorNombre }}</span>
+
+              <span v-if="e.nombreRetira" class="text-text-muted"
+                >Retirada por:</span
+              >
+              <span v-if="e.nombreRetira">
+                {{ e.nombreRetira }}
+                <span v-if="e.rutRetira">({{ e.rutRetira }})</span>
+              </span>
+            </div>
+
+            <p v-if="e.observaciones" class="m-0">
+              <span class="text-text-muted">Observaciones:</span>
+              {{ e.observaciones }}
+            </p>
+          </div>
+
+          <div class="flex gap-2 mt-3">
+            <Button
+              v-if="e.estado === 'PENDIENTE'"
+              label="Entregar"
+              icon="pi pi-check"
+              severity="success"
+              size="small"
+              @click.stop="abrirEntrega(e)"
+            />
+            <Button
+              label="Ver detalle completo"
+              icon="pi pi-search"
+              severity="secondary"
+              size="small"
+              variant="outlined"
+              @click.stop="abrirDetalle(e)"
+            />
+          </div>
+        </div>
+      </div>
+
       <Paginator
         :rows="pag.tamano.value"
         :totalRecords="pag.totalElementos.value"
         :first="pag.pagina.value * pag.tamano.value"
-        @page="pag.alCambiarPagina($event); cargar({ estado: filtroEstado.value || undefined })"
+        @page="
+          pag.alCambiarPagina($event);
+          buscar();
+        "
+        class="sticky bottom-0 mt-2 bg-surface z-10"
       />
     </div>
 
-    <Dialog v-model:visible="mostrarDetalle" :header="encomiendaDetalle ? `Encomienda — Casa ${encomiendaDetalle.unidadNumero}` : 'Detalle'" modal :style="{ width: '95%', maxWidth: '500px' }">
-      <Skeleton v-if="cargandoDetalle" width="100%" height="300px" />
-      <div v-else-if="encomiendaDetalle" class="flex flex-col gap-3">
-        <div v-if="encomiendaDetalle.imagenUrl" class="w-full">
-          <img :src="encomiendaDetalle.imagenUrl" alt="Foto encomienda" class="w-full h-64 object-cover border-round" @click="$refs.imgModal?.show()" />
-        </div>
-        <div v-else class="flex flex-col items-center py-4 text-surface-400">
-          <i class="pi pi-camera text-3xl mb-1"></i>
-          <span class="text-sm">Sin fotografía</span>
-        </div>
-        <div class="grid grid-cols-2 gap-2 text-sm">
-          <span class="text-surface-500">Tipo:</span><span class="font-medium">{{ encomiendaDetalle.tipo }}</span>
-          <span class="text-surface-500">Destinatario:</span><span class="font-medium">{{ encomiendaDetalle.nombreDestinatario }}</span>
-          <span class="text-surface-500">Estado:</span><Tag :value="encomiendaDetalle.estado" :severity="encomiendaDetalle.estado === 'PENDIENTE' ? 'warn' : 'success'" size="small" />
-          <span class="text-surface-500">Recibida:</span><span>{{ formatFecha(encomiendaDetalle.creadoEn) }}</span>
-          <span v-if="encomiendaDetalle.nombreRetira" class="text-surface-500">Retirada por:</span>
-          <span v-if="encomiendaDetalle.nombreRetira">{{ encomiendaDetalle.nombreRetira }} {{ encomiendaDetalle.rutRetira ? `(${encomiendaDetalle.rutRetira})` : '' }}</span>
-        </div>
-        <div v-if="encomiendaDetalle.historial?.length" class="border-t border-surface-200 pt-2">
-          <p class="text-sm font-semibold mb-2">Historial</p>
-          <div v-for="h in encomiendaDetalle.historial" :key="h.id" class="flex items-center gap-2 text-xs text-surface-500 mb-1">
-            <i class="pi pi-circle-fill text-primary" style="font-size: 0.4rem" />
-            <span class="font-medium">{{ h.tipoEvento }}</span>
-            <span>— {{ h.realizadoPorNombre }}</span>
-            <span class="text-surface-300">{{ formatFecha(h.realizadoEn) }}</span>
-          </div>
-        </div>
-      </div>
-    </Dialog>
+    <RegistrarEncomiendaDialog
+      v-model:visible="mostrarFormulario"
+      :loading="loadingForm"
+      :error="errorGeneral"
+      @register="handleRegistrar"
+    />
 
-    <Dialog v-model:visible="mostrarEntrega" header="Entregar encomienda" modal :style="{ width: '95%', maxWidth: '400px' }">
-      <div class="flex flex-col gap-3">
-        <p class="text-sm text-surface-500 m-0">
-          Entregando encomienda de <strong>{{ encomiendaEntregando?.nombreDestinatario }}</strong> — Casa {{ encomiendaEntregando?.unidadNumero }}
-        </p>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-semibold">Nombre de quien retira *</label>
-          <InputText v-model="nombreRetira" placeholder="Nombre completo" />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-semibold">RUT de quien retira *</label>
-          <InputText v-model="rutRetira" placeholder="12.345.678-9" />
-        </div>
-      </div>
-      <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="mostrarEntrega = false" />
-        <Button label="Confirmar entrega" :loading="loading" :disabled="!nombreRetira || !rutRetira" @click="handleEntregar" />
-      </template>
-    </Dialog>
+    <DetalleEncomiendaDialog
+      v-model:visible="mostrarDetalle"
+      :encomiendaId="encomiendaDetalleId"
+    />
+
+    <EntregarEncomiendaDialog
+      v-model:visible="mostrarEntrega"
+      :encomienda="encomiendaEntregando"
+      :loading="loadingEntrega"
+      :error="errorEntrega"
+      @confirm="handleEntregar"
+    />
   </div>
 </template>
-
-<style scoped>
-.hidden { display: none; }
-</style>

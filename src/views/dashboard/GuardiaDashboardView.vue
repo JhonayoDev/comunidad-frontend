@@ -4,23 +4,24 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useTurno } from "@/composables/useTurno";
 import { useDashboardGuardia } from "@/composables/useDashboardGuardia";
+import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
 import TarjetaAccesosActivos from "@/components/stats/TarjetaAccesosActivos.vue";
+import TarjetaEncomiendasPendientes from "@/components/stats/TarjetaEncomiendasPendientes.vue";
 import ChecklistDialog from "@/components/bitacora/ChecklistDialog.vue";
 
 import Card from "primevue/card";
-import Tag from "primevue/tag";
 import Badge from "primevue/badge";
-import Button from "primevue/button";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import TurnoCard from "@/components/bitacora/TurnoCard.vue";
 import NovedadDialog from "@/components/bitacora/NovedadDialog.vue";
 import BuscadorPatenteCard from "@/components/visitas/BuscadorPatenteCard.vue";
+import AccesoRapidoCard from "@/components/quickaccess/AccesoRapidoCard.vue";
+import { ACCESO_RAPIDO_GUARDIA } from "@/config/navegacionAccesoRapido";
 
 const router = useRouter();
 const auth = useAuthStore();
 const showNovedadDialog = ref(false);
-
 
 const {
   turno,
@@ -43,13 +44,14 @@ const {
 
 const {
   dashboard,
-  encomiendas,
   autorizaciones,
   loading,
   error,
   cargarDashboard,
   severityEstado,
 } = useDashboardGuardia();
+
+const { estaVivo } = useMetricasTiempoReal();
 
 const mergedError = computed(() => turnoError.value || error.value);
 
@@ -80,6 +82,20 @@ onMounted(() => {
     </template>
 
     <template v-else-if="dashboard">
+      <!-- Estado de la conexión SSE: las tarjetas de métricas se alimentan en
+           vivo por el stream; si cae, los conteos quedan en el último valor
+           conocido. Solo si no se recupera en la gracia (1 min) se activa el
+           polling de respaldo a 2 min (no inunda de peticiones). -->
+      <div class="flex items-center gap-2 self-start">
+        <span
+          class="w-2.5 h-2.5 rounded-full"
+          :class="estaVivo ? 'bg-green-500' : 'bg-amber-500'"
+        ></span>
+        <span class="text-xs text-surface-500">
+          {{ estaVivo ? "Conexión en vivo" : "Reconectando…" }}
+        </span>
+      </div>
+
       <TurnoCard
         :turno="turno"
         :loading="turnoLoading"
@@ -92,23 +108,14 @@ onMounted(() => {
 
       <!-- Stats grid -->
       <div class="grid grid-cols-2 gap-3">
-        <TarjetaAccesosActivos @click="router.push({ name: 'Visitas' })" />
-        <Card
-          class="cursor-pointer hover:surface-hover transition-shadow"
+        <TarjetaAccesosActivos
+          :conteo-inicial="dashboard.accesos?.activosAhora ?? 0"
+          @click="router.push({ name: 'Visitas' })"
+        />
+        <TarjetaEncomiendasPendientes
+          :conteo-inicial="dashboard.encomiendas || 0"
           @click="router.push({ name: 'Encomiendas' })"
-        >
-          <template #content>
-            <div class="text-center">
-              <p
-                class="text-3xl font-bold m-0"
-                style="color: var(--p-primary-400)"
-              >
-                {{ dashboard.encomiendas || encomiendas.length || 0 }}
-              </p>
-              <p class="text-xs text-surface-500 m-0 mt-1">Encomiendas</p>
-            </div>
-          </template>
-        </Card>
+        />
         <Card>
           <template #content>
             <div class="text-center">
@@ -169,43 +176,6 @@ onMounted(() => {
         </template>
       </Card>
 
-      <!-- Encomiendas pendientes -->
-      <Card
-        v-if="encomiendas.length > 0"
-        class="cursor-pointer hover:surface-hover transition-shadow"
-        @click="router.push({ name: 'Encomiendas' })"
-      >
-        <template #title>
-          <div class="flex items-center justify-between">
-            <span>Encomiendas pendientes</span>
-            <Badge :value="encomiendas.length" severity="warn" />
-          </div>
-        </template>
-        <template #content>
-          <div class="flex flex-col gap-2">
-            <div
-              v-for="env in encomiendas.slice(0, 4)"
-              :key="env.id"
-              class="flex items-center justify-between p-2 border-round hover:bg-emphasis"
-            >
-              <div class="flex items-center gap-3">
-                <i class="pi pi-inbox text-lg text-primary"></i>
-                <div>
-                  <p class="text-sm font-medium m-0">
-                    {{ env.descripcion || env.receptorNombre }}
-                  </p>
-                  <p class="text-xs text-surface-500 m-0">
-                    Casa {{ env.unidadNumero }} ·
-                    {{ formatearFecha(env.fechaIngreso || env.fechaRecepcion) }}
-                  </p>
-                </div>
-              </div>
-              <Tag value="Pendiente" severity="warn" />
-            </div>
-          </div>
-        </template>
-      </Card>
-
       <!-- Autorizaciones pendientes -->
       <Card
         v-if="autorizaciones.length > 0"
@@ -251,55 +221,7 @@ onMounted(() => {
       </Card>
 
       <!-- Acceso rápido -->
-      <Card>
-        <template #title>Acceso rápido</template>
-        <template #content>
-          <div class="grid grid-cols-3 gap-2">
-            <Button
-              label="Registrar visita"
-              icon="pi pi-user-plus"
-              severity="primary"
-              @click="router.push({ name: 'RegistrarVisita' })"
-            />
-
-            <Button
-              label="Accesos activos"
-              icon="pi pi-shield"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Visitas' })"
-            />
-            <Button
-              label="Encomiendas"
-              icon="pi pi-box"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Encomiendas' })"
-            />
-            <Button
-              label="Autorizaciones"
-              icon="pi pi-verified"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Autorizaciones' })"
-            />
-            <Button
-              label="Bitácora"
-              icon="pi pi-book"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Bitacora' })"
-            />
-            <Button
-              label="Solicitudes"
-              icon="pi pi-pencil"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Solicitudes' })"
-            />
-          </div>
-        </template>
-      </Card>
+      <AccesoRapidoCard :items="ACCESO_RAPIDO_GUARDIA" />
 
       <NovedadDialog
         v-model:visible="showNovedadDialog"

@@ -310,7 +310,15 @@ const routes = [
       {
         path: "solicitudes",
         name: "Solicitudes",
-        component: () => import("../views/guardia/SolicitudesView.vue"),
+        component: () => import("../views/common/EnConstruccionView.vue"),
+        props: { modulo: "Solicitudes" },
+        meta: { roles: ["GUARDIA"] },
+      },
+      {
+        path: "escanear",
+        name: "Escanear",
+        component: () => import("../views/common/EnConstruccionView.vue"),
+        props: { modulo: "Escanear" },
         meta: { roles: ["GUARDIA"] },
       },
       {

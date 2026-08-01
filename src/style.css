@@ -43,14 +43,76 @@ body {
       --p-button-primary-hover-color: var(--p-button-primary-color);
     }
 
-    /* Forzamos que :focus, :focus-visible, :active y :hover mantengan el color base */
-    .p-button:not(.btn-no-bg):not(:disabled):hover,
-    .p-button:not(.btn-no-bg):not(:disabled):focus,
-    .p-button:not(.btn-no-bg):not(:disabled):focus-visible,
-    .p-button:not(.btn-no-bg):not(:disabled):active {
+    /* Los botones outlined mantienen su look al hover en táctil;
+       el active muestra el tinte de presión del tema */
+    .p-button-outlined:not(.btn-no-bg) {
+      --p-button-outlined-primary-hover-background: transparent;
+      --p-button-outlined-primary-hover-border-color: var(
+        --p-button-outlined-primary-border-color
+      );
+      --p-button-outlined-primary-hover-color: var(
+        --p-button-outlined-primary-color
+      );
+      --p-button-outlined-secondary-hover-background: transparent;
+      --p-button-outlined-secondary-hover-border-color: var(
+        --p-button-outlined-secondary-border-color
+      );
+      --p-button-outlined-secondary-hover-color: var(
+        --p-button-outlined-secondary-color
+      );
+    }
+
+    /* Botones text: hover neutro en táctil; active muestra tinte de presión */
+    .p-button-text:not(.btn-no-bg) {
+      --p-button-text-primary-hover-background: transparent;
+      --p-button-text-primary-active-background: color-mix(
+        in srgb,
+        var(--p-primary-hover-color) 12%,
+        transparent
+      );
+      --p-button-text-secondary-hover-background: transparent;
+      --p-button-text-secondary-active-background: color-mix(
+        in srgb,
+        var(--p-primary-text-secondary) 12%,
+        transparent
+      );
+      --p-button-text-danger-hover-background: transparent;
+      --p-button-text-danger-active-background: color-mix(
+        in srgb,
+        var(--p-danger-500) 12%,
+        transparent
+      );
+    }
+
+    /* Forzamos que :focus, :focus-visible y :hover mantengan el look base */
+    .p-button:not(.btn-no-bg):not(.p-button-outlined):not(.p-button-text):not(:disabled):hover,
+    .p-button:not(.btn-no-bg):not(.p-button-outlined):not(.p-button-text):not(:disabled):focus,
+    .p-button:not(.btn-no-bg):not(.p-button-outlined):not(.p-button-text):not(:disabled):focus-visible {
       background-color: var(--p-button-primary-background) !important;
       border-color: var(--p-button-primary-border-color) !important;
-      color: var(--p-primary-text-principal) !important;
+      color: var(--p-button-primary-color) !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    /* El :active (presión) sí cambia: tinte del tema para feedback visible */
+    .p-button:not(.btn-no-bg):not(.p-button-outlined):not(.p-button-text):not(:disabled):active {
+      background-color: var(--p-button-primary-active-background) !important;
+      border-color: var(--p-button-primary-active-border-color) !important;
+      color: var(--p-button-primary-active-color) !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    /* outlined y text tampoco muestran outline/shadow al tocar */
+    .p-button-outlined:not(.btn-no-bg):not(:disabled):hover,
+    .p-button-outlined:not(.btn-no-bg):not(:disabled):focus,
+    .p-button-outlined:not(.btn-no-bg):not(:disabled):focus-visible,
+    .p-button-outlined:not(.btn-no-bg):not(:disabled):active,
+    .p-button-text:not(.btn-no-bg):not(:disabled):hover,
+    .p-button-text:not(.btn-no-bg):not(:disabled):focus,
+    .p-button-text:not(.btn-no-bg):not(:disabled):focus-visible,
+    .p-button-text:not(.btn-no-bg):not(:disabled):active {
       box-shadow: none !important;
       outline: none !important;
     }
@@ -88,7 +150,7 @@ body {
     cursor: pointer;
   }
 
-  .p-button:not(.btn-no-bg):not(:disabled):hover {
+  .p-button:not(.btn-no-bg):not(.p-button-outlined):not(.p-button-text):not(:disabled):hover {
     background-color: var(--p-button-primary-hover-background) !important;
     border-color: var(--p-button-primary-hover-border-color) !important;
     color: var(--p-primary-text-principal) !important;

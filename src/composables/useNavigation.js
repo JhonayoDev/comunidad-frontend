@@ -207,5 +207,12 @@ export function useNavigation() {
     router.push({ name: auth.contextDashboard });
   }
 
-  return { navItems, groupedNavItems, currentRoute, goTo, switchContext };
+  return {
+    navItems,
+    groupedNavItems,
+    currentRoute,
+    puedeAcceder,
+    goTo,
+    switchContext,
+  };
 }

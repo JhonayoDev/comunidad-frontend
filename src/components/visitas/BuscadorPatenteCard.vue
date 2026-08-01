@@ -39,19 +39,12 @@ const {
   buscarMas,
   tipoLabel,
   tipoSeverity,
+  extraerPatenteDeResultado,
+  tieneAccesoActivo,
+  getTipoVisita,
+  getUltimoTipo,
+  getTagInfo,
 } = useBusquedaPatente();
-
-function extraerPatenteDeSubtitulo(res) {
-  if (!res) return patente.value;
-  const m = res.subtitulo?.match(/Coincidencia parcial:\s*(\S+)/);
-  return m ? m[1] : patente.value;
-}
-
-function extraerPatenteDeResultado(res) {
-  if (!res) return patente.value;
-  const m = res.subtitulo?.match(/Coincidencia parcial:\s*(\S+)/);
-  return m ? m[1] : patente.value;
-}
 
 function infoCompacta(res) {
   if (!res) return "";
@@ -62,12 +55,14 @@ function infoCompacta(res) {
 }
 
 function irARegistrarIngreso(res) {
-  const query = { patente: extraerPatenteDeSubtitulo(res) };
+  const query = { patente: extraerPatenteDeResultado(res) };
   query.nombre = res.titulo;
   if (res.tipoResultado === "PREAUTORIZACION" && res.referenciaId) {
     query.autorizacionId = res.referenciaId;
   }
   if (res.unidadNumero) query.unidad = res.unidadNumero;
+  const ultimoTipo = getUltimoTipo(res);
+  if (ultimoTipo) query.tipo = ultimoTipo;
   router.push({ name: "RegistrarVisita", query });
 }
 
@@ -76,7 +71,7 @@ function irANuevaVisita() {
 }
 
 function irAVerDetalle(res) {
-  const p = extraerPatenteDeSubtitulo(res);
+  const p = extraerPatenteDeResultado(res);
   router.push({
     name: "BusquedaDetalle",
     query: { patente: p, tipo: res.tipoResultado },
@@ -129,7 +124,7 @@ function onSalidaConfirmada(observacion) {
           v-model="patente"
           placeholder="Ej: AB1234"
           class="min-w-0 uppercase border-border"
-          maxlength="10"
+          maxlength="7"
           @keyup.enter="consultar"
           @input="onInputChange"
         />
@@ -172,11 +167,13 @@ function onSalidaConfirmada(observacion) {
       <template #title>
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <i :class="['pi', tipoInfo?.icon || 'pi-car', 'text-text/70']"></i>
+            <i
+              :class="['pi', getTagInfo(resultados[0]).icon, 'text-text/70']"
+            ></i>
             <span class="text-base text-text/95">Vehículo identificado</span>
             <Tag
-              :value="tipoLabel(resultados[0])"
-              :severity="tipoSeverity(resultados[0])"
+              :value="getTagInfo(resultados[0]).label"
+              :severity="getTagInfo(resultados[0]).severity"
               size="small"
             />
           </div>
@@ -205,6 +202,14 @@ function onSalidaConfirmada(observacion) {
             <span class="text-text-muted">Detalle: </span>
             {{ resultados[0].detalle }}
           </p>
+          <p v-if="getTipoVisita(resultados[0])" class="m-0">
+            <span class="text-text-muted">Tipo visita: </span>
+            {{ getTipoVisita(resultados[0]) }}
+          </p>
+          <p v-if="getUltimoTipo(resultados[0])" class="m-0">
+            <span class="text-text-muted">Tipo última visita: </span>
+            {{ getUltimoTipo(resultados[0]) }}
+          </p>
         </div>
         <div class="grid grid-cols-[1fr_auto] gap-2 mt-3">
           <Button
@@ -215,11 +220,11 @@ function onSalidaConfirmada(observacion) {
             @click="irARegistrarIngreso(resultados[0])"
           />
           <Button
-            v-if="accesoSalida"
+            v-if="tieneAccesoActivo(resultados[0])"
             label="Registrar salida"
             icon="pi pi-sign-out"
             severity="warn"
-            @click="abrirDialogSalida"
+            @click="abrirDialogSalida(resultados[0])"
           />
           <Button
             v-if="tieneAccion('NUEVA_VISITA', resultados[0])"
@@ -279,8 +284,8 @@ function onSalidaConfirmada(observacion) {
             >
           </div>
           <Tag
-            :value="tipoLabel(res)"
-            :severity="tipoSeverity(res)"
+            :value="getTagInfo(res).label"
+            :severity="getTagInfo(res).severity"
             size="small"
             class="shrink-0"
           />
@@ -310,6 +315,14 @@ function onSalidaConfirmada(observacion) {
             <p v-if="res.detalle" class="m-0">
               <span class="text-text-muted">Detalle: </span> {{ res.detalle }}
             </p>
+            <p v-if="getTipoVisita(res)" class="m-0">
+              <span class="text-text-muted">Tipo visita: </span>
+              {{ getTipoVisita(res) }}
+            </p>
+            <p v-if="getUltimoTipo(res)" class="m-0">
+              <span class="text-text-muted">Tipo última visita: </span>
+              {{ getUltimoTipo(res) }}
+            </p>
           </div>
           <div class="grid grid-cols-[1fr_auto] gap-2 mt-3">
             <Button
@@ -320,11 +333,11 @@ function onSalidaConfirmada(observacion) {
               @click="irARegistrarIngreso(res)"
             />
             <Button
-              v-if="accesoSalida"
+              v-if="tieneAccesoActivo(res)"
               label="Registrar salida"
               icon="pi pi-sign-out"
               severity="warn"
-              @click="abrirDialogSalida"
+              @click="abrirDialogSalida(res)"
             />
             <Button
               v-if="tieneAccion('VER_DETALLE', res)"
@@ -390,11 +403,11 @@ function onSalidaConfirmada(observacion) {
             @click="irANuevaVisita"
           />
           <Button
-            v-if="accesoSalida"
+            v-if="tieneAccesoActivo(resultados[0])"
             label="Registrar salida"
             icon="pi pi-sign-out"
             severity="warn"
-            @click="abrirDialogSalida"
+            @click="abrirDialogSalida(resultados[0])"
           />
         </div>
       </template>

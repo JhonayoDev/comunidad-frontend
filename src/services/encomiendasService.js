@@ -24,4 +24,8 @@ export const encomiendasService = {
   getMisEncomiendas(condominioId) {
     return api.get(`/condominios/${condominioId}/mis-encomiendas`);
   },
+
+  getAccesosEncomiendas(condominioId) {
+    return api.get(`/condominios/${condominioId}/encomiendas/accesos`);
+  },
 };

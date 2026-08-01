@@ -97,8 +97,8 @@ export default definePreset(Aura, {
          * focus, checkbox, links, etc.
          */
         primary: {
-          background: "#F4F4F7",
-          surface: "#FFFFFF",
+          background: "#FFFFFF",
+          surface: "#F4F4F7",
           backgroundInverse: "#222226",
           color: "#003366",
           border: "#004d99",
@@ -209,6 +209,23 @@ export default definePreset(Aura, {
    */
   components: {
     button: {
+      outlined: {
+        primary: {
+          color: "{primary.textPrincipal}",
+          borderColor: "{primary.border}",
+          hoverBackground: "color-mix(in srgb, {primary.color} 8%, transparent)",
+          activeBackground:
+            "color-mix(in srgb, {primary.color} 16%, transparent)",
+        },
+        secondary: {
+          color: "{primary.textSecondary}",
+          borderColor: "{primary.borderSecondary}",
+          hoverBackground:
+            "color-mix(in srgb, {primary.textSecondary} 8%, transparent)",
+          activeBackground:
+            "color-mix(in srgb, {primary.textSecondary} 16%, transparent)",
+        },
+      },
       text: {
         secondary: {
           hoverBackground: "transparent",

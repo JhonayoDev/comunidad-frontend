@@ -27,7 +27,7 @@ const form = ref({
   rutVisitante: "",
   telefonoVisitante: "",
   cantidadPersonas: 1,
-  tipo: null,
+  tipo: route.query.tipo || null,
   autorizacionId: route.query.autorizacionId || null,
   observacion: "",
 });

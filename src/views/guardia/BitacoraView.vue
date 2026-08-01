@@ -7,17 +7,16 @@ import { usePaginacion } from "@/composables/usePaginacion";
 import { useTurno } from "@/composables/useTurno";
 import TurnoCard from "@/components/bitacora/TurnoCard.vue";
 import EventoCard from "@/components/bitacora/EventoCard.vue";
+import NovedadDialog from "@/components/bitacora/NovedadDialog.vue";
 import FiltroFechas from "@/components/FiltroFechas.vue";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
-import Dialog from "primevue/dialog";
 import Select from "primevue/select";
-import Textarea from "primevue/textarea";
-import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Paginator from "primevue/paginator";
+import Dialog from "primevue/dialog";
 
 const auth = useAuthStore();
 const eventos = ref([]);
@@ -48,13 +47,6 @@ const tiposEvento = [
   { label: "Colación salida", value: "COLACION_SALIDA" },
   { label: "Colación regreso", value: "COLACION_REGRESO" },
 ];
-
-const nuevaNovedad = ref({
-  tipo: "NOVEDAD",
-  clasificacion: "NORMAL",
-  observaciones: "",
-  fotoUrl: "",
-});
 
 function formatearDateLocal(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -87,29 +79,23 @@ async function cargarEventos() {
   }
 }
 
-async function registrarNovedad() {
-  if (!nuevaNovedad.value.observaciones.trim()) return;
+async function handleNovedadRegister(data) {
   const cid = auth.condominioActualId;
   if (!cid) return;
   enviando.value = true;
+  error.value = "";
   try {
     await bitacoraService.registrarEvento(cid, {
-      tipo: nuevaNovedad.value.tipo,
-      clasificacion: nuevaNovedad.value.clasificacion,
-      observaciones: nuevaNovedad.value.observaciones,
-      fotoUrl: nuevaNovedad.value.fotoUrl || null,
+      tipo: data.tipo,
+      clasificacion: data.clasificacion,
+      observaciones: data.observaciones,
+      fotoUrl: data.fotoUrl || null,
     });
     showDialog.value = false;
-    nuevaNovedad.value = {
-      tipo: "NOVEDAD",
-      clasificacion: "NORMAL",
-      observaciones: "",
-      fotoUrl: "",
-    };
     await cargarEventos();
   } catch (e) {
     console.error("Error al registrar la novedad", e);
-    error.value = "Error al registrar la novedad";
+    error.value = e.response?.data?.message || "Error al registrar la novedad";
   } finally {
     enviando.value = false;
   }
@@ -217,55 +203,11 @@ onMounted(() => {
       />
     </template>
 
-    <Dialog
+    <NovedadDialog
       v-model:visible="showDialog"
-      header="Registrar novedad"
-      :modal="true"
-      class="w-full max-w-md"
-    >
-      <div class="flex flex-col gap-4">
-        <div class="flex flex-col gap-2">
-          <label class="text-sm font-medium">Clasificación</label>
-          <Select
-            v-model="nuevaNovedad.clasificacion"
-            :options="clasificaciones"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Selecciona clasificación"
-          />
-        </div>
-        <div class="flex flex-col gap-2">
-          <label class="text-sm font-medium">Descripción</label>
-          <Textarea
-            v-model="nuevaNovedad.observaciones"
-            rows="4"
-            placeholder="Describe la novedad..."
-            :autoResize="true"
-          />
-        </div>
-        <div class="flex flex-col gap-2">
-          <label class="text-sm font-medium">Foto (opcional)</label>
-          <InputText
-            v-model="nuevaNovedad.fotoUrl"
-            placeholder="URL de la foto"
-          />
-        </div>
-      </div>
-      <template #footer>
-        <Button
-          label="Cancelar"
-          severity="secondary"
-          variant="text"
-          @click="showDialog = false"
-        />
-        <Button
-          label="Registrar"
-          icon="pi pi-check"
-          :disabled="!nuevaNovedad.observaciones.trim()"
-          :loading="enviando"
-          @click="registrarNovedad"
-        />
-      </template>
-    </Dialog>
+      :loading="enviando"
+      :error="error"
+      @register="handleNovedadRegister"
+    />
   </div>
 </template>

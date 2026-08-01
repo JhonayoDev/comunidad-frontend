@@ -11,12 +11,11 @@ const props = defineProps({
 
 const emit = defineEmits(["click"]);
 
-// Conteo en vivo vía SSE (`visitasActivas`). Antes del primer evento se muestra
-// `conteoInicial` (sembrado desde el snapshot del dashboard) — no se fetchea
-// `GET /accesos/conteo-activos` solo para contar (mismas condiciones que la
-// tarjeta de encomiendas).
-const activos = computed(
-  () => metricas.visitasActivas ?? props.conteoInicial ?? 0,
+// Conteo en vivo vía SSE (`encomiendasPendientes`). Antes del primer evento,
+// se muestra `conteoInicial` (sembrado desde el snapshot del dashboard) — no se
+// fetchea la lista completa `GET /encomiendas/activas` solo para contar.
+const pendientes = computed(
+  () => metricas.encomiendasPendientes ?? props.conteoInicial ?? 0,
 );
 </script>
 
@@ -28,18 +27,21 @@ const activos = computed(
   >
     <template #content>
       <div class="text-center">
-        <p class="text-3xl font-bold m-0 text-green-600">
-          {{ activos }}
+        <p
+          class="text-3xl font-bold m-0"
+          style="color: var(--p-primary-400)"
+        >
+          {{ pendientes }}
         </p>
-        <p class="text-xs text-text/85 m-0 mt-1">Visitas</p>
+        <p class="text-xs text-surface-500 m-0 mt-1">Encomiendas</p>
       </div>
     </template>
   </Card>
 
   <Badge
     v-else
-    :value="activos"
-    severity="success"
+    :value="pendientes"
+    severity="warn"
     class="cursor-pointer"
     @click="emit('click')"
   />
