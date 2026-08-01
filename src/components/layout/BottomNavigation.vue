@@ -14,7 +14,7 @@
             severity="primary"
             rounded
             class="!w-12 !h-12 !p-0 shadow-lg transform transition-transform active:scale-95"
-            aria-label="Acción principal"
+            aria-label="Volver al inicio"
             @click="go(item)"
           />
           <span
