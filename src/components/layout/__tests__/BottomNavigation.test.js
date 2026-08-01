@@ -24,9 +24,9 @@ const ITEMS = [
   { label: "Visita", icon: "pi pi-user-plus", routeName: "RegistrarVisita" },
   { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
   {
-    label: "Escanear",
-    icon: "pi pi-qrcode",
-    routeName: "Escanear",
+    label: "Home",
+    icon: "pi pi-home",
+    routeName: "GuardiaDashboard",
     isCentralFab: true,
   },
   { label: "Autoriz.", icon: "pi pi-shield", routeName: "Autorizaciones" },

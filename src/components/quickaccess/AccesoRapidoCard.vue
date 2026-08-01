@@ -33,8 +33,8 @@ function go(item) {
           :key="item.routeName"
           :label="item.label"
           :icon="item.icon"
-          :severity="item.isCentralFab ? 'primary' : 'secondary'"
-          :variant="item.isCentralFab ? 'filled' : 'outlined'"
+          :severity="item.severity || (item.isCentralFab ? 'primary' : 'secondary')"
+          :variant="item.variant || (item.isCentralFab ? 'filled' : 'outlined')"
           @click="go(item)"
         />
       </div>

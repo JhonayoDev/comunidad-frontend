@@ -137,9 +137,11 @@ watch(
 .checklist-true {
   background: var(--p-green-500) !important;
   border-color: var(--p-green-500) !important;
+  color: #ffffff !important;
 }
 .checklist-false {
   background: var(--p-red-500) !important;
   border-color: var(--p-red-500) !important;
+  color: #ffffff !important;
 }
 </style>

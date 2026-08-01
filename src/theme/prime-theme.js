@@ -243,6 +243,40 @@ export default definePreset(Aura, {
         arrowOffset: "1.25rem",
       },
     },
+    dialog: {
+      root: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        borderColor:
+          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
+        color: "{primary.textPrincipal}",
+      },
+    },
+    confirmdialog: {
+      root: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        borderColor:
+          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
+        color: "{primary.textPrincipal}",
+      },
+    },
+    togglebutton: {
+      root: {
+        background: "color-mix(in srgb, {primary.surface} 75%, transparent)",
+        color: "{primary.textPrincipal}",
+        borderColor: "{primary.borderSecondary}",
+        hoverBackground:
+          "color-mix(in srgb, {primary.textSecondary} 8%, transparent)",
+        hoverColor: "{primary.textPrincipal}",
+        checkedBackground: "{primary.color}",
+        checkedBorderColor: "{primary.color}",
+        checkedColor: "#ffffff",
+      },
+      icon: {
+        color: "{primary.textSecondary}",
+        hoverColor: "{primary.textPrincipal}",
+        checkedColor: "#ffffff",
+      },
+    },
     select: {
       overlay: {
         background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
