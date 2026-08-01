@@ -141,6 +141,79 @@ body {
     color: var(--p-primary-text-principal) !important;
     opacity: 0.85 !important;
   }
+
+  /* --- 4. DRAWER: APERTURA/SALIDA SUAVE ---
+     PrimeVue anima el drawer con CSS animations (no transitions).
+     Usamos 0.3s (estándar Material para drawers: 250-300ms) y el easing
+     de Material cubic-bezier(0.4, 0, 0.2, 1) para que la salida no se
+     sienta cortada ni tosca (la curva por defecto de PrimeVue se
+     desacelera y 'corta'). */
+  .p-drawer-enter-active,
+  .p-drawer-leave-active,
+  .p-overlay-mask-enter-active,
+  .p-overlay-mask-leave-active {
+    animation-duration: 0.3s !important;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  /* Evita el rebote al cerrar: el .p-drawer trae una transition base de
+     transform 0.3s. Al acortar la animación de salida, Vue (getTransitionInfo)
+     compara duraciones y si la transition (0.3s) es mayor que la animación,
+     elige 'transition' como tipo esperado, no escucha el animationend, y al
+     terminar la animación el transform revierte al base deslizando el panel
+     de vuelta antes de desmontarlo. Con transition: none, Vue detecta
+     'animation' y desmonta exactamente al terminar la salida. */
+  .p-drawer {
+    transition: none !important;
+  }
+
+  /* --- 5. DRAWER: BLUR SOLO EN LO QUE NO TAPA EL DRAWER (MOBILE) ---
+     En mobile difuminamos únicamente la franja visible a la izquierda
+     (ancho del drawer: 20rem), no toda la pantalla: barato para la CPU.
+     En escritorio (>767px) no aplica blur. La máscara es flex
+     (justify-content: flex-end), así que ::before cubre left..right:20rem.
+     El blur entra y sale en sincronía con el drawer (antes quedaba "pegado"
+     a plena potencia y desaparecía de golpe al desmontar la máscara). */
+  @media (max-width: 767px) {
+    .drawer-mask-blur-mobile::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 20rem;
+      backdrop-filter: blur(4px);
+      pointer-events: none;
+    }
+
+    .drawer-mask-blur-mobile.p-overlay-mask-enter-active::before {
+      animation: p-drawer-blur-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .drawer-mask-blur-mobile.p-overlay-mask-leave-active::before {
+      animation: p-drawer-blur-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes p-drawer-blur-in {
+      from {
+        backdrop-filter: blur(0);
+      }
+    }
+
+    @keyframes p-drawer-blur-out {
+      to {
+        backdrop-filter: blur(0);
+      }
+    }
+  }
+
+  /* --- 6. DRAWER: ÍTEMS DE MENÚ CON COLOR DE TEXTO, NO AZUL ---
+     Los <Button variant="text"> del menú (Inicio, Portón, ...) usan por
+     defecto el color primario del tema (azul) como color de acción.
+     Dentro del drawer los queremos del color de texto normal. */
+  .p-drawer .p-button-text {
+    --p-button-text-primary-color: var(--p-primary-text-principal);
+  }
 }
 
 /* --- 3. SOLO PARA COMPUTADORAS CON RATÓN FÍSICO --- */

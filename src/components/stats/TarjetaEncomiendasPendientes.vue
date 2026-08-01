@@ -27,13 +27,10 @@ const pendientes = computed(
   >
     <template #content>
       <div class="text-center">
-        <p
-          class="text-3xl font-bold m-0"
-          style="color: var(--p-primary-400)"
-        >
+        <p class="text-3xl font-bold m-0" style="color: var(--p-primary-400)">
           {{ pendientes }}
         </p>
-        <p class="text-xs text-surface-500 m-0 mt-1">Encomiendas</p>
+        <p class="text-xs text-text/85 m-0 mt-1">Encomiendas</p>
       </div>
     </template>
   </Card>

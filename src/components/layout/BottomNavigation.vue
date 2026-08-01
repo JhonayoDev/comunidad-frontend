@@ -3,23 +3,23 @@
     v-if="visible"
     class="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 shadow-lg bg-surface/90 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]"
   >
-    <div class="flex items-center justify-around h-16 px-2 relative">
+    <div class="flex items-center justify-around h-12 px-2 relative">
       <template v-for="item in items" :key="item.routeName">
         <div
           v-if="item.isCentralFab"
-          class="relative -top-5 flex flex-col items-center"
+          class="relative -top-3.5 flex flex-col items-center"
         >
           <Button
             :icon="item.icon"
             severity="primary"
             rounded
-            class="!w-14 !h-14 !p-0 shadow-lg transform transition-transform active:scale-95"
-            aria-label="Acción principal"
+            class="!w-12 !h-12 !p-0 shadow-lg transform transition-transform active:scale-95"
+            aria-label="Volver al inicio"
             @click="go(item)"
           />
           <span
             v-if="item.label"
-            class="text-[10px] font-medium mt-1 text-text-muted"
+            class="text-[10px] font-medium mt-1.5 text-text-muted"
           >
             {{ item.label }}
           </span>

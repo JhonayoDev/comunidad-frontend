@@ -86,7 +86,7 @@ onMounted(() => {
            vivo por el stream; si cae, los conteos quedan en el último valor
            conocido. Solo si no se recupera en la gracia (1 min) se activa el
            polling de respaldo a 2 min (no inunda de peticiones). -->
-      <div class="flex items-center gap-2 self-start">
+      <!-- <div class="flex items-center gap-2 self-start">
         <span
           class="w-2.5 h-2.5 rounded-full"
           :class="estaVivo ? 'bg-green-500' : 'bg-amber-500'"
@@ -94,7 +94,7 @@ onMounted(() => {
         <span class="text-xs text-surface-500">
           {{ estaVivo ? "Conexión en vivo" : "Reconectando…" }}
         </span>
-      </div>
+      </div> -->
 
       <TurnoCard
         :turno="turno"
@@ -220,8 +220,9 @@ onMounted(() => {
         </template>
       </Card>
 
-      <!-- Acceso rápido -->
-      <AccesoRapidoCard :items="ACCESO_RAPIDO_GUARDIA" />
+      <!-- Acceso rápido 
+          comentado hasta saber si se usara-->
+      <!-- <AccesoRapidoCard :items="ACCESO_RAPIDO_GUARDIA" /> -->
 
       <NovedadDialog
         v-model:visible="showNovedadDialog"
