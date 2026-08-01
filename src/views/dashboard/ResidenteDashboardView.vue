@@ -86,7 +86,18 @@ onMounted(async () => {
     </Message>
 
     <template v-if="loading">
-      <Card><template #content><Skeleton width="100%" height="12rem" /></template></Card>
+      <Card
+        ><template #content><Skeleton width="100%" height="5rem" /></template
+      ></Card>
+      <Card
+        ><template #content><Skeleton width="100%" height="6rem" /></template
+      ></Card>
+      <Card
+        ><template #content><Skeleton width="100%" height="6rem" /></template
+      ></Card>
+      <Card
+        ><template #content><Skeleton width="100%" height="6rem" /></template
+      ></Card>
     </template>
 
     <template v-else-if="dashboard">
@@ -107,9 +118,10 @@ onMounted(async () => {
         v-for="unidad in dashboard.unidades"
         :key="unidad.id"
         v-show="unidad.id === unidadActiva"
+        class="flex flex-col gap-4"
       >
         <!-- Header -->
-        <Card class="mb-4">
+        <Card>
           <template #content>
             <div class="flex items-center justify-between">
               <div>
@@ -128,12 +140,12 @@ onMounted(async () => {
         </Card>
 
         <!-- Convivientes -->
-        <Card class="mb-4">
+        <Card>
           <template #title>
             <div class="flex items-center gap-2">
-              <i class="pi pi-users"></i>
+              <i class="pi pi-users" style="color: var(--p-primary-400)"></i>
               <span>Convivientes</span>
-              <Badge :value="unidad.personas?.length || 0" />
+              <Badge :value="unidad.personas?.length || 0" severity="warn" />
             </div>
           </template>
           <template #content>
@@ -143,38 +155,39 @@ onMounted(async () => {
             >
               Sin convivientes registrados
             </div>
-            <div
-              v-for="(p, i) in unidad.personas"
-              :key="p.id"
-              class="flex items-center justify-between py-2"
-              :class="{ 'border-t border-surface-200': i > 0 }"
-            >
-              <div class="flex items-center gap-3">
-                <Avatar
-                  :label="p.nombre.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)"
-                  size="small"
-                  shape="circle"
-                  class="font-bold text-sm"
-                  style="background: var(--p-primary-400); color: #fff"
+            <div class="flex flex-col gap-2">
+              <div
+                v-for="p in unidad.personas"
+                :key="p.id"
+                class="flex items-center justify-between p-2 border-round"
+              >
+                <div class="flex items-center gap-3">
+                  <Avatar
+                    :label="p.nombre.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)"
+                    size="small"
+                    shape="circle"
+                    class="font-bold text-sm"
+                    style="background: var(--p-primary-400); color: #fff"
+                  />
+                  <span class="text-sm font-medium">{{ p.nombre }}</span>
+                </div>
+                <Tag
+                  :value="tipoVinculo(p.tipo)"
+                  severity="info"
+                  class="text-xs"
                 />
-                <span class="text-sm font-medium">{{ p.nombre }}</span>
               </div>
-              <Tag
-                :value="tipoVinculo(p.tipo)"
-                severity="info"
-                class="text-xs"
-              />
             </div>
           </template>
         </Card>
 
         <!-- Vehículos -->
-        <Card class="mb-4">
+        <Card>
           <template #title>
             <div class="flex items-center gap-2">
-              <i class="pi pi-car"></i>
+              <i class="pi pi-car" style="color: var(--p-primary-400)"></i>
               <span>Vehículos</span>
-              <Badge :value="unidad.vehiculos?.length || 0" />
+              <Badge :value="unidad.vehiculos?.length || 0" severity="warn" />
             </div>
           </template>
           <template #content>
@@ -184,24 +197,25 @@ onMounted(async () => {
             >
               Sin vehículos registrados
             </div>
-            <div
-              v-for="(v, i) in unidad.vehiculos"
-              :key="v.id"
-              class="flex items-center justify-between py-2"
-              :class="{ 'border-t border-surface-200': i > 0 }"
-            >
-              <div class="flex items-center gap-3">
-                <i
-                  class="pi pi-car text-lg"
-                  :class="v.activo ? 'text-primary' : 'text-surface-300'"
-                ></i>
-                <span class="text-sm font-mono font-medium">{{ v.patente }}</span>
+            <div class="flex flex-col gap-2">
+              <div
+                v-for="v in unidad.vehiculos"
+                :key="v.id"
+                class="flex items-center justify-between p-2 border-round"
+              >
+                <div class="flex items-center gap-3">
+                  <i
+                    class="pi pi-car text-lg"
+                    :class="v.activo ? 'text-primary' : 'text-surface-300'"
+                  ></i>
+                  <span class="text-sm font-mono font-medium">{{ v.patente }}</span>
+                </div>
+                <Tag
+                  :value="v.activo ? 'Activo' : 'Inactivo'"
+                  :severity="v.activo ? 'success' : 'contrast'"
+                  class="text-xs"
+                />
               </div>
-              <Tag
-                :value="v.activo ? 'Activo' : 'Inactivo'"
-                :severity="v.activo ? 'success' : 'contrast'"
-                class="text-xs"
-              />
             </div>
           </template>
         </Card>
@@ -210,7 +224,7 @@ onMounted(async () => {
         <Card>
           <template #title>
             <div class="flex items-center gap-2">
-              <i class="pi pi-credit-card"></i>
+              <i class="pi pi-credit-card" style="color: var(--p-primary-400)"></i>
               <span>Gasto común</span>
             </div>
           </template>

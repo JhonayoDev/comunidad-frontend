@@ -21,6 +21,10 @@
  */
 
 import { accessToken as tokenRef } from "@/utils/tokenStore";
+import {
+  guardarTokenEnIDB,
+  limpiarTokenEnIDB,
+} from "@/utils/idbTokenStore";
 
 // ─── Configuración ────────────────────────────────────────────────────────────
 
@@ -31,10 +35,6 @@ const CONFIG = {
   // Intervalos de polling de fallback (ms)
   POLLING_LENTO_MS:    5 * 60 * 1000,  // 5 min — cuando el permiso está denegado
   POLLING_MODERADO_MS: 2 * 60 * 1000,  // 2 min — cuando nunca se ha pedido permiso
-  // Nombre de la BD IndexedDB donde se guarda el token para el SW
-  IDB_NAME:            "comunidad-auth",
-  IDB_VERSION:         2,
-  IDB_STORE:           "tokens",
 };
 
 // ─── Estado interno (privado al módulo) ───────────────────────────────────────
@@ -144,7 +144,7 @@ export const PushManager = {
   async destruir() {
     detenerFallbackCompleto();
 
-    await limpiarTokenDeIDB();
+    await limpiarTokenEnIDB();
     navigator.serviceWorker?.removeEventListener("message", manejarMensajeSW);
 
     if (!_registration) {
@@ -426,83 +426,12 @@ async function consultarBadge() {
 // ─── IndexedDB — token para uso del SW ───────────────────────────────────────
 
 /**
- * El Service Worker no tiene acceso a localStorage, por lo que guardamos
- * el access token en IndexedDB para que el SW lo lea en pushsubscriptionchange.
+ * El Service Worker no tiene acceso a localStorage, por lo que el access token
+ * se guarda en IndexedDB para que el SW lo lea en pushsubscriptionchange.
  *
- * Toda la comunicación con IndexedDB pasa por obtenerDB(), un helper singleton
- * que garantiza:
- * - Una sola apertura concurrente (deduplica llamadas paralelas).
- * - Creación automática del store 'tokens' via onupgradeneeded.
- * - Auto-reparación: si el store no existe pese al upgrade, fuerza versión+1.
+ * La implementación vive en utils/idbTokenStore.js (compartida con
+ * refreshCoordinator.js, que mantiene el token fresco en cada rotación).
  */
-
-let _dbOpenPromise = null;
-
-async function obtenerDB() {
-  if (_dbOpenPromise) return _dbOpenPromise;
-  _dbOpenPromise = abrirDB(CONFIG.IDB_VERSION);
-  return _dbOpenPromise;
-}
-
-async function abrirDB(version) {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(CONFIG.IDB_NAME, version);
-
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(CONFIG.IDB_STORE)) {
-        db.createObjectStore(CONFIG.IDB_STORE);
-      }
-    };
-
-    req.onerror = () => {
-      _dbOpenPromise = null;
-      reject(req.error);
-    };
-
-    req.onsuccess = () => {
-      const db = req.result;
-
-      if (!db.objectStoreNames.contains(CONFIG.IDB_STORE)) {
-        const nextVersion = db.version + 1;
-        db.close();
-        resolve(abrirDB(nextVersion));
-        return;
-      }
-
-      db.onclose = () => { _dbOpenPromise = null; };
-      db.onversionchange = () => { db.close(); _dbOpenPromise = null; };
-
-      resolve(db);
-    };
-  });
-}
-
-async function guardarTokenEnIDB(token) {
-  const db = await obtenerDB();
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction(CONFIG.IDB_STORE, "readwrite");
-    const store = tx.objectStore(CONFIG.IDB_STORE);
-    store.put(token, "accessToken");
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function limpiarTokenDeIDB() {
-  try {
-    const db = await obtenerDB();
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction(CONFIG.IDB_STORE, "readwrite");
-      const store = tx.objectStore(CONFIG.IDB_STORE);
-      store.delete("accessToken");
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  } catch {
-    // Limpieza best-effort — no debe romper el flujo de logout
-  }
-}
 
 // ─── Utilidades ───────────────────────────────────────────────────────────────
 

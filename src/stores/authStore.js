@@ -9,6 +9,7 @@ import {
   scheduleProactiveRefresh,
   clearProactiveRefresh,
 } from "@/utils/refreshScheduler";
+import { refrescarToken } from "@/utils/refreshCoordinator";
 import { usePushNotifications } from "@/composables/usePushNotifications";
 
 export const useAuthStore = defineStore("auth", () => {
@@ -106,9 +107,9 @@ export const useAuthStore = defineStore("auth", () => {
   // Este método lo recupera usando la cookie httpOnly del browser.
   async function tryRestoreSession() {
     try {
-      const { data } = await authService.refresh();
-      accessToken.value = data.accessToken;
-      scheduleProactiveRefresh();
+      // Pasa por el coordinador: single-flight, actualiza IndexedDB (para el
+      // Service Worker) y propaga el token por BroadcastChannel.
+      await refrescarToken();
       // Cargar perfil y condominios después de restaurar el token
       const meRes = await api.get("/me");
       user.value = {

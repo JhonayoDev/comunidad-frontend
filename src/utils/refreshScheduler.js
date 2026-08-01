@@ -1,26 +1,14 @@
-import { authService } from "@/services/authService";
-import { accessToken } from "@/utils/tokenStore";
-
-// El accessToken dura 15 min. A los 14 min se refresca en silencio
-// para que el usuario nunca experimente un 401 por expiración normal.
-let refreshTimer = null;
-
-export function scheduleProactiveRefresh() {
-  clearTimeout(refreshTimer);
-  refreshTimer = setTimeout(
-    async () => {
-      try {
-        const { data } = await authService.refresh();
-        accessToken.value = data.accessToken;
-      } catch {
-        // Si falla, el interceptor de 401 manejará el próximo request
-      }
-    },
-    14 * 60 * 1000,
-  );
-}
-
-export function clearProactiveRefresh() {
-  clearTimeout(refreshTimer);
-  refreshTimer = null;
-}
+/**
+ * refreshScheduler.js
+ *
+ * Punto de entrada retrocompatible del refresco proactivo.
+ *
+ * La lógica real ahora vive en refreshCoordinator.js (single-flight + Web Locks
+ * + refresh preventivo en visibilitychange + sincronización con IndexedDB y
+ * BroadcastChannel). Este módulo re-exporta sus funciones para no romper los
+ * imports existentes (api.js, authStore.js).
+ */
+export {
+  scheduleProactiveRefresh,
+  clearProactiveRefresh,
+} from "@/utils/refreshCoordinator";

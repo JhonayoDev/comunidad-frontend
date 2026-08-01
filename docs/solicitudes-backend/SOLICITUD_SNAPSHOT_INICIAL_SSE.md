@@ -4,7 +4,7 @@
 **Fecha:** 2026-07-31
 **Audiencia:** Equipo backend (Spring Boot / `DashboardStreamController`, `SseDashboardEventPublisher`)
 **Estado:** ✅ **Implementado y verificado en backend** (informe de vuelta recibido el 2026-07-31)
-**Relacionado:** `REQUERIMIENTOS_STATS_TIEMPO_REAL.md` (arquitectura SSE), `docs/verificacion-sse-staging-prod.md`
+**Relacionado:** `REQUERIMIENTOS_STATS_TIEMPO_REAL.md` (arquitectura SSE), `verificacion-sse-staging-prod.md`
 
 > **Actualización 1.1:** El backend implementó el cambio. Contrato emitido por el
 > backend: evento `metrica` con `tipoEvento: "SNAPSHOT_INICIAL"` como primer

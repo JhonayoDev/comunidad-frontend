@@ -2,10 +2,18 @@ import { computed } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { notificacionesService } from "../services/notificacionesService";
+import { useNotificacionesTiempoReal } from "./useNotificacionesTiempoReal";
 
 export function useNotificaciones() {
   const auth = useAuthStore();
   const queryClient = useQueryClient();
+
+  // SSE de la bandeja: con stream vivo NO hay polling (el SSE es la fuente
+  // primaria del badge); si cae, gracia de 1 min y solo tras expirar, polling
+  // de respaldo a 2 min. El SNAPSHOT_INICIAL siembra el badge y un
+  // NOTIFICACION_CREADA lo descarta y deja que /sync se reconcilie.
+  const { refetchIntervalNotificaciones, noLeidasNotificaciones } =
+    useNotificacionesTiempoReal();
 
   const queryKey = computed(() => ["notificaciones", auth.condominioActualId]);
 
@@ -31,10 +39,15 @@ export function useNotificaciones() {
       return response.data;
     },
     enabled: !!auth.condominioActualId,
-    refetchInterval: 120000,
+    refetchInterval: refetchIntervalNotificaciones,
   });
 
-  const noLeidasCount = computed(() => syncData.value?.noLeidas || 0);
+  const noLeidasCount = computed(() => {
+    // Seed del snapshot SSE mientras esté fresco; ante un cambio (el snapshot
+    // se descarta) vuelve al valor real del sync ya reconciliado.
+    if (noLeidasNotificaciones.value != null) return noLeidasNotificaciones.value;
+    return syncData.value?.noLeidas || 0;
+  });
 
   const syncNotificaciones = computed(() => syncData.value?.notificaciones || []);
 
