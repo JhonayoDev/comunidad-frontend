@@ -22,7 +22,7 @@ export const ACCESO_RAPIDO_GUARDIA = [
   },
   { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
   { label: "Autoriz.", icon: "pi pi-shield", routeName: "Autorizaciones" },
-  { label: "Solicitudes", icon: "pi pi-inbox", routeName: "Solicitudes" },
+  { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
 ];
 
 const NAV_ADMINISTRADOR = [
