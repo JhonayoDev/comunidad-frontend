@@ -18,6 +18,7 @@ import NovedadDialog from "@/components/bitacora/NovedadDialog.vue";
 import BuscadorPatenteCard from "@/components/visitas/BuscadorPatenteCard.vue";
 import AccesoRapidoCard from "@/components/quickaccess/AccesoRapidoCard.vue";
 import { ACCESO_RAPIDO_GUARDIA } from "@/config/navegacionAccesoRapido";
+import { formatearHora } from "@/utils/fechas";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -208,12 +209,7 @@ onMounted(() => {
                 </div>
               </div>
               <span class="text-xs text-surface-400">
-                {{
-                  new Date(auth.fechaInicio).toLocaleTimeString("es-CL", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                }}
+                {{ formatearHora(auth.fechaInicio) }}
               </span>
             </div>
           </div>

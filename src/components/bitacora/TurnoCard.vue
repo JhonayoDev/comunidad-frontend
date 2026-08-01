@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import Card from "primevue/card";
 import Button from "primevue/button";
 import { useConfirm } from "primevue/useconfirm";
+import { formatearHora } from "@/utils/fechas";
 
 const confirm = useConfirm();
 
@@ -21,12 +22,7 @@ const accionesFiltradas = computed(() =>
 );
 
 const headerInfo = computed(() => {
-  const hora = props.turno?.ultimoEventoEn
-    ? new Date(props.turno.ultimoEventoEn).toLocaleTimeString("es-CL", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
+  const hora = formatearHora(props.turno?.ultimoEventoEn);
 
   if (props.turno?.enColacion) {
     return {

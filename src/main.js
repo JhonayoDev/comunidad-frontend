@@ -1,3 +1,8 @@
+import {
+  instalarManejadorGlobalErrores,
+  reportarError,
+  marcarHito,
+} from "./utils/frontendErrorReporter";
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import { VueQueryPlugin } from "@tanstack/vue-query";
@@ -15,7 +20,16 @@ import "./style.css";
 import { vPermiso } from "./directives/permiso";
 import { iniciarCoordinadorRefresh } from "./utils/refreshCoordinator";
 
+// Captura global de errores: se instala antes que cualquier otro módulo para
+// atrapar fallos de import/render; el overlay evita pantallas blancas mudas.
+instalarManejadorGlobalErrores();
+marcarHito("boot:main");
+
 const app = createApp(App);
+
+// Cualquier error no capturado de un componente (setup/render/watch) se reporta
+// al overlay + localStorage + beacon, en vez de quedar en blanco silencioso.
+app.config.errorHandler = (err, _instancia, info) => reportarError("vue", err, info);
 
 app.use(createPinia());
 
@@ -149,3 +163,5 @@ app.directive("permiso", vPermiso);
 iniciarCoordinadorRefresh();
 
 app.mount("#app");
+
+marcarHito("boot:mounted");

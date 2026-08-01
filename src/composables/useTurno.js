@@ -2,6 +2,7 @@ import { ref } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { bitacoraService } from "@/services/bitacoraService";
+import { formatearHora } from "@/utils/fechas";
 
 export function useTurno() {
   const auth = useAuthStore();
@@ -71,12 +72,7 @@ export function useTurno() {
   });
 
   function formatearFecha(iso) {
-    if (!iso) return "";
-    const d = new Date(iso);
-    return d.toLocaleTimeString("es-CL", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatearHora(iso);
   }
 
   const accionMutation = useMutation({

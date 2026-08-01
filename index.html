@@ -13,6 +13,15 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#1e293b" />
 
+    <!-- Discriminador de boot: corre antes que el bundle JS. Si el usuario
+         reporta pantalla blanca y este marcador existe pero no hay hito
+         `boot:main`, el bundle de JS nunca cargó (SW/shell/red). -->
+    <script>
+      try {
+        localStorage.setItem("comunidad:html-loaded", String(Date.now()));
+      } catch (e) {}
+    </script>
+
     <!-- iOS (Safari no lee el manifest aún) -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
