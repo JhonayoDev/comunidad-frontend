@@ -20,13 +20,20 @@ async function handleLogout() {
 </script>
 
 <template>
-  <div class="p-4 flex flex-col gap-4">
+  <div class="flex flex-col bg-background">
     <!-- Perfil -->
     <Card>
       <template #content>
         <div class="flex items-center gap-4">
           <Avatar
-            :label="(auth.userName || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)"
+            :label="
+              (auth.userName || 'U')
+                .split(' ')
+                .map((w) => w[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
+            "
             size="large"
             shape="circle"
             class="font-bold"
@@ -52,7 +59,9 @@ async function handleLogout() {
             align="left"
             class="my-2"
           >
-            <span class="text-xs font-semibold text-surface-500 uppercase">{{ group.label }}</span>
+            <span class="text-xs font-semibold text-surface-500 uppercase">{{
+              group.label
+            }}</span>
           </Divider>
           <Button
             v-for="item in group.items"
