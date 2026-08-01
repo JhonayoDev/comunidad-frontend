@@ -178,10 +178,12 @@ self.addEventListener('pushsubscriptionchange', (event) => {
           event.oldSubscription?.options ?? { userVisibleOnly: true }
         );
 
-        // Leer el access token guardado en IndexedDB (no localStorage — no disponible en SW)
-        const token = await leerTokenDeIDB();
+        // Obtener un token FRESCO: primero intenta /auth/refresh con la cookie
+        // httpOnly (el SW puede enviarla con credentials: 'include'), y si el
+        // backend lo rechaza, cae al token guardado en IndexedDB.
+        const token = await obtenerTokenValido();
         if (!token) {
-          console.warn('[SW] pushsubscriptionchange: sin token guardado. Suscripción pendiente hasta el próximo login.');
+          console.warn('[SW] pushsubscriptionchange: sin token válido. Suscripción pendiente hasta el próximo login.');
           return;
         }
 
@@ -214,22 +216,83 @@ function construirUrl(tipoRecurso, recursoId, condominioId) {
 
 /**
  * Lee el access token desde IndexedDB (la única API de storage disponible en SW).
- * La app guarda el token en IDB en push-manager.js después del login.
+ * Se abre SIN versión fija: así el SW funciona con cualquier versión de la BD
+ * creada por la app (un open(..., 1) fallaba cuando la app ya había creado la
+ * BD en versión 2).
  */
 async function leerTokenDeIDB() {
   return new Promise((resolve) => {
-    const req = indexedDB.open('comunidad-auth', 1);
+    const req = indexedDB.open('comunidad-auth');
     req.onerror = () => resolve(null);
     req.onsuccess = () => {
       const db = req.result;
-      if (!db.objectStoreNames.contains('tokens')) { resolve(null); return; }
+      if (!db.objectStoreNames.contains('tokens')) { db.close(); resolve(null); return; }
       const tx    = db.transaction('tokens', 'readonly');
       const store = tx.objectStore('tokens');
       const get   = store.get('accessToken');
-      get.onsuccess = () => resolve(get.result ?? null);
-      get.onerror   = () => resolve(null);
+      get.onsuccess = () => { db.close(); resolve(get.result ?? null); };
+      get.onerror   = () => { db.close(); resolve(null); };
     };
   });
+}
+
+/**
+ * Guarda el access token en IndexedDB. La app también lo actualiza en cada
+ * rotación (refreshCoordinator.js), pero el SW lo refresca aquí mismo cuando
+ * el push service rota la suscripción y el token guardado ya expiró.
+ */
+async function guardarTokenEnIDB(token) {
+  return new Promise((resolve) => {
+    const req = indexedDB.open('comunidad-auth');
+    req.onerror = () => resolve();
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('tokens')) {
+        db.createObjectStore('tokens');
+      }
+    };
+    req.onsuccess = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('tokens')) { db.close(); resolve(); return; }
+      const tx    = db.transaction('tokens', 'readwrite');
+      const store = tx.objectStore('tokens');
+      store.put(token, 'accessToken');
+      tx.oncomplete = () => { db.close(); resolve(); };
+      tx.onerror    = () => { db.close(); resolve(); };
+    };
+  });
+}
+
+/**
+ * Intenta renovar el access token vía /auth/refresh con la cookie httpOnly.
+ * Devuelve el token renovado si el backend lo acepta; si no, cae al token
+ * almacenado en IndexedDB (que puede estar expirado si la app llevó tiempo
+ * cerrada, pero es mejor que nada).
+ */
+async function obtenerTokenValido() {
+  const guardado = await leerTokenDeIDB();
+
+  try {
+    const respuesta = await fetch('/api/v1/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (respuesta.ok) {
+      const { accessToken } = await respuesta.json();
+      if (accessToken) {
+        await guardarTokenEnIDB(accessToken);
+        return accessToken;
+      }
+    } else {
+      console.warn(`[SW] /auth/refresh respondió ${respuesta.status}. Usando el token almacenado.`);
+    }
+  } catch (e) {
+    console.error('[SW] Error al renovar token en pushsubscriptionchange:', e);
+  }
+
+  return guardado;
 }
 
 /**
