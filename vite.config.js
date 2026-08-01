@@ -16,7 +16,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       manifest: false,
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: "module",
       },
       injectManifest: {

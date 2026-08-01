@@ -115,7 +115,10 @@ onMounted(cargar);
           <div class="flex items-center gap-2">
             <i class="pi pi-shield"></i>
             <span>Accesos</span>
-            <TarjetaAccesosActivos variant="badge" />
+            <TarjetaAccesosActivos
+              variant="badge"
+              :conteo-inicial="dashboard.accesos?.activosAhora ?? 0"
+            />
           </div>
         </template>
         <template #content>

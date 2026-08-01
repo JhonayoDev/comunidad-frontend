@@ -16,8 +16,4 @@ export const visitasService = {
   getVisita(condominioId, id) {
     return api.get(`/condominios/${condominioId}/accesos/${id}`);
   },
-
-  getConteoActivos(condominioId) {
-    return api.get(`/condominios/${condominioId}/accesos/conteo-activos`);
-  },
 };
