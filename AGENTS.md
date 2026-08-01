@@ -13,6 +13,9 @@ Alinear todos los módulos del frontend (GUARDIA y RESIDENTE) con los endpoints 
 - Todos los endpoints scoped por condominio: `/api/v1/condominios/{condominioId}/...`
 
 ## Done
+- **`ChecklistDialog.vue`** (checklist de inicio/fin turno): los `ToggleButton` Sí/No quedaban ilegibles — texto `surface.500` (#8a8a8a) sobre el rojo `#c53b3b` del "No" (light) y píldora blanca en dark (`surface.950` invertido). Añadido override `togglebutton` en `prime-theme.js` (bg `color-mix(surface 75%)`, color `textPrincipal`, checked `{primary.color}` + `#ffffff`) y `color:#fff !important` en los estados `.checklist-true`/`.checklist-false`
+- **`FiltrosBitacora.vue`**: creado — componente reutilizable de filtros colapsables (tipo, clasificación, rango de fechas) con `defineModel`; replicado el patrón lupa de Encomiendas en `BitacoraView` (la lupa ahora queda a la derecha del botón "Registrar novedad"; ocultarla resetea los filtros)
+- **`prime-theme.js`**: corregidos los diálogos ilegibles (ConfirmDialog de inicio/fin turno y colación, y todos los `<Dialog>`) — `overlay.modal.background` resolvía a `var(--p-surface-0)` = `var(--p-primary-text-principal)` (en light `#1a1a1a`) con texto `--p-text-color` (`#404040`), texto oscuro sobre fondo oscuro. Añadidos overrides `dialog.root` y `confirmdialog.root` con el mismo patrón de popover/select (`color-mix(in srgb, {primary.surface} 98%, transparent)` + `{primary.textPrincipal}`). Verificado con `toVariables()` en light y dark; tests 21/21 y build OK
 - Revisados todos los controllers del backend y sus DTOs
 - Mapeados todos los campos de request/response contra cada vista del frontend
 - Eliminados todos los datos mock de todos los servicios
@@ -63,6 +66,7 @@ Alinear todos los módulos del frontend (GUARDIA y RESIDENTE) con los endpoints 
 - **SolicitudesView**: no existe `SolicitudesController` en el backend — llama a `/condominios/{cid}/solicitudes-registro` que devuelve 404. **Mitigado temporalmente**: la ruta `Solicitudes` ahora renderiza `EnConstruccionView` (placeholder) hasta que el backend implemente el controller; el archivo `SolicitudesView.vue` se conserva en el repo para reconectarlo después.
 
 ## Componentes Creados
+- **`FiltrosBitacora.vue`** (`src/components/bitacora/`): Componente reutilizable de filtros colapsables de la Bitácora. Usa `defineModel("tipo"|"clasificacion"|"rangoFechas")` para los tres filtros (Select tipo, Select clasificación, FiltroFechas). Header "Filtros" + "Limpiar". Visible detrás de la lupa en `BitacoraView`.
 - **`BuscadorPatenteCard.vue`** (`src/components/visitas/`): Componente reutilizable para búsqueda por patente. Props: `compact`. Consulta en paralelo `/busqueda/por-patente` + `GET /accesos?estado=ACTIVO` para detectar si hay acceso activo que permita salida rápida.
 - **`ConfirmarSalidaDialog.vue`** (`src/components/visitas/`): Subcomponente del BuscadorPatenteCard. Dialog modal que muestra datos del acceso activo (visitante, unidad, fecha ingreso, tipo, personas) y permite confirmar salida con observación opcional.
 - **`TarjetaEncomiendasPendientes.vue`**: Card reutilizable para conteo de encomiendas pendientes. Props: `variant` ('card'|'badge'), `conteoInicial` (seed del snapshot). Emite `click`. Conteo en vivo solo vía SSE (`metricas.encomiendasPendientes`) — no fetchea la lista completa.
@@ -83,6 +87,7 @@ El guardia busca una patente → si el vehículo está identificado, botón "Reg
 El guardia busca una patente → si hay un acceso ACTIVO con esa patente, aparece botón "Registrar salida" → Dialog muestra datos del acceso → confirma → `PATCH /accesos/{id}/salida`.
 
 ## Key Decisions
+- Los diálogos (`Dialog`/`ConfirmDialog`) usan los tokens `overlay.modal.*` que resolvían a `surface.0` = `textPrincipal` (fondo oscuro) con texto `text.color` oscuro → ilegibles en light. Se sobrescriben `dialog.root` y `confirmdialog.root` con el patrón `{primary.surface}` + `{primary.textPrincipal}`, igual que popover/select/autocomplete
 - Eliminar todos los datos mock porque confundían la depuración — ahora el error real se ve en la consola del navegador
 - PortonView ahora usa `GET /busqueda/por-patente` en vez de `GET /vehiculos` + filtro local
 - `useEncomiendas.entregar()` ahora recibe `nombreRetira` y `rutRetira` como parámetros obligatorios

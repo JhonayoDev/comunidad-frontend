@@ -8,11 +8,10 @@ import { useTurno } from "@/composables/useTurno";
 import TurnoCard from "@/components/bitacora/TurnoCard.vue";
 import EventoCard from "@/components/bitacora/EventoCard.vue";
 import NovedadDialog from "@/components/bitacora/NovedadDialog.vue";
-import FiltroFechas from "@/components/FiltroFechas.vue";
+import FiltrosBitacora from "@/components/bitacora/FiltrosBitacora.vue";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
-import Select from "primevue/select";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import Paginator from "primevue/paginator";
@@ -32,21 +31,16 @@ const { turno, turnoLoading, accionesLabels, confirmMessages, ejecutarAccion } =
 const clasificacionFilter = ref(null);
 const tipoFilter = ref(null);
 const rangoFechas = ref(null);
+const busquedaVisible = ref(false);
 
-const clasificaciones = [
-  { label: "Normal", value: "NORMAL" },
-  { label: "Urgente", value: "URGENTE" },
-  { label: "Emergencia", value: "EMERGENCIA" },
-  { label: "Informativo", value: "INFO" },
-];
-
-const tiposEvento = [
-  { label: "Novedad", value: "NOVEDAD" },
-  { label: "Inicio turno", value: "TURNO_INICIO" },
-  { label: "Fin turno", value: "TURNO_FIN" },
-  { label: "Colación salida", value: "COLACION_SALIDA" },
-  { label: "Colación regreso", value: "COLACION_REGRESO" },
-];
+function toggleBusqueda() {
+  busquedaVisible.value = !busquedaVisible.value;
+  if (!busquedaVisible.value) {
+    tipoFilter.value = null;
+    clasificacionFilter.value = null;
+    rangoFechas.value = null;
+  }
+}
 
 function formatearDateLocal(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -127,39 +121,32 @@ onMounted(() => {
 
     <div class="flex items-center justify-between">
       <h2 class="text-xl font-bold m-0">Bitácora</h2>
-      <Button
-        label="Registrar novedad"
-        icon="pi pi-flag"
-        severity="primary"
-        @click="showDialog = true"
-      />
+      <div class="flex items-center gap-2">
+        <Button
+          icon="pi pi-search"
+          size="small"
+          :severity="busquedaVisible ? 'primary' : 'secondary'"
+          variant="outlined"
+          class="rounded-lg shrink-0"
+          aria-label="Buscar"
+          :aria-pressed="busquedaVisible"
+          @click="toggleBusqueda"
+        />
+        <Button
+          label="Registrar novedad"
+          icon="pi pi-flag"
+          severity="primary"
+          @click="showDialog = true"
+        />
+      </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-2">
-      <div class="w-full sm:flex-1">
-        <Select
-          v-model="tipoFilter"
-          :options="tiposEvento"
-          optionLabel="label"
-          placeholder="Todos los tipos"
-          fluid
-          clearable
-          showClear
-        />
-      </div>
-      <div class="w-full sm:flex-1">
-        <Select
-          v-model="clasificacionFilter"
-          :options="clasificaciones"
-          optionLabel="label"
-          placeholder="Todas las clasificaciones"
-          fluid
-          clearable
-          showClear
-        />
-      </div>
-    </div>
-    <FiltroFechas v-model="rangoFechas" />
+    <FiltrosBitacora
+      v-if="busquedaVisible"
+      v-model:tipo="tipoFilter"
+      v-model:clasificacion="clasificacionFilter"
+      v-model:rango-fechas="rangoFechas"
+    />
 
     <template v-if="loading">
       <div class="flex flex-col gap-3">
