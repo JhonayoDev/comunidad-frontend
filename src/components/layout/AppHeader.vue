@@ -1,16 +1,16 @@
 <template>
   <header
-    class="header-text surface-card px-3 py-2 flex align-items-center justify-content-between shadow-1 w-full bg-background/25 rounded-lg"
+    class="header-text surface-card px-3 py-1.5 flex align-items-center justify-content-between shadow-1 w-full bg-background/25 rounded-lg"
   >
-    <div class="header-btn flex align-items-center gap-3">
+    <div class="header-btn flex align-items-center gap-2">
       <img
         src="../../assets/casa.svg"
         alt="Logo"
-        class="header-btn w-10 h-10 border-circle overflow-hidden object-cover cursor-pointer"
+        class="header-btn w-9 h-9 border-circle overflow-hidden object-fill cursor-pointer"
         @click="goHome"
       />
-      <div class="flex flex-col">
-        <span class="font-bold text-sm">{{ auth.userName }}</span>
+      <div class="flex flex-col min-w-0">
+        <span class="font-bold text-sm truncate">{{ auth.userName }}</span>
         <Select
           v-if="auth.hasMultipleCondominios"
           v-model="selectedCondominioId"
@@ -51,7 +51,7 @@
 
   <div
     v-if="showContextPills"
-    class="flex gap-1 px-3 pb-2 overflow-x-auto surface-ground border-bottom-1 surface-border"
+    class="flex gap-1 px-3 pb-2 overflow-x-auto bg border-bottom-1 surface-border"
   >
     <Button
       class="btn-no-bg header-btn"
