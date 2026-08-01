@@ -12,10 +12,11 @@
     <!-- Contenido -->
     <div class="relative z-10 flex min-h-screen flex-col">
       <AppHeader />
-      <main class="flex-1 overflow-y-auto">
+      <main class="flex-1 overflow-y-auto" :class="{ 'pb-24': mostrarBottomNav }">
         <RouterView />
       </main>
-      <AppFooter />
+      <BottomNavigation v-if="mostrarBottomNav" />
+      <AppFooter v-else />
     </div>
 
     <!-- Banner de invitación a notificaciones push -->
@@ -29,8 +30,10 @@ import { useRouter } from "vue-router";
 import fondoweb from "@/assets/fondoweb.webp";
 import AppHeader from "@/components/layout/AppHeader.vue";
 import AppFooter from "@/components/layout/AppFooter.vue";
+import BottomNavigation from "@/components/layout/BottomNavigation.vue";
 import NotificationBanner from "@/components/NotificationBanner.vue";
 import { useAuthStore } from "@/stores/authStore";
+import { usePwaStandalone } from "@/composables/usePwaStandalone";
 import {
   iniciarStream,
   detenerStream,
@@ -39,6 +42,7 @@ import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
 
 const router = useRouter();
 const auth = useAuthStore();
+const { mostrar: mostrarBottomNav } = usePwaStandalone();
 
 // Registra la suscripción SSE app-wide (eventos y estado) para que `metricas`
 // se pueble en cualquier rol con dashboard (GUARDIA o ADMIN), no solo cuando

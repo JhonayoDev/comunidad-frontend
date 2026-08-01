@@ -11,12 +11,13 @@ import ChecklistDialog from "@/components/bitacora/ChecklistDialog.vue";
 
 import Card from "primevue/card";
 import Badge from "primevue/badge";
-import Button from "primevue/button";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import TurnoCard from "@/components/bitacora/TurnoCard.vue";
 import NovedadDialog from "@/components/bitacora/NovedadDialog.vue";
 import BuscadorPatenteCard from "@/components/visitas/BuscadorPatenteCard.vue";
+import AccesoRapidoCard from "@/components/quickaccess/AccesoRapidoCard.vue";
+import { ACCESO_RAPIDO_GUARDIA } from "@/config/navegacionAccesoRapido";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -220,42 +221,7 @@ onMounted(() => {
       </Card>
 
       <!-- Acceso rápido -->
-      <Card>
-        <template #title>
-          <span class="text-text/90">Acceso rápido</span>
-        </template>
-        <template #content>
-          <div class="grid grid-cols-3 gap-2">
-            <Button
-              label="Visita"
-              icon="pi pi-user-plus"
-              severity="primary"
-              @click="router.push({ name: 'RegistrarVisita' })"
-            />
-            <Button
-              label="Bitácora"
-              icon="pi pi-book"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Bitacora' })"
-            />
-            <Button
-              label="Autorizaciones"
-              icon="pi pi-verified"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Autorizaciones' })"
-            />
-            <Button
-              label="Solicitudes"
-              icon="pi pi-pencil"
-              severity="secondary"
-              variant="outlined"
-              @click="router.push({ name: 'Solicitudes' })"
-            />
-          </div>
-        </template>
-      </Card>
+      <AccesoRapidoCard :items="ACCESO_RAPIDO_GUARDIA" />
 
       <NovedadDialog
         v-model:visible="showNovedadDialog"

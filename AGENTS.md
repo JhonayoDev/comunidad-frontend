@@ -60,16 +60,21 @@ Alinear todos los módulos del frontend (GUARDIA y RESIDENTE) con los endpoints 
 - Build pasa con `pnpm build`
 
 ## Blocked
-- **SolicitudesView**: no existe `SolicitudesController` en el backend — llama a `/condominios/{cid}/solicitudes-registro` que devuelve 404
+- **SolicitudesView**: no existe `SolicitudesController` en el backend — llama a `/condominios/{cid}/solicitudes-registro` que devuelve 404. **Mitigado temporalmente**: la ruta `Solicitudes` ahora renderiza `EnConstruccionView` (placeholder) hasta que el backend implemente el controller; el archivo `SolicitudesView.vue` se conserva en el repo para reconectarlo después.
 
 ## Componentes Creados
 - **`BuscadorPatenteCard.vue`** (`src/components/visitas/`): Componente reutilizable para búsqueda por patente. Props: `compact`. Consulta en paralelo `/busqueda/por-patente` + `GET /accesos?estado=ACTIVO` para detectar si hay acceso activo que permita salida rápida.
 - **`ConfirmarSalidaDialog.vue`** (`src/components/visitas/`): Subcomponente del BuscadorPatenteCard. Dialog modal que muestra datos del acceso activo (visitante, unidad, fecha ingreso, tipo, personas) y permite confirmar salida con observación opcional.
 - **`TarjetaEncomiendasPendientes.vue`**: Card reutilizable para conteo de encomiendas pendientes. Props: `variant` ('card'|'badge'), `conteoInicial` (seed del snapshot). Emite `click`. Conteo en vivo solo vía SSE (`metricas.encomiendasPendientes`) — no fetchea la lista completa.
 - **`TarjetaAccesosActivos.vue`**: Card reutilizable para conteo de visitas activas. Props: `variant` ('card'|'badge'), `conteoInicial` (seed del snapshot). Emite `click`. Conteo en vivo solo vía SSE (`metricas.visitasActivas`) — no fetchea `GET /accesos/conteo-activos` (eliminado).
+- **`AccesoRapidoCard.vue`** (`src/components/quickaccess/`): Card "Acceso rápido" extraída del dashboard del guardia a componente reutilizable. Props: `items` (array `{label, icon, routeName, query?, isCentralFab?}`), `title`, `columns`. Items con `isCentralFab` se renderizan como botón primary (destacado).
+- **`BottomNavigation.vue`** (`src/components/layout/`, reescrito): Bottom Navigation Bar global estilo app nativa, solo en PWA instalada standalone + touch. Botón central flotante (FAB) vía `isCentralFab`. Solo visible con rol con items configurados (`GUARDIA`/`ADMINISTRADOR`/`RESIDENTE`). Respeto `env(safe-area-inset-bottom)`.
+- **`EnConstruccionView.vue`** (`src/views/common/`): Pantalla placeholder "en construcción". Recibe `modulo` por prop o `route.query.modulo`. Usada por rutas `Solicitudes` y `Escanear` (ambas sin backend aún).
 
 ## Composable
 - **`useBusquedaPatente.js`**: Orquesta dos consultas paralelas en `consultar()`: (1) `busquedaService.porPatente()` y (2) `accesosService.listar(estado=ACTIVO)` — filtra localmente por patente para detectar `accesoSalida`. Expone `confirmarSalida(observacion)`. Maneja errores de campo del backend (`ErrorResponse.fields[]`).
+- **`usePwaStandalone.js`**: Detecta si la app corre como PWA instalada en dispositivo táctil. `matchMedia('(display-mode: standalone)')` + `navigator.standalone` (iOS) + `(pointer: coarse)`. Escucha `change`, `pageshow`, `focus` y `appinstalled`. Expone `{ isStandalone, esTouch, mostrar }` con `mostrar = isStandalone && esTouch`.
+- **`useBottomNav.js`**: Consume `BOTTOM_NAV_BY_ROLE` según `condominioActualRol`, filtra con `puedeAcceder()` (helper ahora expuesto por `useNavigation`). `activo(item)` compara `route.path` (cubre subrutas). Expone `{ items, visible, activo, go }`.
 
 ## Flujo de Ingreso Rápido (desde búsqueda)
 El guardia busca una patente → si el vehículo está identificado, botón "Registrar ingreso" navega a `RegistrarVisitaView` con `patente`, `nombre` (desde `titulo`), `unidad` (parseada de `subtitulo/detalle`) y `autorizacionId` (si es PREAUTORIZACION). El guardia completa los datos faltantes y confirma.
@@ -92,6 +97,7 @@ El guardia busca una patente → si hay un acceso ACTIVO con esa patente, aparec
 - **Al reconectar el SSE** se invalidan las queries registradas (refetch del snapshot) para reconciliar deltas perdidos sin depender del polling
 - **Eliminada la sección "Encomiendas pendientes"** del dashboard del guardia y con ella la petición `GET /encomiendas/activas` (lista completa). El conteo de la tarjeta sale del SSE (`metricas.encomiendasPendientes`) y antes del primer evento se siembra desde `dashboard.encomiendas` (snapshot ya real, no hardcodeado)
 - **Ambas tarjetas de métricas (visitas y encomiendas) trabajan 100% con SSE** — misma condición y misma fuente primaria. El seed del snapshot es la única lectura inicial: `dashboard.accesos.activosAhora` (visitas) y `dashboard.encomiendas` (encomiendas). El fallback `dashboardQuery.data ?? []` se eliminó porque el `[]` (truthy) enmascaraba el snapshot y hacía renderizar `conteo-inicial = 0` en recargas con stream caído
+- **Bottom Navigation Bar es PWA-only**: se muestra solo cuando `display-mode: standalone` (o iOS `navigator.standalone`) + `pointer: coarse`. Reemplaza la card "Acceso rápido" en móvil instalado (que ahora vive en `AccesoRapidoCard.vue` con la misma config). En navegador de escritorio se mantiene la card del dashboard y el footer.
 
 ## Next Steps
 - **Verificar SNAPSHOT_INICIAL en dev**: ✅ verificado en vivo (backend reiniciado) — primer frame `event: metrica` con `tipoEvento: SNAPSHOT_INICIAL` y las 3 claves (visitasActivas 7, encomiendasPendientes 7, autorizacionesPendientes 0) coincidiendo con `GET /dashboard/guardia`; evento de cambio `ENCOMIENDA_RECIBIDA` incrementa el conteo; `:ping` cada ~15s. Pendiente verificar en staging/prod según checklist en `docs/verificacion-sse-staging-prod.md`
@@ -119,6 +125,11 @@ El guardia busca una patente → si hay un acceso ACTIVO con esa patente, aparec
 - `.env` apunta a `https://apicomunidad.ideaspace.dpdns.org/api/v1`
 
 ## Relevant Files
+- `src/config/navegacionAccesoRapido.js`: fuente única de ítems de acceso rápido/bottom nav por rol (`ACCESO_RAPIDO_GUARDIA` + `BOTTOM_NAV_BY_ROLE` con GUARDIA/ADMINISTRADOR/RESIDENTE)
+- `src/composables/usePwaStandalone.js`: detección PWA standalone + touch (ver Composable)
+- `src/composables/useBottomNav.js`: ítems + estado activo + navegación de la bottom nav (ver Composable)
+- `src/components/layout/BottomNavigation.vue`: barra global con FAB central (ver Componentes Creados)
+- `src/components/quickaccess/AccesoRapidoCard.vue`: card reutilizable de accesos rápidos (ver Componentes Creados)
 - `src/services/encomiendasService.js`: `getEncomiendas`, `getEncomienda`, `registrar`, `entregar` (PATCH `.../{id}/entregar`), `cerrar` (PATCH `.../{id}/cerrar`), `getMisEncomiendas` (URL corregida `/condominios/{cid}/mis-encomiendas`), `getAccesosEncomiendas` (`/encomiendas/accesos`); **`getActivas` eliminado**
 - `src/services/perfilService.js`: Added `actualizarMe()`
 - `src/composables/useNotificaciones.js`: Fixed method calls, added condominioId; usa `getTodas`, `getSync` (polling 120s), `marcarLeida`, `marcarTodasLeidas`
