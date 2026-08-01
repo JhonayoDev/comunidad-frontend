@@ -66,7 +66,17 @@
     />
   </div>
 
-  <Drawer v-model:visible="drawerVisible" position="right" header="Menú">
+  <Drawer
+    class="bg-background"
+    v-model:visible="drawerVisible"
+    position="right"
+    header="Menú"
+    :pt="{
+      mask: {
+        class: 'drawer-mask-blur-mobile',
+      },
+    }"
+  >
     <MenuView />
   </Drawer>
 </template>
