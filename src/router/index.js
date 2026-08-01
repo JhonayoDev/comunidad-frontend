@@ -259,6 +259,12 @@ const routes = [
         component: () => import("../views/gestion/ReglasNotificacionView.vue"),
         meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"] },
       },
+      {
+        path: "notificaciones/unidades-personas",
+        name: "UnidadesPersonas",
+        component: () => import("../views/gestion/UnidadesPersonasView.vue"),
+        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"] },
+      },
       // ── Almacenamiento (Admin Config) ──────────────
       {
         path: "configuracion-almacenamiento",
@@ -358,7 +364,7 @@ const routes = [
       {
         path: "mi-unidad",
         name: "MiUnidad",
-        component: () => import("../views/dashboard/DashboardView.vue"),
+        component: () => import("../views/dashboard/ResidenteDashboardView.vue"),
         meta: { roles: ["RESIDENTE"] },
       },
       {

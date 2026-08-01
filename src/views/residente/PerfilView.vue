@@ -423,6 +423,10 @@ async function solicitarEmail() {
                   <span>Email</span>
                   <InputSwitch v-model="pref.email" :disabled="guardandoPref[`${pref.tipo}-email`]" @change="togglePref(pref.tipo, 'email')" />
                 </div>
+                <div class="flex items-center gap-1 text-xs text-surface-500">
+                  <span>Push</span>
+                  <InputSwitch v-model="pref.push" :disabled="guardandoPref[`${pref.tipo}-push`]" @change="togglePref(pref.tipo, 'push')" />
+                </div>
               </div>
             </div>
             <p v-if="!preferencias.length" class="text-sm text-surface-400 text-center py-2">No hay preferencias disponibles</p>

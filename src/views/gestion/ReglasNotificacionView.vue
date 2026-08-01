@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useReglasNotificacion } from "@/composables/useReglasNotificacion";
-import { AUDIENCIA_LABELS, PRIORIDAD_SEVERITY, CANAL_LABELS } from "@/data/reglasCatalogo";
+import { AUDIENCIA_LABELS, CANAL_LABELS } from "@/data/reglasCatalogo";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -24,6 +24,18 @@ const canalOptions = [
   { label: "Push", value: "PUSH" },
 ];
 
+const audienciaOptions = Object.entries(AUDIENCIA_LABELS).map(([value, label]) => ({
+  label,
+  value,
+}));
+
+const prioridadOptions = [
+  { label: "Baja", value: "BAJA" },
+  { label: "Normal", value: "NORMAL" },
+  { label: "Alta", value: "ALTA" },
+  { label: "Crítica", value: "CRITICA" },
+];
+
 function tipoLabel(tipo) {
   return tipo.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -43,6 +55,20 @@ async function toggleHabilitada(regla) {
 async function cambiarCanales(regla, nuevosCanales) {
   guardando.value = regla.tipo;
   const data = { canales: nuevosCanales.join(",") };
+  await actualizarRegla(regla.tipo, data);
+  guardando.value = null;
+}
+
+async function cambiarAudiencia(regla, audiencia) {
+  guardando.value = regla.tipo;
+  const data = { audiencia };
+  await actualizarRegla(regla.tipo, data);
+  guardando.value = null;
+}
+
+async function cambiarPrioridad(regla, prioridad) {
+  guardando.value = regla.tipo;
+  const data = { prioridad };
   await actualizarRegla(regla.tipo, data);
   guardando.value = null;
 }
@@ -106,8 +132,30 @@ async function handleRestaurar(tipo) {
               </div>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-surface-500">
-              <span>Audiencia: <strong>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</strong></span>
-              <span>Prioridad: <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" /></span>
+              <div class="flex items-center gap-2">
+                <span>Audiencia:</span>
+                <Select
+                  :modelValue="r.audiencia"
+                  :options="audienciaOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  :disabled="guardando === r.tipo || !r.habilitada"
+                  class="w-full sm:w-52"
+                  @update:modelValue="cambiarAudiencia(r, $event)"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <span>Prioridad:</span>
+                <Select
+                  :modelValue="r.prioridad"
+                  :options="prioridadOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  :disabled="guardando === r.tipo || !r.habilitada"
+                  class="w-full sm:w-36"
+                  @update:modelValue="cambiarPrioridad(r, $event)"
+                />
+              </div>
               <span>Canales:</span>
               <Select
                 :modelValue="r.canales"

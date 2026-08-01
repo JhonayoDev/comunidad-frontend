@@ -1,7 +1,9 @@
 import axios from "axios";
-import { authService } from "@/services/authService";
 import { accessToken } from "@/utils/tokenStore";
-import { scheduleProactiveRefresh } from "@/utils/refreshScheduler";
+import {
+  scheduleProactiveRefresh,
+  refrescarToken,
+} from "@/utils/refreshCoordinator";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -66,13 +68,20 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await authService.refresh();
-      accessToken.value = data.accessToken;
+      // Single-flight: si el timer proactivo o el visibilitychange ya están
+      // refrescando, esperamos la MISMA promesa en lugar de disparar otro
+      // /auth/refresh (evita el reuse-detection que revoca la sesión).
+      const token = await refrescarToken();
 
-      processQueue(null, data.accessToken);
-      original.headers.Authorization = `Bearer ${data.accessToken}`;
+      processQueue(null, token);
+      original.headers.Authorization = `Bearer ${token}`;
       return api(original);
     } catch (refreshError) {
+      console.error(
+        "[api] Refresh tras 401 falló. Cerrando sesión:",
+        refreshError?.response?.status,
+        refreshError?.response?.data?.message || refreshError?.message,
+      );
       processQueue(refreshError, null);
       accessToken.value = null;
 

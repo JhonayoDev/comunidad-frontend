@@ -13,6 +13,7 @@ import { ComunidadTheme } from "./theme";
 import "primeicons/primeicons.css";
 import "./style.css";
 import { vPermiso } from "./directives/permiso";
+import { iniciarCoordinadorRefresh } from "./utils/refreshCoordinator";
 
 const app = createApp(App);
 
@@ -142,5 +143,9 @@ app.use(ConfirmationService);
 app.use(VueQueryPlugin, { queryClient });
 
 app.directive("permiso", vPermiso);
+
+// Coordina el refresh del access token (single-flight + Web Locks + refresh
+// preventivo al volver de background + sincronización con IndexedDB/SW).
+iniciarCoordinadorRefresh();
 
 app.mount("#app");

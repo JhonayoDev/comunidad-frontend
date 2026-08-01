@@ -37,6 +37,13 @@ export const personasService = {
     return api.patch(`/condominios/${cid}/vinculos/${id}/desactivar`);
   },
 
+  actualizarRecibeNotificaciones(cid, vinculoId, recibeNotificaciones) {
+    return api.patch(
+      `/condominios/${cid}/vincular-persona-unidad/${vinculoId}/recibe-notificaciones`,
+      { recibeNotificaciones },
+    );
+  },
+
   crearUsuario(cid, personaId, data) {
     return api.post(`/condominios/${cid}/personas/${personaId}/usuario`, data);
   },

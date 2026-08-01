@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 import { perfilService } from "../../services/perfilService";
-import { encomiendasService } from "../../services/encomiendasService";
 import { autorizacionesService } from "../../services/autorizacionesService";
+import TarjetaEncomiendasResidente from "@/components/encomiendas/TarjetaEncomiendasResidente.vue";
 
 import Card from "primevue/card";
 import Avatar from "primevue/avatar";
@@ -18,9 +18,7 @@ import Divider from "primevue/divider";
 const router = useRouter();
 const auth = useAuthStore();
 const dashboard = ref(null);
-const encomiendas = ref([]);
 const autorizaciones = ref([]);
-const notifCount = ref(0);
 const loading = ref(true);
 const error = ref(null);
 const unidadExpandida = ref(null);
@@ -74,12 +72,6 @@ function labelDeuda(estado) {
   return "Pendiente";
 }
 
-function severityEncomienda(estado) {
-  if (estado === "ENTREGADA") return "info";
-  if (estado === "CERRADA") return "contrast";
-  return "warn";
-}
-
 function toggleUnidad(id) {
   unidadExpandida.value = unidadExpandida.value === id ? null : id;
 }
@@ -92,17 +84,11 @@ onMounted(async () => {
     return;
   }
   try {
-    const [resDash, resBadge, resEnv, resAut] = await Promise.all([
+    const [resDash, resAut] = await Promise.all([
       perfilService.getDashboardResidente(cid),
-      perfilService.getBadgeNotificaciones(cid),
-      encomiendasService.getMisEncomiendas(cid),
       autorizacionesService.misAutorizaciones(cid),
     ]);
     dashboard.value = resDash.data;
-    notifCount.value = resBadge.data.noLeidas;
-    encomiendas.value = (resEnv.data || []).filter(
-      (e) => e.estado === "PENDIENTE",
-    );
     autorizaciones.value = resAut.data || [];
   } catch (e) {
     console.error("Error al cargar dashboard residente", e);
@@ -326,22 +312,23 @@ onMounted(async () => {
           <div v-if="autorizaciones.length === 0" class="text-sm text-surface-400 py-2">
             No tienes autorizaciones activas
           </div>
-          <div
-            v-for="(a, idx) in autorizaciones.slice(0, 4)"
-            :key="a.id"
-            class="flex items-center justify-between py-2"
-            :class="{ 'border-t border-surface-200': idx > 0 }"
-          >
-            <div class="flex items-center gap-3">
-              <i class="pi pi-verified text-primary"></i>
-              <div class="flex flex-col">
-                <span class="text-sm font-medium">{{ a.nombre }}</span>
-                <span class="text-xs text-surface-500">
-                  {{ a.tipo }} · Casa {{ a.unidadNumero }}
-                </span>
+          <div class="flex flex-col gap-2">
+            <div
+              v-for="a in autorizaciones.slice(0, 4)"
+              :key="a.id"
+              class="flex items-center justify-between p-2 border-round"
+            >
+              <div class="flex items-center gap-3">
+                <i class="pi pi-verified text-primary"></i>
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium">{{ a.nombre }}</span>
+                  <span class="text-xs text-surface-500">
+                    {{ a.tipo }} · Casa {{ a.unidadNumero }}
+                  </span>
+                </div>
               </div>
+              <Tag :value="a.estado" severity="warn" />
             </div>
-            <Tag :value="a.estado" severity="warn" />
           </div>
           <div v-if="autorizaciones.length > 4" class="mt-2">
             <Button
@@ -364,45 +351,10 @@ onMounted(async () => {
         </template>
       </Card>
 
-      <!-- Card 5: Encomiendas -->
-      <Card>
-        <template #title>
-          <div class="flex items-center justify-between">
-            <span>Encomiendas</span>
-            <Badge
-              v-if="encomiendas.length > 0"
-              :value="encomiendas.length"
-              severity="warn"
-            />
-          </div>
-        </template>
-        <template #content>
-          <div v-if="encomiendas.length === 0" class="text-sm text-surface-400 py-2">
-            No tienes encomiendas pendientes
-          </div>
-          <div
-            v-for="(env, idx) in encomiendas"
-            :key="env.id"
-            class="flex items-center justify-between py-2 cursor-pointer hover:bg-emphasis px-2 -mx-2 border-round"
-            :class="{ 'border-t border-surface-200': idx > 0 }"
-            @click="router.push({ name: 'MisEncomiendas' })"
-          >
-            <div class="flex items-center gap-3">
-              <i class="pi pi-inbox text-xl text-primary"></i>
-              <div class="flex flex-col">
-                <span class="text-sm font-medium">{{ env.tipo }} · {{ env.nombreDestinatario }}</span>
-                <span class="text-xs text-surface-500">
-                  Casa {{ env.unidadNumero }} · {{ new Date(env.creadoEn).toLocaleDateString("es-CL") }}
-                </span>
-              </div>
-            </div>
-            <Tag
-              :value="env.estado === 'PENDIENTE' ? 'Pendiente' : env.estado"
-              :severity="severityEncomienda(env.estado)"
-            />
-          </div>
-        </template>
-      </Card>
+      <!-- Card 5: Encomiendas (componente reutilizable) -->
+      <TarjetaEncomiendasResidente
+        :condominio-id="auth.condominioActualId"
+      />
     </template>
   </div>
 </template>
