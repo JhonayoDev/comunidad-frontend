@@ -5,10 +5,6 @@ export const notificacionesService = {
     return api.get(`/condominios/${condominioId}/notificaciones`);
   },
 
-  getBadge(condominioId) {
-    return api.get(`/condominios/${condominioId}/notificaciones/badge`);
-  },
-
   getSync(condominioId) {
     return api.get(`/condominios/${condominioId}/notificaciones/sync`);
   },

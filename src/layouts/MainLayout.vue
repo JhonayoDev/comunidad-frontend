@@ -55,7 +55,17 @@ import {
   iniciarStream,
   detenerStream,
 } from "@/services/dashboardStreamService";
+import {
+  iniciarStreamResidente,
+  detenerStreamResidente,
+} from "@/services/residenteStreamService";
+import {
+  iniciarStreamNotificaciones,
+  detenerStreamNotificaciones,
+} from "@/services/notificacionesStreamService";
 import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
+import { useMisEncomiendasTiempoReal } from "@/composables/useMisEncomiendasTiempoReal";
+import { useNotificacionesTiempoReal } from "@/composables/useNotificacionesTiempoReal";
 
 const router = useRouter();
 const route = useRoute();
@@ -81,20 +91,55 @@ watch(
 // singleton a nivel de módulo (asegurarSuscripcion()).
 useMetricasTiempoReal();
 
+// Ídem para el canal "mis encomiendas" del residente: registra la suscripción
+// app-wide (invalidación de ["misEncomiendas", cid]) en cualquier rol, para que
+// la tarjeta del residente se actualice en vivo sin depender del componente.
+useMisEncomiendasTiempoReal();
+
+// Ídem para la bandeja de notificaciones: registra la suscripción app-wide
+// (invalidación de ["notificaciones-sync", cid]) en cualquier rol con la
+// bandeja, para que el badge/campanita se actualice en vivo. La conexión del
+// stream se gestiona en el watchEffect de abajo según el permiso NOTIFICACION_VER.
+useNotificacionesTiempoReal();
+
 // ─── Stream SSE de métricas (dashboard operativo) ────────────────────────────
 // Conexión app-wide: se mantiene mientras el usuario tenga un condominio
 // seleccionado y permiso de dashboard operativo (GUARDIA o ADMIN). Al cambiar
 // condominio o cerrar sesión, el stream se aborta y limpia automáticamente.
+//
+// El canal del residente (dashboard/residente/stream) es un bus INDEPENDIENTE:
+// se conecta cuando el usuario tiene permiso DASHBOARD_RESIDENTE. Un usuario
+// con permisos de ambos canales mantiene ambas conexiones.
 watchEffect(() => {
   const cid = auth.condominioActualId;
-  const tienePermisoDashboard = (auth.permisos || []).some(
+  const permisos = auth.permisos || [];
+
+  const tienePermisoDashboard = permisos.some(
     (cod) => cod === "DASHBOARD_GUARDIA" || cod === "DASHBOARD_ADMIN",
+  );
+  const tienePermisoResidente = permisos.some(
+    (cod) => cod === "DASHBOARD_RESIDENTE",
+  );
+  const tienePermisoNotificaciones = permisos.some(
+    (cod) => cod === "NOTIFICACION_VER",
   );
 
   if (cid && tienePermisoDashboard) {
     iniciarStream(cid);
   } else {
     detenerStream();
+  }
+
+  if (cid && tienePermisoResidente) {
+    iniciarStreamResidente(cid);
+  } else {
+    detenerStreamResidente();
+  }
+
+  if (cid && tienePermisoNotificaciones) {
+    iniciarStreamNotificaciones(cid);
+  } else {
+    detenerStreamNotificaciones();
   }
 });
 
@@ -117,6 +162,8 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("comunidad:navegar", onNavegacionDesdeSW);
   detenerStream();
+  detenerStreamResidente();
+  detenerStreamNotificaciones();
 });
 
 // ─── Banner de notificaciones ─────────────────────────────────────────────────

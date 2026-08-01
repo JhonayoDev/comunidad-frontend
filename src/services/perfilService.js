@@ -5,10 +5,6 @@ export const perfilService = {
     return api.get("/me");
   },
 
-  getBadgeNotificaciones(condominioId) {
-    return api.get(`/condominios/${condominioId}/notificaciones/badge`);
-  },
-
   cambiarPassword(data) {
     return api.put("/me/password", data);
   },
