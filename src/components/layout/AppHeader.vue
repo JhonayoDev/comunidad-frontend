@@ -67,13 +67,19 @@
   </div>
 
   <Drawer
-    class="bg-background"
+    class="bg-background/95"
     v-model:visible="drawerVisible"
     position="right"
     header="Menú"
     :pt="{
       mask: {
         class: 'drawer-mask-blur-mobile',
+      },
+      header: {
+        class: 'py-2 bg-background border-b border-border rounded-lg',
+      },
+      title: {
+        class: 'text-base text-text-muted',
       },
     }"
   >

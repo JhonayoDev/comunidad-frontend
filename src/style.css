@@ -206,6 +206,14 @@ body {
       }
     }
   }
+
+  /* --- 6. DRAWER: ÍTEMS DE MENÚ CON COLOR DE TEXTO, NO AZUL ---
+     Los <Button variant="text"> del menú (Inicio, Portón, ...) usan por
+     defecto el color primario del tema (azul) como color de acción.
+     Dentro del drawer los queremos del color de texto normal. */
+  .p-drawer .p-button-text {
+    --p-button-text-primary-color: var(--p-primary-text-principal);
+  }
 }
 
 /* --- 3. SOLO PARA COMPUTADORAS CON RATÓN FÍSICO --- */
