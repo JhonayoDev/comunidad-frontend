@@ -115,7 +115,7 @@ const routes = [
         path: "encomiendas",
         name: "Encomiendas",
         component: () => import("../views/encomiendas/EncomiendasView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["ADMINISTRADOR"] },
       },
 
       // ── Admin ─────────────────────────────────────
@@ -125,14 +125,14 @@ const routes = [
         component: () => import("../views/dashboard/AdminDashboardView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO", "ADMINISTRADOR"],
         },
       },
       {
         path: "vehiculos",
         name: "Vehiculos",
         component: () => import("../views/admin/VehiculosView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "ADMINISTRADOR"] },
       },
       {
         path: "solicitudes-admin",
@@ -140,7 +140,7 @@ const routes = [
         component: () => import("../views/admin/SolicitudesAdminView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
       },
       {
@@ -149,7 +149,7 @@ const routes = [
         component: () => import("../views/admin/ResidentesView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
       },
       {
@@ -158,7 +158,7 @@ const routes = [
         component: () => import("../views/admin/UnidadesView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
       },
       // ── Finanzas (cargos) ─────────────────────────
@@ -229,7 +229,7 @@ const routes = [
         component: () => import("../views/gestion/AnunciosView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
       },
       {
@@ -237,7 +237,7 @@ const routes = [
         name: "PlantillasNotificacion",
         component: () =>
           import("../views/admin/PlantillasNotificacionView.vue"),
-        meta: { roles: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["ADMINISTRADOR"] },
       },
       {
         path: "casos-admin",
@@ -250,27 +250,27 @@ const routes = [
         path: "personal",
         name: "Personal",
         component: () => import("../views/admin/PersonalView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"] },
       },
       // ── Reglas de Notificación ──────────────────────
       {
         path: "notificaciones/reglas",
         name: "ReglasNotificacion",
         component: () => import("../views/gestion/ReglasNotificacionView.vue"),
-        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"] },
+        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], cargos: ["ADMINISTRADOR"] },
       },
       {
         path: "notificaciones/unidades-personas",
         name: "UnidadesPersonas",
         component: () => import("../views/gestion/UnidadesPersonasView.vue"),
-        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"] },
+        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], cargos: ["ADMINISTRADOR"] },
       },
       // ── Almacenamiento (Admin Config) ──────────────
       {
         path: "configuracion-almacenamiento",
         name: "ConfiguracionAlmacenamiento",
         component: () => import("../views/admin/ConfiguracionAlmacenamientoView.vue"),
-        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], permiso: "ALMACENAMIENTO_CONFIGURAR" },
+        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], cargos: ["ADMINISTRADOR"], permiso: "ALMACENAMIENTO_CONFIGURAR" },
       },
       // ── Archivos ───────────────────────────────────
       {
@@ -279,7 +279,7 @@ const routes = [
         component: () => import("../views/storage/ArchivosView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO", "TESORERO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "TESORERO", "ADMINISTRADOR"],
         },
       },
       // ── Guardia ───────────────────────────────────
@@ -293,25 +293,25 @@ const routes = [
         path: "porton",
         name: "Porton",
         component: () => import("../views/visitas/PortonView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "ADMINISTRADOR"] },
       },
       {
         path: "visitas",
         name: "Visitas",
         component: () => import("../views/visitas/VisitasView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "ADMINISTRADOR"] },
       },
       {
         path: "visitas/busqueda",
         name: "BusquedaDetalle",
         component: () => import("../views/visitas/BusquedaDetalleView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "ADMINISTRADOR"] },
       },
       {
         path: "visitas/nueva",
         name: "RegistrarVisita",
         component: () => import("../views/visitas/RegistrarVisitaView.vue"),
-        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE"] },
+        meta: { roles: ["GUARDIA", "ADMINISTRADOR"], cargos: ["PRESIDENTE", "ADMINISTRADOR"] },
       },
       {
         path: "solicitudes",
@@ -333,7 +333,7 @@ const routes = [
         component: () => import("../views/guardia/BitacoraView.vue"),
         meta: {
           roles: ["GUARDIA", "ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "DELEGADO", "ADMINISTRADOR"],
         },
       },
       {
@@ -342,7 +342,7 @@ const routes = [
         component: () => import("../views/guardia/ChecklistTemplatesView.vue"),
         meta: {
           roles: ["GUARDIA", "ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
       },
       {
@@ -351,7 +351,7 @@ const routes = [
         component: () => import("../views/guardia/AutorizacionesView.vue"),
         meta: {
           roles: ["GUARDIA", "ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
       },
       // ── Residente ─────────────────────────────────

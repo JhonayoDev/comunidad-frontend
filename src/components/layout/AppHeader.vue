@@ -51,19 +51,27 @@
 
   <div
     v-if="showContextPills"
-    class="flex gap-1 px-3 pb-2 overflow-x-auto bg border-bottom-1 surface-border"
+    class="flex gap-2 px-3 pb-2 overflow-x-auto bg border-bottom-1 surface-border"
   >
     <Button
-      class="btn-no-bg header-btn"
+      class="context-card"
       v-for="ctx in auth.contextos"
       :key="ctx.key"
-      :label="ctx.label"
       :severity="auth.activeContext === ctx.key ? 'primary' : 'secondary'"
-      :variant="auth.activeContext === ctx.key ? 'filled' : 'text'"
+      :variant="auth.activeContext === ctx.key ? 'filled' : 'outlined'"
       size="small"
       rounded
       @click="switchContext(ctx)"
-    />
+    >
+      <span class="flex items-center gap-1">
+        {{ ctx.label }}
+        <Badge
+          v-if="conteoContexto(ctx) > 0"
+          :value="conteoContexto(ctx) > 99 ? '99+' : conteoContexto(ctx)"
+          severity="danger"
+        />
+      </span>
+    </Button>
   </div>
 
   <Drawer
@@ -98,6 +106,7 @@ import MenuView from "@/views/menu/MenuView.vue";
 import Drawer from "primevue/drawer";
 import Button from "primevue/button";
 import Select from "primevue/select";
+import Badge from "primevue/badge";
 
 const router = useRouter();
 const route = useRoute();
@@ -123,9 +132,7 @@ function initTema() {
 initTema();
 
 const showContextPills = computed(() => {
-  return (
-    auth.user?.roles?.includes("RESIDENTE") && !!auth.condominioActualCargo
-  );
+  return auth.user?.roles?.includes("RESIDENTE") && auth.contextos.length > 1;
 });
 
 watch(
@@ -137,16 +144,32 @@ watch(
 
 function goHome() {
   const roles = auth.user?.roles || [];
-  const rol = auth.condominioActualRol || roles[0];
   if (roles.includes("SUPER_ADMIN")) {
     router.push({ name: "SuperAdminDashboard" });
-  } else if (rol === "ADMINISTRADOR") {
+    return;
+  }
+
+  // Contexto de cargo activo → su propio dashboard (ej: administrador → Dashboard).
+  if (auth.activeContext !== "residente") {
+    router.push({ name: auth.contextDashboard });
+    return;
+  }
+
+  // Contexto residente (o sin cargos): el home depende del rol.
+  const rol = auth.condominioActualRol || roles[0];
+  if (rol === "ADMINISTRADOR") {
     router.push({ name: "Dashboard" });
   } else if (rol === "GUARDIA") {
     router.push({ name: "GuardiaDashboard" });
-  } else if (rol === "RESIDENTE") {
+  } else {
     router.push({ name: "Inicio" });
   }
+}
+
+// Badge de no leídas por contexto (residente / cargo). En Fase 2 se alimenta
+// desde el backend (audiencia por notificación); hoy retorna 0 (oculto).
+function conteoContexto(ctx) {
+  return 0;
 }
 
 function goTo(name) {
@@ -157,6 +180,10 @@ function goTo(name) {
 <style scoped>
 .header-text {
   color: var(--p-primary-text-principal);
+}
+.context-card {
+  min-width: 6.5rem;
+  justify-content: flex-start;
 }
 </style>
 
