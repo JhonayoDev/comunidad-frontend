@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
 import TarjetaAccesosActivos from "@/components/stats/TarjetaAccesosActivos.vue";
+import TarjetaEncomiendasPendientes from "@/components/stats/TarjetaEncomiendasPendientes.vue";
 
 import Card from "primevue/card";
 import Tag from "primevue/tag";
@@ -61,8 +62,8 @@ onMounted(cargar);
 
     <template v-if="loading">
       <Card><template #content><Skeleton width="60%" height="1.5rem" /></template></Card>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card v-for="i in 4" :key="i"><template #content><Skeleton width="100%" height="4rem" /></template></Card>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <Card v-for="i in 6" :key="i"><template #content><Skeleton width="100%" height="4rem" /></template></Card>
       </div>
     </template>
 
@@ -79,7 +80,7 @@ onMounted(cargar);
         </template>
       </Card>
 
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <Card>
           <template #content class="flex flex-col items-center text-center gap-1">
             <i class="pi pi-home text-primary" style="font-size:1.5rem"></i>
@@ -108,6 +109,14 @@ onMounted(cargar);
             <span class="text-xs text-surface-400">Anuncios</span>
           </template>
         </Card>
+        <TarjetaAccesosActivos
+          :conteo-inicial="dashboard.accesos?.activosAhora ?? 0"
+          @click="router.push({ name: 'Visitas' })"
+        />
+        <TarjetaEncomiendasPendientes
+          :conteo-inicial="dashboard.pendientes?.encomiendas ?? 0"
+          @click="router.push({ name: 'Encomiendas' })"
+        />
       </div>
 
       <Card>

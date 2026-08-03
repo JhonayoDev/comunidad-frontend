@@ -134,6 +134,25 @@ const CARGO_NAV_ITEMS = {
     { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
     { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],
+  ADMINISTRADOR: [
+    { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
+    { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
+    { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
+    { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
+    { label: "Visitas", icon: "pi pi-eye", routeName: "Visitas" },
+    { label: "Portón", icon: "pi pi-shield", routeName: "Porton" },
+    { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },
+    { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
+    { label: "Checklist", icon: "pi pi-check-square", routeName: "ChecklistTemplates" },
+    { label: "Personal", icon: "pi pi-users", routeName: "Personal" },
+    { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "ConfiguracionAlmacenamiento" },
+    { label: "Reglas Notif.", icon: "pi pi-sliders-h", routeName: "ReglasNotificacion" },
+    { label: "Plantillas Notif.", icon: "pi pi-envelope", routeName: "PlantillasNotificacion" },
+    { label: "Anuncios", icon: "pi pi-megaphone", routeName: "Anuncios" },
+    { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
+  ],
 };
 
 export function useNavigation() {
