@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="es" class="figma-chrome">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>briku — Workspace Prototipador (Figma)</title>
+
+<!-- Google Fonts: Inter + JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Font Awesome 6 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+<!-- Tailwind CSS Play CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     TOKENS DE COLOR (espejo de src/theme/colors.js)
+     ══════════════════════════════════════════════════════════════════════ */
+  :root {
+    --bg:                #F4F4F7;  /* neutral.light.background */
+    --surface:           #FFFFFF;  /* neutral.light.surface */
+    --surface-2:         #f5f5f5;  /* neutral.light.scale.50 */
+    --bg-inverse:        #222226;  /* neutral.light.backgroundInverse */
+    --border:            #bfbfbf;  /* neutral.light.border */
+    --border-secondary:  #b0cfef;  /* brand.borderSecondary (200) */
+    --text:              #1a1a1a;  /* neutral.light.text.primary */
+    --text-muted:        #5a5c61;  /* neutral.light.text.secondary */
+    --text-inverse:      #eef4fb;  /* neutral.light.text.inverse (info-50) */
+    --primary:           #003366;  /* brand.DEFAULT */
+    --primary-hover:     #265e95;  /* brand.hover (500) */
+    --primary-active:    #00488f;  /* brand.active */
+    --primary-border:    #004d99;  /* brand.border */
+    --primary-soft:      #b0cfef;  /* brand.textResaltado */
+    --primary-100:       #d7e7f8;
+    --primary-50:        #edf5fc;
+    --success:           #388b3c;  /* status.success.500 */
+    --success-soft:      #edf7ee;  /* status.success.50 */
+    --warning:           #ebb83d;  /* status.warning.500 */
+    --warning-soft:      #fff8e7;
+    --danger:            #c53b3b;  /* status.danger.500 */
+    --danger-soft:       #fdeeee;
+    --info:              #2769ab;  /* status.info.500 */
+    --info-soft:         #eef4fb;
+    --overlay:           color-mix(in srgb, #F4F4F7 98%, transparent); /* ui.overlay.light */
+    --formfield:         color-mix(in srgb, #F4F4F7 75%, transparent); /* ui.formField.light */
+  }
+  .dark {
+    --bg:                #121212;  /* neutral.dark.background */
+    --surface:           #222226;  /* neutral.dark.surface */
+    --surface-2:         #181818;  /* neutral.dark.scale.50 */
+    --bg-inverse:        #F4F4F7;  /* neutral.dark.backgroundInverse */
+    --border:            #323238;  /* neutral.dark.border */
+    --border-secondary:  #b0cfef;  /* brand.borderSecondary (constante) */
+    --text:              #ffffff;  /* neutral.dark.text.primary */
+    --text-muted:        #b3b3b7;  /* neutral.dark.text.secondary */
+    --text-inverse:      #003f80;  /* neutral.dark.text.inverse (info-600) */
+    --overlay:           color-mix(in srgb, #222226 98%, transparent); /* ui.overlay.dark */
+    --formfield:         color-mix(in srgb, #222226 75%, transparent); /* ui.formField.dark */
+    --success-soft:      #103012; --warning-soft:#33280e; --danger-soft:#430d0d; --info-soft:#001933;
+    --primary-100:       #00264d; --primary-50: #00172f;
+  }
+
+  body { font-family: "Inter", system-ui, sans-serif; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+
+  /* ══════════ Chrome estilo Figma ══════════ */
+  .figma-topbar  { background:#2C2C2C; }
+  .figma-panel   { background:#1E1E1E; }
+  .figma-label   { color:#9E9E9E; font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
+  .figma-text    { color:#CCCCCC; }
+  .figma-chip    { background:#2C2C2C; border:1px solid #3D3D3D; color:#BDBDBD; }
+  .figma-chip.active { background:#0A84FF; border-color:#0A84FF; color:#fff; }
+  .figma-switch:hover { background:#3D3D3D; }
+
+  /* Lienzo con grid de puntos */
+  .canvas-grid {
+    background-color:#191919;
+    background-image: radial-gradient(circle, #333 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Marco de dispositivo */
+  .device-frame {
+    transition: width .35s ease, height .35s ease, border-radius .35s ease;
+    box-shadow: 0 20px 60px rgba(0,0,0,.55), 0 0 0 1px #3D3D3D;
+  }
+  .device-frame.desktop { width:1100px; height:720px; border-radius:12px; }
+  .device-frame.mobile  { width:375px;  height:780px; border-radius:44px; }
+  .frame-scroll { overflow-y:auto; height:100%; }
+  .frame-scroll::-webkit-scrollbar { width:8px; height:8px; }
+  .frame-scroll::-webkit-scrollbar-thumb { background:rgba(128,128,128,.4); border-radius:4px; }
+  .device-notch { display:none; }
+  .device-frame.mobile .device-notch { display:flex; }
+
+  .swatch { border:1px solid rgba(0,0,0,.12); }
+  .dark .swatch { border-color:rgba(255,255,255,.12); }
+  .token-row:hover { background:rgba(255,255,255,.04); }
+
+  .seg-base    { background:var(--bg); }
+  .seg-surface { background:var(--surface); }
+  .seg-focus   { background:var(--primary); }
+  .bar-track   { background:rgba(255,255,255,.08); }
+
+  /* Scrollbar de paneles */
+  .panel-scroll::-webkit-scrollbar { width:8px; }
+  .panel-scroll::-webkit-scrollbar-thumb { background:#3D3D3D; border-radius:4px; }
+</style>
+
+<script>
+  /* Config de Tailwind: tokens → variables CSS (tema se conmuta con .dark) */
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          background: "var(--bg)",
+          surface: "var(--surface)",
+          "surface-2": "var(--surface-2)",
+          "bg-inverse": "var(--bg-inverse)",
+          border: "var(--border)",
+          "border-secondary": "var(--border-secondary)",
+          text: "var(--text)",
+          "text-muted": "var(--text-muted)",
+          "text-inverse": "var(--text-inverse)",
+          primary: "var(--primary)",
+          "primary-hover": "var(--primary-hover)",
+          "primary-active": "var(--primary-active)",
+          "primary-border": "var(--primary-border)",
+          "primary-soft": "var(--primary-soft)",
+          "primary-100": "var(--primary-100)",
+          "primary-50": "var(--primary-50)",
+          success: "var(--success)",
+          "success-soft": "var(--success-soft)",
+          warning: "var(--warning)",
+          "warning-soft": "var(--warning-soft)",
+          danger: "var(--danger)",
+          "danger-soft": "var(--danger-soft)",
+          info: "var(--info)",
+          "info-soft": "var(--info-soft)",
+          overlay: "var(--overlay)",
+          formfield: "var(--formfield)",
+        },
+        fontFamily: {
+          sans: ["Inter", "system-ui", "sans-serif"],
+          mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+        },
+      },
+    },
+  };
+</script>
+</head>
+
+<body class="h-screen w-screen overflow-hidden bg-[#191919]">
+
+  <!-- ═══════════════════ TOPBAR estilo Figma ═══════════════════ -->
+  <header class="figma-topbar h-12 flex items-center justify-between px-4 select-none" style="border-bottom:1px solid #3D3D3D;">
+    <!-- Izquierda: nombre -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded" style="background:#003366;"></div>
+        <span class="text-[13px] font-semibold text-white tracking-tight">briku</span>
+        <span class="figma-label hidden lg:block">— SaaS Condominios</span>
+      </div>
+      <span class="text-[#5A5C61] hidden md:block">/</span>
+      <span class="text-[11px] text-[#9E9E9E] hidden md:block">Workspace Prototipador</span>
+    </div>
+
+    <!-- Centro: selectores -->
+    <div class="flex items-center gap-2">
+      <!-- Selector de dispositivo -->
+      <div class="flex items-center gap-1 bg-[#1E1E1E] rounded-lg p-1">
+        <button onclick="setDevice('desktop')" id="dev-desktop"
+          class="figma-chip rounded-md px-3 py-1 text-[11px] font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-desktop"></i><span>Desktop</span>
+        </button>
+        <button onclick="setDevice('mobile')" id="dev-mobile"
+          class="figma-chip rounded-md px-3 py-1 text-[11px] font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-mobile-screen-button"></i><span>Móvil</span>
+        </button>
+      </div>
+      <!-- Selector de tema -->
+      <div class="flex items-center gap-1 bg-[#1E1E1E] rounded-lg p-1">
+        <button onclick="setTheme('light')" id="th-light"
+          class="figma-chip rounded-md px-3 py-1 text-[11px] font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-sun"></i><span>Light</span>
+        </button>
+        <button onclick="setTheme('dark')" id="th-dark"
+          class="figma-chip rounded-md px-3 py-1 text-[11px] font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-moon"></i><span>Dark</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Derecha: WCAG AA compliance -->
+    <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#1E1E1E]">
+        <i class="fa-solid fa-circle-check text-[#4caf50] text-[12px]"></i>
+        <span class="text-[11px] text-[#9E9E9E]">WCAG</span>
+        <span class="text-[11px] font-semibold text-white" id="wcag-score">AA</span>
+      </div>
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#1E1E1E]">
+        <i class="fa-solid fa-circle text-[10px]" style="color:#388b3c;"></i>
+        <span class="text-[11px] text-[#9E9E9E] mono">120px</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════ WORKSPACE ═══════════════════ -->
+  <div class="flex h-[calc(100vh-3rem)]">
+
+    <!-- ═══ Panel Izquierdo: Módulos + Tokens ═══ -->
+    <aside class="figma-panel w-[264px] shrink-0 flex flex-col border-r border-[#2C2C2C]">
+      <div class="p-3 border-b border-[#2C2C2C]">
+        <p class="figma-label mb-2">Módulos / Capas</p>
+        <div class="flex flex-col gap-0.5" id="module-list">
+          <!-- Se llena en JS -->
+        </div>
+      </div>
+      <div class="flex-1 panel-scroll overflow-y-auto p-3">
+        <div class="flex items-center justify-between mb-2">
+          <p class="figma-label">Tokens de Color</p>
+          <span class="mono text-[10px] text-[#7C7C7C]">colors.js</span>
+        </div>
+        <div id="token-inspector" class="flex flex-col gap-4">
+          <!-- Se llena en JS -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══ Lienzo Central ═══ -->
+    <main class="canvas-grid flex-1 overflow-auto flex items-center justify-center p-8">
+      <div id="device-frame" class="device-frame desktop relative bg-background">
+        <!-- Notch móvil -->
+        <div class="device-notch absolute top-0 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1 pt-2">
+          <div class="w-24 h-[26px] bg-[#0d0d0d] rounded-full"></div>
+        </div>
+
+        <!-- Chrome de navegador (desktop) -->
+        <div id="browser-chrome" class="hidden desktop:flex items-center gap-2 px-4 h-9 bg-[#2C2C2C] rounded-t-[12px] sticky top-0 z-20">
+          <div class="flex gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
+          </div>
+          <div class="flex-1 mx-3 h-5 rounded-md bg-[#1E1E1E] flex items-center px-2">
+            <span class="text-[10px] text-[#7C7C7C] mono">comunidad.space-ideaserver.workers.dev</span>
+          </div>
+          <i class="fa-solid fa-rotate-right text-[#9E9E9E] text-[10px]"></i>
+        </div>
+
+        <!-- App shell (mock del MainLayout) -->
+        <div class="app-shell flex flex-col h-full">
+          <div class="sticky top-0 z-20 bg-surface" style="border-bottom:1px solid var(--border);">
+            <div class="flex items-center justify-between px-4 py-2.5">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-md flex items-center justify-center" style="background:var(--primary);">
+                  <i class="fa-solid fa-house text-[10px] text-white"></i>
+                </div>
+                <span class="text-sm font-bold" style="color:var(--text);">briku</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="relative">
+                  <i class="fa-solid fa-bell text-sm" style="color:var(--text-muted);"></i>
+                  <span class="absolute -top-1 -right-1.5 w-3.5 h-3.5 rounded-full bg-danger text-white text-[8px] flex items-center justify-center font-bold">3</span>
+                </span>
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style="background:var(--primary-400,#4d8fce);">MJ</div>
+              </div>
+            </div>
+          </div>
+          <div id="module-render" class="frame-scroll flex-1 bg-background"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ═══ Panel Derecho: Inspector ═══ -->
+    <aside class="figma-panel w-[320px] shrink-0 flex flex-col border-l border-[#2C2C2C]">
+      <div class="p-3 border-b border-[#2C2C2C]">
+        <div class="flex items-center justify-between mb-2">
+          <p class="figma-label">Inspector de Código</p>
+          <span class="mono text-[10px] text-[#7C7C7C]" id="module-code-label">Tailwind</span>
+        </div>
+        <div id="code-inspector" class="mono text-[11px] leading-relaxed flex flex-col gap-1 max-h-[300px] panel-scroll overflow-y-auto pr-1">
+          <!-- Se llena en JS -->
+        </div>
+      </div>
+
+      <div class="p-3 border-b border-[#2C2C2C]">
+        <div class="flex items-center justify-between mb-3">
+          <p class="figma-label">Regla de Color</p>
+          <span class="mono text-[10px] text-[#7C7C7C]">60 / 20 / 5</span>
+        </div>
+        <div id="proportions" class="flex flex-col gap-3">
+          <!-- Se llena en JS -->
+        </div>
+      </div>
+
+      <div class="flex-1 panel-scroll overflow-y-auto p-3">
+        <p class="figma-label mb-2">Contraste WCAG AA</p>
+        <div id="wcag-panel" class="flex flex-col gap-1.5">
+          <!-- Se llena en JS -->
+        </div>
+      </div>
+    </aside>
+  </div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   PALETA (espejo exacto de src/theme/colors.js)
+   ══════════════════════════════════════════════════════════════════════ */
+const PALETTE = {
+  brand: {
+    scale: {50:"#edf5fc",100:"#d7e7f8",200:"#b0cfef",300:"#7caedf",400:"#4d8fce",500:"#265e95",600:"#002d5c",700:"#00264d",800:"#001f40",900:"#00172f",950:"#000d1a"},
+    DEFAULT:"#003366", hover:"#265e95", active:"#00488f", border:"#004d99",
+    borderSecondary:"#b0cfef", text:"#003366", onBrand:"#ffffff", textResaltado:"#b0cfef",
+  },
+  neutral: {
+    light: { background:"#F4F4F7", surface:"#FFFFFF", backgroundInverse:"#222226", border:"#bfbfbf", muted:"#8a8a8a",
+             text:{ primary:"#1a1a1a", secondary:"#5a5c61", inverse:"#eef4fb" } },
+    dark:  { background:"#121212", surface:"#222226", backgroundInverse:"#F4F4F7", border:"#323238", muted:"#808088",
+             text:{ primary:"#ffffff", secondary:"#b3b3b7", inverse:"#003f80" } },
+  },
+  status: {
+    success:{50:"#edf7ee",100:"#d7ecd9",200:"#afd9b3",300:"#81c784",400:"#4caf50",500:"#388b3c",600:"#256728",700:"#1f5a22",800:"#18471b",900:"#103012",950:"#081808",DEFAULT:"#388b3c"},
+    warning:{50:"#fff8e7",100:"#feefc5",200:"#fde08c",300:"#fbd253",400:"#fac73d",500:"#ebb83d",600:"#dca93d",700:"#b58b32",800:"#8e6d27",900:"#66501c",950:"#33280e",DEFAULT:"#ebb83d"},
+    danger: {50:"#fdeeee",100:"#fad4d4",200:"#f5aaaa",300:"#ef8080",400:"#e45555",500:"#c53b3b",600:"#a72222",700:"#861b1b",800:"#651414",900:"#430d0d",950:"#220707",DEFAULT:"#c53b3b"},
+    info:   {50:"#eef4fb",100:"#d5e5f7",200:"#abcbee",300:"#7fb1e5",400:"#4f93d7",500:"#2769ab",600:"#003f80",700:"#003366",800:"#00264d",900:"#001933",950:"#000d1a",DEFAULT:"#2769ab"},
+  },
+  ui: { datepickerAccent:"#c53b3b", checkedOnBrand:"#ffffff", overlayLight:"color-mix(in srgb, #F4F4F7 98%, transparent)", overlayDark:"color-mix(in srgb, #222226 98%, transparent)" },
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   MÓDULOS → contenido HTML fiel a las vistas reales
+   ══════════════════════════════════════════════════════════════════════ */
+const MODULES = {
+  "portal-residente": {
+    label: "Portal Residente",
+    icon: "fa-house",
+    kind: "Residente · InicioView / ResidenteDashboardView",
+    classes: [
+      'p-4 flex flex-col gap-4', 'grid grid-cols-2 gap-3', 'border-round',
+      'bg-surface', 'bg-emphasis', 'text-text-muted', 'text-primary',
+      'bg-red-50 border-1 border-red-200', 'font-semibold', 'hover:bg-emphasis',
+    ],
+    html: `
+      <!-- Resumen / Mi hogar -->
+      <div class="p-4 flex flex-col gap-4">
+
+        <!-- Mi Hogar (accordion) -->
+        <div class="bg-surface border-round shadow-sm p-3">
+          <div class="flex items-center gap-3 py-1 cursor-pointer select-none" onclick="this.nextElementSibling.classList.toggle('hidden')">
+            <i class="fa-solid fa-house text-lg" style="color:var(--primary-400,#4d8fce);"></i>
+            <div class="flex-1">
+              <span class="font-semibold text-sm" style="color:var(--text);">Mi Hogar</span>
+              <span class="text-[11px] text-text-muted"> · 2 unidades</span>
+            </div>
+            <i class="fa-solid fa-chevron-down text-xs text-text-muted transition-transform" style="transform:rotate(180deg);"></i>
+          </div>
+          <div class="flex flex-col gap-4 px-1 pt-3">
+            <!-- Unidad: Casa 24 -->
+            <div>
+              <p class="text-[11px] font-semibold text-text-muted uppercase mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-users"></i><span>Convivientes · Casa 24</span>
+              </p>
+              <div class="flex items-center justify-between py-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style="background:var(--primary-400,#4d8fce);">MJ</span>
+                  <span class="text-sm" style="color:var(--text);">María José Herrera</span>
+                </div>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-info-soft" style="color:var(--info);">Propietario</span>
+              </div>
+              <div class="flex items-center justify-between py-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style="background:var(--primary-400,#4d8fce);">RA</span>
+                  <span class="text-sm" style="color:var(--text);">Rodrigo Araya</span>
+                </div>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-info-soft" style="color:var(--info);">Residente</span>
+              </div>
+              <p class="text-[11px] font-semibold text-text-muted uppercase mb-2 mt-3 flex items-center gap-2">
+                <i class="fa-solid fa-car"></i><span>Vehículos</span>
+              </p>
+              <div class="flex items-center justify-between py-1">
+                <div class="flex items-center gap-2">
+                  <i class="fa-solid fa-car text-sm text-primary"></i>
+                  <span class="text-sm font-mono" style="color:var(--text);">KBXZ-12</span>
+                </div>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success-soft" style="color:var(--success);">Activo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mis Deudas -->
+        <div class="bg-surface border-round shadow-sm p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-sm" style="color:var(--text);">Mis Deudas</span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-danger" style="color:#fff;">$48.500</span>
+          </div>
+          <div class="flex items-center justify-between p-2 border-round bg-red-50" style="border:1px solid var(--danger-soft);">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-house text-xs"></i>
+                <span class="text-sm font-medium" style="color:var(--text);">Casa 24</span>
+              </div>
+              <span class="text-[11px] text-text-muted ml-5">GC 2026-07 · Vence: 10/08/2026</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm" style="color:var(--text);">$48.500</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-danger" style="color:#fff;">Vencido</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between p-2 border-round bg-emphasis mt-2">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-house text-xs"></i>
+                <span class="text-sm font-medium" style="color:var(--text);">Estacionamiento 4</span>
+              </div>
+              <span class="text-[11px] text-text-muted ml-5">GC 2026-07 · Vence: 10/08/2026</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm" style="color:var(--text);">$22.000</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-soft" style="color:var(--warning);">Pendiente</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Autorizaciones activas -->
+        <div class="bg-surface border-round shadow-sm p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-sm" style="color:var(--text);">Autorizaciones activas</span>
+            <span class="w-5 h-5 rounded-full bg-warning text-[10px] font-bold text-white flex items-center justify-center">2</span>
+          </div>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between p-2 border-round">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-circle-check text-primary"></i>
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium" style="color:var(--text);">Tía Carolina</span>
+                  <span class="text-[11px] text-text-muted">VISITA · Casa 24</span>
+                </div>
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-soft" style="color:var(--warning);">ACTIVA</span>
+            </div>
+            <div class="flex items-center justify-between p-2 border-round">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-circle-check text-primary"></i>
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium" style="color:var(--text);">Reparaciones R&amp;M</span>
+                  <span class="text-[11px] text-text-muted">TECNICO · Casa 24</span>
+                </div>
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-soft" style="color:var(--warning);">ACTIVA</span>
+            </div>
+          </div>
+          <button class="mt-2 text-primary text-xs font-semibold flex items-center gap-1">
+            Ver todas <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
+        </div>
+
+        <!-- Encomiendas pendientes -->
+        <div class="bg-surface border-round shadow-sm p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold text-sm" style="color:var(--text);">Encomiendas</span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning" style="color:#fff;">2</span>
+          </div>
+          <div class="flex items-center justify-between p-2 border-round">
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-inbox text-primary"></i>
+              <div class="flex flex-col">
+                <span class="text-sm font-medium" style="color:var(--text);">ENCOMIENDA</span>
+                <span class="text-[11px] text-text-muted">María José Herrera · Casa 24 · 02 ago</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-soft" style="color:var(--warning);">Pendiente</span>
+          </div>
+          <div class="flex items-center justify-between p-2 border-round">
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-inbox text-primary"></i>
+              <div class="flex flex-col">
+                <span class="text-sm font-medium" style="color:var(--text);">CARTA</span>
+                <span class="text-[11px] text-text-muted">Rodrigo Araya · Casa 24 · 01 ago</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-soft" style="color:var(--warning);">Pendiente</span>
+          </div>
+        </div>
+      </div>`,
+  },
+
+  "control-acceso": {
+    label: "Control de Acceso",
+    icon: "fa-shield-halved",
+    kind: "Guardia · GuardiaDashboardView / VisitasView",
+    classes: [
+      'grid grid-cols-2 gap-3', 'text-3xl font-bold', 'bg-surface/90',
+      'border-border-secondary', 'hover:bg-background/95', 'pi pi-arrow-right',
+      'border-round hover:bg-emphasis', 'rounded-lg', 'text-text-muted',
+    ],
+    html: `
+      <div class="p-4 flex flex-col gap-4">
+
+        <!-- Turno -->
+        <div class="bg-surface border-round shadow-sm p-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-success-soft flex items-center justify-center">
+              <i class="fa-solid fa-user-clock text-success text-sm"></i>
+            </span>
+            <div>
+              <p class="text-sm font-semibold m-0" style="color:var(--text);">Turno activo</p>
+              <p class="text-[11px] text-text-muted m-0">Iniciado 07:00 · Juan Pérez</p>
+            </div>
+          </div>
+          <button class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background:var(--danger); color:#fff;">
+            Finalizar turno
+          </button>
+        </div>
+
+        <!-- Buscador por patente -->
+        <div class="bg-surface border-round shadow-sm p-3 flex gap-2">
+          <div class="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border" style="border-color:var(--border); background:var(--formfield);">
+            <i class="fa-solid fa-magnifying-glass text-xs text-text-muted"></i>
+            <span class="text-sm text-text-muted">Buscar por patente…</span>
+          </div>
+          <button class="px-4 py-2 rounded-lg text-sm font-semibold text-white" style="background:var(--primary);">
+            <i class="fa-solid fa-magnifying-glass mr-1"></i>
+          </button>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-surface border-round shadow-sm p-3 text-center">
+            <p class="text-3xl font-bold m-0" style="color:var(--primary-400,#4d8fce);">8</p>
+            <p class="text-[11px] text-text-muted m-0 mt-1">Visitas activas</p>
+          </div>
+          <div class="bg-surface border-round shadow-sm p-3 text-center">
+            <p class="text-3xl font-bold m-0" style="color:var(--primary-400,#4d8fce);">7</p>
+            <p class="text-[11px] text-text-muted m-0 mt-1">Encomiendas</p>
+          </div>
+          <div class="bg-surface border-round shadow-sm p-3 text-center">
+            <p class="text-3xl font-bold m-0" style="color:var(--primary-400,#4d8fce);">120</p>
+            <p class="text-[11px] text-text-muted m-0 mt-1">Unidades</p>
+          </div>
+          <div class="bg-surface border-round shadow-sm p-3 text-center">
+            <p class="text-3xl font-bold m-0" style="color:var(--primary-400,#4d8fce);">186</p>
+            <p class="text-[11px] text-text-muted m-0 mt-1">Residentes</p>
+          </div>
+        </div>
+
+        <!-- Últimos accesos -->
+        <div class="bg-surface border-round shadow-sm p-3">
+          <p class="font-semibold text-sm m-0 mb-2" style="color:var(--text);">Últimos accesos</p>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between p-2 border-round hover:bg-emphasis">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-arrow-right text-success text-xs"></i>
+                <div>
+                  <p class="text-sm font-medium m-0" style="color:var(--text);">Carlos Muñoz</p>
+                  <p class="text-[11px] text-text-muted m-0">Casa 12 · 14:32</p>
+                </div>
+              </div>
+              <span class="text-[11px] text-text-muted">VISITA</span>
+            </div>
+            <div class="flex items-center justify-between p-2 border-round hover:bg-emphasis">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-arrow-right text-success text-xs"></i>
+                <div>
+                  <p class="text-sm font-medium m-0" style="color:var(--text);">Pedro Soto</p>
+                  <p class="text-[11px] text-text-muted m-0">Casa 31 · 14:05</p>
+                </div>
+              </div>
+              <span class="text-[11px] text-text-muted">DELIVERY</span>
+            </div>
+            <div class="flex items-center justify-between p-2 border-round hover:bg-emphasis">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-arrow-right text-success text-xs"></i>
+                <div>
+                  <p class="text-sm font-medium m-0" style="color:var(--text);">Ana Rojas</p>
+                  <p class="text-[11px] text-text-muted m-0">Casa 5 · 13:47</p>
+                </div>
+              </div>
+              <span class="text-[11px] text-text-muted">UBER</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de visitas -->
+        <div class="bg-surface border-round shadow-sm p-3">
+          <p class="font-semibold text-sm m-0 mb-2" style="color:var(--text);">Visitas activas</p>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between gap-2 p-3 rounded-lg cursor-pointer border" style="border-color:var(--border-secondary); background:var(--surface);">
+              <div class="flex items-center gap-1 text-xs min-w-0 flex-1 overflow-hidden">
+                <span class="font-semibold whitespace-nowrap" style="color:var(--text);">ABCX-11</span>
+                <span class="text-text-muted truncate"> · Casa 12 · Carlos Muñoz</span>
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success-soft" style="color:var(--success);">Activa</span>
+            </div>
+            <div class="flex items-center justify-between gap-2 p-3 rounded-lg cursor-pointer border" style="border-color:var(--border-secondary); background:var(--surface);">
+              <div class="flex items-center gap-1 text-xs min-w-0 flex-1 overflow-hidden">
+                <span class="font-semibold whitespace-nowrap" style="color:var(--text);">XKJ-456</span>
+                <span class="text-text-muted truncate"> · Casa 31 · Delivery</span>
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success-soft" style="color:var(--success);">Activa</span>
+            </div>
+            <div class="flex items-center justify-between gap-2 p-3 rounded-lg cursor-pointer border" style="border-color:var(--border-secondary); background:var(--surface);">
+              <div class="flex items-center gap-1 text-xs min-w-0 flex-1 overflow-hidden">
+                <span class="font-semibold whitespace-nowrap" style="color:var(--text);">WXC-908</span>
+                <span class="text-text-muted truncate"> · Casa 5 · Ana Rojas</span>
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success-soft" style="color:var(--success);">Activa</span>
+            </div>
+          </div>
+        </div>
+      </div>`,
+  },
+
+  "encomiendas": {
+    label: "Encomiendas",
+    icon: "fa-box-open",
+    kind: "Encomiendas · MisEncomiendasView / EncomiendasView",
+    classes: [
+      'bg-surface border-round shadow-sm', 'pi pi-inbox', 'font-semibold',
+      'text-xs text-surface-400', 'bg-warning', 'cursor-pointer', 'hover:shadow-3',
+      'flex items-start justify-between gap-2', 'text-sm mt-1',
+    ],
+    html: `
+      <div class="p-4 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold m-0" style="color:var(--text);">Mis encomiendas</h2>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style="background:var(--primary);">
+            <i class="fa-solid fa-plus mr-1"></i>Nueva
+          </button>
+        </div>
+
+        <!-- Tarjeta 1 -->
+        <div class="bg-surface border-round shadow-sm p-3 cursor-pointer" style="transition:box-shadow .15s;">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-inbox text-primary"></i>
+                <span class="font-semibold text-sm" style="color:var(--text);">ENCOMIENDA</span>
+              </div>
+              <p class="text-sm mt-1" style="color:var(--text);">María José Herrera</p>
+              <p class="text-xs" style="color:var(--text-muted);">Casa 24 · Recibida 02 ago, 10:15</p>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-1 rounded-full bg-warning" style="color:#fff;">Pendiente</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2 -->
+        <div class="bg-surface border-round shadow-sm p-3 cursor-pointer">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-inbox text-primary"></i>
+                <span class="font-semibold text-sm" style="color:var(--text);">CARTA</span>
+              </div>
+              <p class="text-sm mt-1" style="color:var(--text);">Rodrigo Araya</p>
+              <p class="text-xs" style="color:var(--text-muted);">Casa 24 · Recibida 01 ago, 18:40</p>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-1 rounded-full bg-warning" style="color:#fff;">Pendiente</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta 3 -->
+        <div class="bg-surface border-round shadow-sm p-3 cursor-pointer">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-inbox text-primary"></i>
+                <span class="font-semibold text-sm" style="color:var(--text);">ENCOMIENDA</span>
+              </div>
+              <p class="text-sm mt-1" style="color:var(--text);">María José Herrera</p>
+              <p class="text-xs" style="color:var(--text-muted);">Casa 24 · Recibida 30 jul, 09:05</p>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-1 rounded-full bg-info-soft" style="color:var(--info);">Entregada</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta 4 -->
+        <div class="bg-surface border-round shadow-sm p-3 cursor-pointer">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-inbox text-primary"></i>
+                <span class="font-semibold text-sm" style="color:var(--text);">CARTA</span>
+              </div>
+              <p class="text-sm mt-1" style="color:var(--text);">Rodrigo Araya</p>
+              <p class="text-xs" style="color:var(--text-muted);">Casa 24 · Recibida 28 jul, 16:20</p>
+              <p class="text-xs" style="color:var(--text-muted);">Retirada por Rodrigo Araya (11.222.333-4)</p>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-1 rounded-full" style="background:var(--bg-inverse); color:var(--text-inverse);">Cerrada</span>
+          </div>
+        </div>
+      </div>`,
+  },
+
+  "finanzas": {
+    label: "Finanzas",
+    icon: "fa-coins",
+    kind: "Finanzas · GastosComunesView",
+    classes: [
+      'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3', 'hover:shadow-3',
+      'flex justify-between', 'text-green-600', 'font-semibold',
+      'cursor-pointer transition-shadow', 'border-bottom-1 surface-border',
+    ],
+    html: `
+      <div class="p-4 flex flex-col gap-4">
+        <div class="flex justify-between items-center">
+          <h1 class="text-xl font-bold m-0" style="color:var(--text);">Gastos Comunes</h1>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style="background:var(--primary);">
+            <i class="fa-solid fa-plus mr-1"></i>Nuevo periodo
+          </button>
+        </div>
+
+        <!-- Resumen -->
+        <div class="bg-surface border-round shadow-sm p-3 grid grid-cols-3 gap-2 text-center">
+          <div>
+            <p class="text-lg font-bold m-0" style="color:var(--text);">$3,2M</p>
+            <p class="text-[10px] text-text-muted m-0">Recaudado</p>
+          </div>
+          <div>
+            <p class="text-lg font-bold m-0" style="color:var(--danger);">$486K</p>
+            <p class="text-[10px] text-text-muted m-0">Deuda total</p>
+          </div>
+          <div>
+            <p class="text-lg font-bold m-0" style="color:var(--success);">87%</p>
+            <p class="text-[10px] text-text-muted m-0">Pago</p>
+          </div>
+        </div>
+
+        <!-- Períodos -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-surface border-round shadow-sm p-3 cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-semibold text-sm" style="color:var(--text);">2026-07</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success-soft" style="color:var(--success);">ABIERTO</span>
+            </div>
+            <div class="flex flex-col gap-1 text-sm">
+              <div class="flex justify-between"><span class="text-text-muted">Vencimiento</span><span style="color:var(--text);">10/08/2026</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Esperado</span><span style="color:var(--text);">$3.720.000</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Recaudado</span><span class="font-semibold" style="color:var(--success);">$3.234.000</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Pagado</span><span style="color:var(--text);">104/120 (87%)</span></div>
+            </div>
+          </div>
+
+          <div class="bg-surface border-round shadow-sm p-3 cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-semibold text-sm" style="color:var(--text);">2026-06</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-info-soft" style="color:var(--info);">CERRADO</span>
+            </div>
+            <div class="flex flex-col gap-1 text-sm">
+              <div class="flex justify-between"><span class="text-text-muted">Vencimiento</span><span style="color:var(--text);">10/07/2026</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Esperado</span><span style="color:var(--text);">$3.720.000</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Recaudado</span><span class="font-semibold" style="color:var(--success);">$3.680.000</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Pagado</span><span style="color:var(--text);">118/120 (98%)</span></div>
+            </div>
+          </div>
+
+          <div class="bg-surface border-round shadow-sm p-3 cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-semibold text-sm" style="color:var(--text);">2026-05</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-info-soft" style="color:var(--info);">CERRADO</span>
+            </div>
+            <div class="flex flex-col gap-1 text-sm">
+              <div class="flex justify-between"><span class="text-text-muted">Vencimiento</span><span style="color:var(--text);">10/06/2026</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Esperado</span><span style="color:var(--text);">$3.650.000</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Recaudado</span><span class="font-semibold" style="color:var(--success);">$3.650.000</span></div>
+              <div class="flex justify-between"><span class="text-text-muted">Pagado</span><span style="color:var(--text);">120/120 (100%)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>`,
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   HELPERS: contraste WCAG (luminancia relativa)
+   ══════════════════════════════════════════════════════════════════════ */
+function hexToRgb(hex) {
+  hex = (hex || "").replace("#", "");
+  if (hex.length === 3) hex = hex.split("").map(c => c + c).join("");
+  const n = parseInt(hex, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+function lum(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function contrast(a, b) {
+  const l1 = lum(a), l2 = lum(b);
+  const [hi, lo] = l1 > l2 ? [l1, l2] : [l2, l1];
+  return (hi + 0.05) / (lo + 0.05);
+}
+function wcagBadge(ratio) {
+  const pass = ratio >= 4.5;
+  return `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${pass ? 'bg-[#1f5a22] text-[#d7ecd9]' : 'bg-[#651414] text-[#f5aaaa]'}">${pass ? 'AA ✓' : 'FAIL'}</span>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   FUNCIONES PRINCIPALES
+   ══════════════════════════════════════════════════════════════════════ */
+let activeTheme = "light";
+let activeDevice = "desktop";
+let activeModule = "portal-residente";
+
+function setTheme(mode) {
+  activeTheme = mode;
+  document.documentElement.classList.toggle("dark", mode === "dark");
+  ["th-light", "th-dark"].forEach(id => document.getElementById(id).classList.remove("active"));
+  document.getElementById("th-" + mode).classList.add("active");
+  renderTokens();
+  renderWcag();
+}
+
+function setDevice(device) {
+  activeDevice = device;
+  const frame = document.getElementById("device-frame");
+  frame.classList.toggle("desktop", device === "desktop");
+  frame.classList.toggle("mobile", device === "mobile");
+  const bc = document.getElementById("browser-chrome");
+  bc.classList.toggle("hidden", device !== "desktop");
+  ["dev-desktop", "dev-mobile"].forEach(id => document.getElementById(id).classList.remove("active"));
+  document.getElementById("dev-" + device).classList.add("active");
+}
+
+function setModule(key) {
+  activeModule = key;
+  renderModule();
+  renderCode();
+  renderProportions();
+}
+
+/* ═══════════════ Render Módulo activo ═══════════════ */
+function renderModule() {
+  const mod = MODULES[activeModule];
+  document.getElementById("module-render").innerHTML = mod.html;
+  // reset scroll del frame
+  document.querySelector(".frame-scroll").scrollTop = 0;
+  document.getElementById("module-code-label").textContent = mod.kind;
+  document.querySelectorAll("#module-list button").forEach(b => {
+    b.classList.toggle("active", b.dataset.module === activeModule);
+  });
+}
+
+/* ═══════════════ Render lista de módulos ═══════════════ */
+function renderModules() {
+  const list = document.getElementById("module-list");
+  list.innerHTML = Object.entries(MODULES).map(([key, m]) => `
+    <button data-module="${key}" onclick="setModule('${key}')"
+      class="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-left text-[12px] transition-colors"
+      style="color:#BDBDBD;">
+      <i class="fa-solid ${m.icon} w-4 text-center text-[11px]" style="color:#9E9E9E;"></i>
+      <span>${m.label}</span>
+    </button>`).join("");
+  document.querySelectorAll("#module-list button").forEach(b => {
+    b.classList.add("hover:bg-white/5");
+  });
+}
+
+/* ═══════════════ Render Inspector de tokens (izquierda) ═══════════════ */
+function swatch(hex) {
+  return `<span class="swatch inline-block w-4 h-4 rounded-sm shrink-0" style="background:${hex};"></span>`;
+}
+function tokenRow(name, hex, extra) {
+  return `
+    <div class="token-row flex items-center gap-2 px-1.5 py-1 rounded-md">
+      ${swatch(hex)}
+      <span class="mono text-[10px] flex-1 truncate" style="color:#BDBDBD;">${name}</span>
+      <span class="mono text-[10px] uppercase" style="color:#7C7C7C;">${hex}</span>
+    </div>`;
+}
+function tokenGroup(title, rows) {
+  return `
+    <div>
+      <p class="figma-label mb-1">${title}</p>
+      <div class="flex flex-col gap-0.5">${rows.join("")}</div>
+    </div>`;
+}
+function renderTokens() {
+  const isDark = activeTheme === "dark";
+  const nl = PALETTE.neutral[isDark ? "dark" : "light"];
+  const insp = document.getElementById("token-inspector");
+  insp.innerHTML = [
+    tokenGroup("brand · primary", [
+      tokenRow("primary / DEFAULT", PALETTE.brand.DEFAULT, "primario"),
+      tokenRow("hover · 500", PALETTE.brand.hover, "hover"),
+      tokenRow("active", PALETTE.brand.active, "activo"),
+      tokenRow("border", PALETTE.brand.border),
+      tokenRow("borderSecondary · 200", PALETTE.brand.borderSecondary),
+    ]),
+    tokenGroup("neutral · " + (isDark ? "dark" : "light"), [
+      tokenRow("background", nl.background),
+      tokenRow("surface", nl.surface),
+      tokenRow("border", nl.border),
+      tokenRow("text.primary", nl.text.primary),
+      tokenRow("text.secondary", nl.text.secondary),
+    ]),
+    tokenGroup("status · semantic", [
+      tokenRow("success · 500", PALETTE.status.success.DEFAULT),
+      tokenRow("warning · 500", PALETTE.status.warning.DEFAULT),
+      tokenRow("danger · 500", PALETTE.status.danger.DEFAULT),
+      tokenRow("info · 500", PALETTE.status.info.DEFAULT),
+    ]),
+    tokenGroup("ui · componentes", [
+      tokenRow("datepickerAccent", PALETTE.ui.datepickerAccent),
+      tokenRow("checkedOnBrand", PALETTE.ui.checkedOnBrand),
+      tokenRow("overlay.light", isDark ? PALETTE.ui.overlayDark : PALETTE.ui.overlayLight),
+    ]),
+  ].join("");
+}
+
+/* ═══════════════ Render Inspector de código (derecha) ═══════════════ */
+function renderCode() {
+  const mod = MODULES[activeModule];
+  const box = document.getElementById("code-inspector");
+  box.innerHTML = mod.classes.map((c, i) => `
+    <div class="flex items-start gap-2">
+      <span class="text-[#3D3D3D] select-none w-4 text-right">${String(i + 1).padStart(2, "0")}</span>
+      <span class="text-[#7fb1e5]">.</span><span class="text-[#7fb1e5]">${c}</span>
+    </div>`).join("");
+}
+
+/* ═══════════════ Render Regla 60/20/5 ═══════════════ */
+function renderProportions() {
+  const box = document.getElementById("proportions");
+  const bar = `
+    <div class="flex h-6 w-full overflow-hidden rounded-md bar-track">
+      <div class="seg-base h-full" style="width:60%;"></div>
+      <div class="seg-surface h-full" style="width:20%;"></div>
+      <div class="seg-focus h-full" style="width:5%;"></div>
+    </div>`;
+  const legend = `
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm seg-base border"></span><span class="text-[11px] flex-1" style="color:#BDBDBD;">Base · 60%</span><span class="mono text-[10px]" style="color:#7C7C7C;">fondo + texto</span></div>
+      <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm seg-surface border"></span><span class="text-[11px] flex-1" style="color:#BDBDBD;">Superficie · 20%</span><span class="mono text-[10px]" style="color:#7C7C7C;">cards / paneles</span></div>
+      <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm seg-focus border"></span><span class="text-[11px] flex-1" style="color:#BDBDBD;">Foco · 5%</span><span class="mono text-[10px]" style="color:#7C7C7C;">marca / CTA</span></div>
+      <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:var(--warning);"></span><span class="text-[11px] flex-1" style="color:#BDBDBD;">Acento · 15%</span><span class="mono text-[10px]" style="color:#7C7C7C;">semánticos / hover</span></div>
+    </div>`;
+  box.innerHTML = bar + legend;
+}
+
+/* ═══════════════ Render WCAG AA ═══════════════ */
+function renderWcag() {
+  const isDark = activeTheme === "dark";
+  const nl = PALETTE.neutral[isDark ? "dark" : "light"];
+  const txtP = nl.text.primary, txtS = nl.text.secondary, bg = nl.background, surface = nl.surface, brand = PALETTE.brand.DEFAULT;
+
+  const pairs = [
+    ["text.primary / background", txtP, bg],
+    ["text.secondary / background", txtS, bg],
+    ["text.primary / surface", txtP, surface],
+    ["brand on surface", brand, surface],
+    ["onBrand on brand", PALETTE.brand.onBrand, brand],
+  ];
+  document.getElementById("wcag-panel").innerHTML = pairs.map(([label, fg, bgc]) => {
+    const ratio = contrast(fg, bgc);
+    return `
+      <div class="flex items-center gap-2 px-2 py-1 rounded-md" style="background:#2C2C2C;">
+        ${swatch(bgc)}<span class="mono text-[10px] flex-1 truncate" style="color:#BDBDBD;">${label}</span>
+        <span class="mono text-[10px]" style="color:#7C7C7C;">${ratio.toFixed(2)}:1</span>
+        ${wcagBadge(ratio)}
+      </div>`;
+  }).join("");
+
+  // Score global en topbar: todas pasan → AA
+  const allPass = pairs.every(([ , fg, bgc]) => contrast(fg, bgc) >= 4.5);
+  const el = document.getElementById("wcag-score");
+  el.textContent = allPass ? "AA" : "A-";
+  el.style.color = allPass ? "#4caf50" : "#e45555";
+}
+
+/* ═══════════════ Init ═══════════════ */
+renderModules();
+renderModule();
+renderCode();
+renderProportions();
+renderTokens();
+renderWcag();
+setTheme("light");
+setDevice("desktop");
+</script>
+</body>
+</html>
