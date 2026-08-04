@@ -35,7 +35,7 @@ import {
 
 const INTERVALO_REFRESH_MS = 14 * 60 * 1000; // access token dura 15 min → refrescar a los 14
 const UMBRAL_EXPIRACION_MS = 60 * 1000; // renovar si el token expira en menos de 60s
-const LOCK_REFRESH = "comunidad:refresh";
+const LOCK_REFRESH = "Briku:refresh";
 
 // ─── Estado interno (privado al módulo) ───────────────────────────────────────
 
@@ -84,7 +84,9 @@ export function refrescarToken() {
   promesa = (async () => {
     try {
       if (navigator.locks?.request) {
-        return await navigator.locks.request(LOCK_REFRESH, () => hacerRefresh());
+        return await navigator.locks.request(LOCK_REFRESH, () =>
+          hacerRefresh(),
+        );
       }
       return await hacerRefresh();
     } finally {

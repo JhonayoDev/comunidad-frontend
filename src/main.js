@@ -13,12 +13,13 @@ import { queryClient } from "./queryClient";
 
 import PrimeVue from "primevue/config";
 import ConfirmationService from "primevue/confirmationservice";
-import { ComunidadTheme } from "./theme";
+import { BrikuTheme } from "./theme";
 
 import "primeicons/primeicons.css";
 import "./style.css";
 import { vPermiso } from "./directives/permiso";
 import { iniciarCoordinadorRefresh } from "./utils/refreshCoordinator";
+import { ocultarSplash } from "./utils/splash";
 
 // Captura global de errores: se instala antes que cualquier otro módulo para
 // atrapar fallos de import/render; el overlay evita pantallas blancas mudas.
@@ -29,7 +30,8 @@ const app = createApp(App);
 
 // Cualquier error no capturado de un componente (setup/render/watch) se reporta
 // al overlay + localStorage + beacon, en vez de quedar en blanco silencioso.
-app.config.errorHandler = (err, _instancia, info) => reportarError("vue", err, info);
+app.config.errorHandler = (err, _instancia, info) =>
+  reportarError("vue", err, info);
 
 app.use(createPinia());
 
@@ -37,7 +39,7 @@ app.use(router);
 
 app.use(PrimeVue, {
   theme: {
-    preset: ComunidadTheme,
+    preset: BrikuTheme,
     options: {
       darkModeSelector: ".p-dark",
       cssLayer: {
@@ -165,3 +167,6 @@ iniciarCoordinadorRefresh();
 app.mount("#app");
 
 marcarHito("boot:mounted");
+
+// Desvanece el splash in-app cuando la app está montada y la animación terminó.
+ocultarSplash();

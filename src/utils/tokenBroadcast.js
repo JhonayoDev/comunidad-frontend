@@ -11,7 +11,7 @@
  * memoria e IndexedDB sin reintentar un refresh con la cookie stale.
  */
 
-const CHANNEL_NAME = "comunidad:auth";
+const CHANNEL_NAME = "Briku:auth";
 const MENSAJE_TOKEN_ROTADO = "token-rotado";
 
 let canal = null;

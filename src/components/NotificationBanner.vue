@@ -6,7 +6,9 @@
       :pt="{
         root: { class: 'bg-surface-800 text-surface-0 border-none' },
         body: { class: 'p-3 flex items-center gap-3' },
-        content: { class: 'p-0 flex flex-col gap-2 sm:flex-row sm:items-center flex-1' },
+        content: {
+          class: 'p-0 flex flex-col gap-2 sm:flex-row sm:items-center flex-1',
+        },
       }"
     >
       <template #content>
@@ -55,7 +57,7 @@ const visible = ref(false);
 const loading = ref(false);
 const descartadoEnSesion = ref(false);
 
-const STORAGE_KEY = "comunidad:push-banner-descartado";
+const STORAGE_KEY = "Briku:push-banner-descartado";
 
 function evaluarVisibilidad() {
   const permiso = PushManager.estadoPermiso;
@@ -103,11 +105,14 @@ onUnmounted(() => {
 
 <style scoped>
 .banner-slide-enter-active {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     opacity 0.2s ease;
 }
 .banner-slide-leave-active {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 .banner-slide-enter-from {
   transform: translateY(120%);

@@ -1,18 +1,18 @@
 # Guía de Integración Web Push — Frontend (Hito 3)
 
-Documento dirigido al desarrollador frontend del proyecto Comunidad.
+Documento dirigido al desarrollador frontend del proyecto Briku.
 
 ---
 
 ## Archivos entregados
 
-| Archivo | Rol |
-|---|---|
-| `service-worker.js` | Corre en background — maneja eventos `push` y `notificationclick` |
-| `push-manager.js` | Módulo ES — toda la lógica de suscripción, permisos y fallback |
-| `notification-banner.js` | Componente UI del banner de invitación |
-| `app-shell.js` | Ejemplo de integración — adaptar al framework del proyecto |
-| `manifest.json` | Manifest PWA con `display: standalone` |
+| Archivo                  | Rol                                                               |
+| ------------------------ | ----------------------------------------------------------------- |
+| `service-worker.js`      | Corre en background — maneja eventos `push` y `notificationclick` |
+| `push-manager.js`        | Módulo ES — toda la lógica de suscripción, permisos y fallback    |
+| `notification-banner.js` | Componente UI del banner de invitación                            |
+| `app-shell.js`           | Ejemplo de integración — adaptar al framework del proyecto        |
+| `manifest.json`          | Manifest PWA con `display: standalone`                            |
 
 ---
 
@@ -36,7 +36,7 @@ Documento dirigido al desarrollador frontend del proyecto Comunidad.
 
 ```javascript
 // En tu store de auth / hook de login
-import { onLoginExitoso } from './app-shell.js';
+import { onLoginExitoso } from "./app-shell.js";
 
 // Después de recibir la respuesta de POST /api/v1/auth/login:
 const loginData = await response.json();
@@ -52,7 +52,7 @@ await onLoginExitoso(loginData);
 ### Paso 3 — Limpiar al cerrar sesión
 
 ```javascript
-import { onLogout } from './app-shell.js';
+import { onLogout } from "./app-shell.js";
 
 // En tu función de logout, ANTES de limpiar el token:
 await onLogout();
@@ -62,20 +62,20 @@ redirigirALogin();
 
 ### Paso 4 — Escuchar la navegación desde el Service Worker
 
-El SW emite un evento `comunidad:navegar` cuando el usuario toca
+El SW emite un evento `Briku:navegar` cuando el usuario toca
 una notificación nativa. Conectarlo al router de la SPA:
 
 ```javascript
 // Vue Router
-window.addEventListener('comunidad:navegar', (e) => {
+window.addEventListener("Briku:navegar", (e) => {
   router.push(e.detail.url);
 });
 
 // React Router (en un useEffect del componente raíz)
 useEffect(() => {
   const handler = (e) => navigate(e.detail.url);
-  window.addEventListener('comunidad:navegar', handler);
-  return () => window.removeEventListener('comunidad:navegar', handler);
+  window.addEventListener("Briku:navegar", handler);
+  return () => window.removeEventListener("Briku:navegar", handler);
 }, []);
 ```
 
@@ -91,7 +91,7 @@ icon-144x144.png  icon-152x152.png  icon-192x192.png
 icon-384x384.png  icon-512x512.png  badge-72x72.png
 ```
 
-**Herramienta recomendada:** https://www.pwabuilder.com/imageGenerator
+**Herramienta recomendada:** <https://www.pwabuilder.com/imageGenerator>
 — genera todos los tamaños desde una imagen fuente de 512×512.
 
 El `badge-72x72.png` debe ser monocromático (blanco sobre transparente)
@@ -158,7 +158,7 @@ que el origen del frontend esté en la lista de orígenes permitidos.
 - [ ] Íconos en `public/icons/` (todos los tamaños listados)
 - [ ] `onLoginExitoso()` llamado después del login exitoso
 - [ ] `onLogout()` llamado antes de limpiar el token
-- [ ] Evento `comunidad:navegar` conectado al router
+- [ ] Evento `Briku:navegar` conectado al router
 - [ ] `CORS_ALLOWED_ORIGINS` actualizado en Render/Coolify con el dominio real
 - [ ] Probar en Chrome DevTools → Application → Service Workers que el SW esté activo
 - [ ] Probar en Chrome DevTools → Application → Push Messaging que llegan mensajes de prueba
@@ -172,8 +172,8 @@ Con el backend corriendo y `PUSH_ENABLED=true`:
 ```javascript
 // En la consola del navegador, tras el login:
 const reg = await navigator.serviceWorker.ready;
-await reg.showNotification('Prueba Comunidad', {
-  body: 'Si ves esto, el Service Worker funciona correctamente.',
-  icon: '/icons/icon-192x192.png',
+await reg.showNotification("Prueba Briku", {
+  body: "Si ves esto, el Service Worker funciona correctamente.",
+  icon: "/icons/icon-192x192.png",
 });
 ```

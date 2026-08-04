@@ -83,7 +83,7 @@ async function handleLogin(event) {
 
 <template>
   <Card class="max-w-sm w-full bg-surface/75">
-    <template #title> <div class="primary-text">Comunidad</div> </template>
+    <template #title> <div class="primary-text">Briku</div> </template>
 
     <template #subtitle>
       <div class="secondary-text">Sistema de gestión de condominios</div>
@@ -98,7 +98,7 @@ async function handleLogin(event) {
             v-model="email"
             type="email"
             fluid
-            placeholder="usuario@comunidad.cl"
+            placeholder="usuario@briku.cl"
           />
         </div>
         <div class="primary-text flex flex-col gap-2">

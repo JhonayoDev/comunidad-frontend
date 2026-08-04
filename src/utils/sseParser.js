@@ -5,7 +5,7 @@
 // a medida que llegan chunks.
 //
 // Cumple la especificación SSE (event-stream) para el subconjunto que usa el
-// backend de comunidad:
+// backend de Briku:
 //   - Línea de comentario  `:ping` → se ignora (heartbeat keep-alive).
 //   - Campo `event:` → nombre del evento.
 //   - Campo `data:` → dato; varias líneas `data:` se unen con "\n".
@@ -26,7 +26,8 @@ function parsearFrame(frame) {
 
     const colonIndex = linea.indexOf(":");
     const campo = colonIndex === -1 ? linea : linea.slice(0, colonIndex);
-    const valor = colonIndex === -1 ? "" : linea.slice(colonIndex + 1).replace(/^ /, "");
+    const valor =
+      colonIndex === -1 ? "" : linea.slice(colonIndex + 1).replace(/^ /, "");
 
     if (campo === CAMPO_EVENTO) {
       eventName = valor;
@@ -50,9 +51,7 @@ export function crearParserSse() {
   let buffer = "";
 
   return function parsearSse(chunk) {
-    buffer = (buffer + chunk)
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n");
+    buffer = (buffer + chunk).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
     const frames = buffer.split("\n\n");
     buffer = frames.pop();

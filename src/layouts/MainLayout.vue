@@ -28,7 +28,9 @@
       <main
         ref="mainRef"
         class="flex-1"
-        :class="mostrarBottomNav ? 'min-h-0 overflow-y-auto pb-24' : 'overflow-y-auto'"
+        :class="
+          mostrarBottomNav ? 'min-h-0 overflow-y-auto pb-24' : 'overflow-y-auto'
+        "
       >
         <RouterView />
       </main>
@@ -156,11 +158,11 @@ function onNavegacionDesdeSW(event) {
 }
 
 onMounted(() => {
-  window.addEventListener("comunidad:navegar", onNavegacionDesdeSW);
+  window.addEventListener("Briku:navegar", onNavegacionDesdeSW);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("comunidad:navegar", onNavegacionDesdeSW);
+  window.removeEventListener("Briku:navegar", onNavegacionDesdeSW);
   detenerStream();
   detenerStreamResidente();
   detenerStreamNotificaciones();
@@ -168,6 +170,8 @@ onUnmounted(() => {
 
 // ─── Banner de notificaciones ─────────────────────────────────────────────────
 function onBannerActivado() {
-  console.info("[MainLayout] Usuario activó notificaciones push desde el banner.");
+  console.info(
+    "[MainLayout] Usuario activó notificaciones push desde el banner.",
+  );
 }
 </script>

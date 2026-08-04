@@ -1,1 +1,1 @@
-export { default as ComunidadTheme } from "./prime-theme";
+export { default as BrikuTheme } from "./prime-theme";

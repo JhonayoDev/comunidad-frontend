@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/web-manifest-combined.json",
 
-  "name": "Comunidad — Administración de Condominios",
-  "short_name": "Comunidad",
+  "name": "Briku — Administración de Condominios",
+  "short_name": "Briku",
   "description": "Plataforma de gestión para condominios: visitas, encomiendas, gastos comunes y más.",
 
   "start_url": "/",

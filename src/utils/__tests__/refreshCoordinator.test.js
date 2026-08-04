@@ -49,7 +49,10 @@ beforeEach(() => {
   accessToken.value = null;
   clearProactiveRefresh();
   detenerCoordinadorRefresh();
-  Object.defineProperty(navigator, "locks", { value: undefined, configurable: true });
+  Object.defineProperty(navigator, "locks", {
+    value: undefined,
+    configurable: true,
+  });
 });
 
 afterEach(() => {
@@ -63,10 +66,7 @@ describe("refrescarToken — single-flight", () => {
   it("ejecuta un solo /auth/refresh para llamadas concurrentes y propaga el token", async () => {
     refreshMock.mockResolvedValue({ data: { accessToken: "token-nuevo" } });
 
-    const [t1, t2] = await Promise.all([
-      refrescarToken(),
-      refrescarToken(),
-    ]);
+    const [t1, t2] = await Promise.all([refrescarToken(), refrescarToken()]);
 
     expect(refreshMock).toHaveBeenCalledTimes(1);
     expect(t1).toBe("token-nuevo");
@@ -78,13 +78,16 @@ describe("refrescarToken — single-flight", () => {
 
   it("usa Web Locks cuando están disponibles (coordinación cross-tab)", async () => {
     const fakeLocks = { request: vi.fn(async (_name, cb) => cb()) };
-    Object.defineProperty(navigator, "locks", { value: fakeLocks, configurable: true });
+    Object.defineProperty(navigator, "locks", {
+      value: fakeLocks,
+      configurable: true,
+    });
     refreshMock.mockResolvedValue({ data: { accessToken: "token-lock" } });
 
     await refrescarToken();
 
     expect(fakeLocks.request).toHaveBeenCalledWith(
-      "comunidad:refresh",
+      "Briku:refresh",
       expect.any(Function),
     );
   });
