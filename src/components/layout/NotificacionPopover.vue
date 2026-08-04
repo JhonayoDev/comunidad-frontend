@@ -7,7 +7,7 @@ import Badge from "primevue/badge";
 import Popover from "primevue/popover";
 
 const router = useRouter();
-const { notifCount, syncNotificaciones, syncLoading, refreshSync } =
+const { notifCount, syncNotificaciones, syncLoading, refreshSync, moduloNoContratado } =
   useNotificationBadge();
 
 const op = ref(null);
@@ -63,6 +63,7 @@ function timeAgo(fecha) {
 <template>
   <div>
     <Button
+      v-if="!moduloNoContratado"
       class="btn-no-bg header-btn"
       icon="pi pi-bell"
       severity="secondary"

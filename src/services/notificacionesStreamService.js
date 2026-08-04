@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { accessToken } from "@/utils/tokenStore";
 import { crearParserSse } from "@/utils/sseParser";
+import { esErrorModuloNoContratado } from "@/utils/errores";
 
 // ─── Cliente SSE de la bandeja de notificaciones (scoped por persona) ────────
 // Bus INDEPENDIENTE de los canales de dashboard (dashboardStreamService y
@@ -27,6 +28,12 @@ const RETRY_BASE_MS = 1_000;
 const RETRY_MAX_MS = 30_000;
 
 export const streamNotificacionesVivo = ref(false);
+
+// Módulo COMUNICACION no contratado (gating @RequiresModule → 403). Cuando el
+// backend responde 403 por módulo (JSON, no la rama SSE), el stream NO debe
+// reconectarse en bucle: es un módulo accesorio, la app sigue viva y la UI
+// oculta la bandeja. Este ref permite a los consumidores reaccionar.
+export const moduloNoContratado = ref(false);
 
 const suscriptoresEventos = new Set();
 const suscriptoresEstado = new Set();
@@ -60,6 +67,25 @@ function delayReconexion() {
 }
 
 /**
+ * Detecta si una respuesta HTTP fallida del stream es un 403 por módulo no
+ * contratado. Solo se lee el body cuando el content-type es JSON (el 403 de
+ * AccessDenied en SSE llega como text/event-stream sin body y NO debe parsearse
+ * — contrato de la Ruptura 2). Devuelve false ante cualquier otro caso.
+ */
+async function esModuloNoContratadoEnRespuesta(respuesta) {
+  const contentType = respuesta.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) return false;
+  try {
+    const body = await respuesta.json();
+    return esErrorModuloNoContratado({
+      response: { status: respuesta.status, data: body },
+    });
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Inicia (o mantiene) el stream SSE de notificaciones para el condominio
  * indicado. Dedupe: si ya hay una conexión viva para el mismo condominio, no
  * hace nada. Si cambia el condominio, aborta la anterior y conecta a la nueva.
@@ -78,6 +104,7 @@ export function iniciarStreamNotificaciones(condominioId) {
 
   condominioActual = condominioId;
   intentos = 0;
+  moduloNoContratado.value = false;
   if (timerReconexion) {
     clearTimeout(timerReconexion);
     timerReconexion = null;
@@ -111,6 +138,17 @@ function conectar() {
   })
     .then(async (respuesta) => {
       if (!respuesta.ok || !respuesta.body) {
+        // Contrato SSE (Ruptura 2): en status >= 400 el body puede estar vacío
+        // (403 text/event-stream sin body). Solo se parsea el body cuando el
+        // content-type es JSON — ahí el 403 por módulo (ModuleNotSubscribedException)
+        // llega como JSON. Si es módulo no contratado, se detiene la reconexión.
+        if (await esModuloNoContratadoEnRespuesta(respuesta)) {
+          const cid = condominioActual;
+          detenerStreamNotificaciones();
+          moduloNoContratado.value = true;
+          notificarEstado("modulo-no-contratado", { condominioId: cid });
+          return;
+        }
         throw new Error(`SSE respondió HTTP ${respuesta.status}`);
       }
 

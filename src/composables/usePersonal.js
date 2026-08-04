@@ -2,6 +2,7 @@ import { ref } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { personalService } from "../services/personalService";
+import { mensajeError } from "@/utils/errores";
 
 export function usePersonal() {
   const auth = useAuthStore();
@@ -81,7 +82,7 @@ export function usePersonal() {
       await asignarRolMutation.mutateAsync({ usuarioId, rolId });
       return true;
     } catch (e) {
-      error.value = e.response?.data?.message || "Error al asignar rol";
+      error.value = mensajeError(e, "Error al asignar rol");
       return false;
     }
   }
@@ -91,7 +92,7 @@ export function usePersonal() {
       await revocarMutation.mutateAsync(usuarioId);
       return true;
     } catch (e) {
-      error.value = e.response?.data?.message || "Error al revocar acceso";
+      error.value = mensajeError(e, "Error al revocar acceso");
       return false;
     }
   }

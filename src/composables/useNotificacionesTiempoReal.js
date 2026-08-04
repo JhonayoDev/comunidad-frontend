@@ -4,6 +4,7 @@ import {
   suscribirEventos,
   suscribirEstado,
   streamNotificacionesVivo,
+  moduloNoContratado,
   EVENTO_NOTIFICACION,
 } from "@/services/notificacionesStreamService";
 
@@ -103,6 +104,11 @@ function asegurarSuscripcion() {
         });
       }
       estadoAnterior = "conectado";
+    } else if (estado === "modulo-no-contratado") {
+      // Módulo COMUNICACION no contratado: no hay stream ni polling. La UI
+      // oculta la bandeja; no se inicia gracia ni fallback (evita reintentos).
+      cancelarGracia();
+      estadoAnterior = estado;
     } else {
       // Reconectando o error: inicia la gracia (idempotente — solo la primera
       // vez; no se reinicia con cada intento de backoff del stream).
@@ -135,6 +141,7 @@ export function useNotificacionesTiempoReal() {
   // TanStack Query re-evalúa este ref reactivamente al cambiar
   // `streamNotificacionesVivo` o `graciaExpirada`, sin reiniciar la query.
   const refetchIntervalNotificaciones = computed(() => {
+    if (moduloNoContratado.value) return false;
     if (streamNotificacionesVivo.value) return false;
     if (!graciaExpirada.value) return false;
     return INTERVALO_FALLBACK_MS;

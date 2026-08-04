@@ -4,6 +4,7 @@ import {
   scheduleProactiveRefresh,
   refrescarToken,
 } from "@/utils/refreshCoordinator";
+import { esErrorModuloNoContratado } from "@/utils/errores";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -42,6 +43,18 @@ api.interceptors.response.use(
     const original = error.config;
     const status = error.response?.status;
     const isAuthEndpoint = original?.url?.startsWith("/auth/");
+
+    // ── 403 por módulo no contratado ─────────────────────────────────────
+    // El gating @RequiresModule responde 403 con message "El condominio no
+    // tiene suscrito el módulo X". No es un error del usuario final ni debe
+    // detener la app: se enriquece el error con la bandera moduleNotSubscribed
+    // y cada vista decide cómo degradar (ocultar/deshabilitar el módulo).
+    if (status === 403) {
+      if (esErrorModuloNoContratado(error)) {
+        error.moduleNotSubscribed = true;
+      }
+      return Promise.reject(error);
+    }
 
     // ── Rate limiting ───────────────────────────────────────────────────
     // Si el backend responde 429, propagamos el error tal cual para que

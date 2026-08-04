@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useArchivos } from "@/composables/useArchivos";
+import { useAuthStore } from "@/stores/authStore";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -14,6 +15,7 @@ import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
 
 const confirm = useConfirm();
+const auth = useAuthStore();
 
 const {
   archivos,
@@ -184,7 +186,10 @@ onMounted(() => { listar("DOCUMENTO"); });
 
     <div v-else-if="!archivosFiltrados.length" class="text-center text-surface-400 py-8">
       <i class="pi pi-folder-open text-4xl block mb-2"></i>
-      <span>No hay archivos en esta categoría</span>
+      <span v-if="auth.esSoloResidente">
+        Aquí verás los archivos que tú subas
+      </span>
+      <span v-else>No hay archivos en esta categoría</span>
     </div>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
