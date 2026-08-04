@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { unidadesService } from "@/services/unidadesService";
+import { mensajeError } from "@/utils/errores";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -74,6 +75,7 @@ async function crearUnidad() {
     await cargar();
   } catch (e) {
     console.error("Error al crear unidad", e);
+    error.value = mensajeError(e, "Error al crear unidad");
   } finally {
     enviando.value = false;
   }

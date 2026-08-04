@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { notificacionesService } from "../services/notificacionesService";
 import { useNotificacionesTiempoReal } from "./useNotificacionesTiempoReal";
+import { esErrorModuloNoContratado } from "@/utils/errores";
 
 export function useNotificaciones() {
   const auth = useAuthStore();
@@ -30,7 +31,7 @@ export function useNotificaciones() {
 
   const syncQueryKey = computed(() => ["notificaciones-sync", auth.condominioActualId]);
 
-  const { data: syncData, isLoading: syncLoading, refetch: refreshSync } = useQuery({
+  const { data: syncData, isLoading: syncLoading, error: syncError, refetch: refreshSync } = useQuery({
     queryKey: syncQueryKey,
     queryFn: async () => {
       const cid = auth.condominioActualId;
@@ -53,7 +54,16 @@ export function useNotificaciones() {
 
   const hayNoLeidas = computed(() => noLeidasCount.value > 0);
 
+  // Módulo COMUNICACION no contratado (gating @RequiresModule → 403). Es un
+  // módulo accesorio: la app sigue viva, solo se oculta/deshabilita la bandeja.
+  const moduloNoContratado = computed(
+    () =>
+      esErrorModuloNoContratado(queryError.value) ||
+      esErrorModuloNoContratado(syncError.value),
+  );
+
   const error = computed(() => {
+    if (moduloNoContratado.value) return null;
     if (queryError.value) return "Error al cargar notificaciones";
     return null;
   });
@@ -112,6 +122,7 @@ export function useNotificaciones() {
     loading,
     error,
     hayNoLeidas,
+    moduloNoContratado,
     noLeidasCount,
     syncNotificaciones,
     syncLoading,

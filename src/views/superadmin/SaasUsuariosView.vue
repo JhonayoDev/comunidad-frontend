@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { adminService } from "@/services/adminService";
+import { mensajeError } from "@/utils/errores";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -64,6 +65,7 @@ async function toggleActivo(u) {
     await cargar();
   } catch (e) {
     console.error("Error al cambiar estado", e);
+    error.value = mensajeError(e, "Error al cambiar estado");
   }
 }
 
@@ -83,6 +85,7 @@ async function asignarRol() {
     await cargar();
   } catch (e) {
     console.error("Error al asignar rol", e);
+    error.value = mensajeError(e, "Error al asignar rol");
   } finally {
     enviando.value = false;
   }

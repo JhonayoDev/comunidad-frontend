@@ -22,6 +22,7 @@
 
 import { accessToken as tokenRef } from "@/utils/tokenStore";
 import { guardarTokenEnIDB, limpiarTokenEnIDB } from "@/utils/idbTokenStore";
+import { esErrorModuloNoContratado } from "@/utils/errores";
 
 // ─── Configuración ────────────────────────────────────────────────────────────
 
@@ -51,6 +52,9 @@ let _onBadgeUpdate = null;
 /** @type {EventListenerOrEventListenerObject | null} Handler visibilitychange */
 let _onVisibilityChange = null;
 
+/** @type {boolean} Módulo COMUNICACION no contratado → detener polling de badge */
+let _moduloNoContratado = false;
+
 // ─── API pública ──────────────────────────────────────────────────────────────
 
 export const PushManager = {
@@ -63,6 +67,7 @@ export const PushManager = {
   async inicializar(condominioId, onBadgeUpdate) {
     _condominioId = condominioId;
     _onBadgeUpdate = onBadgeUpdate;
+    _moduloNoContratado = false;
 
     // Guardar el token en IDB para que el SW pueda usarlo en pushsubscriptionchange
     if (tokenRef.value) {
@@ -403,6 +408,7 @@ function detenerFallbackCompleto() {
 
 async function consultarBadge() {
   if (!_condominioId || !tokenRef.value || !_onBadgeUpdate) return;
+  if (_moduloNoContratado) return;
 
   try {
     const respuesta = await fetch(
@@ -422,6 +428,18 @@ async function consultarBadge() {
         } else {
           navigator.clearAppBadge().catch(() => {});
         }
+      }
+    } else if (respuesta.status === 403) {
+      // Módulo COMUNICACION no contratado: el badge no existe. Detener el
+      // polling de fallback para no pedir en bucle (módulo accesorio, la app
+      // sigue viva). Se reintentará al reinicializar (login/cambio de condominio).
+      const body = await respuesta.json().catch(() => null);
+      if (esErrorModuloNoContratado({ response: { status: 403, data: body } })) {
+        _moduloNoContratado = true;
+        detenerFallbackCompleto();
+        console.info(
+          "[PushManager] Módulo COMUNICACION no contratado — polling de badge detenido.",
+        );
       }
     }
   } catch {
