@@ -26,14 +26,14 @@ describe("frontendErrorReporter", () => {
   it("registra un hito de boot en localStorage", () => {
     marcarHito("boot:test");
 
-    const hitos = JSON.parse(localStorage.getItem("comunidad:frontend-hitos"));
+    const hitos = JSON.parse(localStorage.getItem("briku:frontend-hitos"));
     expect(hitos.at(-1).hito).toBe("boot:test");
   });
 
   it("persiste el error en localStorage y muestra overlay", () => {
     reportarError("test", new Error("boom"));
 
-    const errores = JSON.parse(localStorage.getItem("comunidad:frontend-errors"));
+    const errores = JSON.parse(localStorage.getItem("briku:frontend-errors"));
     expect(errores.at(-1)).toMatchObject({
       origen: "test",
       mensaje: "boom",
@@ -47,7 +47,7 @@ describe("frontendErrorReporter", () => {
   it("limita la cantidad de errores persistidos", () => {
     for (let i = 0; i < 10; i += 1) reportarError("test", new Error(`e${i}`));
 
-    const errores = JSON.parse(localStorage.getItem("comunidad:frontend-errors"));
+    const errores = JSON.parse(localStorage.getItem("briku:frontend-errors"));
     expect(errores.length).toBe(5);
     expect(errores[0].mensaje).toBe("e5");
   });
@@ -57,7 +57,7 @@ describe("frontendErrorReporter", () => {
       new ErrorEvent("error", { error: new Error("js-muerto") }),
     );
 
-    const errores = JSON.parse(localStorage.getItem("comunidad:frontend-errors"));
+    const errores = JSON.parse(localStorage.getItem("briku:frontend-errors"));
     expect(errores.at(-1).origen).toBe("window.onerror");
     expect(errores.at(-1).mensaje).toBe("js-muerto");
   });
@@ -70,7 +70,7 @@ describe("frontendErrorReporter", () => {
       }),
     );
 
-    const errores = JSON.parse(localStorage.getItem("comunidad:frontend-errors"));
+    const errores = JSON.parse(localStorage.getItem("briku:frontend-errors"));
     expect(errores.at(-1).origen).toBe("unhandledrejection");
   });
 
@@ -80,7 +80,7 @@ describe("frontendErrorReporter", () => {
     document.body.appendChild(img);
     img.dispatchEvent(new Event("error")); // los resource errors NO burbujean
 
-    const errores = JSON.parse(localStorage.getItem("comunidad:frontend-errors"));
+    const errores = JSON.parse(localStorage.getItem("briku:frontend-errors"));
     expect(errores.at(-1).origen).toBe("recurso");
     expect(errores.at(-1).mensaje).toContain("roto.js");
   });

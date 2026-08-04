@@ -1,4 +1,4 @@
-# Sistema de Temas de Comunidad
+# Sistema de Temas de Briku
 
 ## Objetivo
 
@@ -115,7 +115,7 @@ primary: "#003366";
 
 significa:
 
-> "El color corporativo de Comunidad es este."
+> "El color corporativo de Briku es este."
 
 No significa:
 

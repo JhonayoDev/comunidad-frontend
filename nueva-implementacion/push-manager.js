@@ -20,33 +20,32 @@
  *   await PushManager.destruir(accessToken);
  */
 
-'use strict';
+"use strict";
 
 // ─── Configuración ────────────────────────────────────────────────────────────
 
 const CONFIG = {
-  SW_PATH:             '/service-worker.js',
-  SW_SCOPE:            '/',
-  API_BASE:            '/api/v1',
+  SW_PATH: "/service-worker.js",
+  SW_SCOPE: "/",
+  API_BASE: "/api/v1",
   // Intervalos de polling de fallback (ms)
-  POLLING_LENTO_MS:    5  * 60 * 1000,  // 5 min — cuando el permiso está denegado
-  POLLING_MODERADO_MS: 2  * 60 * 1000,  // 2 min — cuando nunca se ha pedido permiso
+  POLLING_LENTO_MS: 5 * 60 * 1000, // 5 min — cuando el permiso está denegado
+  POLLING_MODERADO_MS: 2 * 60 * 1000, // 2 min — cuando nunca se ha pedido permiso
   // Nombre de la BD IndexedDB donde se guarda el token para el SW
-  IDB_NAME:            'comunidad-auth',
-  IDB_VERSION:         1,
-  IDB_STORE:           'tokens',
+  IDB_NAME: "Briku-auth",
+  IDB_VERSION: 1,
+  IDB_STORE: "tokens",
 };
 
 // ─── Estado interno (privado al módulo) ───────────────────────────────────────
 
-let _registration     = null;  // ServiceWorkerRegistration activo
+let _registration = null; // ServiceWorkerRegistration activo
 let _pollingIntervalId = null; // ID del setInterval de fallback
-let _condominioId     = null;  // Necesario para construir la URL del badge
+let _condominioId = null; // Necesario para construir la URL del badge
 
 // ─── API pública ──────────────────────────────────────────────────────────────
 
 export const PushManager = {
-
   /**
    * Punto de entrada principal. Llamar inmediatamente después del login.
    *
@@ -61,11 +60,18 @@ export const PushManager = {
     await guardarTokenEnIDB(accessToken);
 
     // Escuchar mensajes del SW (navegación tras tocar notificación)
-    navigator.serviceWorker?.addEventListener('message', manejarMensajeSW);
+    navigator.serviceWorker?.addEventListener("message", manejarMensajeSW);
 
     if (!esPushSoportado()) {
-      console.info('[Push] Push no soportado en este navegador. Activando polling moderado.');
-      iniciarFallback(CONFIG.POLLING_MODERADO_MS, accessToken, condominioId, onBadgeUpdate);
+      console.info(
+        "[Push] Push no soportado en este navegador. Activando polling moderado.",
+      );
+      iniciarFallback(
+        CONFIG.POLLING_MODERADO_MS,
+        accessToken,
+        condominioId,
+        onBadgeUpdate,
+      );
       return;
     }
 
@@ -76,16 +82,28 @@ export const PushManager = {
     const permiso = Notification.permission;
     console.info(`[Push] Estado de permiso: ${permiso}`);
 
-    if (permiso === 'granted') {
+    if (permiso === "granted") {
       await suscribirYRegistrar(accessToken);
       detenerFallback(); // Asegurar que no quede polling activo
-    } else if (permiso === 'denied') {
-      console.info('[Push] Permiso denegado. Activando polling lento (5 min).');
-      iniciarFallback(CONFIG.POLLING_LENTO_MS, accessToken, condominioId, onBadgeUpdate);
+    } else if (permiso === "denied") {
+      console.info("[Push] Permiso denegado. Activando polling lento (5 min).");
+      iniciarFallback(
+        CONFIG.POLLING_LENTO_MS,
+        accessToken,
+        condominioId,
+        onBadgeUpdate,
+      );
     } else {
       // 'default' — nunca se preguntó. Polling moderado + mostrar banner de invitación.
-      console.info('[Push] Permiso no solicitado aún. Activando polling moderado (2 min).');
-      iniciarFallback(CONFIG.POLLING_MODERADO_MS, accessToken, condominioId, onBadgeUpdate);
+      console.info(
+        "[Push] Permiso no solicitado aún. Activando polling moderado (2 min).",
+      );
+      iniciarFallback(
+        CONFIG.POLLING_MODERADO_MS,
+        accessToken,
+        condominioId,
+        onBadgeUpdate,
+      );
       // El banner se muestra desde la UI — PushManager.solicitarPermiso() es el siguiente paso.
     }
   },
@@ -99,12 +117,12 @@ export const PushManager = {
    * @returns {Promise<'granted'|'denied'|'default'>}  El estado resultante del permiso.
    */
   async solicitarPermiso(accessToken) {
-    if (!esPushSoportado()) return 'default';
+    if (!esPushSoportado()) return "default";
 
     const permiso = await Notification.requestPermission();
     console.info(`[Push] Permiso solicitado. Resultado: ${permiso}`);
 
-    if (permiso === 'granted') {
+    if (permiso === "granted") {
       await suscribirYRegistrar(accessToken);
       detenerFallback();
     }
@@ -121,7 +139,7 @@ export const PushManager = {
   async destruir(accessToken) {
     detenerFallback();
     await limpiarTokenDeIDB();
-    navigator.serviceWorker?.removeEventListener('message', manejarMensajeSW);
+    navigator.serviceWorker?.removeEventListener("message", manejarMensajeSW);
 
     if (!_registration) return;
 
@@ -131,12 +149,14 @@ export const PushManager = {
         // Notificar al backend antes de desuscribir el navegador
         await darDeBajaEnBackend(suscripcion.endpoint, accessToken);
         await suscripcion.unsubscribe();
-        console.info('[Push] Suscripción eliminada del navegador y del backend.');
+        console.info(
+          "[Push] Suscripción eliminada del navegador y del backend.",
+        );
       }
     } catch (e) {
       // Error no fatal: si falla la baja en el backend, el SW limpiará el 410 Gone
       // en el próximo envío push.
-      console.warn('[Push] Error al dar de baja la suscripción:', e);
+      console.warn("[Push] Error al dar de baja la suscripción:", e);
     }
 
     _registration = null;
@@ -147,7 +167,7 @@ export const PushManager = {
    * Útil para que la UI decida si mostrar el botón "Activar notificaciones".
    */
   get estaActivo() {
-    return esPushSoportado() && Notification.permission === 'granted';
+    return esPushSoportado() && Notification.permission === "granted";
   },
 
   /**
@@ -155,7 +175,7 @@ export const PushManager = {
    * 'granted' | 'denied' | 'default' | 'no-soportado'
    */
   get estadoPermiso() {
-    if (!esPushSoportado()) return 'no-soportado';
+    if (!esPushSoportado()) return "no-soportado";
     return Notification.permission;
   },
 };
@@ -167,24 +187,26 @@ async function registrarServiceWorker() {
     const reg = await navigator.serviceWorker.register(CONFIG.SW_PATH, {
       scope: CONFIG.SW_SCOPE,
     });
-    console.info('[Push] Service Worker registrado. scope=', reg.scope);
+    console.info("[Push] Service Worker registrado. scope=", reg.scope);
     return reg;
   } catch (e) {
-    console.error('[Push] Error al registrar Service Worker:', e);
+    console.error("[Push] Error al registrar Service Worker:", e);
     throw e;
   }
 }
 
 function manejarMensajeSW(event) {
-  if (event.data?.tipo === 'NAVEGAR') {
+  if (event.data?.tipo === "NAVEGAR") {
     // El SW nos pide navegar a una ruta tras el clic en la notificación.
     // La app principal maneja esto a través del router de SPA.
-    window.dispatchEvent(new CustomEvent('comunidad:navegar', {
-      detail: {
-        url:            event.data.url,
-        notificacionId: event.data.notificacionId,
-      },
-    }));
+    window.dispatchEvent(
+      new CustomEvent("Briku:navegar", {
+        detail: {
+          url: event.data.url,
+          notificacionId: event.data.notificacionId,
+        },
+      }),
+    );
   }
 }
 
@@ -201,26 +223,25 @@ async function suscribirYRegistrar(accessToken) {
 
     if (!suscripcion) {
       suscripcion = await _registration.pushManager.subscribe({
-        userVisibleOnly:      true, // Requerido por Chrome — promesa de mostrar notif al usuario
+        userVisibleOnly: true, // Requerido por Chrome — promesa de mostrar notif al usuario
         applicationServerKey,
       });
-      console.info('[Push] Nueva suscripción push creada.');
+      console.info("[Push] Nueva suscripción push creada.");
     } else {
-      console.info('[Push] Suscripción push preexistente reutilizada.');
+      console.info("[Push] Suscripción push preexistente reutilizada.");
     }
 
     // Registrar en el backend (idempotente — no falla si ya existe)
     await registrarSuscripcionEnBackend(suscripcion, accessToken);
-
   } catch (e) {
-    console.error('[Push] Error al suscribir al push service:', e);
+    console.error("[Push] Error al suscribir al push service:", e);
     // No propagar — un fallo en la suscripción no debe romper la carga de la app.
   }
 }
 
 async function obtenerVapidKey(accessToken) {
   const respuesta = await fetch(`${CONFIG.API_BASE}/push/vapid-key`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
 
   if (!respuesta.ok) {
@@ -236,26 +257,33 @@ async function registrarSuscripcionEnBackend(suscripcion, accessToken) {
   const dispositivo = buildDispositivoString();
 
   const respuesta = await fetch(`${CONFIG.API_BASE}/push/suscripciones`, {
-    method:  'POST',
+    method: "POST",
     headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify({ endpoint, p256dh: keys.p256dh, auth: keys.auth, dispositivo }),
+    body: JSON.stringify({
+      endpoint,
+      p256dh: keys.p256dh,
+      auth: keys.auth,
+      dispositivo,
+    }),
   });
 
   if (!respuesta.ok) {
-    throw new Error(`Error al registrar suscripción en backend: HTTP ${respuesta.status}`);
+    throw new Error(
+      `Error al registrar suscripción en backend: HTTP ${respuesta.status}`,
+    );
   }
 
-  console.info('[Push] Suscripción registrada en el backend.');
+  console.info("[Push] Suscripción registrada en el backend.");
 }
 
 async function darDeBajaEnBackend(endpoint, accessToken) {
   const url = `${CONFIG.API_BASE}/push/suscripciones?endpoint=${encodeURIComponent(endpoint)}`;
   await fetch(url, {
-    method:  'DELETE',
-    headers: { 'Authorization': `Bearer ${accessToken}` },
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
 }
 
@@ -273,7 +301,12 @@ async function darDeBajaEnBackend(endpoint, accessToken) {
  * @param {string}   condominioId    UUID del condominio activo.
  * @param {Function} onBadgeUpdate   Callback(count: number) para actualizar la UI.
  */
-function iniciarFallback(intervaloMs, accessToken, condominioId, onBadgeUpdate) {
+function iniciarFallback(
+  intervaloMs,
+  accessToken,
+  condominioId,
+  onBadgeUpdate,
+) {
   if (!onBadgeUpdate) return;
 
   detenerFallback(); // Limpiar cualquier intervalo previo
@@ -282,7 +315,7 @@ function iniciarFallback(intervaloMs, accessToken, condominioId, onBadgeUpdate) 
     try {
       const respuesta = await fetch(
         `${CONFIG.API_BASE}/condominios/${condominioId}/notificaciones/badge`,
-        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       if (respuesta.ok) {
         const { noLeidas } = await respuesta.json();
@@ -300,13 +333,18 @@ function iniciarFallback(intervaloMs, accessToken, condominioId, onBadgeUpdate) 
   _pollingIntervalId = setInterval(consultarBadge, intervaloMs);
 
   // Consulta adicional al volver a enfocar la pestaña
-  document.addEventListener('visibilitychange', _onVisibilityChange = async () => {
-    if (document.visibilityState === 'visible') {
-      await consultarBadge();
-    }
-  });
+  document.addEventListener(
+    "visibilitychange",
+    (_onVisibilityChange = async () => {
+      if (document.visibilityState === "visible") {
+        await consultarBadge();
+      }
+    }),
+  );
 
-  console.info(`[Push] Fallback polling activo. Intervalo: ${intervaloMs / 1000}s`);
+  console.info(
+    `[Push] Fallback polling activo. Intervalo: ${intervaloMs / 1000}s`,
+  );
 }
 
 let _onVisibilityChange = null;
@@ -317,7 +355,7 @@ function detenerFallback() {
     _pollingIntervalId = null;
   }
   if (_onVisibilityChange) {
-    document.removeEventListener('visibilitychange', _onVisibilityChange);
+    document.removeEventListener("visibilitychange", _onVisibilityChange);
     _onVisibilityChange = null;
   }
 }
@@ -345,12 +383,12 @@ async function guardarTokenEnIDB(token) {
     req.onerror = () => reject(req.error);
 
     req.onsuccess = () => {
-      const db    = req.result;
-      const tx    = db.transaction(CONFIG.IDB_STORE, 'readwrite');
+      const db = req.result;
+      const tx = db.transaction(CONFIG.IDB_STORE, "readwrite");
       const store = tx.objectStore(CONFIG.IDB_STORE);
-      store.put(token, 'accessToken');
+      store.put(token, "accessToken");
       tx.oncomplete = () => resolve();
-      tx.onerror    = () => reject(tx.error);
+      tx.onerror = () => reject(tx.error);
     };
   });
 }
@@ -361,12 +399,15 @@ async function limpiarTokenDeIDB() {
     req.onerror = () => resolve();
     req.onsuccess = () => {
       const db = req.result;
-      if (!db.objectStoreNames.contains(CONFIG.IDB_STORE)) { resolve(); return; }
-      const tx    = db.transaction(CONFIG.IDB_STORE, 'readwrite');
+      if (!db.objectStoreNames.contains(CONFIG.IDB_STORE)) {
+        resolve();
+        return;
+      }
+      const tx = db.transaction(CONFIG.IDB_STORE, "readwrite");
       const store = tx.objectStore(CONFIG.IDB_STORE);
-      store.delete('accessToken');
+      store.delete("accessToken");
       tx.oncomplete = () => resolve();
-      tx.onerror    = () => resolve();
+      tx.onerror = () => resolve();
     };
   });
 }
@@ -381,9 +422,9 @@ async function limpiarTokenDeIDB() {
  */
 function esPushSoportado() {
   return (
-    'serviceWorker' in navigator &&
-    'PushManager'   in window    &&
-    'Notification'  in window
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window
   );
 }
 
@@ -394,8 +435,9 @@ function esPushSoportado() {
 function buildDispositivoString() {
   const ua = navigator.userAgent;
   // Parseo simple — suficiente para mostrar "Chrome 124 / Windows"
-  const browser = ua.match(/(Chrome|Firefox|Safari|Edge)\/[\d.]+/)?.[0] ?? 'Navegador';
-  const os      = ua.match(/\(([^)]+)\)/)?.[1]?.split(';')[0] ?? 'OS desconocido';
+  const browser =
+    ua.match(/(Chrome|Firefox|Safari|Edge)\/[\d.]+/)?.[0] ?? "Navegador";
+  const os = ua.match(/\(([^)]+)\)/)?.[1]?.split(";")[0] ?? "OS desconocido";
   return `${browser} / ${os}`.substring(0, 200);
 }
 
@@ -407,10 +449,10 @@ function buildDispositivoString() {
  * casi toda documentación del tema.
  */
 function urlBase64ToUint8Array(base64String) {
-  const padding  = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64   = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData  = atob(base64);
-  const buffer   = new Uint8Array(rawData.length);
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const buffer = new Uint8Array(rawData.length);
   for (let i = 0; i < rawData.length; i++) {
     buffer[i] = rawData.charCodeAt(i);
   }

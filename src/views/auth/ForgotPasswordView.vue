@@ -50,7 +50,7 @@ async function handleSubmit() {
             v-model="email"
             type="email"
             fluid
-            placeholder="usuario@comunidad.cl"
+            placeholder="usuario@briku.cl"
           />
         </div>
 

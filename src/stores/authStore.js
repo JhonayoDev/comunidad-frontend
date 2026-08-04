@@ -54,6 +54,7 @@ export const useAuthStore = defineStore("auth", () => {
     TESORERO: "Tesorero",
     SECRETARIO: "Secretario",
     DELEGADO: "Delegado",
+    ADMINISTRADOR: "Administrador",
   };
 
   const CONTEXT_DASHBOARDS = {
@@ -62,6 +63,7 @@ export const useAuthStore = defineStore("auth", () => {
     tesorero: "FinanzasDashboard",
     secretario: "Dashboard",
     delegado: "Dashboard",
+    administrador: "Dashboard",
   };
 
   const activeContext = ref("residente");

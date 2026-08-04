@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Genera íconos placeholder PNG para la PWA de Comunidad.
+Genera íconos placeholder PNG para la PWA de Briku.
 
 Los íconos son cuadrados de color sólido con un borde redondeado
-y un texto "C" centrado (la letra de Comunidad).
+y un texto "C" centrado (la letra de Briku).
 
 Suficiente para desarrollo y pruebas — reemplazar con íconos reales
 antes de producción.
@@ -19,16 +19,16 @@ OUTPUT_DIR = os.path.join(
 )
 
 ICON_CONFIGS = [
-    {"name": "icon-72x72.png",    "size": 72,   "bg": "#1e293b", "icon": "#60a5fa"},
-    {"name": "icon-96x96.png",    "size": 96,   "bg": "#1e293b", "icon": "#60a5fa"},
-    {"name": "icon-128x128.png",  "size": 128,  "bg": "#1e293b", "icon": "#60a5fa"},
-    {"name": "icon-144x144.png",  "size": 144,  "bg": "#1e293b", "icon": "#60a5fa"},
-    {"name": "icon-152x152.png",  "size": 152,  "bg": "#1e293b", "icon": "#60a5fa"},
-    {"name": "icon-192x192.png",  "size": 192,  "bg": "#1e293b", "icon": "#60a5fa"},
-    {"name": "icon-384x384.png",  "size": 384,  "bg": "#1e293b", "icon": "#60a5fa"},
-    {"name": "icon-512x512.png",  "size": 512,  "bg": "#1e293b", "icon": "#60a5fa"},
+    {"name": "icon-72x72.png", "size": 72, "bg": "#1e293b", "icon": "#60a5fa"},
+    {"name": "icon-96x96.png", "size": 96, "bg": "#1e293b", "icon": "#60a5fa"},
+    {"name": "icon-128x128.png", "size": 128, "bg": "#1e293b", "icon": "#60a5fa"},
+    {"name": "icon-144x144.png", "size": 144, "bg": "#1e293b", "icon": "#60a5fa"},
+    {"name": "icon-152x152.png", "size": 152, "bg": "#1e293b", "icon": "#60a5fa"},
+    {"name": "icon-192x192.png", "size": 192, "bg": "#1e293b", "icon": "#60a5fa"},
+    {"name": "icon-384x384.png", "size": 384, "bg": "#1e293b", "icon": "#60a5fa"},
+    {"name": "icon-512x512.png", "size": 512, "bg": "#1e293b", "icon": "#60a5fa"},
     # badge debe ser monocromático (blanco sobre fondo oscuro) para el app badge
-    {"name": "badge-72x72.png",   "size": 72,   "bg": "#1e293b", "icon": "#ffffff"},
+    {"name": "badge-72x72.png", "size": 72, "bg": "#1e293b", "icon": "#ffffff"},
 ]
 
 
@@ -60,18 +60,26 @@ def draw_icon(size, bg_color, icon_color):
     rounded_rect(mask_draw, [margin, margin, size - margin, size - margin], radius, 255)
 
     # Aplicar bg_color con la máscara
-    bg_rgba = tuple(int(bg_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4)) + (255,)
+    bg_rgba = tuple(int(bg_color.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4)) + (
+        255,
+    )
     color_layer = Image.new("RGBA", (size, size), bg_rgba)
-    img = Image.composite(color_layer, Image.new("RGBA", (size, size), (0, 0, 0, 0)), mask)
+    img = Image.composite(
+        color_layer, Image.new("RGBA", (size, size), (0, 0, 0, 0)), mask
+    )
 
     # Dibujar la letra "C" centrada
     draw = ImageDraw.Draw(img)
     font_size = int(size * 0.55)
     try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+        font = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size
+        )
     except (IOError, OSError):
         try:
-            font = ImageFont.truetype("/usr/share/fonts/TTF/DejaVuSans-Bold.ttf", font_size)
+            font = ImageFont.truetype(
+                "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf", font_size
+            )
         except (IOError, OSError):
             font = ImageFont.load_default()
 
@@ -96,7 +104,9 @@ def main():
         img.save(path, "PNG")
         print(f"  ✓ {cfg['name']:22s}  {cfg['size']}×{cfg['size']}")
 
-    print("\n✅ Todos los placeholders generados. Reemplazar con íconos reales antes de producción.")
+    print(
+        "\n✅ Todos los placeholders generados. Reemplazar con íconos reales antes de producción."
+    )
 
 
 if __name__ == "__main__":

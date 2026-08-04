@@ -25,8 +25,8 @@
  *   marcarHito("boot:mounted");
  */
 
-const CLAVE_ERRORES = "comunidad:frontend-errors";
-const CLAVE_HITOS = "comunidad:frontend-hitos";
+const CLAVE_ERRORES = "briku:frontend-errors";
+const CLAVE_HITOS = "briku:frontend-hitos";
 const MAX_ERRORES = 5;
 const MAX_HITOS = 20;
 const MAX_STACK_LENGTH = 2000;

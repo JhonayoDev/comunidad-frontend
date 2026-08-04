@@ -1,7 +1,7 @@
 /**
  * service-worker.js
  *
- * Service Worker de Comunidad PWA.
+ * Service Worker de Briku PWA.
  * Scope: '/' — aplica a todo el dominio.
  *
  * Responsabilidades en este archivo:
@@ -24,7 +24,7 @@
  * - El plugin inyecta el registro automático del SW via registerType: 'autoUpdate'.
  */
 
-'use strict';
+"use strict";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -36,30 +36,30 @@
  * Sincronizar con TipoRecurso.java si se agregan nuevos valores.
  */
 const RUTAS_POR_RECURSO = {
-  ENCOMIENDA:   '/encomiendas',
-  VISITA:       '/accesos',
-  GASTO_COMUN:  '/gastos-comunes',
-  PAGO:         '/finanzas',
-  RECLAMO:      '/casos',
-  RESERVA:      '/reservas',
-  COMUNICADO:   '/anuncios',
-  DOCUMENTO:    '/documentos',
-  NONE:         '/notificaciones',
+  ENCOMIENDA: "/encomiendas",
+  VISITA: "/accesos",
+  GASTO_COMUN: "/gastos-comunes",
+  PAGO: "/finanzas",
+  RECLAMO: "/casos",
+  RESERVA: "/reservas",
+  COMUNICADO: "/anuncios",
+  DOCUMENTO: "/documentos",
+  NONE: "/notificaciones",
 };
 
-const ICON_DEFAULT   = '/icons/icon-192x192.png';
-const BADGE_ICON     = '/icons/badge-72x72.png';
-const NOTIF_TAG_BASE = 'comunidad-notif';
+const ICON_DEFAULT = "/icons/icon-192x192.png";
+const BADGE_ICON = "/icons/badge-72x72.png";
+const NOTIF_TAG_BASE = "Briku-notif";
 
 // ─── Ciclo de vida del SW ─────────────────────────────────────────────────────
 
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   // Activar inmediatamente sin esperar a que se cierren las pestañas anteriores.
   // Seguro porque no manejamos cache de assets en esta versión.
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   // Tomar control de todas las pestañas abiertas sin recargar.
   event.waitUntil(self.clients.claim());
 });
@@ -78,9 +78,9 @@ self.addEventListener('activate', (event) => {
  *   "notificacionId": "uuid-de-la-notificacion"
  * }
  */
-self.addEventListener('push', (event) => {
+self.addEventListener("push", (event) => {
   if (!event.data) {
-    console.warn('[SW] Evento push sin payload — ignorado.');
+    console.warn("[SW] Evento push sin payload — ignorado.");
     return;
   }
 
@@ -88,19 +88,26 @@ self.addEventListener('push', (event) => {
   try {
     payload = event.data.json();
   } catch (e) {
-    console.error('[SW] Payload push con JSON inválido:', e);
+    console.error("[SW] Payload push con JSON inválido:", e);
     return;
   }
 
-  const { titulo, cuerpo, tipoRecurso, recursoId, condominioId, notificacionId } = payload;
+  const {
+    titulo,
+    cuerpo,
+    tipoRecurso,
+    recursoId,
+    condominioId,
+    notificacionId,
+  } = payload;
 
   const opciones = {
-    body:    cuerpo ?? 'Tienes una nueva notificación.',
-    icon:    ICON_DEFAULT,
-    badge:   BADGE_ICON,
+    body: cuerpo ?? "Tienes una nueva notificación.",
+    icon: ICON_DEFAULT,
+    badge: BADGE_ICON,
     // tag agrupa notificaciones del mismo tipo — evita apilar decenas de notifs.
     // Si llegan dos ENCOMIENDA antes de que el usuario las vea, se reemplaza la anterior.
-    tag:     `${NOTIF_TAG_BASE}-${tipoRecurso ?? 'NONE'}`,
+    tag: `${NOTIF_TAG_BASE}-${tipoRecurso ?? "NONE"}`,
     // renotify: true → reproducir sonido/vibración aunque el tag ya exista.
     renotify: true,
     // data se pasa al evento notificationclick para construir la ruta.
@@ -112,7 +119,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(titulo ?? 'Comunidad', opciones)
+    self.registration.showNotification(titulo ?? "Briku", opciones),
   );
 });
 
@@ -125,26 +132,27 @@ self.addEventListener('push', (event) => {
  * 2. Si la app ya está abierta en alguna pestaña → enfocarla y navegar.
  * 3. Si no está abierta → abrir una nueva pestaña en la ruta correcta.
  */
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const { tipoRecurso, recursoId, condominioId, notificacionId } = event.notification.data ?? {};
+  const { tipoRecurso, recursoId, condominioId, notificacionId } =
+    event.notification.data ?? {};
   const url = construirUrl(tipoRecurso, recursoId, condominioId);
 
   event.waitUntil(
     self.clients
-      .matchAll({ type: 'window', includeUncontrolled: true })
+      .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientesList) => {
         // Buscar una pestaña ya abierta con el mismo origen
         const clienteExistente = clientesList.find((c) =>
-          c.url.startsWith(self.location.origin)
+          c.url.startsWith(self.location.origin),
         );
 
         if (clienteExistente) {
           // Enfocar la pestaña existente y enviarle la ruta para navegación SPA
           return clienteExistente.focus().then((cliente) => {
             cliente.postMessage({
-              tipo:           'NAVEGAR',
+              tipo: "NAVEGAR",
               url,
               notificacionId,
             });
@@ -153,7 +161,7 @@ self.addEventListener('notificationclick', (event) => {
 
         // No hay pestaña abierta → abrir la app en la ruta correcta
         return self.clients.openWindow(url);
-      })
+      }),
   );
 });
 
@@ -170,12 +178,12 @@ self.addEventListener('notificationclick', (event) => {
  * 3. Si no hay credenciales guardadas (usuario cerró sesión), la suscripción
  *    se pierde silenciosamente — se renovará cuando el usuario vuelva a iniciar sesión.
  */
-self.addEventListener('pushsubscriptionchange', (event) => {
+self.addEventListener("pushsubscriptionchange", (event) => {
   event.waitUntil(
     (async () => {
       try {
         const nuevaSuscripcion = await self.registration.pushManager.subscribe(
-          event.oldSubscription?.options ?? { userVisibleOnly: true }
+          event.oldSubscription?.options ?? { userVisibleOnly: true },
         );
 
         // Obtener un token FRESCO: primero intenta /auth/refresh con la cookie
@@ -183,16 +191,18 @@ self.addEventListener('pushsubscriptionchange', (event) => {
         // backend lo rechaza, cae al token guardado en IndexedDB.
         const token = await obtenerTokenValido();
         if (!token) {
-          console.warn('[SW] pushsubscriptionchange: sin token válido. Suscripción pendiente hasta el próximo login.');
+          console.warn(
+            "[SW] pushsubscriptionchange: sin token válido. Suscripción pendiente hasta el próximo login.",
+          );
           return;
         }
 
         await registrarSuscripcionEnBackend(nuevaSuscripcion, token);
-        console.info('[SW] Suscripción push renovada exitosamente.');
+        console.info("[SW] Suscripción push renovada exitosamente.");
       } catch (e) {
-        console.error('[SW] Error al renovar suscripción push:', e);
+        console.error("[SW] Error al renovar suscripción push:", e);
       }
-    })()
+    })(),
   );
 });
 
@@ -204,11 +214,11 @@ self.addEventListener('pushsubscriptionchange', (event) => {
  * Si no hay recursoId, navega al listado del tipo de recurso.
  */
 function construirUrl(tipoRecurso, recursoId, condominioId) {
-  const base  = self.location.origin;
-  const ruta  = RUTAS_POR_RECURSO[tipoRecurso] ?? RUTAS_POR_RECURSO.NONE;
-  const prefix = condominioId ? `/condominios/${condominioId}` : '';
+  const base = self.location.origin;
+  const ruta = RUTAS_POR_RECURSO[tipoRecurso] ?? RUTAS_POR_RECURSO.NONE;
+  const prefix = condominioId ? `/condominios/${condominioId}` : "";
 
-  if (recursoId && tipoRecurso !== 'NONE') {
+  if (recursoId && tipoRecurso !== "NONE") {
     return `${base}${prefix}${ruta}/${recursoId}`;
   }
   return `${base}${prefix}${ruta}`;
@@ -222,16 +232,26 @@ function construirUrl(tipoRecurso, recursoId, condominioId) {
  */
 async function leerTokenDeIDB() {
   return new Promise((resolve) => {
-    const req = indexedDB.open('comunidad-auth');
+    const req = indexedDB.open("Briku-auth");
     req.onerror = () => resolve(null);
     req.onsuccess = () => {
       const db = req.result;
-      if (!db.objectStoreNames.contains('tokens')) { db.close(); resolve(null); return; }
-      const tx    = db.transaction('tokens', 'readonly');
-      const store = tx.objectStore('tokens');
-      const get   = store.get('accessToken');
-      get.onsuccess = () => { db.close(); resolve(get.result ?? null); };
-      get.onerror   = () => { db.close(); resolve(null); };
+      if (!db.objectStoreNames.contains("tokens")) {
+        db.close();
+        resolve(null);
+        return;
+      }
+      const tx = db.transaction("tokens", "readonly");
+      const store = tx.objectStore("tokens");
+      const get = store.get("accessToken");
+      get.onsuccess = () => {
+        db.close();
+        resolve(get.result ?? null);
+      };
+      get.onerror = () => {
+        db.close();
+        resolve(null);
+      };
     };
   });
 }
@@ -243,22 +263,32 @@ async function leerTokenDeIDB() {
  */
 async function guardarTokenEnIDB(token) {
   return new Promise((resolve) => {
-    const req = indexedDB.open('comunidad-auth');
+    const req = indexedDB.open("Briku-auth");
     req.onerror = () => resolve();
     req.onupgradeneeded = (e) => {
       const db = e.target.result;
-      if (!db.objectStoreNames.contains('tokens')) {
-        db.createObjectStore('tokens');
+      if (!db.objectStoreNames.contains("tokens")) {
+        db.createObjectStore("tokens");
       }
     };
     req.onsuccess = () => {
       const db = req.result;
-      if (!db.objectStoreNames.contains('tokens')) { db.close(); resolve(); return; }
-      const tx    = db.transaction('tokens', 'readwrite');
-      const store = tx.objectStore('tokens');
-      store.put(token, 'accessToken');
-      tx.oncomplete = () => { db.close(); resolve(); };
-      tx.onerror    = () => { db.close(); resolve(); };
+      if (!db.objectStoreNames.contains("tokens")) {
+        db.close();
+        resolve();
+        return;
+      }
+      const tx = db.transaction("tokens", "readwrite");
+      const store = tx.objectStore("tokens");
+      store.put(token, "accessToken");
+      tx.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      tx.onerror = () => {
+        db.close();
+        resolve();
+      };
     };
   });
 }
@@ -273,10 +303,10 @@ async function obtenerTokenValido() {
   const guardado = await leerTokenDeIDB();
 
   try {
-    const respuesta = await fetch('/api/v1/auth/refresh', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+    const respuesta = await fetch("/api/v1/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
     });
 
     if (respuesta.ok) {
@@ -286,10 +316,12 @@ async function obtenerTokenValido() {
         return accessToken;
       }
     } else {
-      console.warn(`[SW] /auth/refresh respondió ${respuesta.status}. Usando el token almacenado.`);
+      console.warn(
+        `[SW] /auth/refresh respondió ${respuesta.status}. Usando el token almacenado.`,
+      );
     }
   } catch (e) {
-    console.error('[SW] Error al renovar token en pushsubscriptionchange:', e);
+    console.error("[SW] Error al renovar token en pushsubscriptionchange:", e);
   }
 
   return guardado;
@@ -305,21 +337,23 @@ async function registrarSuscripcionEnBackend(suscripcion, token) {
   const { endpoint, keys } = suscripcion.toJSON();
   const dispositivo = navigator.userAgent.substring(0, 100);
 
-  const respuesta = await fetch('/api/v1/push/suscripciones', {
-    method:  'POST',
+  const respuesta = await fetch("/api/v1/push/suscripciones", {
+    method: "POST",
     headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       endpoint,
-      p256dh:     keys.p256dh,
-      auth:       keys.auth,
+      p256dh: keys.p256dh,
+      auth: keys.auth,
       dispositivo,
     }),
   });
 
   if (!respuesta.ok) {
-    throw new Error(`Backend respondió ${respuesta.status} al registrar suscripción renovada.`);
+    throw new Error(
+      `Backend respondió ${respuesta.status} al registrar suscripción renovada.`,
+    );
   }
 }

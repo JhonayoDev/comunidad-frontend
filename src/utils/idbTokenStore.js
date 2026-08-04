@@ -18,7 +18,7 @@
  * - Auto-reparación: si el store no existe pese al upgrade, fuerza versión+1.
  */
 
-const IDB_NAME = "comunidad-auth";
+const IDB_NAME = "Briku-auth";
 const IDB_VERSION = 2;
 const IDB_STORE = "tokens";
 

@@ -27,15 +27,14 @@
  * de framework. Compatible con cualquier setup frontend.
  */
 
-'use strict';
+"use strict";
 
-import { PushManager } from './push-manager.js';
+import { PushManager } from "./push-manager.js";
 
-const STORAGE_KEY_DESCARTADO = 'comunidad:push-banner-descartado';
-const BANNER_ID              = 'comunidad-push-banner';
+const STORAGE_KEY_DESCARTADO = "Briku:push-banner-descartado";
+const BANNER_ID = "Briku-push-banner";
 
 export const NotificationBanner = {
-
   /**
    * Monta el banner si las condiciones son correctas.
    *
@@ -46,10 +45,10 @@ export const NotificationBanner = {
    */
   montar({ accessToken, onActivado, onDescartado } = {}) {
     // Condiciones para NO mostrar el banner:
-    if (PushManager.estadoPermiso !== 'default')          return; // Ya decidió
-    if (PushManager.estadoPermiso === 'no-soportado')     return; // Navegador sin soporte
-    if (sessionStorage.getItem(STORAGE_KEY_DESCARTADO))   return; // Descartó en esta sesión
-    if (document.getElementById(BANNER_ID))               return; // Ya está montado
+    if (PushManager.estadoPermiso !== "default") return; // Ya decidió
+    if (PushManager.estadoPermiso === "no-soportado") return; // Navegador sin soporte
+    if (sessionStorage.getItem(STORAGE_KEY_DESCARTADO)) return; // Descartó en esta sesión
+    if (document.getElementById(BANNER_ID)) return; // Ya está montado
 
     inyectarEstilos();
     const banner = crearElementoBanner();
@@ -57,18 +56,21 @@ export const NotificationBanner = {
 
     // Animar entrada tras el primer frame para activar la transición CSS
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => banner.classList.add('comunidad-banner--visible'));
+      requestAnimationFrame(() =>
+        banner.classList.add("Briku-banner--visible"),
+      );
     });
 
     // ── Acción: Activar notificaciones ────────────────────────────────────────
-    banner.querySelector('[data-accion="activar"]')
-      .addEventListener('click', async () => {
+    banner
+      .querySelector('[data-accion="activar"]')
+      .addEventListener("click", async () => {
         const permiso = await PushManager.solicitarPermiso(accessToken);
         desmontar(banner);
 
-        if (permiso === 'granted') {
+        if (permiso === "granted") {
           onActivado?.();
-        } else if (permiso === 'denied') {
+        } else if (permiso === "denied") {
           // El usuario denegó desde el diálogo del navegador.
           // No mostramos mensaje de error — es una elección válida.
           onDescartado?.();
@@ -76,9 +78,10 @@ export const NotificationBanner = {
       });
 
     // ── Acción: Descartar (en esta sesión) ───────────────────────────────────
-    banner.querySelector('[data-accion="descartar"]')
-      .addEventListener('click', () => {
-        sessionStorage.setItem(STORAGE_KEY_DESCARTADO, '1');
+    banner
+      .querySelector('[data-accion="descartar"]')
+      .addEventListener("click", () => {
+        sessionStorage.setItem(STORAGE_KEY_DESCARTADO, "1");
         desmontar(banner);
         onDescartado?.();
       });
@@ -97,31 +100,31 @@ export const NotificationBanner = {
 // ─── DOM ──────────────────────────────────────────────────────────────────────
 
 function crearElementoBanner() {
-  const div = document.createElement('div');
-  div.id        = BANNER_ID;
-  div.className = 'comunidad-banner';
-  div.setAttribute('role', 'alert');
-  div.setAttribute('aria-live', 'polite');
+  const div = document.createElement("div");
+  div.id = BANNER_ID;
+  div.className = "Briku-banner";
+  div.setAttribute("role", "alert");
+  div.setAttribute("aria-live", "polite");
 
   div.innerHTML = `
-    <div class="comunidad-banner__icono" aria-hidden="true">
+    <div class="Briku-banner__icono" aria-hidden="true">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
            xmlns="http://www.w3.org/2000/svg">
         <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
               fill="currentColor"/>
       </svg>
     </div>
-    <div class="comunidad-banner__texto">
+    <div class="Briku-banner__texto">
       <strong>Activa las notificaciones</strong>
       <span>Recibe alertas de visitas, encomiendas y avisos al instante.</span>
     </div>
-    <div class="comunidad-banner__acciones">
-      <button class="comunidad-banner__btn comunidad-banner__btn--activar"
+    <div class="Briku-banner__acciones">
+      <button class="Briku-banner__btn Briku-banner__btn--activar"
               data-accion="activar"
               type="button">
         Activar
       </button>
-      <button class="comunidad-banner__btn comunidad-banner__btn--descartar"
+      <button class="Briku-banner__btn Briku-banner__btn--descartar"
               data-accion="descartar"
               type="button"
               aria-label="Descartar banner de notificaciones">
@@ -134,9 +137,11 @@ function crearElementoBanner() {
 }
 
 function desmontar(banner) {
-  banner.classList.remove('comunidad-banner--visible');
+  banner.classList.remove("Briku-banner--visible");
   // Esperar la transición antes de eliminar del DOM
-  banner.addEventListener('transitionend', () => banner.remove(), { once: true });
+  banner.addEventListener("transitionend", () => banner.remove(), {
+    once: true,
+  });
   // Fallback por si la transición no se dispara (display:none, etc.)
   setTimeout(() => banner.remove(), 400);
 }
@@ -144,12 +149,12 @@ function desmontar(banner) {
 // ─── Estilos ──────────────────────────────────────────────────────────────────
 
 function inyectarEstilos() {
-  if (document.getElementById('comunidad-banner-styles')) return;
+  if (document.getElementById("Briku-banner-styles")) return;
 
-  const style = document.createElement('style');
-  style.id = 'comunidad-banner-styles';
+  const style = document.createElement("style");
+  style.id = "Briku-banner-styles";
   style.textContent = `
-    .comunidad-banner {
+    .Briku-banner {
       position: fixed;
       bottom: 1.5rem;
       left: 50%;
@@ -170,16 +175,16 @@ function inyectarEstilos() {
       font-size: 0.875rem;
     }
 
-    .comunidad-banner--visible {
+    .Briku-banner--visible {
       transform: translateX(-50%) translateY(0);
     }
 
-    .comunidad-banner__icono {
+    .Briku-banner__icono {
       flex-shrink: 0;
       color: #60a5fa;
     }
 
-    .comunidad-banner__texto {
+    .Briku-banner__texto {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -187,25 +192,25 @@ function inyectarEstilos() {
       min-width: 0;
     }
 
-    .comunidad-banner__texto strong {
+    .Briku-banner__texto strong {
       font-weight: 600;
       line-height: 1.3;
     }
 
-    .comunidad-banner__texto span {
+    .Briku-banner__texto span {
       color: #94a3b8;
       font-size: 0.8125rem;
       line-height: 1.4;
     }
 
-    .comunidad-banner__acciones {
+    .Briku-banner__acciones {
       display: flex;
       flex-direction: column;
       gap: 0.375rem;
       flex-shrink: 0;
     }
 
-    .comunidad-banner__btn {
+    .Briku-banner__btn {
       border: none;
       border-radius: 0.5rem;
       padding: 0.4rem 0.875rem;
@@ -217,24 +222,24 @@ function inyectarEstilos() {
       font-family: inherit;
     }
 
-    .comunidad-banner__btn:hover { opacity: 0.85; }
-    .comunidad-banner__btn:focus-visible {
+    .Briku-banner__btn:hover { opacity: 0.85; }
+    .Briku-banner__btn:focus-visible {
       outline: 2px solid #60a5fa;
       outline-offset: 2px;
     }
 
-    .comunidad-banner__btn--activar {
+    .Briku-banner__btn--activar {
       background: #3b82f6;
       color: #ffffff;
     }
 
-    .comunidad-banner__btn--descartar {
+    .Briku-banner__btn--descartar {
       background: transparent;
       color: #94a3b8;
     }
 
     @media (max-width: 480px) {
-      .comunidad-banner {
+      .Briku-banner {
         flex-direction: column;
         align-items: flex-start;
         bottom: 0;
@@ -245,11 +250,11 @@ function inyectarEstilos() {
         max-width: 100%;
       }
 
-      .comunidad-banner--visible {
+      .Briku-banner--visible {
         transform: translateY(0);
       }
 
-      .comunidad-banner__acciones {
+      .Briku-banner__acciones {
         flex-direction: row;
         width: 100%;
         justify-content: flex-end;

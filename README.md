@@ -1,4 +1,4 @@
-# Comunidad Frontend
+# Briku Frontend
 
 SaaS de gestión de condominios. Frontend Vue 3 con PrimeVue + Tailwind CSS + TanStack Query.
 
@@ -104,4 +104,3 @@ Cargos adicionales (ADMINISTRADOR, PRESIDENTE, TESORERO, SECRETARIO, DELEGADO, C
 | `valentina.castro@test.com`  | RESIDENTE     | SECRETARIO | Secretaria                             |
 | `miguel.rojas@test.com`      | GUARDIA       | —          | Guardia de portería                    |
 | `jorge.silva@test.com`       | GUARDIA       | —          | Guardia de portería                    |
-

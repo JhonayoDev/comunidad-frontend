@@ -21,20 +21,17 @@
  */
 
 import { accessToken as tokenRef } from "@/utils/tokenStore";
-import {
-  guardarTokenEnIDB,
-  limpiarTokenEnIDB,
-} from "@/utils/idbTokenStore";
+import { guardarTokenEnIDB, limpiarTokenEnIDB } from "@/utils/idbTokenStore";
 
 // ─── Configuración ────────────────────────────────────────────────────────────
 
 const CONFIG = {
-  SW_PATH:             "/service-worker.js",
-  SW_SCOPE:            "/",
-  API_BASE:            import.meta.env.VITE_API_URL || "/api/v1",
+  SW_PATH: "/service-worker.js",
+  SW_SCOPE: "/",
+  API_BASE: import.meta.env.VITE_API_URL || "/api/v1",
   // Intervalos de polling de fallback (ms)
-  POLLING_LENTO_MS:    5 * 60 * 1000,  // 5 min — cuando el permiso está denegado
-  POLLING_MODERADO_MS: 2 * 60 * 1000,  // 2 min — cuando nunca se ha pedido permiso
+  POLLING_LENTO_MS: 5 * 60 * 1000, // 5 min — cuando el permiso está denegado
+  POLLING_MODERADO_MS: 2 * 60 * 1000, // 2 min — cuando nunca se ha pedido permiso
 };
 
 // ─── Estado interno (privado al módulo) ───────────────────────────────────────
@@ -57,7 +54,6 @@ let _onVisibilityChange = null;
 // ─── API pública ──────────────────────────────────────────────────────────────
 
 export const PushManager = {
-
   /**
    * Punto de entrada principal. Llamar inmediatamente después del login.
    *
@@ -77,7 +73,9 @@ export const PushManager = {
     navigator.serviceWorker?.addEventListener("message", manejarMensajeSW);
 
     if (!esPushSoportado()) {
-      console.info("[PushManager] Push no soportado. Activando polling moderado.");
+      console.info(
+        "[PushManager] Push no soportado. Activando polling moderado.",
+      );
       iniciarFallback(CONFIG.POLLING_MODERADO_MS);
       return;
     }
@@ -110,7 +108,9 @@ export const PushManager = {
       iniciarFallback(CONFIG.POLLING_LENTO_MS);
     } else {
       // 'default' — nunca se preguntó. Polling moderado + banner de invitación.
-      console.info("[PushManager] Permiso no solicitado aún. Polling moderado (2 min).");
+      console.info(
+        "[PushManager] Permiso no solicitado aún. Polling moderado (2 min).",
+      );
       iniciarFallback(CONFIG.POLLING_MODERADO_MS);
     }
   },
@@ -159,7 +159,9 @@ export const PushManager = {
       if (suscripcion) {
         await darDeBajaEnBackend(suscripcion.endpoint);
         await suscripcion.unsubscribe();
-        console.info("[PushManager] Suscripción eliminada del navegador y del backend.");
+        console.info(
+          "[PushManager] Suscripción eliminada del navegador y del backend.",
+        );
       }
     } catch (e) {
       console.warn("[PushManager] Error al dar de baja:", e);
@@ -241,7 +243,7 @@ function manejarMensajeSW(event) {
     // El SW pide navegar tras clic en notificación.
     // La app principal maneja esto a través del router SPA.
     window.dispatchEvent(
-      new CustomEvent("comunidad:navegar", {
+      new CustomEvent("Briku:navegar", {
         detail: {
           url: event.data.url,
           notificacionId: event.data.notificacionId,
@@ -356,7 +358,9 @@ function iniciarFallback(intervaloMs) {
   consultarBadge();
 
   // Consulta periódica
-  _pollingIntervalId = setInterval(() => { consultarBadge(); }, intervaloMs);
+  _pollingIntervalId = setInterval(() => {
+    consultarBadge();
+  }, intervaloMs);
 
   // Consulta adicional al volver a la pestaña
   _onVisibilityChange = () => {
@@ -366,7 +370,9 @@ function iniciarFallback(intervaloMs) {
   };
   document.addEventListener("visibilitychange", _onVisibilityChange);
 
-  console.info(`[PushManager] Fallback polling activo. Intervalo: ${intervaloMs / 1000}s`);
+  console.info(
+    `[PushManager] Fallback polling activo. Intervalo: ${intervaloMs / 1000}s`,
+  );
 }
 
 /**
@@ -445,7 +451,8 @@ function esPushSoportado() {
 
 function buildDispositivoString() {
   const ua = navigator.userAgent;
-  const browser = ua.match(/(Chrome|Firefox|Safari|Edge)\/[\d.]+/)?.[0] ?? "Navegador";
+  const browser =
+    ua.match(/(Chrome|Firefox|Safari|Edge)\/[\d.]+/)?.[0] ?? "Navegador";
   const os = ua.match(/\(([^)]+)\)/)?.[1]?.split(";")[0] ?? "OS desconocido";
   return `${browser} / ${os}`.substring(0, 200);
 }
@@ -462,9 +469,7 @@ function urlBase64ToUint8Array(base64String) {
   const cleanKey = base64String.replace(/['"\s]/g, "").trim();
 
   const padding = "=".repeat((4 - (cleanKey.length % 4)) % 4);
-  const base64 = (cleanKey + padding)
-    .replace(/\-/g, "+")
-    .replace(/_/g, "/");
+  const base64 = (cleanKey + padding).replace(/\-/g, "+").replace(/_/g, "/");
 
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
