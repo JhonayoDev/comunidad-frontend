@@ -9,7 +9,7 @@ import Skeleton from "primevue/skeleton";
 import Paginator from "primevue/paginator";
 
 const {
-  notificaciones, loading, error, hayNoLeidas,
+  notificaciones, loading, error, hayNoLeidas, moduloNoContratado,
   marcarLeida, marcarTodas,
 } = useNotificaciones();
 
@@ -91,7 +91,22 @@ function handleMarcarLeida(n) {
       {{ error }}
     </Message>
 
-    <template v-if="loading">
+    <Card v-if="moduloNoContratado">
+      <template #content>
+        <div class="flex flex-col items-center py-6 gap-2 text-center">
+          <i class="pi pi-bell-slash text-5xl text-surface-300"></i>
+          <p class="font-semibold text-surface-600 m-0">
+            Módulo de comunicaciones no contratado
+          </p>
+          <p class="text-sm text-surface-400 m-0 max-w-md">
+            Tu condominio no tiene suscrito el módulo de comunicaciones. Si
+            crees que esto es un error, contáctate con la administración.
+          </p>
+        </div>
+      </template>
+    </Card>
+
+    <template v-else-if="loading">
       <Card v-for="i in 4" :key="i">
         <template #content>
           <div class="flex items-center gap-3">

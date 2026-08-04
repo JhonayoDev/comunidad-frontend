@@ -46,6 +46,15 @@ export const useAuthStore = defineStore("auth", () => {
     () => condominioActual.value?.cargo || null,
   );
 
+  // M3 (backend): un usuario es "solo-RESIDENTE" si tiene rol RESIDENTE y NO
+  // tiene ninguno de los roles staff/admin (SUPER_ADMIN, SOPORTE, ADMINISTRADOR,
+  // GUARDIA). En archivos, solo-RESIDENTE ve únicamente sus propios archivos.
+  const esSoloResidente = computed(() => {
+    const roles = user.value?.roles || [];
+    const staff = ["SUPER_ADMIN", "SOPORTE", "ADMINISTRADOR", "GUARDIA"];
+    return roles.includes("RESIDENTE") && !roles.some((r) => staff.includes(r));
+  });
+
   const permisos = ref([]);
   const permisosRol = ref(null);
 
@@ -215,6 +224,7 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActualNombre,
     condominioActualRol,
     condominioActualCargo,
+    esSoloResidente,
     permisos,
     permisosRol,
     fetchPermisos,

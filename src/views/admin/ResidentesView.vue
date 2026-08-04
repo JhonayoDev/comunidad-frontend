@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { personasService } from "@/services/personasService";
 import { unidadesService } from "@/services/unidadesService";
+import { mensajeError } from "@/utils/errores";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -89,6 +90,7 @@ async function crearPersona() {
     await cargar();
   } catch (e) {
     console.error("Error al crear persona", e);
+    error.value = mensajeError(e, "Error al crear persona");
   } finally {
     enviando.value = false;
   }
@@ -173,6 +175,7 @@ async function crearVinculo() {
     showCrearVinculo.value = false;
   } catch (e) {
     console.error("Error al crear vínculo", e);
+    error.value = mensajeError(e, "Error al crear vínculo");
   } finally {
     enviando.value = false;
   }
@@ -194,6 +197,7 @@ async function crearUsuario() {
     personaSeleccionada.value = null;
   } catch (e) {
     console.error("Error al crear usuario", e);
+    error.value = mensajeError(e, "Error al crear usuario");
   } finally {
     enviando.value = false;
   }

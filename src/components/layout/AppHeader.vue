@@ -4,7 +4,7 @@
   >
     <div class="header-btn flex align-items-center gap-2">
       <img
-        src="../../assets/casa.svg"
+        src="/icons/favicon.svg"
         alt="Logo"
         class="header-btn w-9 h-9 border-circle overflow-hidden object-fill cursor-pointer"
         @click="goHome"
