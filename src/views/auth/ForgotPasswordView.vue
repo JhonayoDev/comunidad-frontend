@@ -29,7 +29,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <Card class="max-w-m w-full bg-surface/75">
+  <Card class="max-w-sm w-full bg-surface/75">
     <template #title>
       <div class="primary-text">Recuperar contraseña</div>
     </template>
@@ -38,7 +38,7 @@ async function handleSubmit() {
       <form
         v-if="!enviado"
         @submit.prevent="handleSubmit"
-        class="space-y-6 mt-3"
+        class="space-y-6 max-sm:space-y-4 mt-3"
       >
         <div class="secondary-text">
           Ingresa tu email para recibir un enlace de restablecimiento

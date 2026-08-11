@@ -90,7 +90,10 @@ async function handleLogin(event) {
     </template>
 
     <template #content>
-      <form @submit.prevent="handleLogin($event)" class="space-y-6 mt-3">
+      <form
+        @submit.prevent="handleLogin($event)"
+        class="space-y-6 max-sm:space-y-4 mt-3"
+      >
         <div class="primary-text flex flex-col gap-2">
           <label>Email</label>
           <InputText

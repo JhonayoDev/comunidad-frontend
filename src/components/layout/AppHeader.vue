@@ -6,7 +6,7 @@
       <img
         src="/icons/favicon.svg"
         alt="Logo"
-        class="header-btn w-9 h-9 border-circle overflow-hidden object-fill cursor-pointer"
+        class="app-logo header-btn w-9 h-9 border-circle overflow-hidden object-fill cursor-pointer"
         @click="goHome"
       />
       <div class="flex flex-col min-w-0">

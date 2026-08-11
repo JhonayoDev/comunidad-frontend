@@ -62,7 +62,11 @@ async function handleSubmit() {
     <template #subtitle> Ingresa tu nueva contraseña </template>
 
     <template #content>
-      <form v-if="!success" @submit.prevent="handleSubmit" class="space-y-6 mt-3">
+      <form
+        v-if="!success"
+        @submit.prevent="handleSubmit"
+        class="space-y-6 max-sm:space-y-4 mt-3"
+      >
         <div class="flex flex-col gap-2">
           <label>Nueva contraseña</label>
           <Password v-model="newPassword" :feedback="true" toggleMask fluid />

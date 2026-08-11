@@ -28,24 +28,25 @@
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
 
     <!-- ============================================================
-         SPLASH SCREEN IN-APP (Briku)
-         Inline en el HTML para que se pinte ANTES de que cargue el
-         bundle JS: cubre el tiempo de descarga del bundle y hasta que
-         Vue monta el login. Se oculta desde main.js (src/utils/splash.js)
-         cuando la animación termina y la app está montada.
+         SPLASH SCREEN (Briku)
+         INLINE a propósito: es el primer pintado, antes de cargar el bundle
+         JS, para que nunca haya pantalla en blanco. No se reemplaza desde
+         JS (eso causaba flash blanco); solo se oculta (src/utils/splash.js)
+         cuando la app está lista y la animación terminó.
+         ── Dos modos (script al pie del body) ──
+           · Rutas públicas (/, /login, /recuperar-password, …) → splash
+             completo animado (ladrillos/techo + "Briku").
+           · Rutas privadas (F5 estando dentro de la app) → clase
+             "modo-carga": carga circular con el logo de marca.
          ============================================================ -->
     <style>
       :root {
         --briku-blue: #173a6a;
         --briku-size: 220px;
 
-        /* ⚙️ RUTAS Y BLUR DE FONDO */
-        --briku-bg-url: url("./public/fondo.webp"); /* Ruta de tu imagen (public/) */
-        --briku-bg-blur: 10px; /* Intensidad del desenfoque */
-        --briku-bg-opacity: 0.7; /* Opacidad del velo blanco */
+        --briku-bg-blur: 10px;
+        --briku-bg-opacity: 0.7;
 
-        /* ⚙️ DURACIONES (milisegundos) */
-        --briku-text-time: 2000ms;
         --briku-roof-time: 700ms;
         --briku-brick-time: 450ms;
         --briku-pulse-time: 500ms;
@@ -55,14 +56,12 @@
       #briku-splash {
         position: fixed;
         inset: 0;
-        display: grid;
-        place-items: center;
+        overflow: hidden;
         background: #fff;
         transition:
           opacity 0.4s ease,
           visibility 0.4s;
         z-index: 9999;
-        overflow: hidden;
       }
 
       #briku-splash.hide {
@@ -74,7 +73,7 @@
       #briku-splash .bg-image {
         position: absolute;
         inset: 0;
-        background-image: var(--briku-bg-url);
+        background-image: url("fondo.webp");
         background-size: cover;
         background-position: center;
         transform: scale(1.08);
@@ -89,39 +88,41 @@
         z-index: 2;
       }
 
+      /* Escenario compartido: centra el contenido en el viewport completo */
       #briku-splash .stage {
-        position: relative;
+        position: absolute;
+        inset: 0;
         z-index: 3;
         display: grid;
         place-items: center;
       }
 
+      /* ════════════════════════════════════════════════════════════════
+         SPLASH COMPLETO (primera apertura / login)
+         Logo de ladrillos/techo + texto "Briku".
+         ════════════════════════════════════════════════════════════════ */
       #briku-splash .brand-text {
         position: absolute;
         font-size: 72px;
         font-weight: 800;
         color: var(--briku-blue);
         letter-spacing: 4px;
-        opacity: 0;
-        animation: brikuTextIntro var(--briku-text-time)
-          cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        line-height: 1.1;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        /* Visible desde el inicio; se desvanece cuando empieza la animación
+           de los ladrillos (2.0s) para no quedar encima del logo. */
+        opacity: 1;
+        animation: brikuTextOut 400ms ease-out 1.6s forwards;
       }
 
-      @keyframes brikuTextIntro {
-        0% {
-          opacity: 0;
-          transform: scale(0.85);
-        }
-        25% {
+      @keyframes brikuTextOut {
+        from {
           opacity: 1;
           transform: scale(1);
         }
-        60% {
-          opacity: 1;
-          transform: scale(1.02);
-          filter: blur(0px);
-        }
-        100% {
+        to {
           opacity: 0;
           transform: scale(1.15);
           filter: blur(8px);
@@ -319,10 +320,56 @@
           transform: translate(0, 0) scale(1);
           opacity: 1;
         }
+        /* Destino calculado por splash.js (--briku-exit-x/y = centro del
+           logo del header); el fallback conserva la posición original.
+           El scale (0.18 → ~40px) calza con el ícono del header para la
+           fusión al terminar. */
         100% {
-          transform: translate(calc(-54vw + 49px), calc(-52vh + 44px))
+          transform: translate(
+              var(--briku-exit-x, calc(-54vw + 49px)),
+              var(--briku-exit-y, calc(-52vh + 44px))
+            )
             scale(0.18);
           opacity: 0.4;
+        }
+      }
+
+      /* ════════════════════════════════════════════════════════════════
+         LOADER (F5 EN APP / RUTAS PRIVADAS) — ANIMACIÓN DE CARGA
+         Carga circular típica con el logo de marca en el centro.
+         ── AJUSTAR AQUÍ ──
+           · Tamaño: width/height de .loader-ring (64px).
+           · Ancho/color del borde giratorio de .loader-ring.
+           · Velocidad: duración de brikuLoaderGirar (0.9s).
+           · Tamaño del logo: .loader-logo (36px).
+         ════════════════════════════════════════════════════════════════ */
+      #briku-splash .loader-stage {
+        display: none;
+      }
+      #briku-splash.modo-carga .splash-stage {
+        display: none;
+      }
+      #briku-splash.modo-carga .loader-stage {
+        display: grid;
+      }
+      #briku-splash .loader-ring {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        border: 4px solid rgba(23, 58, 106, 0.15);
+        border-top-color: #173a6a;
+        animation: brikuLoaderGirar 0.9s linear infinite;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #briku-splash .loader-logo {
+        width: 36px;
+        height: 36px;
+      }
+      @keyframes brikuLoaderGirar {
+        to {
+          transform: rotate(360deg);
         }
       }
     </style>
@@ -330,16 +377,14 @@
   <body>
     <div id="app"></div>
 
-    <!-- Splash in-app: hermano de #app (Vue reemplaza el contenido de #app,
-         así que el splash debe vivir fuera para poder desvanecerse). -->
-    <div class="screen" id="briku-splash">
+    <div id="briku-splash">
       <div class="bg-image"></div>
       <div class="bg-overlay"></div>
 
-      <div class="stage">
+      <!-- SPLASH COMPLETO (primera apertura / login) -->
+      <div class="stage splash-stage">
         <div class="brand-text">Briku</div>
-
-        <div class="logo" id="briku-splash-logo">
+        <div class="logo">
           <div class="roof">
             <div class="left"></div>
             <div class="right"></div>
@@ -355,32 +400,35 @@
           </div>
         </div>
       </div>
+
+      <!-- LOADER (F5 en app / rutas privadas): carga circular con logo de
+           marca. Ajustes visuales en el bloque CSS "LOADER" de arriba. -->
+      <div class="stage loader-stage">
+        <div class="loader-ring">
+          <img class="loader-logo" src="/icons/favicon.svg" alt="Cargando Briku" />
+        </div>
+      </div>
     </div>
 
     <script>
-      // Marca cuándo termina la animación del logo y expone el ocultado.
-      // main.js (src/utils/splash.js) lo invoca tras app.mount().
+      // Decide el modo del splash según la ruta actual, antes de cargar el
+      // bundle JS (JS no disponible aún → vanilla + sin imports):
+      //   · Rutas públicas → splash completo animado (primera apertura).
+      //   · Rutas privadas (F5 estando dentro de la app) → clase "modo-carga"
+      //     → el CSS muestra el loader circular.
+      // AJUSTAR: agregar/quitar rutas públicas a la lista.
       (function () {
-        window.__brikuSplashAnimado = false;
-        var splash = document.getElementById("briku-splash");
-        var logo = document.getElementById("briku-splash-logo");
-
-        if (logo) {
-          logo.addEventListener("animationend", function (event) {
-            if (event.animationName === "brikuLogoExit") {
-              window.__brikuSplashAnimado = true;
-            }
-          });
+        var publicas = [
+          "/",
+          "/login",
+          "/recuperar-password",
+          "/reset-password",
+          "/setup-password",
+        ];
+        if (publicas.indexOf(location.pathname) === -1) {
+          var splash = document.getElementById("briku-splash");
+          if (splash) splash.classList.add("modo-carga");
         }
-
-        window.__brikuOcultarSplash = function () {
-          if (!splash) return;
-          splash.classList.add("hide");
-          setTimeout(function () {
-            if (splash && splash.parentNode)
-              splash.parentNode.removeChild(splash);
-          }, 500);
-        };
       })();
     </script>
 
