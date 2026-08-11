@@ -29,21 +29,47 @@
 
     <!-- ============================================================
          SPLASH SCREEN (Briku)
-         ESTE BLOQUE DEBE SER ESTÁTICO Y MÍNIMO: es el primer pintado,
-         ANTES de que cargue el bundle JS, para que nunca haya pantalla
-         en blanco durante la descarga. La animación completa vive en
-         src/components/SplashScreen.vue (montada desde main.js), que
-         reemplaza este contenido al cargar. Si el bundle no carga, este
-         fallback queda visible (nunca se oculta sin JS).
+         INLINE a propósito: es el primer pintado, antes de cargar el bundle
+         JS, para que nunca haya pantalla en blanco. No se reemplaza desde
+         JS (eso causaba flash blanco); solo se oculta (src/utils/splash.js)
+         cuando la app está lista y la animación terminó.
+         ── Dos modos (script al pie del body) ──
+           · Rutas públicas (/, /login, /recuperar-password, …) → splash
+             completo animado (ladrillos/techo + "Briku").
+           · Rutas privadas (F5 estando dentro de la app) → clase
+             "modo-carga": carga circular con el logo de marca.
          ============================================================ -->
     <style>
+      :root {
+        --briku-blue: #173a6a;
+        --briku-size: 220px;
+
+        --briku-bg-blur: 10px;
+        --briku-bg-opacity: 0.7;
+
+        --briku-roof-time: 700ms;
+        --briku-brick-time: 450ms;
+        --briku-pulse-time: 500ms;
+        --briku-exit-time: 800ms;
+      }
+
       #briku-splash {
         position: fixed;
         inset: 0;
         overflow: hidden;
         background: #fff;
+        transition:
+          opacity 0.4s ease,
+          visibility 0.4s;
         z-index: 9999;
       }
+
+      #briku-splash.hide {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
       #briku-splash .bg-image {
         position: absolute;
         inset: 0;
@@ -51,17 +77,18 @@
         background-size: cover;
         background-position: center;
         transform: scale(1.08);
-        filter: blur(10px);
+        filter: blur(var(--briku-bg-blur));
+        z-index: 1;
       }
+
       #briku-splash .bg-overlay {
         position: absolute;
         inset: 0;
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, var(--briku-bg-opacity));
+        z-index: 2;
       }
-      /* .stage usa EXACTAMENTE el mismo centrado que SplashScreen.vue:
-         centra el contenido en el viewport completo. Así el texto "Briku"
-         queda en el mismo punto que el componente animado → sin salto de
-         posición al montar. */
+
+      /* Escenario compartido: centra el contenido en el viewport completo */
       #briku-splash .stage {
         position: absolute;
         inset: 0;
@@ -69,17 +96,281 @@
         display: grid;
         place-items: center;
       }
+
+      /* ════════════════════════════════════════════════════════════════
+         SPLASH COMPLETO (primera apertura / login)
+         Logo de ladrillos/techo + texto "Briku".
+         ════════════════════════════════════════════════════════════════ */
       #briku-splash .brand-text {
+        position: absolute;
         font-size: 72px;
         font-weight: 800;
-        color: #173a6a;
+        color: var(--briku-blue);
         letter-spacing: 4px;
         line-height: 1.1;
-        /* Misma fuente que SplashScreen.vue: evita que el "Briku" se corra
-           unos píxeles al montar el componente (métricas distintas = flash). */
         font-family:
           -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
+        /* Visible desde el inicio; se desvanece cuando empieza la animación
+           de los ladrillos (2.0s) para no quedar encima del logo. */
+        opacity: 1;
+        animation: brikuTextOut 400ms ease-out 1.6s forwards;
+      }
+
+      @keyframes brikuTextOut {
+        from {
+          opacity: 1;
+          transform: scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: scale(1.15);
+          filter: blur(8px);
+        }
+      }
+
+      #briku-splash .logo {
+        width: var(--briku-size);
+        animation:
+          brikuLogoPulse var(--briku-pulse-time) ease 3.9s forwards,
+          brikuLogoExit var(--briku-exit-time) cubic-bezier(0.4, 0, 0.2, 1) 4.5s
+            forwards;
+      }
+
+      #briku-splash .roof {
+        position: relative;
+        height: 78px;
+        z-index: 3;
+        filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.22));
+      }
+
+      #briku-splash .left,
+      #briku-splash .right {
+        position: absolute;
+        width: 116px;
+        height: 25px;
+        background: var(--briku-blue);
+        top: 50px;
+        opacity: 0;
+      }
+
+      #briku-splash .left {
+        --angle: -35deg;
+        left: 22px;
+        transform-origin: left center;
+        border-radius: 2px 0 0 2px;
+        animation: brikuRoofLeft var(--briku-roof-time)
+          cubic-bezier(0.22, 1.18, 0.41, 1) 3.1s forwards;
+      }
+
+      #briku-splash .right {
+        --angle: 35deg;
+        right: 22px;
+        transform-origin: right center;
+        border-radius: 0 2px 2px 0;
+        animation: brikuRoofRight var(--briku-roof-time)
+          cubic-bezier(0.22, 1.18, 0.41, 1) 3.1s forwards;
+      }
+
+      #briku-splash .top {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      #briku-splash .top div {
+        width: 78px;
+        height: 34px;
+        background: var(--briku-blue);
+        border-radius: 2px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+        opacity: 0;
+      }
+
+      #briku-splash .bottom {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 6px;
+      }
+
+      #briku-splash .bottom > div {
+        width: 38px;
+        height: 34px;
+        background: var(--briku-blue);
+        border-radius: 2px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+        opacity: 0;
+      }
+
+      #briku-splash .bottom .center {
+        width: 74px;
+      }
+
+      #briku-splash .bottom div:nth-child(1) {
+        animation: brikuBrickLeft var(--briku-brick-time) ease-out 2s forwards;
+      }
+      #briku-splash .bottom div:nth-child(2) {
+        animation: brikuBrickCenter var(--briku-brick-time) ease-out 2.2s
+          forwards;
+      }
+      #briku-splash .bottom div:nth-child(3) {
+        animation: brikuBrickRight var(--briku-brick-time) ease-out 2.4s
+          forwards;
+      }
+
+      #briku-splash .top div:nth-child(1) {
+        animation: brikuBrickLeft var(--briku-brick-time) ease-out 2.6s forwards;
+      }
+      #briku-splash .top div:nth-child(2) {
+        animation: brikuBrickRight var(--briku-brick-time) ease-out 2.8s
+          forwards;
+      }
+
+      @keyframes brikuRoofLeft {
+        from {
+          opacity: 0;
+          transform: translateY(-120px) rotate(var(--angle));
+        }
+        75% {
+          opacity: 1;
+          transform: translateY(10px) rotate(var(--angle));
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) rotate(var(--angle));
+        }
+      }
+
+      @keyframes brikuRoofRight {
+        from {
+          opacity: 0;
+          transform: translateY(-120px) rotate(var(--angle));
+        }
+        75% {
+          opacity: 1;
+          transform: translateY(10px) rotate(var(--angle));
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) rotate(var(--angle));
+        }
+      }
+
+      @keyframes brikuBrickLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-40px) scale(0.5);
+        }
+        70% {
+          transform: translateX(4px) scale(1.05);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0) scale(1);
+        }
+      }
+
+      @keyframes brikuBrickRight {
+        from {
+          opacity: 0;
+          transform: translateX(40px) scale(0.5);
+        }
+        70% {
+          transform: translateX(-4px) scale(1.05);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0) scale(1);
+        }
+      }
+
+      @keyframes brikuBrickCenter {
+        from {
+          opacity: 0;
+          transform: translateY(35px) scale(0.5);
+        }
+        70% {
+          transform: translateY(-3px) scale(1.05);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes brikuLogoPulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes brikuLogoExit {
+        0% {
+          transform: translate(0, 0) scale(1);
+          opacity: 1;
+        }
+        /* Destino calculado por splash.js (--briku-exit-x/y = centro del
+           logo del header); el fallback conserva la posición original.
+           El scale (0.18 → ~40px) calza con el ícono del header para la
+           fusión al terminar. */
+        100% {
+          transform: translate(
+              var(--briku-exit-x, calc(-54vw + 49px)),
+              var(--briku-exit-y, calc(-52vh + 44px))
+            )
+            scale(0.18);
+          opacity: 0.4;
+        }
+      }
+
+      /* ════════════════════════════════════════════════════════════════
+         LOADER (F5 EN APP / RUTAS PRIVADAS) — ANIMACIÓN DE CARGA
+         Carga circular típica con el logo de marca en el centro.
+         ── AJUSTAR AQUÍ ──
+           · Tamaño: width/height de .loader-ring (64px).
+           · Ancho/color del borde giratorio de .loader-ring.
+           · Velocidad: duración de brikuLoaderGirar (0.9s).
+           · Tamaño del logo: .loader-logo (36px).
+         ════════════════════════════════════════════════════════════════ */
+      #briku-splash .loader-stage {
+        display: none;
+      }
+      #briku-splash.modo-carga .splash-stage {
+        display: none;
+      }
+      #briku-splash.modo-carga .loader-stage {
+        display: grid;
+      }
+      #briku-splash .loader-ring {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        border: 4px solid rgba(23, 58, 106, 0.15);
+        border-top-color: #173a6a;
+        animation: brikuLoaderGirar 0.9s linear infinite;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #briku-splash .loader-logo {
+        width: 36px;
+        height: 36px;
+      }
+      @keyframes brikuLoaderGirar {
+        to {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
@@ -89,10 +380,57 @@
     <div id="briku-splash">
       <div class="bg-image"></div>
       <div class="bg-overlay"></div>
-      <div class="stage">
+
+      <!-- SPLASH COMPLETO (primera apertura / login) -->
+      <div class="stage splash-stage">
         <div class="brand-text">Briku</div>
+        <div class="logo">
+          <div class="roof">
+            <div class="left"></div>
+            <div class="right"></div>
+          </div>
+          <div class="top">
+            <div></div>
+            <div></div>
+          </div>
+          <div class="bottom">
+            <div></div>
+            <div class="center"></div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOADER (F5 en app / rutas privadas): carga circular con logo de
+           marca. Ajustes visuales en el bloque CSS "LOADER" de arriba. -->
+      <div class="stage loader-stage">
+        <div class="loader-ring">
+          <img class="loader-logo" src="/icons/favicon.svg" alt="Cargando Briku" />
+        </div>
       </div>
     </div>
+
+    <script>
+      // Decide el modo del splash según la ruta actual, antes de cargar el
+      // bundle JS (JS no disponible aún → vanilla + sin imports):
+      //   · Rutas públicas → splash completo animado (primera apertura).
+      //   · Rutas privadas (F5 estando dentro de la app) → clase "modo-carga"
+      //     → el CSS muestra el loader circular.
+      // AJUSTAR: agregar/quitar rutas públicas a la lista.
+      (function () {
+        var publicas = [
+          "/",
+          "/login",
+          "/recuperar-password",
+          "/reset-password",
+          "/setup-password",
+        ];
+        if (publicas.indexOf(location.pathname) === -1) {
+          var splash = document.getElementById("briku-splash");
+          if (splash) splash.classList.add("modo-carga");
+        }
+      })();
+    </script>
 
     <script type="module" src="/src/main.js"></script>
   </body>
