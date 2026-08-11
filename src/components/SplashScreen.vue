@@ -20,6 +20,33 @@ onMounted(() => {
     });
   }
 
+  // Apunta la salida de la animación al logo del header (.app-logo) para que
+  // el splash "se fusione" con él al terminar, en cualquier pantalla. El
+  // header se monta justo después del splash (mismo task en main.js), así que
+  // reintentamos con rAF hasta encontrarlo; si no aparece en ~2s, el keyframe
+  // usa su fallback (posición actual).
+  const retrasoMaximoMs = 2000;
+  const inicioBusqueda = Date.now();
+  const ubicarLogoHeader = () => {
+    const headerLogo = document.querySelector(".app-logo");
+    if (headerLogo) {
+      const r = headerLogo.getBoundingClientRect();
+      el.style.setProperty(
+        "--briku-exit-x",
+        `${r.left + r.width / 2 - window.innerWidth / 2}px`,
+      );
+      el.style.setProperty(
+        "--briku-exit-y",
+        `${r.top + r.height / 2 - window.innerHeight / 2}px`,
+      );
+      return;
+    }
+    if (Date.now() - inicioBusqueda < retrasoMaximoMs) {
+      requestAnimationFrame(ubicarLogoHeader);
+    }
+  };
+  requestAnimationFrame(ubicarLogoHeader);
+
   const ocultar = () => {
     if (!el.isConnected) return;
     el.classList.add("hide");
@@ -350,14 +377,20 @@ onMounted(() => {
     transform: scale(1);
   }
 }
-
 @keyframes brikuLogoExit {
   0% {
     transform: translate(0, 0) scale(1);
     opacity: 1;
   }
+  /* El destino lo calcula el componente en --briku-exit-x/y (centro del
+     logo del header); el fallback conserva la posición original. El scale
+     (0.18 → ~40px) calza con el tamaño del ícono del header para la fusión. */
   100% {
-    transform: translate(calc(-54vw + 49px), calc(-52vh + 44px)) scale(0.18);
+    transform: translate(
+        var(--briku-exit-x, calc(-54vw + 49px)),
+        var(--briku-exit-y, calc(-52vh + 44px))
+      )
+      scale(0.18);
     opacity: 0.4;
   }
 }
