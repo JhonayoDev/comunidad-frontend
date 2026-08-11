@@ -28,361 +28,71 @@
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
 
     <!-- ============================================================
-         SPLASH SCREEN IN-APP (Briku)
-         Inline en el HTML para que se pinte ANTES de que cargue el
-         bundle JS: cubre el tiempo de descarga del bundle y hasta que
-         Vue monta el login. Se oculta desde main.js (src/utils/splash.js)
-         cuando la animación termina y la app está montada.
+         SPLASH SCREEN (Briku)
+         ESTE BLOQUE DEBE SER ESTÁTICO Y MÍNIMO: es el primer pintado,
+         ANTES de que cargue el bundle JS, para que nunca haya pantalla
+         en blanco durante la descarga. La animación completa vive en
+         src/components/SplashScreen.vue (montada desde main.js), que
+         reemplaza este contenido al cargar. Si el bundle no carga, este
+         fallback queda visible (nunca se oculta sin JS).
          ============================================================ -->
     <style>
-      :root {
-        --briku-blue: #173a6a;
-        --briku-size: 220px;
-
-        /* ⚙️ RUTAS Y BLUR DE FONDO */
-        --briku-bg-url: url("./public/fondo.webp"); /* Ruta de tu imagen (public/) */
-        --briku-bg-blur: 10px; /* Intensidad del desenfoque */
-        --briku-bg-opacity: 0.7; /* Opacidad del velo blanco */
-
-        /* ⚙️ DURACIONES (milisegundos) */
-        --briku-text-time: 2000ms;
-        --briku-roof-time: 700ms;
-        --briku-brick-time: 450ms;
-        --briku-pulse-time: 500ms;
-        --briku-exit-time: 800ms;
-      }
-
       #briku-splash {
         position: fixed;
         inset: 0;
-        display: grid;
-        place-items: center;
-        background: #fff;
-        transition:
-          opacity 0.4s ease,
-          visibility 0.4s;
-        z-index: 9999;
         overflow: hidden;
+        background: #fff;
+        z-index: 9999;
       }
-
-      #briku-splash.hide {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-      }
-
       #briku-splash .bg-image {
         position: absolute;
         inset: 0;
-        background-image: var(--briku-bg-url);
+        background-image: url("fondo.webp");
         background-size: cover;
         background-position: center;
         transform: scale(1.08);
-        filter: blur(var(--briku-bg-blur));
-        z-index: 1;
+        filter: blur(10px);
       }
-
       #briku-splash .bg-overlay {
         position: absolute;
         inset: 0;
-        background: rgba(255, 255, 255, var(--briku-bg-opacity));
-        z-index: 2;
+        background: rgba(255, 255, 255, 0.7);
       }
-
+      /* .stage usa EXACTAMENTE el mismo centrado que SplashScreen.vue:
+         centra el contenido en el viewport completo. Así el texto "Briku"
+         queda en el mismo punto que el componente animado → sin salto de
+         posición al montar. */
       #briku-splash .stage {
-        position: relative;
+        position: absolute;
+        inset: 0;
         z-index: 3;
         display: grid;
         place-items: center;
       }
-
       #briku-splash .brand-text {
-        position: absolute;
         font-size: 72px;
         font-weight: 800;
-        color: var(--briku-blue);
+        color: #173a6a;
         letter-spacing: 4px;
-        opacity: 0;
-        animation: brikuTextIntro var(--briku-text-time)
-          cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      }
-
-      @keyframes brikuTextIntro {
-        0% {
-          opacity: 0;
-          transform: scale(0.85);
-        }
-        25% {
-          opacity: 1;
-          transform: scale(1);
-        }
-        60% {
-          opacity: 1;
-          transform: scale(1.02);
-          filter: blur(0px);
-        }
-        100% {
-          opacity: 0;
-          transform: scale(1.15);
-          filter: blur(8px);
-        }
-      }
-
-      #briku-splash .logo {
-        width: var(--briku-size);
-        animation:
-          brikuLogoPulse var(--briku-pulse-time) ease 3.9s forwards,
-          brikuLogoExit var(--briku-exit-time) cubic-bezier(0.4, 0, 0.2, 1) 4.5s
-            forwards;
-      }
-
-      #briku-splash .roof {
-        position: relative;
-        height: 78px;
-        z-index: 3;
-        filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.22));
-      }
-
-      #briku-splash .left,
-      #briku-splash .right {
-        position: absolute;
-        width: 116px;
-        height: 25px;
-        background: var(--briku-blue);
-        top: 50px;
-        opacity: 0;
-      }
-
-      #briku-splash .left {
-        --angle: -35deg;
-        left: 22px;
-        transform-origin: left center;
-        border-radius: 2px 0 0 2px;
-        animation: brikuRoofLeft var(--briku-roof-time)
-          cubic-bezier(0.22, 1.18, 0.41, 1) 3.1s forwards;
-      }
-
-      #briku-splash .right {
-        --angle: 35deg;
-        right: 22px;
-        transform-origin: right center;
-        border-radius: 0 2px 2px 0;
-        animation: brikuRoofRight var(--briku-roof-time)
-          cubic-bezier(0.22, 1.18, 0.41, 1) 3.1s forwards;
-      }
-
-      #briku-splash .top {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        justify-content: center;
-        gap: 6px;
-      }
-
-      #briku-splash .top div {
-        width: 78px;
-        height: 34px;
-        background: var(--briku-blue);
-        border-radius: 2px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
-        opacity: 0;
-      }
-
-      #briku-splash .bottom {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        justify-content: center;
-        gap: 6px;
-        margin-top: 6px;
-      }
-
-      #briku-splash .bottom > div {
-        width: 38px;
-        height: 34px;
-        background: var(--briku-blue);
-        border-radius: 2px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
-        opacity: 0;
-      }
-
-      #briku-splash .bottom .center {
-        width: 74px;
-      }
-
-      #briku-splash .bottom div:nth-child(1) {
-        animation: brikuBrickLeft var(--briku-brick-time) ease-out 2s forwards;
-      }
-      #briku-splash .bottom div:nth-child(2) {
-        animation: brikuBrickCenter var(--briku-brick-time) ease-out 2.2s
-          forwards;
-      }
-      #briku-splash .bottom div:nth-child(3) {
-        animation: brikuBrickRight var(--briku-brick-time) ease-out 2.4s
-          forwards;
-      }
-
-      #briku-splash .top div:nth-child(1) {
-        animation: brikuBrickLeft var(--briku-brick-time) ease-out 2.6s forwards;
-      }
-      #briku-splash .top div:nth-child(2) {
-        animation: brikuBrickRight var(--briku-brick-time) ease-out 2.8s
-          forwards;
-      }
-
-      @keyframes brikuRoofLeft {
-        from {
-          opacity: 0;
-          transform: translateY(-120px) rotate(var(--angle));
-        }
-        75% {
-          opacity: 1;
-          transform: translateY(10px) rotate(var(--angle));
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) rotate(var(--angle));
-        }
-      }
-
-      @keyframes brikuRoofRight {
-        from {
-          opacity: 0;
-          transform: translateY(-120px) rotate(var(--angle));
-        }
-        75% {
-          opacity: 1;
-          transform: translateY(10px) rotate(var(--angle));
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) rotate(var(--angle));
-        }
-      }
-
-      @keyframes brikuBrickLeft {
-        from {
-          opacity: 0;
-          transform: translateX(-40px) scale(0.5);
-        }
-        70% {
-          transform: translateX(4px) scale(1.05);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0) scale(1);
-        }
-      }
-
-      @keyframes brikuBrickRight {
-        from {
-          opacity: 0;
-          transform: translateX(40px) scale(0.5);
-        }
-        70% {
-          transform: translateX(-4px) scale(1.05);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0) scale(1);
-        }
-      }
-
-      @keyframes brikuBrickCenter {
-        from {
-          opacity: 0;
-          transform: translateY(35px) scale(0.5);
-        }
-        70% {
-          transform: translateY(-3px) scale(1.05);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-      }
-
-      @keyframes brikuLogoPulse {
-        0% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-        100% {
-          transform: scale(1);
-        }
-      }
-
-      @keyframes brikuLogoExit {
-        0% {
-          transform: translate(0, 0) scale(1);
-          opacity: 1;
-        }
-        100% {
-          transform: translate(calc(-54vw + 49px), calc(-52vh + 44px))
-            scale(0.18);
-          opacity: 0.4;
-        }
+        line-height: 1.1;
+        /* Misma fuente que SplashScreen.vue: evita que el "Briku" se corra
+           unos píxeles al montar el componente (métricas distintas = flash). */
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
       }
     </style>
   </head>
   <body>
     <div id="app"></div>
 
-    <!-- Splash in-app: hermano de #app (Vue reemplaza el contenido de #app,
-         así que el splash debe vivir fuera para poder desvanecerse). -->
-    <div class="screen" id="briku-splash">
+    <div id="briku-splash">
       <div class="bg-image"></div>
       <div class="bg-overlay"></div>
-
       <div class="stage">
         <div class="brand-text">Briku</div>
-
-        <div class="logo" id="briku-splash-logo">
-          <div class="roof">
-            <div class="left"></div>
-            <div class="right"></div>
-          </div>
-          <div class="top">
-            <div></div>
-            <div></div>
-          </div>
-          <div class="bottom">
-            <div></div>
-            <div class="center"></div>
-            <div></div>
-          </div>
-        </div>
       </div>
     </div>
-
-    <script>
-      // Marca cuándo termina la animación del logo y expone el ocultado.
-      // main.js (src/utils/splash.js) lo invoca tras app.mount().
-      (function () {
-        window.__brikuSplashAnimado = false;
-        var splash = document.getElementById("briku-splash");
-        var logo = document.getElementById("briku-splash-logo");
-
-        if (logo) {
-          logo.addEventListener("animationend", function (event) {
-            if (event.animationName === "brikuLogoExit") {
-              window.__brikuSplashAnimado = true;
-            }
-          });
-        }
-
-        window.__brikuOcultarSplash = function () {
-          if (!splash) return;
-          splash.classList.add("hide");
-          setTimeout(function () {
-            if (splash && splash.parentNode)
-              splash.parentNode.removeChild(splash);
-          }, 500);
-        };
-      })();
-    </script>
 
     <script type="module" src="/src/main.js"></script>
   </body>

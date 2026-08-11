@@ -19,7 +19,7 @@ import "primeicons/primeicons.css";
 import "./style.css";
 import { vPermiso } from "./directives/permiso";
 import { iniciarCoordinadorRefresh } from "./utils/refreshCoordinator";
-import { ocultarSplash } from "./utils/splash";
+import SplashScreen from "./components/SplashScreen.vue";
 
 // Captura global de errores: se instala antes que cualquier otro módulo para
 // atrapar fallos de import/render; el overlay evita pantallas blancas mudas.
@@ -164,9 +164,12 @@ app.directive("permiso", vPermiso);
 // preventivo al volver de background + sincronización con IndexedDB/SW).
 iniciarCoordinadorRefresh();
 
+// El splash animado se monta como mini-app independiente sobre el fallback
+// estático de index.html (pintado durante la descarga del bundle). Se
+// autodesvanece cuando termina su animación. Vive fuera de la app principal
+// porque Vue reemplaza el contenido de #app al montar.
+createApp(SplashScreen).mount("#briku-splash");
+
 app.mount("#app");
 
 marcarHito("boot:mounted");
-
-// Desvanece el splash in-app cuando la app está montada y la animación terminó.
-ocultarSplash();
