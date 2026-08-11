@@ -1,16 +1,12 @@
 const NAV_HOME = (routeName) => ({
-  label: "Home",
+  //label: "Home",
   icon: "pi pi-home",
   routeName,
   isCentralFab: true,
 });
 
 function conHomeCentral(items, homeRoute) {
-  return [
-    ...items.slice(0, 2),
-    NAV_HOME(homeRoute),
-    ...items.slice(2),
-  ];
+  return [...items.slice(0, 2), NAV_HOME(homeRoute), ...items.slice(2)];
 }
 
 export const ACCESO_RAPIDO_GUARDIA = [
