@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { adminService } from "@/services/adminService";
+import { useValidacionChile } from "@/composables/useValidacionChile";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -26,6 +27,23 @@ const showEditar = ref(false);
 const enviando = ref(false);
 const motivoSuspension = ref("");
 const editForm = ref({ nombre: "", direccion: "", responsableNombre: "", responsableEmail: "", responsableTelefono: "" });
+
+const {
+  errores,
+  validarNombre,
+  validarEmail,
+  validarTelefono,
+  onTelefonoInput,
+  onTelefonoBlur,
+  focusPrimerError,
+  normalizarTelefono,
+  normalizarEmail,
+} = useValidacionChile();
+
+const editNombreRef = ref(null);
+const editResponsableNombreRef = ref(null);
+const editResponsableEmailRef = ref(null);
+const editResponsableTelefonoRef = ref(null);
 
 const statusSeverity = { PENDIENTE: "warn", PAGADO: "success", ATRASADO: "danger", SUSPENDIDO: "danger" };
 const onboardingSeverity = { PENDIENTE: "danger", CONFIGURANDO: "warn", COMPLETADO: "success", SALTADO: "info" };
@@ -78,14 +96,52 @@ async function reactivar() {
   }
 }
 
+function validarEdicion() {
+  errores.value = {};
+  const f = editForm.value;
+  validarNombre(f.nombre, "nombre", "Ingresa el nombre del condominio (mínimo 2 caracteres)");
+  validarNombre(f.responsableNombre, "responsableNombre", "Ingresa el nombre del responsable");
+  validarEmail(f.responsableEmail, "responsableEmail");
+  validarTelefono(f.responsableTelefono, "responsableTelefono");
+  return Object.keys(errores.value).length === 0;
+}
+
+function focusPrimerErrorEdicion() {
+  focusPrimerError([
+    ["nombre", editNombreRef],
+    ["responsableNombre", editResponsableNombreRef],
+    ["responsableEmail", editResponsableEmailRef],
+    ["responsableTelefono", editResponsableTelefonoRef],
+  ]);
+}
+
 async function guardarEdicion() {
+  if (!validarEdicion()) {
+    focusPrimerErrorEdicion();
+    return;
+  }
   enviando.value = true;
   try {
-    const { data } = await adminService.actualizarCondominio(route.params.id, editForm.value);
+    const body = {
+      nombre: editForm.value.nombre.trim(),
+      direccion: editForm.value.direccion.trim() || null,
+      responsableNombre: editForm.value.responsableNombre.trim(),
+      responsableEmail: normalizarEmail(editForm.value.responsableEmail),
+      responsableTelefono: editForm.value.responsableTelefono
+        ? normalizarTelefono(editForm.value.responsableTelefono)
+        : null,
+    };
+    const { data } = await adminService.actualizarCondominio(route.params.id, body);
     condominio.value = data;
     showEditar.value = false;
   } catch (e) {
     console.error("Error al actualizar", e);
+    const data = e.response?.data;
+    if (data?.fields) {
+      data.fields.forEach((f) => {
+        errores.value[f.field] = f.message;
+      });
+    }
   } finally {
     enviando.value = false;
   }
@@ -231,7 +287,12 @@ onMounted(cargar);
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Nombre</label>
-          <InputText v-model="editForm.nombre" />
+          <InputText
+            ref="editNombreRef"
+            v-model="editForm.nombre"
+            :class="{ 'p-invalid': errores.nombre }"
+          />
+          <small v-if="errores.nombre" class="text-red-500">{{ errores.nombre }}</small>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Dirección</label>
@@ -239,15 +300,35 @@ onMounted(cargar);
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Responsable</label>
-          <InputText v-model="editForm.responsableNombre" />
+          <InputText
+            ref="editResponsableNombreRef"
+            v-model="editForm.responsableNombre"
+            :class="{ 'p-invalid': errores.responsableNombre }"
+          />
+          <small v-if="errores.responsableNombre" class="text-red-500">{{ errores.responsableNombre }}</small>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Email responsable</label>
-          <InputText v-model="editForm.responsableEmail" />
+          <InputText
+            ref="editResponsableEmailRef"
+            v-model="editForm.responsableEmail"
+            type="email"
+            :class="{ 'p-invalid': errores.responsableEmail }"
+          />
+          <small v-if="errores.responsableEmail" class="text-red-500">{{ errores.responsableEmail }}</small>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Teléfono responsable</label>
-          <InputText v-model="editForm.responsableTelefono" />
+          <InputText
+            ref="editResponsableTelefonoRef"
+            v-model="editForm.responsableTelefono"
+            placeholder="Ej: +56 9 1234 5678"
+            maxlength="16"
+            :class="{ 'p-invalid': errores.responsableTelefono }"
+            @input="editForm.responsableTelefono = onTelefonoInput(editForm.responsableTelefono)"
+            @blur="editForm.responsableTelefono = onTelefonoBlur(editForm.responsableTelefono)"
+          />
+          <small v-if="errores.responsableTelefono" class="text-red-500">{{ errores.responsableTelefono }}</small>
         </div>
       </div>
       <template #footer>

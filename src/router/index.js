@@ -43,6 +43,12 @@ const routes = [
         meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
       },
       {
+        path: "superadmin/condominios/nuevo",
+        name: "SaasCrearCondominio",
+        component: () => import("../views/superadmin/SaasCrearCondominioView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
         path: "superadmin/condominios/:id",
         name: "SaasCondominioDetail",
         component: () => import("../views/superadmin/SaasCondominioDetailView.vue"),
