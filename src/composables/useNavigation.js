@@ -11,7 +11,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Permisos", icon: "pi pi-lock", routeName: "PermisosMatrix" },
     { label: "Cargos Perm.", icon: "pi pi-users", routeName: "CargosPermisos" },
     { label: "Reglas Notif.", icon: "pi pi-sliders-h", routeName: "ReglasNotificacion" },
-    { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "ConfiguracionAlmacenamiento" },
+    { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "SaasAlmacenamiento" },
     { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
     { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],
