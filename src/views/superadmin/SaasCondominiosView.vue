@@ -28,6 +28,16 @@ const planes = ref([]);
 
 const filtros = ref({ nombre: "", statusPago: null, onboardingStatus: null, planId: null });
 
+const busquedaVisible = ref(false);
+
+function toggleBusqueda() {
+  busquedaVisible.value = !busquedaVisible.value;
+  if (!busquedaVisible.value) {
+    filtros.value = { nombre: "", statusPago: null, onboardingStatus: null, planId: null };
+    buscar();
+  }
+}
+
 const statusOptions = [
   { label: "Pendiente", value: "PENDIENTE" },
   { label: "Pagado", value: "PAGADO" },
@@ -119,10 +129,22 @@ onMounted(() => {
   <div class="p-4 flex flex-col gap-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-bold m-0">Condominios</h1>
-      <Button label="Nuevo" icon="pi pi-plus" size="small" @click="irA('SaasCrearCondominio')" />
+      <div class="flex items-center gap-2">
+        <Button
+          icon="pi pi-search"
+          size="small"
+          :severity="busquedaVisible ? 'primary' : 'secondary'"
+          variant="outlined"
+          class="rounded-lg shrink-0"
+          aria-label="Buscar"
+          :aria-pressed="busquedaVisible"
+          @click="toggleBusqueda"
+        />
+        <Button label="Nuevo" icon="pi pi-plus" size="small" @click="irA('SaasCrearCondominio')" />
+      </div>
     </div>
 
-    <Card>
+    <Card v-if="busquedaVisible">
       <template #content>
         <div class="flex flex-wrap gap-2 items-end">
           <div class="flex flex-col gap-1 min-w-40 flex-1">

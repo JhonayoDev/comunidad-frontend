@@ -57,6 +57,16 @@ const filtros = ref({
   orden: "desc",
 });
 
+const busquedaVisible = ref(false);
+
+function toggleBusqueda() {
+  busquedaVisible.value = !busquedaVisible.value;
+  if (!busquedaVisible.value) {
+    filtros.value = { condominio: null, accion: null, email: "", rango: null, orden: "desc" };
+    buscar();
+  }
+}
+
 const indiceExpandido = ref(-1);
 
 const sugerenciasCondominios = ref([]);
@@ -188,10 +198,22 @@ onMounted(() => {
   <div class="p-4 flex flex-col gap-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-bold m-0">Auditoría SaaS</h1>
-      <Tag v-if="total" :value="`${total} registros`" severity="secondary" />
+      <div class="flex items-center gap-2">
+        <Tag v-if="total" :value="`${total} registros`" severity="secondary" />
+        <Button
+          icon="pi pi-search"
+          size="small"
+          :severity="busquedaVisible ? 'primary' : 'secondary'"
+          variant="outlined"
+          class="rounded-lg shrink-0"
+          aria-label="Buscar"
+          :aria-pressed="busquedaVisible"
+          @click="toggleBusqueda"
+        />
+      </div>
     </div>
 
-    <Card>
+    <Card v-if="busquedaVisible">
       <template #content>
         <div class="flex flex-wrap gap-3 items-end">
           <div class="flex flex-col gap-1 min-w-52 flex-1">
