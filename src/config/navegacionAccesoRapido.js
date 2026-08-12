@@ -35,10 +35,17 @@ const NAV_RESIDENTE = [
   { label: "Mensajes", icon: "pi pi-bell", routeName: "Notificaciones" },
 ];
 
+const NAV_SUPER_ADMIN = [
+  { label: "Condominios", icon: "pi pi-building", routeName: "SaasCondominios" },
+  { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "SaasAlmacenamiento" },
+  { label: "Auditoría", icon: "pi pi-history", routeName: "SaasAuditoria" },
+  { label: "Mensajes", icon: "pi pi-bell", routeName: "Notificaciones" },
+];
+
 export const BOTTOM_NAV_BY_ROLE = {
   GUARDIA: conHomeCentral(ACCESO_RAPIDO_GUARDIA, "GuardiaDashboard"),
   ADMINISTRADOR: conHomeCentral(NAV_ADMINISTRADOR, "Dashboard"),
   RESIDENTE: conHomeCentral(NAV_RESIDENTE, "Inicio"),
-  SUPER_ADMIN: [],
+  SUPER_ADMIN: conHomeCentral(NAV_SUPER_ADMIN, "SuperAdminDashboard"),
   SOPORTE: [],
 };
