@@ -93,8 +93,10 @@ export const adminService = {
   },
 
   // ── Planes ─────────────────────────────────────────────────────
-  listarPlanes() {
-    return api.get("/admin/planes");
+  listarPlanes(incluirInactivos = false) {
+    return api.get("/admin/planes", {
+      params: { incluirInactivos },
+    });
   },
 
   crearPlan(data) {
@@ -107,5 +109,9 @@ export const adminService = {
 
   desactivarPlan(id) {
     return api.patch(`/admin/planes/${id}/desactivar`);
+  },
+
+  reactivarPlan(id) {
+    return api.patch(`/admin/planes/${id}/reactivar`);
   },
 };

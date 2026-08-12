@@ -564,7 +564,8 @@ onMounted(cargar);
           <InputNumber
             v-model="capacidadForm[cfg.tipo]"
             :min="0"
-            class="w-32"
+            class="w-32 min-w-0"
+            input-class="min-w-0"
           />
         </div>
         <Message

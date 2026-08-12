@@ -692,7 +692,8 @@ onUnmounted(() => {
                   :min="0"
                   :max="planActual?.unidadLimit"
                   placeholder="Capacidad"
-                  class="w-full sm:w-40"
+                  class="w-full sm:w-40 min-w-0"
+                  input-class="min-w-0"
                 />
               </div>
             </div>
