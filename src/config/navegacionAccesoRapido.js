@@ -37,6 +37,7 @@ const NAV_RESIDENTE = [
 
 const NAV_SUPER_ADMIN = [
   { label: "Condominios", icon: "pi pi-building", routeName: "SaasCondominios" },
+  { label: "Plantillas", icon: "pi pi-envelope", routeName: "SaasPlantillas" },
   { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "SaasAlmacenamiento" },
   { label: "Auditoría", icon: "pi pi-history", routeName: "SaasAuditoria" },
   { label: "Mensajes", icon: "pi pi-bell", routeName: "Notificaciones" },

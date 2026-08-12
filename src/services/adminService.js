@@ -114,4 +114,23 @@ export const adminService = {
   reactivarPlan(id) {
     return api.patch(`/admin/planes/${id}/reactivar`);
   },
+
+  // ── Plantillas de notificación (globales) ──────────────────────
+  listarPlantillasNotificacion(incluirInactivos = false) {
+    return api.get("/admin/plantillas-notificacion", {
+      params: { incluirInactivos },
+    });
+  },
+
+  actualizarPlantillaNotificacion(codigo, data) {
+    return api.put(`/admin/plantillas-notificacion/${codigo}`, data);
+  },
+
+  desactivarPlantillaNotificacion(codigo) {
+    return api.patch(`/admin/plantillas-notificacion/${codigo}/desactivar`);
+  },
+
+  reactivarPlantillaNotificacion(codigo) {
+    return api.patch(`/admin/plantillas-notificacion/${codigo}/reactivar`);
+  },
 };

@@ -7,6 +7,7 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Dashboard", icon: "pi pi-home", routeName: "SuperAdminDashboard" },
     { label: "Condominios", icon: "pi pi-building", routeName: "SaasCondominios" },
     { label: "Planes", icon: "pi pi-tags", routeName: "SaasPlanes" },
+    { label: "Plantillas Notif.", icon: "pi pi-envelope", routeName: "SaasPlantillas" },
     { label: "Auditoría", icon: "pi pi-history", routeName: "SaasAuditoria" },
     { label: "Permisos", icon: "pi pi-lock", routeName: "PermisosMatrix" },
     { label: "Cargos Perm.", icon: "pi pi-users", routeName: "CargosPermisos" },
@@ -17,6 +18,7 @@ const NAV_ITEMS_BY_ROLE = {
   ],
   SOPORTE: [
     { label: "Auditoría", icon: "pi pi-history", routeName: "SaasAuditoria" },
+    { label: "Plantillas Notif.", icon: "pi pi-envelope", routeName: "SaasPlantillas" },
     { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
     { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
   ],

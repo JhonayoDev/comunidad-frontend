@@ -32,6 +32,9 @@ const ACCIONES = [
   { value: "ONBOARDING_COMPLETAR", label: "Completar onboarding", severity: "success" },
   { value: "PLAN_CREAR", label: "Crear plan", severity: "success" },
   { value: "PLAN_EDITAR", label: "Editar plan", severity: "info" },
+  { value: "PLANTILLA_EDITAR", label: "Editar plantilla", severity: "info" },
+  { value: "PLANTILLA_DESACTIVAR", label: "Desactivar plantilla", severity: "danger" },
+  { value: "PLANTILLA_REACTIVAR", label: "Reactivar plantilla", severity: "success" },
   { value: "ACCESO_CONDOMINIO", label: "Acceso a condominio", severity: "warn" },
 ];
 
