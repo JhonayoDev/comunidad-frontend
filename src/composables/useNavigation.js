@@ -5,7 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 const NAV_ITEMS_BY_ROLE = {
   SUPER_ADMIN: [
     { label: "Dashboard", icon: "pi pi-home", routeName: "SuperAdminDashboard" },
-    { label: "Condominios", icon: "pi pi-building", routeName: "SuperAdminDashboard" },
+    { label: "Condominios", icon: "pi pi-building", routeName: "SaasCondominios" },
     { label: "Planes", icon: "pi pi-tags", routeName: "SaasPlanes" },
     { label: "Auditoría", icon: "pi pi-history", routeName: "SaasAuditoria" },
     { label: "Permisos", icon: "pi pi-lock", routeName: "PermisosMatrix" },
