@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { adminService } from "@/services/adminService";
@@ -12,6 +12,7 @@ import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
+import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
 
 const route = useRoute();
@@ -24,8 +25,10 @@ const condominio = ref(null);
 
 const showSuspender = ref(false);
 const showEditar = ref(false);
+const showCapacidad = ref(false);
 const enviando = ref(false);
 const motivoSuspension = ref("");
+const resultadoCapacidad = ref(null);
 const editForm = ref({
   nombre: "",
   direccion: "",
@@ -33,6 +36,23 @@ const editForm = ref({
   responsableEmail: "",
   responsableTelefono: "",
 });
+
+const capacidadConfig = [
+  { tipo: "CASA", label: "Casas", suffix: "Casas" },
+  { tipo: "DEPARTAMENTO", label: "Departamentos", suffix: "Departamentos" },
+  { tipo: "ESTACIONAMIENTO", label: "Estacionamientos", suffix: "Estacionamientos" },
+  { tipo: "BODEGA", label: "Bodegas", suffix: "Bodegas" },
+  { tipo: "OTRO", label: "Otro", suffix: "Otro" },
+];
+const capacidadForm = ref({});
+
+const capacidadResumen = computed(() =>
+  capacidadConfig.map((cfg) => ({
+    ...cfg,
+    capacidad: condominio.value?.[`capacidad${cfg.suffix}`] ?? null,
+    total: condominio.value?.[`total${cfg.suffix}`] ?? 0,
+  })),
+);
 
 const {
   errores,
@@ -180,6 +200,39 @@ function irA(ruta) {
   router.push({ name: ruta, params: { id: route.params.id } });
 }
 
+function abrirCapacidad() {
+  const c = condominio.value;
+  capacidadConfig.forEach((cfg) => {
+    capacidadForm.value[cfg.tipo] = c?.[`capacidad${cfg.suffix}`] ?? null;
+  });
+  resultadoCapacidad.value = null;
+  showCapacidad.value = true;
+}
+
+async function guardarCapacidad() {
+  enviando.value = true;
+  resultadoCapacidad.value = null;
+  try {
+    const payload = {};
+    capacidadConfig.forEach((cfg) => {
+      payload[`capacidad${cfg.suffix}`] =
+        Number(capacidadForm.value[cfg.tipo]) || 0;
+    });
+    const { data } = await adminService.actualizarCondominio(
+      route.params.id,
+      payload,
+    );
+    condominio.value = data;
+    showCapacidad.value = false;
+  } catch (e) {
+    console.error("Error al guardar capacidad", e);
+    resultadoCapacidad.value =
+      e.response?.data?.message || "No se pudo guardar la capacidad.";
+  } finally {
+    enviando.value = false;
+  }
+}
+
 function entrarACondominio() {
   auth.seleccionarCondominio(route.params.id);
   router.push({ name: "Dashboard" });
@@ -322,6 +375,52 @@ onMounted(cargar);
         </template>
       </Card>
 
+      <Card>
+        <template #title>
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-building text-primary"></i>
+              <span>Capacidad de unidades</span>
+            </div>
+            <Button
+              label="Editar capacidad"
+              size="small"
+              icon="pi pi-pencil"
+              severity="secondary"
+              variant="outlined"
+              @click="abrirCapacidad"
+            />
+          </div>
+        </template>
+        <template #content>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div
+              v-for="c in capacidadResumen"
+              :key="c.tipo"
+              class="flex flex-col gap-1 p-2 border-round bg-surface-50"
+            >
+              <span class="text-sm font-medium">{{ c.label }}</span>
+              <span
+                class="text-sm"
+                :class="
+                  c.capacidad != null && c.total >= c.capacidad
+                    ? 'text-red-500'
+                    : 'text-surface-600'
+                "
+              >
+                {{ c.total }} {{ c.total === 1 ? "creada" : "creadas" }}
+                <template v-if="c.capacidad != null">
+                  de {{ c.capacidad }}
+                </template>
+                <template v-else>
+                  <span class="text-xs text-surface-400">(sin límite)</span>
+                </template>
+              </span>
+            </div>
+          </div>
+        </template>
+      </Card>
+
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card
           class="cursor-pointer hover:shadow-3"
@@ -347,12 +446,12 @@ onMounted(cargar);
         </Card>
         <Card
           class="cursor-pointer hover:shadow-3"
-          @click="irA('SaasOnboarding')"
+          @click="irA('SaasCondominioSetup')"
         >
           <template #content class="flex flex-col items-center gap-1 p-3">
-            <i class="pi pi-check-circle text-2xl text-primary"></i>
-            <span class="text-sm font-medium">Onboarding</span>
-            <span class="text-xs text-surface-400">Tareas pendientes</span>
+            <i class="pi pi-rocket text-2xl text-primary"></i>
+            <span class="text-sm font-medium">Puesta en marcha</span>
+            <span class="text-xs text-surface-400">Wizard de configuración inicial</span>
           </template>
         </Card>
         <Card class="cursor-pointer hover:shadow-3" @click="irA('SaasModulos')">
@@ -442,6 +541,47 @@ onMounted(cargar);
           @click="showEditar = false"
         />
         <Button label="Guardar" :loading="enviando" @click="guardarEdicion" />
+      </template>
+    </Dialog>
+
+    <Dialog
+      v-model:visible="showCapacidad"
+      header="Capacidad de unidades"
+      modal
+      :style="{ width: '95%', maxWidth: '460px' }"
+    >
+      <div class="flex flex-col gap-3">
+        <p class="text-xs text-surface-500 m-0">
+          Define el tope de unidades de cada tipo según el contrato. El
+          administrador no podrá crear unidades más allá de estos límites.
+        </p>
+        <div
+          v-for="cfg in capacidadConfig"
+          :key="cfg.tipo"
+          class="flex items-center justify-between gap-2"
+        >
+          <label class="text-sm">{{ cfg.label }}</label>
+          <InputNumber
+            v-model="capacidadForm[cfg.tipo]"
+            :min="0"
+            class="w-32"
+          />
+        </div>
+        <Message
+          v-if="resultadoCapacidad"
+          severity="error"
+          :closable="false"
+          >{{ resultadoCapacidad }}</Message
+        >
+      </div>
+      <template #footer>
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          @click="showCapacidad = false"
+        />
+        <Button label="Guardar" :loading="enviando" @click="guardarCapacidad" />
       </template>
     </Dialog>
 

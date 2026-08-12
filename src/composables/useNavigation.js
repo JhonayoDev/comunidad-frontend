@@ -26,6 +26,7 @@ const NAV_ITEMS_BY_ROLE = {
   ADMINISTRADOR: [
     { label: "Inicio", icon: "pi pi-home", routeName: "Dashboard" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
@@ -83,6 +84,7 @@ const CARGO_NAV_ITEMS = {
     { label: "Anuncios", icon: "pi pi-megaphone", routeName: "Anuncios" },
     { label: "Casos", icon: "pi pi-folder", routeName: "CasosAdmin" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
@@ -119,6 +121,7 @@ const CARGO_NAV_ITEMS = {
     { label: "Anuncios", icon: "pi pi-megaphone", routeName: "Anuncios" },
     { label: "Casos", icon: "pi pi-folder", routeName: "CasosAdmin" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },
     { label: "Bitácora", icon: "pi pi-book", routeName: "Bitacora" },
@@ -137,6 +140,7 @@ const CARGO_NAV_ITEMS = {
   ADMINISTRADOR: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
