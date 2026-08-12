@@ -779,11 +779,6 @@ Vistas accesibles con roles globales `SUPER_ADMIN` y `SOPORTE`. No requieren sel
 * **Endpoints Backend Asociados:** `GET /admin/condominios/{id}/suscripcion`, `PUT /admin/condominios/{id}/suscripcion/plan`, `POST /admin/condominios/{id}/suscripcion/pago`
 
 ---
-### Vista: SaasOnboardingView.vue (Ruta: `/superadmin/condominios/:id/onboarding`)
-* **Permiso/Rol Requerido:** `SUPER_ADMIN`
-* **Endpoints Backend Asociados:** `GET /admin/condominios/{id}/onboarding`, `POST /admin/condominios/{id}/onboarding/tareas/{codigo}/completar`
-
----
 ### Vista: SaasModulosView.vue (Ruta: `/superadmin/condominios/:id/modulos`)
 * **Permiso/Rol Requerido:** `SUPER_ADMIN`
 * **Endpoints Backend Asociados:** `GET /admin/condominios/{id}/modulos`, `PUT /admin/condominios/{id}/modulos`
@@ -863,7 +858,7 @@ SUPER_ADMIN ─── SuperAdminDashboard
                 ├── SaasCondominioDetail
                 │   ├── SaasUsuarios
                 │   ├── SaasSuscripcion
-                │   ├── SaasOnboarding
+                │   ├── SaasCondominioSetup
                 │   └── SaasModulos
                 ├── PermisosMatrix
                 ├── CargosPermisos

@@ -51,6 +51,118 @@
   --color-info: var(--p-info-500);
 }
 /* ==========================================================================
+   TABLA PLANILLA (tipo Excel) — componente reutilizable
+   ==========================================================================
+   Patrón: en desktop una tabla con celdas tipo planilla sobre fondo sólido;
+   en mobile se muestran cards desplegables (ver docs/guias/tabla-planilla-responsive.md).
+
+   Uso (desktop):
+     <div class="planilla hidden md:block">
+       <table>
+         <thead><tr>
+           <th>...</th>
+           <th class="sortable" @click="toggleOrden">Fecha <i .../></th>
+         </tr></thead>
+         <tbody>
+           <tr>...</tr>
+           <td class="truncado">...</td>
+         </tbody>
+       </table>
+     </div>
+
+   NOTA: NO usar surface-card / border-round / shadow-1: son clases del viejo
+   preset de PrimeVue que NO existen en este proyecto y no resuelven a nada
+   (dejaban la tabla transparente). Todo el aspecto vive acá con los tokens.
+   ========================================================================== */
+
+@layer components {
+  .planilla {
+    background-color: var(--color-surface);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    overflow-x: auto;
+  }
+
+  .planilla table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    min-width: 900px;
+  }
+
+  .planilla thead th {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+    background-color: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    white-space: nowrap;
+  }
+
+  .planilla thead th:last-child {
+    border-right: 0;
+  }
+
+  .planilla thead th.sortable {
+    cursor: pointer;
+  }
+
+  .planilla thead th.sortable:hover {
+    color: var(--color-text);
+  }
+
+  .planilla tbody td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    vertical-align: top;
+  }
+
+  .planilla tbody td:last-child {
+    border-right: 0;
+  }
+
+  .planilla tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* Zebra sólido (mezclado sobre surface, no overlay transparente) */
+  .planilla tbody tr:nth-child(even) td {
+    background-color: color-mix(
+      in srgb,
+      var(--color-background) 40%,
+      var(--color-surface)
+    );
+  }
+
+  .planilla tbody tr:hover td {
+    background-color: color-mix(
+      in srgb,
+      var(--color-background) 70%,
+      var(--color-surface)
+    );
+  }
+
+  /* Celda de detalle con truncado + tooltip (title en el contenido) */
+  .planilla td.truncado {
+    max-width: 280px;
+  }
+
+  .planilla td.truncado > span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ==========================================================================
    BROWSER FIXES
    ==========================================================================
    Corrige el color de autocompletado del navegador.

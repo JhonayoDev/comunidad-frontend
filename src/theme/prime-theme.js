@@ -259,6 +259,34 @@ export default definePreset(Aura, {
         color: "{primary.textPrincipal}",
       },
     },
+    password: {
+      overlay: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        borderColor:
+          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
+        color: "{primary.textPrincipal}",
+      },
+      meter: {
+        background:
+          "color-mix(in srgb, {primary.textSecondary} 25%, transparent)",
+      },
+      colorScheme: {
+        light: {
+          strength: {
+            weakBackground: "{danger.500}",
+            mediumBackground: "{warning.500}",
+            strongBackground: "{success.500}",
+          },
+        },
+        dark: {
+          strength: {
+            weakBackground: "{danger.400}",
+            mediumBackground: "{warning.400}",
+            strongBackground: "{success.400}",
+          },
+        },
+      },
+    },
     togglebutton: {
       root: {
         background: "color-mix(in srgb, {primary.surface} 75%, transparent)",

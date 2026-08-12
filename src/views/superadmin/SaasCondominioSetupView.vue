@@ -1,9 +1,8 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { adminService } from "@/services/adminService";
 import { almacenamientoService } from "@/services/almacenamientoService";
-import { unidadesService } from "@/services/unidadesService";
 import { personasService } from "@/services/personasService";
 import { miembrosService } from "@/services/miembrosService";
 import { useValidacionChile } from "@/composables/useValidacionChile";
@@ -35,17 +34,32 @@ const proveedores = [
   { label: "Google Drive", value: "GOOGLE_DRIVE" },
 ];
 
-const tipoVinculoOptions = [
-  { label: "Propietario", value: "PROPIETARIO" },
-  { label: "Arrendatario", value: "ARRENDATARIO" },
-  { label: "Residente adicional", value: "RESIDENTE_ADICIONAL" },
-];
-
-const cargoOptions = [
-  { label: "Administrador", value: "ADMINISTRADOR" },
-  { label: "Presidente", value: "PRESIDENTE" },
-  { label: "Tesorero", value: "TESORERO" },
-  { label: "Secretario", value: "SECRETARIO" },
+const tipoAccesoOptions = [
+  {
+    label: "Administrador externo",
+    value: "ADMIN_ROL",
+    desc: "Rol ADMINISTRADOR + cargo Administrador. Profesional que administra el condominio.",
+  },
+  {
+    label: "Administrador interno",
+    value: "ADMIN_CARGO",
+    desc: "Rol RESIDENTE + cargo Administrador. Residente que ocupa el cargo (revocable).",
+  },
+  {
+    label: "Presidente",
+    value: "PRESIDENTE",
+    desc: "Rol RESIDENTE + cargo Presidente.",
+  },
+  {
+    label: "Tesorero",
+    value: "TESORERO",
+    desc: "Rol RESIDENTE + cargo Tesorero.",
+  },
+  {
+    label: "Secretario",
+    value: "SECRETARIO",
+    desc: "Rol RESIDENTE + cargo Secretario.",
+  },
 ];
 
 const {
@@ -77,7 +91,6 @@ const storageForm = ref({
   driveCredentials: "",
 });
 
-const unidades = ref([]);
 const planes = ref([]);
 
 const capacidadConfig = [
@@ -101,10 +114,7 @@ const adminForm = ref({
   email: "",
   rut: "",
   telefono: "",
-  vincularUnidad: false,
-  unidadId: null,
-  tipoVinculo: "PROPIETARIO",
-  cargo: "ADMINISTRADOR",
+  tipoAcceso: "ADMIN_ROL",
 });
 const miembros = ref([]);
 
@@ -117,21 +127,26 @@ const resultadoAdmin = ref(null);
 const resultadoStorage = ref(null);
 const resultadoUnidades = ref(null);
 
+// ── Paso 4: activación de la cuenta del administrador ──
+const cuentaAdminPersonaId = ref(null);
+const cuentaAdminEmail = ref(null);
+const cuentaAdminPasswordSetAt = ref(null);
+const verificandoCuenta = ref(false);
+let cuentaPollingTimer = null;
+
 // ── Onboarding helpers ────────────────────────────────
 const tareaCompletada = (codigo) =>
   tareas.value.find((t) => t.tareaCodigo === codigo)?.completada || false;
 
-const tareaLabels = {
-  CONFIGURAR_STORAGE: "Configurar almacenamiento",
-  ASIGNAR_ADMIN: "Asignar administrador",
-  CREAR_UNIDADES: "Crear unidades",
-  CONFIGURAR_PLANTILLAS: "Configurar plantillas",
-};
-
 const progreso = computed(() => {
-  if (!tareas.value.length) return 0;
-  const completadas = tareas.value.filter((t) => t.completada).length;
-  return Math.round((completadas / tareas.value.length) * 100);
+  const pasos = [
+    tareaCompletada("CONFIGURAR_STORAGE"),
+    tareaCompletada("CREAR_UNIDADES"),
+    tareaCompletada("ASIGNAR_ADMIN"),
+    Boolean(cuentaAdminPasswordSetAt.value),
+  ];
+  const hechas = pasos.filter(Boolean).length;
+  return Math.round((hechas / pasos.length) * 100);
 });
 
 async function completarTarea(codigo) {
@@ -153,26 +168,107 @@ function fechaHoy() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// ── Paso 4: estado de activación de la cuenta del admin ──
+function adminAsignadoObj() {
+  return miembros.value.find(
+    (m) => ["ADMINISTRADOR", "PRESIDENTE"].includes(m.cargo) && m.activo,
+  );
+}
+
+function sincronizarPollingCuenta() {
+  const pendiente = Boolean(
+    cuentaAdminPersonaId.value && !cuentaAdminPasswordSetAt.value,
+  );
+  if (pendiente && !cuentaPollingTimer) {
+    cuentaPollingTimer = setInterval(() => cargarEstadoCuentaAdmin(), 20000);
+  } else if (!pendiente && cuentaPollingTimer) {
+    clearInterval(cuentaPollingTimer);
+    cuentaPollingTimer = null;
+  }
+}
+
+async function cargarEstadoCuentaAdmin() {
+  const admin = adminAsignadoObj();
+  if (!admin) {
+    cuentaAdminPersonaId.value = null;
+    cuentaAdminEmail.value = null;
+    cuentaAdminPasswordSetAt.value = null;
+    sincronizarPollingCuenta();
+    return;
+  }
+  cuentaAdminPersonaId.value = admin.personaId;
+  cuentaAdminEmail.value = admin.personaEmail || null;
+  try {
+    const { data } = await adminService.listarUsuarios(cid, {
+      activo: true,
+      size: 200,
+    });
+    const usuarios = data.content || [];
+    const usuario = usuarios.find((u) => u.personaId === admin.personaId);
+    cuentaAdminPasswordSetAt.value = usuario?.passwordSetAt ?? null;
+  } catch (e) {
+    console.error(
+      "Error al consultar activación de la cuenta del administrador",
+      e,
+    );
+  } finally {
+    sincronizarPollingCuenta();
+  }
+}
+
+async function verificarCuenta() {
+  verificandoCuenta.value = true;
+  try {
+    await cargarEstadoCuentaAdmin();
+  } finally {
+    verificandoCuenta.value = false;
+  }
+}
+
+function formatFechaHora(f) {
+  if (!f) return "—";
+  return new Date(f).toLocaleString("es-CL", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 // ── Carga inicial ─────────────────────────────────────
 async function cargar() {
   loading.value = true;
   error.value = null;
   try {
-    const [condRes, unidadesRes, miembrosRes, planesRes] = await Promise.all([
+    const [condRes, miembrosRes, planesRes] = await Promise.all([
       adminService.obtenerCondominio(cid),
-      unidadesService.getUnidades(cid),
       miembrosService.listar(cid),
       adminService.listarPlanes(),
     ]);
     condominio.value = condRes.data;
-    unidades.value = unidadesRes.data || [];
+    const c = condRes.data;
     miembros.value = miembrosRes.data || [];
     planes.value = planesRes.data || [];
-    capacidadConfig.forEach((c) => {
-      capacidadForm.value[c.tipo] = condRes.data?.[`capacidad${c.suffix}`] ?? null;
+    capacidadConfig.forEach((cc) => {
+      capacidadForm.value[cc.tipo] = c?.[`capacidad${cc.suffix}`] ?? null;
     });
+    if (!adminForm.value.nombre && c?.responsableNombre) {
+      adminForm.value.nombre = c.responsableNombre;
+    }
+    if (!adminForm.value.email && c?.responsableEmail) {
+      adminForm.value.email = c.responsableEmail;
+    }
+    if (!adminForm.value.telefono && c?.responsableTelefono) {
+      adminForm.value.telefono = c.responsableTelefono;
+    }
     await cargarTareas();
+    // CONFIGURAR_PLANTILLAS no tiene lógica real en el onboarding: se
+    // completa automáticamente para que el progreso refleje solo las 3
+    // secciones reales y el condominio pueda pasar a COMPLETADO.
+    await completarTarea("CONFIGURAR_PLANTILLAS");
     await cargarStorage();
+    await cargarEstadoCuentaAdmin();
   } catch (e) {
     console.error("Error al cargar wizard", e);
     error.value = "No se pudo cargar la configuración del condominio";
@@ -287,6 +383,20 @@ async function guardarCapacidad() {
 }
 
 // ── Sección 3: Administrador / Presidente ─────────────
+const cargoElegido = computed(() =>
+  ["ADMIN_ROL", "ADMIN_CARGO"].includes(adminForm.value.tipoAcceso)
+    ? "ADMINISTRADOR"
+    : adminForm.value.tipoAcceso,
+);
+
+const rolElegido = computed(() =>
+  adminForm.value.tipoAcceso === "ADMIN_ROL" ? "ADMINISTRADOR" : "RESIDENTE",
+);
+
+const tipoAccesoActual = computed(() =>
+  tipoAccesoOptions.find((o) => o.value === adminForm.value.tipoAcceso),
+);
+
 async function crearAdministrador() {
   guardando.value = "admin";
   resultadoAdmin.value = null;
@@ -297,9 +407,6 @@ async function crearAdministrador() {
   validarEmail(f.email, "adminEmail");
   validarRut(f.rut, "adminRut");
   validarTelefono(f.telefono, "adminTelefono");
-  if (f.vincularUnidad && !f.unidadId) {
-    errores.value.adminUnidadId = "Selecciona la unidad a la que se vinculará";
-  }
   if (Object.keys(errores.value).length) {
     focusPrimerError([
       ["adminNombre", adminNombreRef],
@@ -332,30 +439,20 @@ async function crearAdministrador() {
       }
     }
 
-    if (f.vincularUnidad && f.unidadId) {
-      await personasService.crearVinculo(cid, {
-        personaId,
-        unidadId: f.unidadId,
-        tipo: f.tipoVinculo,
-        esOcupante: true,
-        recibeNotificaciones: true,
-        fechaInicio: fechaHoy(),
-      });
-    }
-
     await personasService.crearUsuario(cid, personaId, {
-      rol: "ADMINISTRADOR",
+      rol: rolElegido.value,
     });
 
     await miembrosService.asignar(cid, {
       personaId,
-      cargo: f.cargo,
+      cargo: cargoElegido.value,
       fechaInicio: fechaHoy(),
     });
 
     const { data } = await miembrosService.listar(cid);
     miembros.value = data || [];
-    resultadoAdmin.value = `${f.cargo === "PRESIDENTE" ? "Presidente" : "Administrador"} creado. Se envió un email con el enlace para configurar su contraseña.`;
+    resultadoAdmin.value = `${tipoAccesoActual.value?.label ?? "Cuenta"} creada con rol ${rolElegido.value} y cargo ${cargoElegido.value}. Se envió un email con el enlace para configurar su contraseña.`;
+    await cargarEstadoCuentaAdmin();
   } catch (e) {
     console.error("Error al crear administrador", e);
     const fields = e.response?.data?.fields;
@@ -378,22 +475,19 @@ async function guardarSeccionAdmin() {
   guardando.value = "admin-seccion";
   try {
     await completarTarea("ASIGNAR_ADMIN");
-  } finally {
-    guardando.value = null;
-  }
-}
-
-// ── Sección 4: Plantillas ─────────────────────────────
-async function completarPlantillas() {
-  guardando.value = "plantillas";
-  try {
-    await completarTarea("CONFIGURAR_PLANTILLAS");
+    await cargarEstadoCuentaAdmin();
   } finally {
     guardando.value = null;
   }
 }
 
 onMounted(cargar);
+onUnmounted(() => {
+  if (cuentaPollingTimer) {
+    clearInterval(cuentaPollingTimer);
+    cuentaPollingTimer = null;
+  }
+});
 </script>
 
 <template>
@@ -662,14 +756,17 @@ onMounted(cargar);
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="text-sm">Cargo a asignar</label>
+              <label class="text-sm">Tipo de acceso</label>
               <Select
-                v-model="adminForm.cargo"
-                :options="cargoOptions"
+                v-model="adminForm.tipoAcceso"
+                :options="tipoAccesoOptions"
                 option-label="label"
                 option-value="value"
                 fluid
               />
+              <small v-if="tipoAccesoActual" class="text-surface-500">{{
+                tipoAccesoActual.desc
+              }}</small>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-sm">Nombre</label>
@@ -731,40 +828,6 @@ onMounted(cargar);
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
-              <InputSwitch v-model="adminForm.vincularUnidad" :binary="true" />
-              <label class="text-sm cursor-pointer"
-                >Vincular a una unidad (será también residente)</label
-              >
-            </div>
-            <template v-if="adminForm.vincularUnidad">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="flex flex-col gap-1">
-                  <label class="text-sm">Unidad</label>
-                  <Select
-                    v-model="adminForm.unidadId"
-                    :options="unidades"
-                    option-label="numero"
-                    option-value="id"
-                    placeholder="Selecciona unidad"
-                    :class="{ 'p-invalid': errores.adminUnidadId }"
-                  />
-                  <small v-if="errores.adminUnidadId" class="text-red-500">{{
-                    errores.adminUnidadId
-                  }}</small>
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="text-sm">Tipo de vínculo</label>
-                  <Select
-                    v-model="adminForm.tipoVinculo"
-                    :options="tipoVinculoOptions"
-                    option-label="label"
-                    option-value="value"
-                  />
-                </div>
-              </div>
-            </template>
-
             <Message
               v-if="resultadoAdmin"
               :severity="resultadoAdmin.startsWith('No') ? 'error' : 'success'"
@@ -781,9 +844,11 @@ onMounted(cargar);
               />
             </div>
             <p class="text-xs text-surface-400 m-0">
-              Se creará la persona, su cuenta de usuario (rol ADMINISTRADOR) y
-              se le enviará un email para configurar su contraseña. También
-              quedará con el cargo seleccionado.
+              Se creará la persona, su cuenta de usuario con rol
+              {{ rolElegido }} y el cargo {{ cargoElegido }}. Se enviará un
+              email con el enlace para configurar su contraseña. Los datos se
+              prellenan con el responsable del condominio declarado al
+              crearlo.
             </p>
 
             <div class="flex flex-col gap-1 pt-2 border-t">
@@ -796,49 +861,84 @@ onMounted(cargar);
                 @click="guardarSeccionAdmin"
               />
               <span class="text-xs text-surface-400"
-                >La sección avanza solo al hacer clic en "Guardar sección" una vez creado el administrador o presidente.</span
+                >La sección avanza solo al hacer clic en "Guardar sección" una vez creado el administrador o presidente. Luego queda el paso 4: la activación de su cuenta.</span
               >
             </div>
           </div>
         </template>
       </Card>
 
-      <!-- 4. Plantillas -->
+      <!-- 4. Activación de la cuenta del administrador -->
       <Card>
         <template #title>
           <div class="flex items-center gap-2">
             <i
               :class="
-                tareaCompletada('CONFIGURAR_PLANTILLAS')
+                cuentaAdminPasswordSetAt
                   ? 'pi pi-check-circle text-green-500'
-                  : 'pi pi-circle text-surface-300'
+                  : 'pi pi-clock text-amber-500'
               "
               class="text-lg"
             ></i>
-            <span>4. Plantillas</span>
+            <span>4. Activación de la cuenta</span>
             <Tag
-              v-if="tareaCompletada('CONFIGURAR_PLANTILLAS')"
-              value="Listo"
+              v-if="cuentaAdminPasswordSetAt"
+              value="Cuenta activada"
               severity="success"
+              size="small"
+            />
+            <Tag
+              v-else-if="cuentaAdminPersonaId"
+              value="Pendiente de activar"
+              severity="warn"
               size="small"
             />
           </div>
         </template>
         <template #content>
-          <div class="flex flex-col gap-3">
+          <div
+            v-if="!cuentaAdminPersonaId"
+            class="text-sm text-surface-500 m-0"
+          >
+            Crea el administrador o presidente en la sección 3 para continuar.
+          </div>
+          <div v-else class="flex flex-col gap-3">
             <p class="text-sm m-0">
-              Las plantillas de notificación y gasto común se configuran desde
-              las vistas del administrador del condominio. Puedes marcar esta
-              tarea como completada cuando las hayas revisado.
+              La cuenta de <strong>{{ cuentaAdminEmail }}</strong> se creó con
+              una contraseña temporal.
+              <template v-if="!cuentaAdminPasswordSetAt">
+                El onboarding se completa cuando esta persona configure su
+                contraseña desde el enlace del email; así podrá iniciar sesión
+                y administrar el condominio.
+              </template>
+              <template v-else>
+                La persona ya configuró su contraseña y puede iniciar sesión.
+              </template>
             </p>
-            <div>
+
+            <Message
+              v-if="cuentaAdminPasswordSetAt"
+              severity="success"
+              :closable="false"
+              >Cuenta activada el
+              {{ formatFechaHora(cuentaAdminPasswordSetAt) }}. El onboarding
+              está completo.</Message
+            >
+            <Message v-else severity="warn" :closable="false"
+              >Email de configuración enviado — pendiente de activación. El
+              estado se verifica automáticamente; también puedes hacerlo
+              manualmente.</Message
+            >
+
+            <div v-if="!cuentaAdminPasswordSetAt">
               <Button
-                label="Marcar como completada"
-                icon="pi pi-check"
+                label="Verificar de nuevo"
+                icon="pi pi-refresh"
                 size="small"
                 severity="secondary"
-                :loading="guardando === 'plantillas'"
-                @click="completarPlantillas"
+                variant="outlined"
+                :loading="verificandoCuenta"
+                @click="verificarCuenta"
               />
             </div>
           </div>
@@ -850,6 +950,13 @@ onMounted(cargar);
         class="text-center text-green-600 font-medium"
       >
         ¡Puesta en marcha completa! El condominio está listo.
+      </div>
+      <div
+        v-else-if="cuentaAdminPersonaId && !cuentaAdminPasswordSetAt"
+        class="text-center text-amber-600 font-medium"
+      >
+        Onboarding casi completo: falta que {{ cuentaAdminEmail }} active su
+        cuenta (paso 4).
       </div>
     </template>
   </div>

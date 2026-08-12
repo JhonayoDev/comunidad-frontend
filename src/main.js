@@ -94,6 +94,11 @@ app.use(PrimeVue, {
     clear: "Limpiar",
     dateFormat: "dd/mm/yy", // Formato por defecto para la región
     weekHeader: "Sm",
+    // Medidor de fortaleza de contraseña (componente Password)
+    weak: "Débil",
+    medium: "Media",
+    strong: "Fuerte",
+    passwordPrompt: "Ingresa una contraseña",
   },
   pt: {
     card: {

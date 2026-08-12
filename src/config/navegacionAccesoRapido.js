@@ -32,7 +32,7 @@ const NAV_RESIDENTE = [
   { label: "Deudas", icon: "pi pi-credit-card", routeName: "MisDeudas" },
   { label: "Autoriz.", icon: "pi pi-shield", routeName: "MisAutorizaciones" },
   { label: "Encomiendas", icon: "pi pi-box", routeName: "MisEncomiendas" },
-  { label: "Notif.", icon: "pi pi-bell", routeName: "Notificaciones" },
+  { label: "Mensajes", icon: "pi pi-bell", routeName: "Notificaciones" },
 ];
 
 export const BOTTOM_NAV_BY_ROLE = {

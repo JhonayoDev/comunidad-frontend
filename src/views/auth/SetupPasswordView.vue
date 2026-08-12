@@ -56,10 +56,14 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <Card class="max-w-sm w-full bg-surface">
-    <template #title> Establecer contraseña </template>
+  <Card class="max-w-sm w-full bg-surface/75">
+    <template #title>
+      <div class="primary-text">Establecer contraseña</div>
+    </template>
 
-    <template #subtitle> Crea una contraseña para tu cuenta </template>
+    <template #subtitle>
+      <div class="secondary-text">Crea una contraseña para tu cuenta</div>
+    </template>
 
     <template #content>
       <form
@@ -67,11 +71,11 @@ async function handleSubmit() {
         @submit.prevent="handleSubmit"
         class="space-y-6 max-sm:space-y-4 mt-3"
       >
-        <div class="flex flex-col gap-2">
+        <div class="primary-text flex flex-col gap-2">
           <label>Nueva contraseña</label>
           <Password v-model="newPassword" :feedback="true" toggleMask fluid />
         </div>
-        <div class="flex flex-col gap-2">
+        <div class="primary-text flex flex-col gap-2">
           <label>Confirmar contraseña</label>
           <Password
             v-model="confirmPassword"
@@ -93,6 +97,7 @@ async function handleSubmit() {
           fluid
         />
         <Button
+          class="primary-text"
           label="Volver al login"
           icon="pi pi-arrow-left"
           variant="text"
@@ -100,11 +105,12 @@ async function handleSubmit() {
           @click="router.push({ name: 'Login' })"
         />
       </form>
-      <div v-else class="flex flex-col items-center gap-3">
+      <div v-else class="primary-text flex flex-col items-center gap-3">
         <Message severity="success">
           Contraseña establecida exitosamente. Ahora puedes iniciar sesión.
         </Message>
         <Button
+          class="primary-text"
           label="Ir al login"
           icon="pi pi-sign-in"
           fluid
@@ -115,4 +121,11 @@ async function handleSubmit() {
   </Card>
 </template>
 
-<style scoped></style>
+<style scoped>
+.primary-text {
+  color: var(--p-surface-900);
+}
+.secondary-text {
+  color: var(--p-surface-600);
+}
+</style>

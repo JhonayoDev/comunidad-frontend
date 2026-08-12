@@ -10,10 +10,10 @@ const routes = [
     meta: { public: true },
     children: [
       { path: "",                    redirect: "/login" },
-      { path: "/login",              name: "Login",          component: () => import("../views/auth/LoginView.vue") },
-      { path: "/recuperar-password", name: "ForgotPassword",  component: () => import("../views/auth/ForgotPasswordView.vue") },
-      { path: "/reset-password",     name: "ResetPassword",   component: () => import("../views/auth/ResetPasswordView.vue") },
-      { path: "/setup-password",     name: "SetupPassword",    component: () => import("../views/auth/SetupPasswordView.vue") },
+      { path: "/login",              name: "Login",          alias: "/auth/login",              component: () => import("../views/auth/LoginView.vue") },
+      { path: "/recuperar-password", name: "ForgotPassword",  alias: "/auth/recuperar-password", component: () => import("../views/auth/ForgotPasswordView.vue") },
+      { path: "/reset-password",     name: "ResetPassword",   alias: "/auth/reset-password",     component: () => import("../views/auth/ResetPasswordView.vue") },
+      { path: "/setup-password",     name: "SetupPassword",   alias: "/auth/setup-password",     component: () => import("../views/auth/SetupPasswordView.vue") },
     ],
   },
 
@@ -76,12 +76,6 @@ const routes = [
         path: "superadmin/condominios/:id/suscripcion",
         name: "SaasSuscripcion",
         component: () => import("../views/superadmin/SaasSuscripcionView.vue"),
-        meta: { roles: ["SUPER_ADMIN"] },
-      },
-      {
-        path: "superadmin/condominios/:id/onboarding",
-        name: "SaasOnboarding",
-        component: () => import("../views/superadmin/SaasOnboardingView.vue"),
         meta: { roles: ["SUPER_ADMIN"] },
       },
       {
@@ -281,7 +275,7 @@ const routes = [
         path: "notificaciones/unidades-personas",
         name: "UnidadesPersonas",
         component: () => import("../views/gestion/UnidadesPersonasView.vue"),
-        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], cargos: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["ADMINISTRADOR"] },
       },
       // ── Almacenamiento (Admin Config) ──────────────
       {
