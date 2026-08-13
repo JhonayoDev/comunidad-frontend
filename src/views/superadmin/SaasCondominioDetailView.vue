@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { adminService } from "@/services/adminService";
+import { useValidacionChile } from "@/composables/useValidacionChile";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -11,6 +12,7 @@ import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
+import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
 
 const route = useRoute();
@@ -23,12 +25,64 @@ const condominio = ref(null);
 
 const showSuspender = ref(false);
 const showEditar = ref(false);
+const showCapacidad = ref(false);
 const enviando = ref(false);
 const motivoSuspension = ref("");
-const editForm = ref({ nombre: "", direccion: "", responsableNombre: "", responsableEmail: "", responsableTelefono: "" });
+const resultadoCapacidad = ref(null);
+const editForm = ref({
+  nombre: "",
+  direccion: "",
+  responsableNombre: "",
+  responsableEmail: "",
+  responsableTelefono: "",
+});
 
-const statusSeverity = { PENDIENTE: "warn", PAGADO: "success", ATRASADO: "danger", SUSPENDIDO: "danger" };
-const onboardingSeverity = { PENDIENTE: "danger", CONFIGURANDO: "warn", COMPLETADO: "success", SALTADO: "info" };
+const capacidadConfig = [
+  { tipo: "CASA", label: "Casas", suffix: "Casas" },
+  { tipo: "DEPARTAMENTO", label: "Departamentos", suffix: "Departamentos" },
+  { tipo: "ESTACIONAMIENTO", label: "Estacionamientos", suffix: "Estacionamientos" },
+  { tipo: "BODEGA", label: "Bodegas", suffix: "Bodegas" },
+  { tipo: "OTRO", label: "Otro", suffix: "Otro" },
+];
+const capacidadForm = ref({});
+
+const capacidadResumen = computed(() =>
+  capacidadConfig.map((cfg) => ({
+    ...cfg,
+    capacidad: condominio.value?.[`capacidad${cfg.suffix}`] ?? null,
+    total: condominio.value?.[`total${cfg.suffix}`] ?? 0,
+  })),
+);
+
+const {
+  errores,
+  validarNombre,
+  validarEmail,
+  validarTelefono,
+  onTelefonoInput,
+  onTelefonoBlur,
+  focusPrimerError,
+  normalizarTelefono,
+  normalizarEmail,
+} = useValidacionChile();
+
+const editNombreRef = ref(null);
+const editResponsableNombreRef = ref(null);
+const editResponsableEmailRef = ref(null);
+const editResponsableTelefonoRef = ref(null);
+
+const statusSeverity = {
+  PENDIENTE: "warn",
+  PAGADO: "success",
+  ATRASADO: "danger",
+  SUSPENDIDO: "danger",
+};
+const onboardingSeverity = {
+  PENDIENTE: "danger",
+  CONFIGURANDO: "warn",
+  COMPLETADO: "success",
+  SALTADO: "info",
+};
 
 async function cargar() {
   const id = route.params.id;
@@ -56,7 +110,9 @@ async function cargar() {
 async function suspender() {
   enviando.value = true;
   try {
-    const { data } = await adminService.suspenderCondominio(route.params.id, { motivo: motivoSuspension.value });
+    const { data } = await adminService.suspenderCondominio(route.params.id, {
+      motivo: motivoSuspension.value,
+    });
     condominio.value = data;
     showSuspender.value = false;
   } catch (e) {
@@ -78,14 +134,63 @@ async function reactivar() {
   }
 }
 
+function validarEdicion() {
+  errores.value = {};
+  const f = editForm.value;
+  validarNombre(
+    f.nombre,
+    "nombre",
+    "Ingresa el nombre del condominio (mínimo 2 caracteres)",
+  );
+  validarNombre(
+    f.responsableNombre,
+    "responsableNombre",
+    "Ingresa el nombre del responsable",
+  );
+  validarEmail(f.responsableEmail, "responsableEmail");
+  validarTelefono(f.responsableTelefono, "responsableTelefono");
+  return Object.keys(errores.value).length === 0;
+}
+
+function focusPrimerErrorEdicion() {
+  focusPrimerError([
+    ["nombre", editNombreRef],
+    ["responsableNombre", editResponsableNombreRef],
+    ["responsableEmail", editResponsableEmailRef],
+    ["responsableTelefono", editResponsableTelefonoRef],
+  ]);
+}
+
 async function guardarEdicion() {
+  if (!validarEdicion()) {
+    focusPrimerErrorEdicion();
+    return;
+  }
   enviando.value = true;
   try {
-    const { data } = await adminService.actualizarCondominio(route.params.id, editForm.value);
+    const body = {
+      nombre: editForm.value.nombre.trim(),
+      direccion: editForm.value.direccion.trim() || null,
+      responsableNombre: editForm.value.responsableNombre.trim(),
+      responsableEmail: normalizarEmail(editForm.value.responsableEmail),
+      responsableTelefono: editForm.value.responsableTelefono
+        ? normalizarTelefono(editForm.value.responsableTelefono)
+        : null,
+    };
+    const { data } = await adminService.actualizarCondominio(
+      route.params.id,
+      body,
+    );
     condominio.value = data;
     showEditar.value = false;
   } catch (e) {
     console.error("Error al actualizar", e);
+    const data = e.response?.data;
+    if (data?.fields) {
+      data.fields.forEach((f) => {
+        errores.value[f.field] = f.message;
+      });
+    }
   } finally {
     enviando.value = false;
   }
@@ -95,18 +200,59 @@ function irA(ruta) {
   router.push({ name: ruta, params: { id: route.params.id } });
 }
 
+function abrirCapacidad() {
+  const c = condominio.value;
+  capacidadConfig.forEach((cfg) => {
+    capacidadForm.value[cfg.tipo] = c?.[`capacidad${cfg.suffix}`] ?? null;
+  });
+  resultadoCapacidad.value = null;
+  showCapacidad.value = true;
+}
+
+async function guardarCapacidad() {
+  enviando.value = true;
+  resultadoCapacidad.value = null;
+  try {
+    const payload = {};
+    capacidadConfig.forEach((cfg) => {
+      payload[`capacidad${cfg.suffix}`] =
+        Number(capacidadForm.value[cfg.tipo]) || 0;
+    });
+    const { data } = await adminService.actualizarCondominio(
+      route.params.id,
+      payload,
+    );
+    condominio.value = data;
+    showCapacidad.value = false;
+  } catch (e) {
+    console.error("Error al guardar capacidad", e);
+    resultadoCapacidad.value =
+      e.response?.data?.message || "No se pudo guardar la capacidad.";
+  } finally {
+    enviando.value = false;
+  }
+}
+
 function entrarACondominio() {
   auth.seleccionarCondominio(route.params.id);
   router.push({ name: "Dashboard" });
 }
 
 function formatoCLP(n) {
-  return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", minimumFractionDigits: 0 }).format(n || 0);
+  return new Intl.NumberFormat("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    minimumFractionDigits: 0,
+  }).format(n || 0);
 }
 
 function formatFecha(f) {
   if (!f) return "—";
-  return new Date(f).toLocaleDateString("es-CL", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(f).toLocaleDateString("es-CL", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 onMounted(cargar);
@@ -114,22 +260,36 @@ onMounted(cargar);
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <Button label="← Volver" size="small" variant="text" icon="pi pi-arrow-left" @click="router.push({ name: 'SuperAdminDashboard' })" />
-
     <Skeleton v-if="loading" width="100%" height="300px" />
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else-if="condominio">
       <Card>
         <template #title>
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span>{{ condominio.nombre }}</span>
-              <Tag :value="condominio.statusPago" :severity="statusSeverity[condominio.statusPago] || 'info'" size="small" />
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-lg font-bold break-words">{{ condominio.nombre }}</span>
+              <Tag
+                :value="condominio.statusPago"
+                :severity="statusSeverity[condominio.statusPago] || 'info'"
+                size="small"
+              />
             </div>
-            <div class="flex gap-1">
-              <Button label="Entrar" size="small" icon="pi pi-arrow-right" @click="entrarACondominio" />
-              <Button label="Editar" size="small" icon="pi pi-pencil" severity="secondary" variant="outlined" @click="showEditar = true" />
+            <div class="flex gap-1 flex-wrap">
+              <Button
+                label="Entrar"
+                size="small"
+                icon="pi pi-arrow-right"
+                @click="entrarACondominio"
+              />
+              <Button
+                label="Editar"
+                size="small"
+                icon="pi pi-pencil"
+                severity="secondary"
+                variant="outlined"
+                @click="showEditar = true"
+              />
               <Button
                 v-if="condominio.statusPago !== 'SUSPENDIDO'"
                 label="Suspender"
@@ -155,66 +315,143 @@ onMounted(cargar);
         <template #content>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div class="text-sm">
-              <span class="text-surface-400">RUT:</span> {{ condominio.rut || "—" }}
+              <span class="text-surface-400">RUT:</span>
+              {{ condominio.rut || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Dirección:</span> {{ condominio.direccion || "—" }}
+              <span class="text-surface-400">Dirección:</span>
+              {{ condominio.direccion || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Plan:</span> <strong>{{ condominio.planNombre }}</strong>
+              <span class="text-surface-400">Plan:</span>
+              <strong>{{ condominio.planNombre }}</strong>
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Creado:</span> {{ formatFecha(condominio.createdAt) }}
+              <span class="text-surface-400">Creado:</span>
+              {{ formatFecha(condominio.createdAt) }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Vence:</span> {{ formatFecha(condominio.fechaVencimiento) }}
+              <span class="text-surface-400">Vence:</span>
+              {{ formatFecha(condominio.fechaVencimiento) }}
             </div>
             <div class="text-sm">
               <span class="text-surface-400">Onboarding:</span>
-              <Tag :value="condominio.onboardingStatus" :severity="onboardingSeverity[condominio.onboardingStatus] || 'info'" size="small" />
+              <Tag
+                :value="condominio.onboardingStatus"
+                :severity="
+                  onboardingSeverity[condominio.onboardingStatus] || 'info'
+                "
+                size="small"
+              />
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Responsable:</span> {{ condominio.responsableNombre || "—" }}
+              <span class="text-surface-400">Responsable:</span>
+              {{ condominio.responsableNombre || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Email:</span> {{ condominio.responsableEmail || "—" }}
+              <span class="text-surface-400">Email:</span>
+              {{ condominio.responsableEmail || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Teléfono:</span> {{ condominio.responsableTelefono || "—" }}
+              <span class="text-surface-400">Teléfono:</span>
+              {{ condominio.responsableTelefono || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Unidades:</span> {{ condominio.totalUnidades }}
+              <span class="text-surface-400">Unidades:</span>
+              {{ condominio.totalUnidades }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Usuarios activos:</span> {{ condominio.totalUsuariosActivos }}
+              <span class="text-surface-400">Usuarios activos:</span>
+              {{ condominio.totalUsuariosActivos }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Storage:</span> {{ (condominio.storageUsadoMb / 1024).toFixed(1) }}/{{ (condominio.storageLimitMb / 1024).toFixed(1) }} GB
+              <span class="text-surface-400">Storage:</span>
+              {{ (condominio.storageUsadoMb / 1024).toFixed(1) }}/{{
+                (condominio.storageLimitMb / 1024).toFixed(1)
+              }}
+              GB
+            </div>
+          </div>
+        </template>
+      </Card>
+
+      <Card>
+        <template #title>
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-building text-primary"></i>
+              <span>Capacidad de unidades</span>
+            </div>
+            <Button
+              label="Editar capacidad"
+              size="small"
+              icon="pi pi-pencil"
+              severity="secondary"
+              variant="outlined"
+              @click="abrirCapacidad"
+            />
+          </div>
+        </template>
+        <template #content>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div
+              v-for="c in capacidadResumen"
+              :key="c.tipo"
+              class="flex flex-col gap-1 p-2 border-round bg-surface-50"
+            >
+              <span class="text-sm font-medium">{{ c.label }}</span>
+              <span
+                class="text-sm"
+                :class="
+                  c.capacidad != null && c.total >= c.capacidad
+                    ? 'text-red-500'
+                    : 'text-surface-600'
+                "
+              >
+                {{ c.total }} {{ c.total === 1 ? "creada" : "creadas" }}
+                <template v-if="c.capacidad != null">
+                  de {{ c.capacidad }}
+                </template>
+                <template v-else>
+                  <span class="text-xs text-surface-400">(sin límite)</span>
+                </template>
+              </span>
             </div>
           </div>
         </template>
       </Card>
 
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card class="cursor-pointer hover:shadow-3" @click="irA('SaasUsuarios')">
+        <Card
+          class="cursor-pointer hover:shadow-3"
+          @click="irA('SaasUsuarios')"
+        >
           <template #content class="flex flex-col items-center gap-1 p-3">
             <i class="pi pi-users text-2xl text-primary"></i>
             <span class="text-sm font-medium">Usuarios</span>
-            <span class="text-xs text-surface-400">Gestionar usuarios y roles</span>
+            <span class="text-xs text-surface-400"
+              >Gestionar usuarios y roles</span
+            >
           </template>
         </Card>
-        <Card class="cursor-pointer hover:shadow-3" @click="irA('SaasSuscripcion')">
+        <Card
+          class="cursor-pointer hover:shadow-3"
+          @click="irA('SaasSuscripcion')"
+        >
           <template #content class="flex flex-col items-center gap-1 p-3">
             <i class="pi pi-credit-card text-2xl text-primary"></i>
             <span class="text-sm font-medium">Suscripción</span>
             <span class="text-xs text-surface-400">Plan, pagos, historial</span>
           </template>
         </Card>
-        <Card class="cursor-pointer hover:shadow-3" @click="irA('SaasOnboarding')">
+        <Card
+          class="cursor-pointer hover:shadow-3"
+          @click="irA('SaasCondominioSetup')"
+        >
           <template #content class="flex flex-col items-center gap-1 p-3">
-            <i class="pi pi-check-circle text-2xl text-primary"></i>
-            <span class="text-sm font-medium">Onboarding</span>
-            <span class="text-xs text-surface-400">Tareas pendientes</span>
+            <i class="pi pi-rocket text-2xl text-primary"></i>
+            <span class="text-sm font-medium">Puesta en marcha</span>
+            <span class="text-xs text-surface-400">Wizard de configuración inicial</span>
           </template>
         </Card>
         <Card class="cursor-pointer hover:shadow-3" @click="irA('SaasModulos')">
@@ -227,11 +464,23 @@ onMounted(cargar);
       </div>
     </template>
 
-    <Dialog v-model:visible="showEditar" header="Editar condominio" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog
+      v-model:visible="showEditar"
+      header="Editar condominio"
+      modal
+      :style="{ width: '95%', maxWidth: '500px' }"
+    >
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Nombre</label>
-          <InputText v-model="editForm.nombre" />
+          <InputText
+            ref="editNombreRef"
+            v-model="editForm.nombre"
+            :class="{ 'p-invalid': errores.nombre }"
+          />
+          <small v-if="errores.nombre" class="text-red-500">{{
+            errores.nombre
+          }}</small>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Dirección</label>
@@ -239,35 +488,140 @@ onMounted(cargar);
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Responsable</label>
-          <InputText v-model="editForm.responsableNombre" />
+          <InputText
+            ref="editResponsableNombreRef"
+            v-model="editForm.responsableNombre"
+            :class="{ 'p-invalid': errores.responsableNombre }"
+          />
+          <small v-if="errores.responsableNombre" class="text-red-500">{{
+            errores.responsableNombre
+          }}</small>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Email responsable</label>
-          <InputText v-model="editForm.responsableEmail" />
+          <InputText
+            ref="editResponsableEmailRef"
+            v-model="editForm.responsableEmail"
+            type="email"
+            :class="{ 'p-invalid': errores.responsableEmail }"
+          />
+          <small v-if="errores.responsableEmail" class="text-red-500">{{
+            errores.responsableEmail
+          }}</small>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Teléfono responsable</label>
-          <InputText v-model="editForm.responsableTelefono" />
+          <InputText
+            ref="editResponsableTelefonoRef"
+            v-model="editForm.responsableTelefono"
+            placeholder="Ej: +56 9 1234 5678"
+            maxlength="16"
+            :class="{ 'p-invalid': errores.responsableTelefono }"
+            @input="
+              editForm.responsableTelefono = onTelefonoInput(
+                editForm.responsableTelefono,
+              )
+            "
+            @blur="
+              editForm.responsableTelefono = onTelefonoBlur(
+                editForm.responsableTelefono,
+              )
+            "
+          />
+          <small v-if="errores.responsableTelefono" class="text-red-500">{{
+            errores.responsableTelefono
+          }}</small>
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showEditar = false" />
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          @click="showEditar = false"
+        />
         <Button label="Guardar" :loading="enviando" @click="guardarEdicion" />
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="showSuspender" header="Suspender condominio" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog
+      v-model:visible="showCapacidad"
+      header="Capacidad de unidades"
+      modal
+      :style="{ width: '95%', maxWidth: '460px' }"
+    >
       <div class="flex flex-col gap-3">
-        <p class="text-sm m-0">¿Estás seguro de suspender <strong>{{ condominio?.nombre }}</strong>?</p>
-        <p class="text-xs text-surface-500">Esto bloqueará el acceso a todos los usuarios del condominio.</p>
+        <p class="text-xs text-surface-500 m-0">
+          Define el tope de unidades de cada tipo según el contrato. El
+          administrador no podrá crear unidades más allá de estos límites.
+        </p>
+        <div
+          v-for="cfg in capacidadConfig"
+          :key="cfg.tipo"
+          class="flex items-center justify-between gap-2"
+        >
+          <label class="text-sm">{{ cfg.label }}</label>
+          <InputNumber
+            v-model="capacidadForm[cfg.tipo]"
+            :min="0"
+            class="w-32 min-w-0"
+            input-class="min-w-0"
+          />
+        </div>
+        <Message
+          v-if="resultadoCapacidad"
+          severity="error"
+          :closable="false"
+          >{{ resultadoCapacidad }}</Message
+        >
+      </div>
+      <template #footer>
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          @click="showCapacidad = false"
+        />
+        <Button label="Guardar" :loading="enviando" @click="guardarCapacidad" />
+      </template>
+    </Dialog>
+
+    <Dialog
+      v-model:visible="showSuspender"
+      header="Suspender condominio"
+      modal
+      :style="{ width: '95%', maxWidth: '400px' }"
+    >
+      <div class="flex flex-col gap-3">
+        <p class="text-sm m-0">
+          ¿Estás seguro de suspender <strong>{{ condominio?.nombre }}</strong
+          >?
+        </p>
+        <p class="text-xs text-surface-500">
+          Esto bloqueará el acceso a todos los usuarios del condominio.
+        </p>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Motivo</label>
-          <Textarea v-model="motivoSuspension" rows="2" placeholder="Indica el motivo de la suspensión" />
+          <Textarea
+            v-model="motivoSuspension"
+            rows="2"
+            placeholder="Indica el motivo de la suspensión"
+          />
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showSuspender = false" />
-        <Button label="Suspender" severity="danger" :loading="enviando" @click="suspender" />
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          @click="showSuspender = false"
+        />
+        <Button
+          label="Suspender"
+          severity="danger"
+          :loading="enviando"
+          @click="suspender"
+        />
       </template>
     </Dialog>
   </div>

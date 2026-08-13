@@ -85,17 +85,29 @@ describe("frontendErrorReporter", () => {
     expect(errores.at(-1).mensaje).toContain("roto.js");
   });
 
-  it("hace beacon de los hitos y errores", () => {
-    marcarHito("boot:beacon");
-    reportarError("test", new Error("alerta"));
+  it("no hace beacon en desarrollo (solo logs locales)", () => {
+    marcarHito("boot:beacon-dev");
+    reportarError("test", new Error("alerta-dev"));
 
-    expect(sendBeacon).toHaveBeenCalledWith(
-      expect.stringContaining("/__frontend-boot"),
-      expect.any(Blob),
-    );
-    expect(sendBeacon).toHaveBeenCalledWith(
-      expect.stringContaining("/__frontend-error"),
-      expect.any(Blob),
-    );
+    expect(sendBeacon).not.toHaveBeenCalled();
+  });
+
+  it("hace beacon de los hitos y errores en producción", () => {
+    vi.stubEnv("DEV", false);
+    try {
+      marcarHito("boot:beacon");
+      reportarError("test", new Error("alerta"));
+
+      expect(sendBeacon).toHaveBeenCalledWith(
+        expect.stringContaining("/__frontend-boot"),
+        expect.any(Blob),
+      );
+      expect(sendBeacon).toHaveBeenCalledWith(
+        expect.stringContaining("/__frontend-error"),
+        expect.any(Blob),
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

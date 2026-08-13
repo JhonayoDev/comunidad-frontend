@@ -24,4 +24,8 @@ export const unidadesService = {
   getSectores(condominioId) {
     return api.get(`/condominios/${condominioId}/sectores`);
   },
+
+  getCapacidad(condominioId) {
+    return api.get(`/condominios/${condominioId}/capacidad-unidades`);
+  },
 };

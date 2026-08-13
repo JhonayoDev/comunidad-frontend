@@ -59,6 +59,10 @@ function escribirJSON(clave, valor) {
 
 function beacon(ruta, texto) {
   try {
+    // Solo reportar en builds de producción: en dev los beacons 404 son ruido
+    // y no hay logs remotos (Cloudflare/Coolify) que los capturen. La
+    // persistencia en localStorage, el overlay y la consola siguen activos.
+    if (import.meta.env.DEV) return;
     const url = `${ruta}?ts=${Date.now()}`;
     const cuerpo = new Blob([texto], { type: "text/plain;charset=UTF-8" });
     if (typeof navigator.sendBeacon === "function") {

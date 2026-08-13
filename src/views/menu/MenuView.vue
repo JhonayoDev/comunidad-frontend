@@ -79,12 +79,12 @@ async function handleLogout() {
       </template>
     </Card>
 
-    <!-- Notificaciones -->
+    <!-- Mensajes -->
     <Card>
-      <template #title>Notificaciones</template>
+      <template #title>Mensajes</template>
       <template #content>
         <Button
-          label="Ver notificaciones"
+          label="Ver mensajes"
           icon="pi pi-bell"
           variant="text"
           class="w-full justify-content-start py-2"
