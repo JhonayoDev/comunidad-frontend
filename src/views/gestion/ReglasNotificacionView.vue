@@ -20,6 +20,7 @@ const confirm = useConfirm();
 const { reglas, loading, error, cargar, actualizarRegla, restaurarRegla } = useReglasNotificacion();
 
 const guardando = ref(null);
+const errorCanales = ref(null);
 
 const canalOptions = [
   { label: "App", value: "IN_APP" },
@@ -89,6 +90,11 @@ async function toggleHabilitada(regla) {
 }
 
 async function cambiarCanales(regla, nuevosCanales) {
+  if (!nuevosCanales?.length) {
+    errorCanales.value = regla.tipo;
+    return;
+  }
+  errorCanales.value = null;
   guardando.value = regla.tipo;
   await actualizarRegla({ ...regla, canales: nuevosCanales });
   guardando.value = null;
@@ -199,6 +205,7 @@ async function handleRestaurar(tipo) {
                   optionValue="value"
                   :show-toggle-all="false"
                   :disabled="guardando === r.tipo || !r.habilitada"
+                  :class="{ 'p-invalid': errorCanales === r.tipo }"
                   placeholder="Seleccionar canales"
                   class="w-full sm:w-52"
                   @update:modelValue="cambiarCanales(r, $event)"
@@ -212,6 +219,9 @@ async function handleRestaurar(tipo) {
                 </MultiSelect>
               </div>
             </div>
+            <Message v-if="errorCanales === r.tipo" severity="warn" :closable="false" size="small">
+              Selecciona al menos un canal. Para desactivar esta notificación usa el interruptor de habilitada.
+            </Message>
             <div class="flex flex-wrap gap-1">
               <Tag
                 v-for="c in r.canales || []"

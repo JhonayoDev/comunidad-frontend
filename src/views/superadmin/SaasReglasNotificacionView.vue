@@ -79,6 +79,8 @@ const todosCanalesSeleccionados = computed(
   () => form.value.canales?.length === canalOptions.length,
 );
 
+const canalesValidos = computed(() => form.value.canales?.length > 0);
+
 function toggleTodosCanales() {
   form.value.canales = todosCanalesSeleccionados.value ? [] : canalOptions.map((o) => o.value);
 }
@@ -195,42 +197,102 @@ onMounted(cargar);
     <Skeleton v-if="loading" width="100%" height="300px" />
     <Message v-else-if="error" severity="error" :closable="false">{{ error }}</Message>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      <Card v-for="r in reglas" :key="r.tipoNotificacion">
-        <template #title>
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-sm">{{ tipoLabel(r.tipoNotificacion) }}</span>
-            <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
-          </div>
-        </template>
-        <template #content>
-          <div class="flex flex-col gap-2 text-sm">
-            <div class="flex items-center justify-between">
-              <span class="text-surface-500">Audiencia</span>
-              <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-surface-500">Prioridad</span>
-              <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-surface-500">Canales</span>
-              <div class="flex flex-wrap gap-1 justify-end">
-                <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
+    <template v-else>
+      <div v-if="!reglas.length" class="text-center text-surface-400 py-8">No hay reglas en el catálogo</div>
+
+      <template v-else>
+        <!-- Mobile: cards -->
+        <div class="grid grid-cols-1 gap-3 md:hidden">
+          <Card v-for="r in reglas" :key="r.tipoNotificacion">
+            <template #title>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm">{{ tipoLabel(r.tipoNotificacion) }}</span>
+                <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
               </div>
-            </div>
-            <div class="flex flex-wrap gap-1 mt-1">
-              <Tag v-if="r.esObligatoriaInapp" value="App obligatoria" severity="danger" size="small" />
-              <Tag v-if="r.esObligatoriaEmail" value="Email obligatorio" severity="danger" size="small" />
-              <Tag v-if="r.esObligatoriaPush" value="Push obligatorio" severity="danger" size="small" />
-            </div>
-          </div>
-        </template>
-        <template #footer>
-          <Button label="Editar" size="small" severity="secondary" variant="outlined" class="w-full" @click="abrirEditar(r)" />
-        </template>
-      </Card>
-    </div>
+            </template>
+            <template #content>
+              <div class="flex flex-col gap-2 text-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-surface-500">Audiencia</span>
+                  <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-surface-500">Prioridad</span>
+                  <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-surface-500">Canales</span>
+                  <div class="flex flex-wrap gap-1 justify-end">
+                    <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1">
+                  <Tag v-if="r.esObligatoriaInapp" value="App obligatoria" severity="danger" size="small" />
+                  <Tag v-if="r.esObligatoriaEmail" value="Email obligatorio" severity="danger" size="small" />
+                  <Tag v-if="r.esObligatoriaPush" value="Push obligatorio" severity="danger" size="small" />
+                </div>
+              </div>
+            </template>
+            <template #footer>
+              <Button label="Editar" size="small" severity="secondary" variant="outlined" class="w-full" @click="abrirEditar(r)" />
+            </template>
+          </Card>
+        </div>
+
+        <!-- Desktop: tabla tipo planilla (estilos en theme/app.css → .planilla) -->
+        <div class="planilla hidden md:block">
+          <table>
+            <thead>
+              <tr>
+                <th>Regla</th>
+                <th>Audiencia</th>
+                <th>Canales</th>
+                <th>Obligatoriedad</th>
+                <th>Visibilidad</th>
+                <th>Prioridad</th>
+                <th class="text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="r in reglas" :key="r.tipoNotificacion">
+                <td class="whitespace-nowrap">
+                  <div class="font-medium">{{ tipoLabel(r.tipoNotificacion) }}</div>
+                </td>
+                <td class="whitespace-nowrap">{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</td>
+                <td>
+                  <div class="flex flex-wrap gap-1">
+                    <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
+                  </div>
+                </td>
+                <td class="whitespace-nowrap">
+                  <div class="flex flex-col gap-1">
+                    <span v-if="r.esObligatoriaInapp" class="inline-flex items-center gap-1">
+                      <i class="pi pi-mobile text-xs text-danger" /> App
+                    </span>
+                    <span v-if="r.esObligatoriaEmail" class="inline-flex items-center gap-1">
+                      <i class="pi pi-envelope text-xs text-danger" /> Email
+                    </span>
+                    <span v-if="r.esObligatoriaPush" class="inline-flex items-center gap-1">
+                      <i class="pi pi-bell text-xs text-danger" /> Push
+                    </span>
+                    <span v-if="!r.esObligatoriaInapp && !r.esObligatoriaEmail && !r.esObligatoriaPush" class="text-text-muted">—</span>
+                  </div>
+                </td>
+                <td class="whitespace-nowrap">
+                  <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                </td>
+                <td class="whitespace-nowrap">
+                  <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
+                </td>
+                <td class="text-right whitespace-nowrap">
+                  <Button label="Editar" size="small" severity="secondary" variant="outlined" @click="abrirEditar(r)" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </template>
 
     <Dialog v-model:visible="showEditar" :header="editando ? `Editar — ${tipoLabel(editando.tipoNotificacion)}` : 'Editar regla'" modal :style="{ width: '95%', maxWidth: '520px' }">
       <div class="flex flex-col gap-3">
@@ -240,7 +302,7 @@ onMounted(cargar);
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Canales</label>
-          <MultiSelect v-model="form.canales" :options="canalOptions" option-label="label" option-value="value" placeholder="Seleccionar canales" :show-toggle-all="false" class="w-full">
+          <MultiSelect v-model="form.canales" :options="canalOptions" option-label="label" option-value="value" placeholder="Seleccionar canales" :show-toggle-all="false" class="w-full" :class="{ 'p-invalid': !canalesValidos }">
             <template #header>
               <div class="flex items-center gap-2 px-3 py-2">
                 <Checkbox :binary="true" :modelValue="todosCanalesSeleccionados" @change="toggleTodosCanales" />
@@ -248,6 +310,9 @@ onMounted(cargar);
               </div>
             </template>
           </MultiSelect>
+          <Message v-if="!canalesValidos" severity="warn" :closable="false" size="small">
+            Selecciona al menos un canal para la regla.
+          </Message>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Prioridad</label>
@@ -276,7 +341,7 @@ onMounted(cargar);
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" variant="text" @click="confirmarCancelar" />
-        <Button label="Guardar" icon="pi pi-check" :loading="enviando" @click="confirmarGuardar" />
+        <Button label="Guardar" icon="pi pi-check" :loading="enviando" :disabled="!canalesValidos" @click="confirmarGuardar" />
       </template>
     </Dialog>
 
