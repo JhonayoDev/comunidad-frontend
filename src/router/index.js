@@ -49,6 +49,12 @@ const routes = [
         meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
       },
       {
+        path: "superadmin/reglas-notificacion",
+        name: "SaasReglasNotificacion",
+        component: () => import("../views/superadmin/SaasReglasNotificacionView.vue"),
+        meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
+      },
+      {
         path: "superadmin/condominios",
         name: "SaasCondominios",
         component: () => import("../views/superadmin/SaasCondominiosView.vue"),
@@ -282,7 +288,7 @@ const routes = [
         path: "notificaciones/reglas",
         name: "ReglasNotificacion",
         component: () => import("../views/gestion/ReglasNotificacionView.vue"),
-        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], cargos: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["ADMINISTRADOR"] },
       },
       {
         path: "notificaciones/unidades-personas",

@@ -347,6 +347,28 @@ export default definePreset(Aura, {
         focusColor: "{primary.textPrincipal}",
       },
     },
+    multiselect: {
+      overlay: {
+        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
+        color: "{primary.textPrincipal}",
+      },
+      option: {
+        color: "{primary.textSecondary}",
+        focusBackground: "{primary.hoverColor}",
+        focusColor: "{primary.textPrincipal}",
+        selectedBackground: "{primary.hoverColor}",
+        selectedColor: "{primary.textPrincipal}",
+        selectedFocusBackground: "{primary.hoverColor}",
+        selectedFocusColor: "{primary.textResaltado}",
+      },
+      chip: {
+        background: "color-mix(in srgb, {primary.textSecondary} 14%, transparent)",
+        color: "{primary.textPrincipal}",
+      },
+      emptyMessage: {
+        color: "{primary.textSecondary}",
+      },
+    },
     //TODO: revisar los tokens para poder ajustar bien los colores
     datepicker: {
       panel: {

@@ -12,6 +12,7 @@ import Textarea from "primevue/textarea";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
 import Dialog from "primevue/dialog";
+import ConfirmDialog from "primevue/confirmdialog";
 
 const loading = ref(true);
 const error = ref(null);
@@ -244,5 +245,7 @@ onMounted(cargar);
         <Button :label="modoDialog === 'editar' ? 'Guardar cambios' : 'Crear plan'" :loading="enviando" @click="modoDialog === 'editar' ? actualizarPlan() : confirmarCrear()" />
       </template>
     </Dialog>
+
+    <ConfirmDialog />
   </div>
 </template>

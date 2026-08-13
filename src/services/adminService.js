@@ -133,4 +133,17 @@ export const adminService = {
   reactivarPlantillaNotificacion(codigo) {
     return api.patch(`/admin/plantillas-notificacion/${codigo}/reactivar`);
   },
+
+  // ── Catálogo global de reglas de notificación ─────────────────────
+  listarCatalogoReglas() {
+    return api.get("/admin/notificaciones/catalogo");
+  },
+
+  obtenerReglaCatalogo(tipo) {
+    return api.get(`/admin/notificaciones/catalogo/${tipo}`);
+  },
+
+  actualizarReglaCatalogo(tipo, data) {
+    return api.put(`/admin/notificaciones/catalogo/${tipo}`, data);
+  },
 };

@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from "vue";
 import { useReglasNotificacion } from "@/composables/useReglasNotificacion";
-import { AUDIENCIA_LABELS, CANAL_LABELS } from "@/data/reglasCatalogo";
+import { AUDIENCIA_LABELS, AUDIENCIA_DESC, CANAL_LABELS, CANAL_DESC, PRIORIDAD_DESC } from "@/data/reglasCatalogo";
+import InfoAyudaVista from "@/components/common/InfoAyudaVista.vue";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -10,6 +11,8 @@ import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import InputSwitch from "primevue/inputswitch";
 import Select from "primevue/select";
+import MultiSelect from "primevue/multiselect";
+import Checkbox from "primevue/checkbox";
 import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
 
@@ -36,6 +39,27 @@ const prioridadOptions = [
   { label: "Crítica", value: "CRITICA" },
 ];
 
+const seccionesAyuda = [
+  {
+    titulo: "Audiencia",
+    items: Object.entries(AUDIENCIA_LABELS).map(([value, label]) => ({
+      label,
+      desc: AUDIENCIA_DESC[value],
+    })),
+  },
+  {
+    titulo: "Canales",
+    items: Object.entries(CANAL_LABELS).map(([value, label]) => ({
+      label,
+      desc: CANAL_DESC[value],
+    })),
+  },
+  {
+    titulo: "Prioridad",
+    items: prioridadOptions.map((o) => ({ label: o.label, desc: PRIORIDAD_DESC[o.value] })),
+  },
+];
+
 function tipoLabel(tipo) {
   return tipo.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -45,31 +69,40 @@ function canalesLabel(canales) {
   return canales.map((c) => CANAL_LABELS[c] || c).join(", ");
 }
 
+function canalObligatorio(regla, canal) {
+  return regla[`esObligatoria${canal === "IN_APP" ? "Inapp" : canal.charAt(0) + canal.slice(1).toLowerCase()}`];
+}
+
+function todosCanalesSeleccionados(regla) {
+  return (regla.canales || []).length === canalOptions.length;
+}
+
+function toggleTodosCanales(regla) {
+  const todos = todosCanalesSeleccionados(regla);
+  cambiarCanales(regla, todos ? [] : canalOptions.map((o) => o.value));
+}
+
 async function toggleHabilitada(regla) {
   guardando.value = regla.tipo;
-  const data = { habilitada: !regla.habilitada };
-  await actualizarRegla(regla.tipo, data);
+  await actualizarRegla({ ...regla, habilitada: !regla.habilitada });
   guardando.value = null;
 }
 
 async function cambiarCanales(regla, nuevosCanales) {
   guardando.value = regla.tipo;
-  const data = { canales: nuevosCanales.join(",") };
-  await actualizarRegla(regla.tipo, data);
+  await actualizarRegla({ ...regla, canales: nuevosCanales });
   guardando.value = null;
 }
 
 async function cambiarAudiencia(regla, audiencia) {
   guardando.value = regla.tipo;
-  const data = { audiencia };
-  await actualizarRegla(regla.tipo, data);
+  await actualizarRegla({ ...regla, audiencia });
   guardando.value = null;
 }
 
 async function cambiarPrioridad(regla, prioridad) {
   guardando.value = regla.tipo;
-  const data = { prioridad };
-  await actualizarRegla(regla.tipo, data);
+  await actualizarRegla({ ...regla, prioridad });
   guardando.value = null;
 }
 
@@ -93,10 +126,11 @@ async function handleRestaurar(tipo) {
 <template>
   <div class="p-4 flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <div>
+      <div class="flex items-center gap-1">
         <h1 class="text-xl font-bold m-0">Reglas de Notificación</h1>
-        <p class="text-sm text-surface-500 m-0 mt-1">Matriz de reglas por defecto vs sobrescritas por condominio</p>
+        <InfoAyudaVista titulo="Reglas de notificación" :secciones="seccionesAyuda" />
       </div>
+      <p class="text-sm text-surface-500 m-0 mt-1 hidden sm:block">Matriz de reglas por defecto vs sobrescritas por condominio</p>
     </div>
 
     <Message v-if="error" severity="error" :closable="false">{{ error }}</Message>
@@ -110,7 +144,7 @@ async function handleRestaurar(tipo) {
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 flex-1 min-w-0">
                 <span class="font-semibold text-sm">{{ tipoLabel(r.tipo) }}</span>
-                <Tag v-if="r.esObligatoria" value="Obligatoria" severity="danger" size="small" />
+                <Tag v-if="r.esObligatoriaInapp && r.esObligatoriaEmail && r.esObligatoriaPush" value="Obligatoria" severity="danger" size="small" />
                 <Tag v-if="r.esSobrescritura" value="Override" severity="warn" size="small" />
                 <Tag v-else value="Default" severity="info" size="small" />
               </div>
@@ -156,17 +190,35 @@ async function handleRestaurar(tipo) {
                   @update:modelValue="cambiarPrioridad(r, $event)"
                 />
               </div>
-              <span>Canales:</span>
-              <Select
-                :modelValue="r.canales"
-                :options="canalOptions"
-                optionLabel="label"
-                optionValue="value"
-                multiple
-                :disabled="guardando === r.tipo || !r.habilitada"
-                placeholder="Seleccionar canales"
-                class="w-full sm:w-48"
-                @update:modelValue="cambiarCanales(r, $event)"
+              <div class="flex items-center gap-2">
+                <span>Canales:</span>
+                <MultiSelect
+                  :modelValue="r.canales"
+                  :options="canalOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  :show-toggle-all="false"
+                  :disabled="guardando === r.tipo || !r.habilitada"
+                  placeholder="Seleccionar canales"
+                  class="w-full sm:w-52"
+                  @update:modelValue="cambiarCanales(r, $event)"
+                >
+                  <template #header>
+                    <div class="flex items-center gap-2 px-3 py-2">
+                      <Checkbox :binary="true" :modelValue="todosCanalesSeleccionados(r)" @change="toggleTodosCanales(r)" />
+                      <span class="text-sm">Seleccionar todos</span>
+                    </div>
+                  </template>
+                </MultiSelect>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              <Tag
+                v-for="c in r.canales || []"
+                :key="c"
+                :value="`${CANAL_LABELS[c] || c}${canalObligatorio(r, c) ? ' · obligatorio' : ''}`"
+                :severity="canalObligatorio(r, c) ? 'danger' : 'secondary'"
+                size="small"
               />
             </div>
           </div>

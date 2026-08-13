@@ -13,6 +13,7 @@ import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
 import Dialog from "primevue/dialog";
 import Divider from "primevue/divider";
+import ConfirmDialog from "primevue/confirmdialog";
 
 const loading = ref(true);
 const error = ref(null);
@@ -414,5 +415,7 @@ onMounted(cargar);
         <Button label="Cerrar" severity="secondary" variant="text" @click="showPreview = false" />
       </template>
     </Dialog>
+
+    <ConfirmDialog />
   </div>
 </template>
