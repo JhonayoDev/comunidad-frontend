@@ -266,16 +266,16 @@ onMounted(cargar);
     <template v-else-if="condominio">
       <Card>
         <template #title>
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span>{{ condominio.nombre }}</span>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-lg font-bold break-words">{{ condominio.nombre }}</span>
               <Tag
                 :value="condominio.statusPago"
                 :severity="statusSeverity[condominio.statusPago] || 'info'"
                 size="small"
               />
             </div>
-            <div class="flex gap-1">
+            <div class="flex gap-1 flex-wrap">
               <Button
                 label="Entrar"
                 size="small"
