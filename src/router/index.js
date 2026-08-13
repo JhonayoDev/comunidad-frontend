@@ -107,13 +107,15 @@ const routes = [
       {
         path: "superadmin/permisos",
         name: "PermisosMatrix",
-        component: () => import("../views/admin/permisos/PermisosMatrixView.vue"),
+        component: () => import("../views/common/EnConstruccionView.vue"),
+        props: { modulo: "Matriz de Permisos" },
         meta: { roles: ["SUPER_ADMIN"] },
       },
       {
         path: "superadmin/permisos/cargos",
         name: "CargosPermisos",
-        component: () => import("../views/admin/permisos/CargosPermisosView.vue"),
+        component: () => import("../views/common/EnConstruccionView.vue"),
+        props: { modulo: "Permisos por Cargo" },
         meta: { roles: ["SUPER_ADMIN"] },
       },
       // ── Compartidas ──────────────────────────────
