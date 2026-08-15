@@ -371,7 +371,7 @@ async function guardarCapacidad() {
     const { data } = await adminService.actualizarCondominio(cid, payload);
     condominio.value = data;
     resultadoUnidades.value =
-      "Capacidad guardada. El administrador podrá crear las unidades dentro de estos límites.";
+      "Capacidad declarada. El administrador creará unidades, estacionamientos y bodegas; el límite duro es el envelope del plan (suma ≤ cupo del plan).";
     await completarTarea("CREAR_UNIDADES");
   } catch (e) {
     console.error("Error al guardar capacidad", e);
@@ -663,10 +663,11 @@ onUnmounted(() => {
         <template #content>
           <div class="flex flex-col gap-4">
             <p class="text-sm text-surface-500 m-0">
-              Declara la cantidad de unidades de cada tipo que tiene el
-              condominio según el contrato. El administrador podrá crear
-              unidades (casas, departamentos, estacionamientos, bodegas, etc.)
-              hasta alcanzar estos límites; no podrá superarlos.
+              Declara la capacidad esperada de cada tipo (informativa).
+              Estacionamientos y bodegas son entidades independientes (no
+              unidades). El límite real es el envelope del plan: la suma
+              declarada de unidades + estacionamientos + bodegas no puede
+              superar el cupo del plan.
             </p>
 
             <div class="flex flex-col gap-2">
