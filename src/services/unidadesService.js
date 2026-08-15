@@ -25,6 +25,18 @@ export const unidadesService = {
     return api.get(`/condominios/${condominioId}/sectores`);
   },
 
+  crearSector(condominioId, data) {
+    return api.post(`/condominios/${condominioId}/sectores`, data);
+  },
+
+  crearSectoresBatch(condominioId, data) {
+    return api.post(`/condominios/${condominioId}/sectores/batch`, data);
+  },
+
+  crearUnidadesBatch(condominioId, data) {
+    return api.post(`/condominios/${condominioId}/unidades/batch`, data);
+  },
+
   getCapacidad(condominioId) {
     return api.get(`/condominios/${condominioId}/capacidad-unidades`);
   },

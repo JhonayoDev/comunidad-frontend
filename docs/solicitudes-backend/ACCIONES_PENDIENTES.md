@@ -59,6 +59,19 @@ V57-V61).
 - **Qué falta:** endpoint `GET /condominios/{cid}/vehiculos/consulta-rapida?patente=X`
   (hoy la búsqueda por patente usa `/busqueda/por-patente`).
 
+### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
+- **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)
+- **Estado backend: ✅ implementado** en `feature/batch-unidades-sectores` — `POST
+  /condominios/{id}/unidades/batch` (atómico, 409 con `ErrorResponse.fields` fila a fila,
+  valida dedupe, `tipo != CONDOMINIO`, `sectorId` por `findByIdAndCondominioId` y envelope
+  acumulado) y `POST /sectores/batch` (`{creados:[...]}`). Tests: UnidadesBatch 14/14,
+  SectoresBatch 6/6, regresión OK.
+- **Estado frontend: ✅ implementado** — `SetupUnidadesView.vue` (5 fases: tipo/cantidad →
+  numeración → sectores → asignación → revisar/guardar) vía `useSetupUnidades.js` +
+  `numeracionUnidades.js`; borrador sessionStorage; sectores batch primero, unidades batch
+  después; errores 409 mapeados a fila; degradación si el cargo no tiene `SECTOR_*` (403).
+  `SETUP_PASOS` reordenado: unidades paso 1, planilla paso 2.
+
 ## Pendientes de verificación (QA)
 
 ### [ ] Q1. Verificación SSE en staging/prod
@@ -111,4 +124,5 @@ V57-V61).
 | Ordenamiento de auditoría — `SOLICITUD_ORDENAMIENTO_AUDITORIA.md` | ✅ Implementado |
 | Planes inactivos + reactivación — `SOLICITUD_PLANES_INACTIVOS_REACTIVAR.md` | ✅ Implementado |
 | Plantillas globales superadmin — `SOLICITUD_PLANTILLAS_GLOBALES_SUPERADMIN.md` | ✅ Implementado |
+| Batch de unidades y sectores — `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (P9) | ✅ Implementado |
 | `SOLICITUD_IMPORTACION_MASIVA_EXCEL_CSV.md` (ver P2) | ⏳ Pendiente |
