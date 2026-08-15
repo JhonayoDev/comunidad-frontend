@@ -87,6 +87,17 @@ V57-V61).
 ### [ ] F3. Reconectar `SolicitudesView.vue`, `PermisosMatrixView.vue`, `CargosPermisosView.vue`
 - Los archivos `.vue` se conservan; reconectarlos cuando existan los endpoints de P7 y P4.
 
+### [ ] F4. Vistas CRUD de Estacionamientos y Bodegas (NUEVO — gap tras V57-V59)
+- Estacionamientos (`/estacionamientos`) y bodegas (`/bodegas`) son entidades independientes
+  (V57-V59) con CRUD + vínculos: `GET/POST`, `GET/PUT/{id}`, `PATCH/{id}/desactivar`,
+  `GET/POST /{id}/vinculos` (`tipo` `TipoVinculoEstacionamiento`, `unidadId`, `fechaInicio/Fin`)
+  y `PATCH /{id}/vinculos/{vinculoId}/desactivar`. Permisos `UNIDAD_VER/CREAR/EDITAR/ELIMINAR`.
+- **Frontend:** NO existen `estacionamientosService.js`/`bodegasService.js` ni vistas admin.
+  Al implementarlas, reemplazar la nota informativa de `UnidadesView.vue` ("entidades
+  independientes, no se registran aquí") por enlaces a las nuevas vistas.
+- La vinculación vehículo→estacionamiento (obsoleta) se eliminó de `VehiculosView.vue` y
+  `vehiculosService.js` (los endpoints no existen en `VehiculoController`).
+
 ## Implementadas (referencia)
 
 | Ítem | Estado |

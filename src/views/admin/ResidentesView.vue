@@ -10,6 +10,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
+import Checkbox from "primevue/checkbox";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
@@ -37,14 +38,19 @@ const vinculos = ref([]);
 const enviando = ref(false);
 
 const formPersona = ref({ nombre: "", email: "" });
-const formEditarPersona = ref({ nombre: "", email: "" });
-const formVinculo = ref({ personaId: null, unidadId: null, tipo: null, fechaInicio: null, autorizado: true });
-const formUsuario = ref({ email: null, password: null });
+const formEditarPersona = ref({ nombre: "", telefono: "" });
+const formVinculo = ref({ personaId: null, unidadId: null, tipo: null, fechaInicio: null, esOcupante: false, recibeNotificaciones: true });
+const formUsuario = ref({ rol: "RESIDENTE" });
 
 const tiposVinculo = [
   { label: "Propietario", value: "PROPIETARIO" },
   { label: "Arrendatario", value: "ARRENDATARIO" },
   { label: "Residente adicional", value: "RESIDENTE_ADICIONAL" },
+];
+
+const rolesUsuario = [
+  { label: "Residente", value: "RESIDENTE" },
+  { label: "Guardia", value: "GUARDIA" },
 ];
 
 async function cargar() {
@@ -98,7 +104,7 @@ async function crearPersona() {
 
 function abrirEditar(p) {
   personaSeleccionada.value = p;
-  formEditarPersona.value = { nombre: p.nombre, email: p.email };
+  formEditarPersona.value = { nombre: p.nombre, telefono: p.telefono || "" };
   showEditarPersona.value = true;
 }
 
@@ -144,13 +150,16 @@ async function verVinculos(p) {
   if (!cid) return;
   personaSeleccionada.value = p;
   try {
-    // Try to get vinculos for each unidad this persona might belong to
     const allVinculos = [];
     for (const u of unidades.value) {
       try {
         const { data } = await personasService.vinculosUnidad(cid, u.id);
         if (data?.length) {
-          allVinculos.push(...data.map(v => ({ ...v, unidadNumero: u.numero })));
+          allVinculos.push(
+            ...data
+              .filter((v) => v.personaId === p.id)
+              .map((v) => ({ ...v, unidadNumero: u.numero })),
+          );
         }
       } catch { /* skip */ }
     }
@@ -162,7 +171,7 @@ async function verVinculos(p) {
 }
 
 function abrirCrearVinculo() {
-  formVinculo.value = { personaId: null, unidadId: null, tipo: null, fechaInicio: new Date().toISOString().split('T')[0], autorizado: true };
+  formVinculo.value = { personaId: null, unidadId: null, tipo: null, fechaInicio: new Date().toISOString().split('T')[0], esOcupante: false, recibeNotificaciones: true };
   showCrearVinculo.value = true;
 }
 
@@ -183,7 +192,7 @@ async function crearVinculo() {
 
 function abrirCrearUsuario(p) {
   personaSeleccionada.value = p;
-  formUsuario.value = { email: "", password: "" };
+  formUsuario.value = { rol: "RESIDENTE" };
   showCrearUsuario.value = true;
 }
 
@@ -277,8 +286,8 @@ onMounted(cargar);
           <InputText v-model="formEditarPersona.nombre" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Email</label>
-          <InputText v-model="formEditarPersona.email" type="email" />
+          <label class="text-sm">Teléfono</label>
+          <InputText v-model="formEditarPersona.telefono" placeholder="Opcional" />
         </div>
       </div>
       <template #footer>
@@ -293,7 +302,7 @@ onMounted(cargar);
         <div v-if="!vinculos.length" class="text-center text-surface-400 py-4">Sin vínculos</div>
         <div v-for="v in vinculos" :key="v.id" class="flex justify-between items-center p-2 surface-50 border-round">
           <div>
-            <span class="text-sm font-medium">{{ v.usuarioNombre || v.nombreExterno }}</span>
+            <span class="text-sm font-medium">{{ v.personaNombre }}</span>
             <Tag :value="v.tipo" size="small" class="ml-2" />
           </div>
           <span class="text-xs text-surface-400">{{ v.unidadNumero }}</span>
@@ -315,6 +324,10 @@ onMounted(cargar);
           <label class="text-sm">Tipo</label>
           <Select v-model="formVinculo.tipo" :options="tiposVinculo" optionLabel="label" optionValue="value" placeholder="Seleccionar" />
         </div>
+        <div class="flex items-center gap-2">
+          <Checkbox v-model="formVinculo.esOcupante" binary inputId="esOcupante" />
+          <label for="esOcupante" class="text-sm">Ocupante de la unidad</label>
+        </div>
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" variant="text" @click="showCrearVinculo = false" />
@@ -323,15 +336,11 @@ onMounted(cargar);
     </Dialog>
 
     <Dialog v-model:visible="showCrearUsuario" header="Crear usuario" modal :style="{ width: '95%', maxWidth: '400px' }">
-      <p class="text-sm text-surface-500 m-0 mb-3">Crear usuario para {{ personaSeleccionada?.nombre }}</p>
+      <p class="text-sm text-surface-500 m-0 mb-3">Crear cuenta para {{ personaSeleccionada?.nombre }}. Se enviará un email con el link de configuración de contraseña.</p>
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Email (opcional)</label>
-          <InputText v-model="formUsuario.email" type="email" placeholder="Usar email de la persona" />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Password (opcional)</label>
-          <InputText v-model="formUsuario.password" type="password" placeholder="Generar automático" />
+          <label class="text-sm">Rol</label>
+          <Select v-model="formUsuario.rol" :options="rolesUsuario" optionLabel="label" optionValue="value" class="w-full" />
         </div>
       </div>
       <template #footer>
