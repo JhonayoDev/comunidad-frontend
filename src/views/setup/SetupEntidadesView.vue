@@ -113,7 +113,10 @@ function irAPaso(n) {
 
 async function guardar() {
   const ok = await u.enviar();
-  if (ok) emit("actualizado");
+  if (ok) {
+    salirEdicion();
+    emit("actualizado");
+  }
 }
 
 onMounted(() => u.cargar());

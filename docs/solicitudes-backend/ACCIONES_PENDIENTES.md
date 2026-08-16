@@ -90,6 +90,19 @@ V57-V61).
   asegura el grupo `EV-` e infiere `grupoUid` por prefijo más largo (`grupoPorNombre`). Tests
   167/167 OK, build OK.
 
+### [ ] P11. Reutilizar nombres de estacionamientos/bodegas desactivadas (dedupe ignora `activo=false`)
+- **Solicitud:** `SOLICITUD_REUTILIZAR_NOMBRES_TRAS_DESACTIVAR.md` (2026-08-16)
+- **Estado backend: ✅ implementado** (rama `feature/batch-estacionamientos-bodegas`) — migración
+  `V63__reutilizar_nombres_tras_desactivar.sql` (reemplaza los constraints UNIQUE
+  `(condominio_id, nombre)` por índices únicos parciales `WHERE activo` en `estacionamientos` y
+  `bodegas`) + dedupe cambiado a `existsByCondominioIdAndNombreAndActivoTrue` en las 6 llamadas
+  (`crear`, `crearBatch`, `actualizar` de ambos servicios). Tests actualizados (recrea nombres
+  desactivados → 201).
+- **Estado frontend: ✅ implementado** — `itemsValidos` permite "eliminar todo" en reedición;
+  `guardar()` sale del modo edición al guardar bien; `enviar()` vuelve a modo creación (fase 1) si
+  tras guardar no quedan entidades activas ni filas nuevas (reset de `estado` + `resultado=null`).
+  Tests 170/170 OK, build OK.
+
 ### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
 - **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)
 - **Estado backend: ✅ implementado** en `feature/batch-unidades-sectores` — `POST

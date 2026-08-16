@@ -552,4 +552,80 @@ describe("useSetupEntidades", () => {
     u.estado.items[3].nombre = "E-4";
     expect(u.envelopeExcedido).toBe(true);
   });
+
+  it("itemsValidos permite 'eliminar todo' en reedición", () => {
+    const u = useSetupEntidades({ entidad: "bodega" });
+    u.estado.grupos[0].modo = "correlativo";
+    u.estado.grupos[0].cantidad = 2;
+    u.generarItems();
+    u.estado.items.forEach((x) => {
+      x.entidadId = `b-${x.nombre}`;
+      x.esNuevo = false;
+      x.original = { nombre: x.nombre, piso: x.piso, sectorRef: x.sectorRef };
+    });
+    expect(u.itemsValidos).toBe(true);
+    u.eliminarFila(u.estado.items[0]);
+    u.eliminarFila(u.estado.items[1]);
+    expect(u.itemsValidos).toBe(true);
+  });
+
+  it("enviar en reedición eliminando todas vuelve al wizard de creación (fase 1)", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    bodegasService.getBodegas.mockResolvedValue({
+      data: [
+        { id: "b1", nombre: "B-1", piso: null, sectorId: null, activo: true },
+        { id: "b2", nombre: "B-2", piso: null, sectorId: null, activo: true },
+      ],
+    });
+    bodegasService.desactivarBodega.mockResolvedValue({ data: {} });
+
+    const u = useSetupEntidades({ entidad: "bodega" });
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+
+    u.eliminarFila(u.estado.items[0]);
+    u.eliminarFila(u.estado.items[1]);
+    expect(u.itemsValidos).toBe(true);
+
+    const ok = await u.enviar();
+    expect(ok).toBe(true);
+    expect(bodegasService.desactivarBodega).toHaveBeenCalledTimes(2);
+    expect(bodegasService.desactivarBodega).toHaveBeenCalledWith("cid-1", "b1");
+    expect(bodegasService.desactivarBodega).toHaveBeenCalledWith("cid-1", "b2");
+    expect(u.modoReedicion).toBe(false);
+    expect(u.estado.paso).toBe(1);
+    expect(u.estado.items).toHaveLength(0);
+    expect(u.resultado).toBeNull();
+  });
+
+  it("enviar en reedición eliminando todas pero agregando nuevas se mantiene en reedición", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [{ id: "e1", nombre: "E-1", piso: null, sectorId: null, activo: true }],
+    });
+    estacionamientosService.crearEstacionamientosBatch.mockResolvedValue({
+      data: { creados: [{ id: "e2", nombre: "E-2" }] },
+    });
+    estacionamientosService.desactivarEstacionamiento.mockResolvedValue({ data: {} });
+
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+
+    u.eliminarFila(u.estado.items[0]);
+    u.agregarFila();
+    u.estado.items[1].nombre = "E-2";
+
+    const ok = await u.enviar();
+    expect(ok).toBe(true);
+    expect(estacionamientosService.desactivarEstacionamiento).toHaveBeenCalledWith("cid-1", "e1");
+    expect(estacionamientosService.crearEstacionamientosBatch).toHaveBeenCalledWith("cid-1", {
+      estacionamientos: [{ nombre: "E-2", piso: null, sectorId: null }],
+    });
+    expect(u.modoReedicion).toBe(true);
+    expect(u.estado.items).toHaveLength(1);
+    expect(u.resultado).toEqual({ creadas: 1, actualizadas: 0, eliminadas: 1 });
+  });
 });

@@ -259,7 +259,8 @@ export function useSetupEntidades({ entidad } = {}) {
 
   const itemsValidos = computed(() => {
     const activos = estado.items.filter((x) => !x.marcadoEliminar);
-    if (!activos.length) return false;
+    // En reedición, "eliminar todo" es válido: se guardan las desactivaciones.
+    if (!activos.length) return estado.items.some((x) => x.marcadoEliminar);
     // El sufijo (parte editable del nombre) no puede quedar vacío: impide
     // guardar un ítem con solo el prefijo (p.ej. "E-" o "B-").
     if (activos.some((x) => !sufijoDe(x).trim())) return false;
@@ -462,6 +463,21 @@ export function useSetupEntidades({ entidad } = {}) {
         const payload = activos.map((x) => ({ nombre: x.nombre, piso: x.piso, sectorId: resolverSector(x) }));
         const { data } = await cfg.batch(cid, { [cfg.clave]: payload });
         creadas = (data.creados || []).length;
+      }
+
+      // Si en reedición se eliminaron todas las entidades y no quedan filas
+      // nuevas, volver al wizard de creación (fase 1) para poder regenerarlas
+      // con la misma numeración (el backend P11 permite reutilizar nombres).
+      if (modoReedicion.value && estado.items.length === 0) {
+        modoReedicion.value = false;
+        estado.grupos = [nuevoGrupo()];
+        estado.sectorOrigen = "sin-sector";
+        estado.sectoresNuevos = [{ uid: uid("sector"), nombre: "", descripcion: "" }];
+        estado.items = [];
+        estado.paso = 1;
+        resultado.value = null;
+        descartarBorrador();
+        return true;
       }
 
       resultado.value = { creadas, actualizadas, eliminadas };
