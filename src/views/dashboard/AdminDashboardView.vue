@@ -25,7 +25,7 @@ const { pasos, configuraciónCompleta, sincronizarTotales } =
   useSetupConfiguracion();
 
 const pasosPendientes = computed(() =>
-  pasos.value.filter((p) => !p.completado),
+  pasos.value.filter((p) => !p.completado && !p.oculto),
 );
 
 async function cargar() {

@@ -59,6 +59,24 @@ V57-V61).
 - **Qué falta:** endpoint `GET /condominios/{cid}/vehiculos/consulta-rapida?patente=X`
   (hoy la búsqueda por patente usa `/busqueda/por-patente`).
 
+### [ ] P10. Batch de estacionamientos y bodegas (para wizard paso "Estacionamientos y bodegas")
+- **Solicitud:** `SOLICITUD_BATCH_ESTACIONAMIENTOS_BODEGAS.md` (2026-08-15)
+- **Estado backend: ✅ implementado** en `feature/batch-estacionamientos-bodegas` — `POST
+  /condominios/{id}/estacionamientos/batch` y `POST /condominios/{id}/bodegas/batch`
+  (permiso `UNIDAD_CREAR`, 201 con `{creados:[{id,nombre,piso,sectorId,sectorNombre,activo}]}`,
+  409 atómico con `ErrorResponse.fields` fila a fila, dedupe nombre lote+BD, `sectorId` por
+  `findByIdAndCondominioId` y envelope acumulado). **Fix G2** aplicado: crear/actualizar
+  unitarios de estacionamiento/bodega resuelven el sector con `findByIdAndCondominioId`
+  (sector de otro condominio → 409). Tests: 12+12 nuevos, regresión verde (Estacionamiento 14,
+  Bodega 14, UnidadesBatch 14, SectoresBatch 6, CapacidadUnidades 9).
+- **Estado frontend: ✅ implementado** — paso `estacionamientos-bodegas` en `SETUP_PASOS`
+  (entre unidades y planilla) con **pestañas separadas** (`SetupEstacionamientosBodegasView.vue`,
+  solo si aplican: capacidad declarada > 0 o ya hay creados); `useSetupEntidades.js` +
+  `SetupEntidadesView.vue` (generalización de las 5 fases de unidades sin tipo, prefijo editable
+  `E-`/`EV-`, piso como columna con subterráneos negativos, sectores nuevos vía `POST /sectores/batch`);
+  `estacionamientosService.js`/`bodegasService.js` con `crearBatch`; `useSetupConfiguracion`
+  carga `getCapacidad` y oculta el paso si no aplica. Tests 148/148 OK, build OK.
+
 ### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
 - **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)
 - **Estado backend: ✅ implementado** en `feature/batch-unidades-sectores` — `POST

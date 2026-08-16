@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useSetupConfiguracion } from "@/composables/useSetupConfiguracion";
@@ -16,6 +16,8 @@ const auth = useAuthStore();
 
 const { cargando, error, pasos, primerPasoPendiente, configuraciónCompleta, progreso, cargar } =
   useSetupConfiguracion();
+
+const pasosVisibles = computed(() => pasos.value.filter((p) => !p.oculto));
 
 onMounted(cargar);
 
@@ -80,7 +82,7 @@ function irDashboard() {
     <template v-else>
       <div class="flex flex-col sm:flex-row gap-2">
         <button
-          v-for="p in pasos"
+          v-for="p in pasosVisibles"
           :key="p.key"
           type="button"
           class="flex-1 flex items-center gap-2 p-3 border-round text-left transition-colors"

@@ -92,3 +92,62 @@ export function generarNumeros(modo, opciones = {}) {
       return [];
   }
 }
+
+/**
+ * Genera los ítems `{ nombre, piso }` para estacionamientos/bodegas (entidades
+ * sin tipo). El nombre se compone de un PREFIJO editable (p. ej. "E-" o "EV-")
+ * más un número; el piso NUNCA va en el nombre porque es una columna de la
+ * tabla (Integer, soporta negativos/subterráneos).
+ *
+ * Modos:
+ *  - correlativo: `{prefijo}{desde+i}` (E-1, E-2, ...). Sin piso.
+ *  - por-piso:    nombres correlativos GLOBALES (`{prefijo}{contador}`) con la
+ *                 columna piso auto-asignada por piso. `opciones.pisos` es una
+ *                 lista "1,2,-1" (acepta subterráneos negativos).
+ *  - personalizado: lista explícita. Sin piso.
+ */
+export function generarNombres(prefijo, modo, opciones = {}) {
+  const p = String(prefijo || "");
+  switch (modo) {
+    case "correlativo": {
+      const base = parseInt(opciones.desde, 10);
+      const cantidad = Number(opciones.cantidad);
+      if (!Number.isFinite(base) || !Number.isFinite(cantidad) || cantidad <= 0) {
+        return [];
+      }
+      return Array.from({ length: cantidad }, (_, i) => ({
+        nombre: `${p}${base + i}`,
+        piso: null,
+      }));
+    }
+    case "por-piso": {
+      const pisos = parsearListaPersonalizada(opciones.pisos).map(Number);
+      const porPiso = Number(opciones.porPiso);
+      if (
+        !pisos.length ||
+        pisos.some((x) => !Number.isFinite(x)) ||
+        !Number.isFinite(porPiso) ||
+        porPiso <= 0
+      ) {
+        return [];
+      }
+      const items = [];
+      let contador = 1;
+      for (const piso of pisos) {
+        for (let n = 0; n < porPiso; n++) {
+          items.push({ nombre: `${p}${contador}`, piso });
+          contador += 1;
+        }
+      }
+      return items;
+    }
+    case "personalizado": {
+      return parsearListaPersonalizada(opciones.lista).map((nombre) => ({
+        nombre,
+        piso: null,
+      }));
+    }
+    default:
+      return [];
+  }
+}

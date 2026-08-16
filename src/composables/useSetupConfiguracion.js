@@ -1,6 +1,7 @@
 import { ref, computed } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
+import { unidadesService } from "@/services/unidadesService";
 
 export const SETUP_PASOS = [
   {
@@ -9,6 +10,13 @@ export const SETUP_PASOS = [
     descripcion: "Crea las unidades del condominio",
     icon: "pi pi-home",
     routeName: "SetupUnidades",
+  },
+  {
+    key: "estacionamientos-bodegas",
+    label: "Estacionamientos y bodegas",
+    descripcion: "Crea estacionamientos y bodegas (si aplican)",
+    icon: "pi pi-car",
+    routeName: "SetupEstacionamientosBodegas",
   },
   {
     key: "planilla",
@@ -52,6 +60,7 @@ export function useSetupConfiguracion() {
   const cargando = ref(true);
   const error = ref(null);
   const totales = ref({ unidades: 0, residentesActivos: 0, vehiculos: 0 });
+  const capacidad = ref(null);
 
   async function cargar() {
     const cid = auth.condominioActualId;
@@ -67,9 +76,35 @@ export function useSetupConfiguracion() {
     } catch (e) {
       console.error("Error al cargar el estado de configuración", e);
       error.value = "No se pudo cargar el estado de configuración";
+    }
+    try {
+      const capRes = await unidadesService.getCapacidad(cid);
+      capacidad.value = capRes.data;
+    } catch (e) {
+      if (e?.response?.status !== 404) {
+        console.error("Error al cargar la capacidad del condominio", e);
+      }
+      capacidad.value = null;
     } finally {
       cargando.value = false;
     }
+  }
+
+  // "Aplica" si hay capacidad declarada o ya existen creados.
+  function aplicaEntidad(tipo) {
+    const cap = capacidad.value;
+    if (!cap) return false;
+    const c = tipo === "estacionamiento" ? cap.capacidadEstacionamientos : cap.capacidadBodegas;
+    const t = tipo === "estacionamiento" ? cap.totalEstacionamientos : cap.totalBodegas;
+    return (c ?? 0) > 0 || (t ?? 0) > 0;
+  }
+
+  function pasoOculto(key) {
+    if (key !== "estacionamientos-bodegas") return false;
+    // Sin datos de capacidad (aún cargando o endpoint 404) → oculto para no
+    // bloquear el wizard; la vista de pestañas carga su propia capacidad.
+    if (!capacidad.value) return true;
+    return !aplicaEntidad("estacionamiento") && !aplicaEntidad("bodega");
   }
 
   function pasoCompletado(key) {
@@ -79,27 +114,42 @@ export function useSetupConfiguracion() {
     if (key === "planilla") {
       return (totales.value.residentesActivos ?? 0) > 0;
     }
+    if (key === "estacionamientos-bodegas") {
+      if (!capacidad.value) return true; // oculto → no bloquea
+      const estAplica = aplicaEntidad("estacionamiento");
+      const bodAplica = aplicaEntidad("bodega");
+      if (!estAplica && !bodAplica) return true;
+      const estOk = !estAplica || (capacidad.value.totalEstacionamientos ?? 0) > 0;
+      const bodOk = !bodAplica || (capacidad.value.totalBodegas ?? 0) > 0;
+      return estOk && bodOk;
+    }
     // Pasos 2-5 (accesos, áreas comunes, cargos, personal) aún no tienen
     // lógica real — se marcan como pendientes hasta implementarse.
     return false;
   }
 
   const pasos = computed(() =>
-    SETUP_PASOS.map((p) => ({ ...p, completado: pasoCompletado(p.key) }))
+    SETUP_PASOS.map((p) => ({
+      ...p,
+      completado: pasoCompletado(p.key),
+      oculto: pasoOculto(p.key),
+    }))
   );
 
   const primerPasoPendiente = computed(
-    () => pasos.value.find((p) => !p.completado) || null
+    () => pasos.value.find((p) => !p.completado && !p.oculto) || null
   );
 
-  const configuraciónCompleta = computed(
-    () => pasos.value.length > 0 && pasos.value.every((p) => p.completado)
-  );
+  const configuraciónCompleta = computed(() => {
+    const visibles = pasos.value.filter((p) => !p.oculto);
+    return visibles.length > 0 && visibles.every((p) => p.completado);
+  });
 
   const progreso = computed(() => {
-    if (!pasos.value.length) return 0;
-    const completados = pasos.value.filter((p) => p.completado).length;
-    return Math.round((completados / pasos.value.length) * 100);
+    const visibles = pasos.value.filter((p) => !p.oculto);
+    if (!visibles.length) return 0;
+    const completados = visibles.filter((p) => p.completado).length;
+    return Math.round((completados / visibles.length) * 100);
   });
 
   function sincronizarTotales(totalesData) {
@@ -114,6 +164,7 @@ export function useSetupConfiguracion() {
     cargando,
     error,
     totales,
+    capacidad,
     pasos,
     primerPasoPendiente,
     configuraciónCompleta,
