@@ -85,13 +85,6 @@ function salirEdicion() {
   editando.value = false;
 }
 
-watch(
-  () => u.modoReedicion,
-  (v) => {
-    if (v) editando.value = true;
-  },
-);
-
 const mensajeResultado = computed(() => {
   const r = u.resultado;
   if (!r) return "";
