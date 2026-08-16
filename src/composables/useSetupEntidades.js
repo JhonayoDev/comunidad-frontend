@@ -6,14 +6,17 @@ import { bodegasService } from "@/services/bodegasService";
 import { generarNombres, parsearListaPersonalizada } from "@/utils/numeracionUnidades";
 
 // Configuración por entidad: estacionamientos y bodegas comparten el mismo
-// flujo de 5 fases (sin tipo), solo cambian el servicio batch, la clave del
-// payload y el borrador.
+// flujo de 5 fases (sin tipo). Los estacionamientos soportan MÚLTIPLES GRUPOS
+// (propietarios E- + visitas EV-) en una sola ventana; las bodegas usan un
+// único bloque (prefijo simple).
 const CONFIG = {
   estacionamiento: {
     clave: "estacionamientos",
     borrador: (cid) => `comunidad:setup-estacionamientos:${cid}`,
     batch: (cid, payload) => estacionamientosService.crearEstacionamientosBatch(cid, payload),
     prefijoDefault: "E-",
+    grupoNombreDefault: "Propietarios",
+    multigrupo: true,
     label: "estacionamiento",
     labelPlural: "estacionamientos",
   },
@@ -22,6 +25,8 @@ const CONFIG = {
     borrador: (cid) => `comunidad:setup-bodegas:${cid}`,
     batch: (cid, payload) => bodegasService.crearBodegasBatch(cid, payload),
     prefijoDefault: "B-",
+    grupoNombreDefault: "",
+    multigrupo: false,
     label: "bodega",
     labelPlural: "bodegas",
   },
@@ -55,42 +60,98 @@ export function useSetupEntidades({ entidad } = {}) {
   const sectoresHabilitados = ref(true);
   const capacidad = ref(null);
 
+  // Crea un grupo nuevo. En estacionamientos, el segundo grupo se sugiere como
+  // "Visitas · EV-" (el caso común); el resto es editable.
+  function nuevoGrupo(gruposActuales = []) {
+    let prefijo = cfg.prefijoDefault;
+    let nombre = cfg.grupoNombreDefault;
+    if (cfg.multigrupo && gruposActuales.length > 0 && !gruposActuales.some((g) => g.prefijo === "EV-")) {
+      prefijo = "EV-";
+      nombre = "Visitas";
+    }
+    return {
+      uid: uid("grupo"),
+      nombre,
+      prefijo,
+      cantidad: 1,
+      modo: "correlativo",
+      desde: "1",
+      pisos: "1",
+      porPiso: 1,
+      personalizado: "",
+    };
+  }
+
   const estado = reactive({
     paso: 1,
-    prefijo: cfg.prefijoDefault,
-    cantidad: 1,
-    modo: "correlativo",
-    desde: "1",
-    pisos: "1",
-    porPiso: 1,
-    personalizado: "",
+    grupos: [nuevoGrupo()],
     sectorOrigen: "sin-sector", // sin-sector | nuevo | existente
     sectoresNuevos: [{ uid: uid("sector"), nombre: "", descripcion: "" }],
-    sectorExistenteId: null,
-    items: [], // [{ id, nombre, piso, sectorRef, error }]
+    items: [], // [{ id, grupoUid, nombre, piso, sectorRef, error }]
   });
 
   // ─── Numeración (fase 2) ───
-  const nombresPreview = computed(() => {
+  function nombresDe(g) {
     const opciones =
-      estado.modo === "correlativo"
-        ? { desde: estado.desde, cantidad: estado.cantidad }
-        : estado.modo === "por-piso"
-          ? { pisos: estado.pisos, porPiso: estado.porPiso }
-          : { lista: estado.personalizado };
-    return generarNombres(estado.prefijo, estado.modo, opciones);
+      g.modo === "correlativo"
+        ? { desde: g.desde, cantidad: g.cantidad }
+        : g.modo === "por-piso"
+          ? { pisos: g.pisos, porPiso: g.porPiso }
+          : { lista: g.personalizado };
+    return generarNombres(g.prefijo, g.modo, opciones);
+  }
+
+  const nombresPreview = computed(() => estado.grupos.flatMap(nombresDe));
+
+  // Nombres repetidos entre grupos (mismo prefijo → colisión). Red de
+  // seguridad local; el backend igual responde 409 por fila.
+  const nombresDuplicados = computed(() => {
+    const vistos = new Set();
+    const dups = new Set();
+    for (const g of estado.grupos) {
+      for (const n of nombresDe(g)) {
+        if (vistos.has(n.nombre)) dups.add(n.nombre);
+        else vistos.add(n.nombre);
+      }
+    }
+    return [...dups];
   });
 
   function generarItems() {
     // Preserva la asignación previa por nombre al regenerar.
     const previo = new Map(estado.items.map((x) => [x.nombre, x.sectorRef]));
-    estado.items = nombresPreview.value.map((n) => ({
-      id: uid("item"),
-      nombre: n.nombre,
-      piso: n.piso,
-      sectorRef: previo.get(n.nombre) ?? null,
-      error: null,
-    }));
+    const items = [];
+    for (const g of estado.grupos) {
+      for (const n of nombresDe(g)) {
+        items.push({
+          id: uid("item"),
+          grupoUid: g.uid,
+          nombre: n.nombre,
+          piso: n.piso,
+          sectorRef: previo.get(n.nombre) ?? null,
+          error: null,
+        });
+      }
+    }
+    estado.items = items;
+  }
+
+  function agregarGrupo() {
+    estado.grupos.push(nuevoGrupo(estado.grupos));
+  }
+
+  function eliminarGrupo(grupoUid) {
+    if (estado.grupos.length <= 1) return;
+    const idx = estado.grupos.findIndex((g) => g.uid === grupoUid);
+    if (idx === -1) return;
+    estado.grupos.splice(idx, 1);
+    estado.items = estado.items.filter((x) => x.grupoUid !== grupoUid);
+  }
+
+  function grupoLabel(grupoUid) {
+    const g = estado.grupos.find((x) => x.uid === grupoUid);
+    if (!g) return "";
+    return (g.nombre || "").trim() || g.prefijo || "Grupo";
   }
 
   // ─── Sectores (fases 3-4) ───
@@ -134,9 +195,9 @@ export function useSetupEntidades({ entidad } = {}) {
   function validoPaso(paso) {
     switch (paso) {
       case 1:
-        return estado.cantidad >= 1;
+        return estado.grupos.length > 0 && estado.grupos.every((g) => g.cantidad >= 1);
       case 2:
-        return nombresPreview.value.length > 0;
+        return estado.grupos.length > 0 && estado.grupos.every((g) => nombresDe(g).length > 0);
       case 3: {
         if (!sectoresHabilitados.value) return true;
         if (estado.sectorOrigen === "sin-sector") return true;
@@ -147,7 +208,7 @@ export function useSetupEntidades({ entidad } = {}) {
           if (!nombres.length) return false;
           return new Set(nombres).size === nombres.length;
         }
-        return !!estado.sectorExistenteId;
+        return true; // la asignación por ítem ocurre en la fase 4
       }
       case 4:
         return true; // "Sin sector" es una asignación válida
@@ -170,9 +231,7 @@ export function useSetupEntidades({ entidad } = {}) {
 
   // ─── Resumen ───
   const totalGeneradas = computed(() =>
-    estado.modo === "personalizado"
-      ? parsearListaPersonalizada(estado.personalizado).length
-      : nombresPreview.value.length,
+    estado.grupos.reduce((acc, g) => acc + nombresDe(g).length, 0),
   );
 
   const envelopeExcedido = computed(() => {
@@ -201,7 +260,7 @@ export function useSetupEntidades({ entidad } = {}) {
       const raw = sessionStorage.getItem(cfg.borrador(cid));
       if (!raw) return false;
       const data = JSON.parse(raw);
-      if (data.estado && Array.isArray(data.estado.items)) {
+      if (data.estado && Array.isArray(data.estado.grupos) && Array.isArray(data.estado.items)) {
         Object.assign(estado, data.estado);
         if (Array.isArray(data.sectoresExistentes)) {
           sectoresExistentes.value = data.sectoresExistentes;
@@ -209,6 +268,8 @@ export function useSetupEntidades({ entidad } = {}) {
         borradorRestaurado.value = true;
         return true;
       }
+      // Borrador incompatible (forma anterior sin grupos) → descartar.
+      sessionStorage.removeItem(cfg.borrador(cid));
     } catch (e) {
       console.error(`Error al restaurar borrador de ${cfg.labelPlural}`, e);
     }
@@ -243,7 +304,7 @@ export function useSetupEntidades({ entidad } = {}) {
         (data.creados || []).forEach((s) => idPorRef.set(s.nombre, s.id));
       }
 
-      // 2) Batch de la entidad
+      // 2) Batch de la entidad (todos los grupos fusionados en una sola petición)
       const payload = estado.items.map((x) => {
         let sectorId = null;
         if (estado.sectorOrigen === "nuevo" && x.sectorRef) {
@@ -313,7 +374,6 @@ export function useSetupEntidades({ entidad } = {}) {
       // agrupación que haya quedado en el borrador.
       if (!sectoresHabilitados.value) {
         estado.sectorOrigen = "sin-sector";
-        estado.sectorExistenteId = null;
         estado.items.forEach((x) => (x.sectorRef = null));
       }
     } catch (e) {
@@ -335,14 +395,20 @@ export function useSetupEntidades({ entidad } = {}) {
     sectoresHabilitados,
     sectoresOpciones,
     capacidad,
+    multigrupo: cfg.multigrupo,
     estado,
     nombresPreview,
+    nombresDe,
+    nombresDuplicados,
     totalGeneradas,
     envelopeExcedido,
     validoPaso,
     siguiente,
     atras,
     generarItems,
+    agregarGrupo,
+    eliminarGrupo,
+    grupoLabel,
     agregarSectorNuevo,
     eliminarSectorNuevo,
     asignarSector,

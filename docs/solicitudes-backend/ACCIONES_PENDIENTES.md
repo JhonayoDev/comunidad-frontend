@@ -72,10 +72,12 @@ V57-V61).
 - **Estado frontend: ✅ implementado** — paso `estacionamientos-bodegas` en `SETUP_PASOS`
   (entre unidades y planilla) con **pestañas separadas** (`SetupEstacionamientosBodegasView.vue`,
   solo si aplican: capacidad declarada > 0 o ya hay creados); `useSetupEntidades.js` +
-  `SetupEntidadesView.vue` (generalización de las 5 fases de unidades sin tipo, prefijo editable
-  `E-`/`EV-`, piso como columna con subterráneos negativos, sectores nuevos vía `POST /sectores/batch`);
+  `SetupEntidadesView.vue` (generalización de las 5 fases de unidades sin tipo; **estacionamientos
+  con MÚLTIPLES GRUPOS en una sola ventana** — propietarios `E-` + visitas `EV-` fusionados en un
+  único batch, columna "Grupo" en revisión; bodegas un solo bloque; piso como columna con
+  subterráneos negativos; sectores nuevos vía `POST /sectores/batch`);
   `estacionamientosService.js`/`bodegasService.js` con `crearBatch`; `useSetupConfiguracion`
-  carga `getCapacidad` y oculta el paso si no aplica. Tests 148/148 OK, build OK.
+  carga `getCapacidad` y oculta el paso si no aplica. Tests 153/153 OK, build OK.
 
 ### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
 - **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useSetupEntidades, PASOS_ENTIDADES } from "@/composables/useSetupEntidades";
 import { MODOS_NUMERACION } from "@/utils/numeracionUnidades";
 
@@ -26,6 +26,32 @@ const etiquetas = computed(() => ({
 }));
 
 const asignarTodosValor = ref(null);
+const SIN_SECTOR = "__sin_sector__";
+
+const opcionesAsignarTodos = computed(() => {
+  if (!u.sectoresOpciones.length) return [];
+  return [{ ref: SIN_SECTOR, label: "Sin sector" }, ...u.sectoresOpciones];
+});
+
+const opcionesSectorFila = computed(() => [
+  { ref: SIN_SECTOR, label: "Sin sector" },
+  ...u.sectoresOpciones,
+]);
+
+watch(
+  () => u.estado.paso,
+  () => {
+    asignarTodosValor.value = null;
+  },
+);
+
+function aplicarAsignarTodos() {
+  u.asignarTodos(asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value);
+}
+
+function onSectorFilaChange(item) {
+  if (item.sectorRef === SIN_SECTOR) item.sectorRef = null;
+}
 
 function sectorLabel(ref) {
   const o = u.sectoresOpciones.find((s) => s.ref === ref);
@@ -54,9 +80,15 @@ onMounted(() => u.cargar());
     </template>
     <template #content>
       <p class="text-sm text-surface-400 m-0">
-        Define los {{ etiquetas.plural }} del condominio. El prefijo del nombre
-        es editable (p. ej. "E-" o "EV-" para estacionamientos de visitas) y el
-        piso se guarda como columna, no en el nombre.
+        <template v-if="u.multigrupo">
+          Registra todos los estacionamientos en una sola ventana: propietarios
+          (prefijo E-) y visitas (prefijo EV-). El piso se guarda como columna,
+          no en el nombre.
+        </template>
+        <template v-else>
+          Define las {{ etiquetas.plural }} del condominio. El prefijo del
+          nombre es editable y el piso se guarda como columna, no en el nombre.
+        </template>
       </p>
 
       <Skeleton v-if="u.cargando" width="100%" height="200px" class="mt-3" />
@@ -90,23 +122,70 @@ onMounted(() => u.cargar());
 
         <!-- Fase 1: Cantidad y prefijo -->
         <div v-if="u.estado.paso === 1" class="mt-4 flex flex-col gap-3">
-          <div class="flex flex-col gap-1">
-            <label class="text-sm">Prefijo del nombre</label>
-            <InputText v-model="u.estado.prefijo" placeholder="E-" />
-            <small class="text-xs text-surface-400">
-              Ej: "E-" genera E-1, E-2, ... Re-ejecuta con "EV-" para crear los
-              de visitas.
-            </small>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm">Cantidad</label>
-            <InputNumber
-              v-model="u.estado.cantidad"
-              :min="1"
-              :max="1000"
-              class="w-full"
-            />
-          </div>
+          <!-- Multi-grupo (estacionamientos: propietarios + visitas) -->
+          <template v-if="u.multigrupo">
+            <div
+              v-for="(g, i) in u.estado.grupos"
+              :key="g.uid"
+              class="bg-surface border border-border p-3 border-round flex flex-col gap-3"
+            >
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-medium">Grupo {{ i + 1 }}</span>
+                <Button
+                  v-if="u.estado.grupos.length > 1"
+                  icon="pi pi-times"
+                  severity="danger"
+                  variant="text"
+                  size="small"
+                  @click="u.eliminarGrupo(g.uid)"
+                />
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex flex-col gap-1 flex-1">
+                  <label class="text-sm">Nombre del grupo</label>
+                  <InputText v-model="g.nombre" placeholder="Propietarios" />
+                </div>
+                <div class="flex flex-col gap-1 flex-1">
+                  <label class="text-sm">Prefijo</label>
+                  <InputText v-model="g.prefijo" placeholder="E-" />
+                </div>
+                <div class="flex flex-col gap-1 flex-1">
+                  <label class="text-sm">Cantidad</label>
+                  <InputNumber v-model="g.cantidad" :min="1" :max="1000" class="w-full" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <Button
+                label="Agregar grupo"
+                icon="pi pi-plus"
+                size="small"
+                variant="text"
+                @click="u.agregarGrupo"
+              />
+            </div>
+          </template>
+
+          <!-- Un solo bloque (bodegas) -->
+          <template v-else>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">Prefijo del nombre</label>
+              <InputText v-model="u.estado.grupos[0].prefijo" placeholder="B-" />
+              <small class="text-xs text-surface-400">
+                Ej: "B-" genera B-1, B-2, ...
+              </small>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm">Cantidad</label>
+              <InputNumber
+                v-model="u.estado.grupos[0].cantidad"
+                :min="1"
+                :max="1000"
+                class="w-full"
+              />
+            </div>
+          </template>
+
           <small class="text-xs text-surface-400">
             La cantidad define el total para numeración correlativa. En "Por
             piso" el total se calcula de pisos × unidades por piso.
@@ -115,59 +194,144 @@ onMounted(() => u.cargar());
 
         <!-- Fase 2: Numeración -->
         <div v-else-if="u.estado.paso === 2" class="mt-4 flex flex-col gap-3">
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="m in MODOS_NUMERACION"
-              :key="m.value"
-              type="button"
-              class="flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors"
-              :class="
-                u.estado.modo === m.value
-                  ? 'bg-primary text-white'
-                  : 'bg-surface border border-border hover:bg-emphasis'
-              "
-              @click="u.estado.modo = m.value"
+          <!-- Multi-grupo: numeración por grupo -->
+          <template v-if="u.multigrupo">
+            <div
+              v-for="g in u.estado.grupos"
+              :key="g.uid"
+              class="bg-surface border border-border p-3 border-round flex flex-col gap-3"
             >
-              <span class="text-sm font-medium">{{ m.label }}</span>
-              <span class="text-xs opacity-80">{{ m.descripcion }}</span>
-            </button>
-          </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-medium">{{ u.grupoLabel(g.uid) }}</span>
+                <Tag
+                  :value="`${u.nombresDe(g).length} generados`"
+                  :severity="u.nombresDe(g).length ? 'info' : 'secondary'"
+                  size="small"
+                />
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="m in MODOS_NUMERACION"
+                  :key="m.value"
+                  type="button"
+                  class="flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors"
+                  :class="
+                    g.modo === m.value
+                      ? 'bg-primary text-white'
+                      : 'bg-surface border border-border hover:bg-emphasis'
+                  "
+                  @click="g.modo = m.value"
+                >
+                  <span class="text-sm font-medium">{{ m.label }}</span>
+                  <span class="text-xs opacity-80">{{ m.descripcion }}</span>
+                </button>
+              </div>
 
-          <div v-if="u.estado.modo === 'correlativo'" class="flex flex-col sm:flex-row gap-3">
-            <div class="flex flex-col gap-1 flex-1">
-              <label class="text-sm">Desde</label>
-              <InputText v-model="u.estado.desde" placeholder="1" />
-            </div>
-            <div class="flex flex-col gap-1 flex-1">
-              <label class="text-sm">Cantidad</label>
-              <InputNumber
-                v-model="u.estado.cantidad"
-                :min="1"
-                :max="1000"
-                class="w-full"
-              />
-            </div>
-          </div>
+              <div v-if="g.modo === 'correlativo'" class="flex flex-col sm:flex-row gap-3">
+                <div class="flex flex-col gap-1 flex-1">
+                  <label class="text-sm">Desde</label>
+                  <InputText v-model="g.desde" placeholder="1" />
+                </div>
+                <div class="flex flex-col gap-1 flex-1">
+                  <label class="text-sm">Cantidad</label>
+                  <InputNumber v-model="g.cantidad" :min="1" :max="1000" class="w-full" />
+                </div>
+              </div>
 
-          <div v-else-if="u.estado.modo === 'por-piso'" class="flex flex-col sm:flex-row gap-3">
-            <div class="flex flex-col gap-1 flex-1">
-              <label class="text-sm">Pisos (separados por coma)</label>
-              <InputText v-model="u.estado.pisos" placeholder="1,2,-1" />
-              <small class="text-xs text-surface-400">
-                Usa negativos para subterráneos. El piso se guarda como columna,
-                no en el nombre.
-              </small>
-            </div>
-            <div class="flex flex-col gap-1 flex-1">
-              <label class="text-sm">Unidades por piso</label>
-              <InputNumber v-model="u.estado.porPiso" :min="1" :max="99" class="w-full" />
-            </div>
-          </div>
+              <div v-else-if="g.modo === 'por-piso'" class="flex flex-col sm:flex-row gap-3">
+                <div class="flex flex-col gap-1 flex-1">
+                  <label class="text-sm">Pisos (separados por coma)</label>
+                  <InputText v-model="g.pisos" placeholder="1,2,-1" />
+                  <small class="text-xs text-surface-400">
+                    Usa negativos para subterráneos. El piso se guarda como
+                    columna, no en el nombre.
+                  </small>
+                </div>
+                <div class="flex flex-col gap-1 flex-1">
+                  <label class="text-sm">Unidades por piso</label>
+                  <InputNumber v-model="g.porPiso" :min="1" :max="99" class="w-full" />
+                </div>
+              </div>
 
-          <div v-else class="flex flex-col gap-1">
-            <label class="text-sm">Lista de nombres (uno por línea o separados por coma)</label>
-            <Textarea v-model="u.estado.personalizado" rows="6" />
-          </div>
+              <div v-else class="flex flex-col gap-1">
+                <label class="text-sm">Lista de nombres (uno por línea o separados por coma)</label>
+                <Textarea v-model="g.personalizado" rows="4" />
+              </div>
+            </div>
+
+            <Message v-if="u.nombresDuplicados.length" severity="warn" :closable="false">
+              Nombres repetidos entre grupos: {{ u.nombresDuplicados.join(", ") }}.
+              Usa prefijos distintos para cada grupo.
+            </Message>
+          </template>
+
+          <!-- Un solo bloque (bodegas) -->
+          <template v-else>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="m in MODOS_NUMERACION"
+                :key="m.value"
+                type="button"
+                class="flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors"
+                :class="
+                  u.estado.grupos[0].modo === m.value
+                    ? 'bg-primary text-white'
+                    : 'bg-surface border border-border hover:bg-emphasis'
+                "
+                @click="u.estado.grupos[0].modo = m.value"
+              >
+                <span class="text-sm font-medium">{{ m.label }}</span>
+                <span class="text-xs opacity-80">{{ m.descripcion }}</span>
+              </button>
+            </div>
+
+            <div
+              v-if="u.estado.grupos[0].modo === 'correlativo'"
+              class="flex flex-col sm:flex-row gap-3"
+            >
+              <div class="flex flex-col gap-1 flex-1">
+                <label class="text-sm">Desde</label>
+                <InputText v-model="u.estado.grupos[0].desde" placeholder="1" />
+              </div>
+              <div class="flex flex-col gap-1 flex-1">
+                <label class="text-sm">Cantidad</label>
+                <InputNumber
+                  v-model="u.estado.grupos[0].cantidad"
+                  :min="1"
+                  :max="1000"
+                  class="w-full"
+                />
+              </div>
+            </div>
+
+            <div
+              v-else-if="u.estado.grupos[0].modo === 'por-piso'"
+              class="flex flex-col sm:flex-row gap-3"
+            >
+              <div class="flex flex-col gap-1 flex-1">
+                <label class="text-sm">Pisos (separados por coma)</label>
+                <InputText v-model="u.estado.grupos[0].pisos" placeholder="1,2,-1" />
+                <small class="text-xs text-surface-400">
+                  Usa negativos para subterráneos. El piso se guarda como
+                  columna, no en el nombre.
+                </small>
+              </div>
+              <div class="flex flex-col gap-1 flex-1">
+                <label class="text-sm">Unidades por piso</label>
+                <InputNumber
+                  v-model="u.estado.grupos[0].porPiso"
+                  :min="1"
+                  :max="99"
+                  class="w-full"
+                />
+              </div>
+            </div>
+
+            <div v-else class="flex flex-col gap-1">
+              <label class="text-sm">Lista de nombres (uno por línea o separados por coma)</label>
+              <Textarea v-model="u.estado.grupos[0].personalizado" rows="6" />
+            </div>
+          </template>
 
           <Tag
             :value="`${u.totalGeneradas} ${etiquetas.plural} generados`"
@@ -236,15 +400,9 @@ onMounted(() => u.cargar());
               </div>
             </div>
 
-            <div v-else class="flex flex-col gap-1">
-              <label class="text-sm">Sector</label>
-              <Select
-                v-model="u.estado.sectorExistenteId"
-                :options="u.sectoresExistentes"
-                optionLabel="nombre"
-                optionValue="id"
-                placeholder="Seleccionar sector"
-              />
+            <div v-else class="text-sm text-surface-400">
+              Selecciona el sector de cada {{ etiquetas.singular }} en la
+              siguiente fase (Asignación).
             </div>
           </template>
         </div>
@@ -255,9 +413,10 @@ onMounted(() => u.cargar());
             <label class="text-sm">Asignar todos a:</label>
             <Select
               v-model="asignarTodosValor"
-              :options="u.sectoresOpciones"
+              :options="opcionesAsignarTodos"
               optionLabel="label"
               optionValue="ref"
+              placeholder="Sin sector"
               class="sm:w-64"
             />
             <Button
@@ -265,7 +424,7 @@ onMounted(() => u.cargar());
               icon="pi pi-check"
               size="small"
               :disabled="!asignarTodosValor"
-              @click="u.asignarTodos(asignarTodosValor)"
+              @click="aplicarAsignarTodos"
             />
           </div>
           <small v-else class="text-xs text-surface-400">
@@ -277,6 +436,7 @@ onMounted(() => u.cargar());
             <table>
               <thead>
                 <tr>
+                  <th v-if="u.multigrupo">Grupo</th>
                   <th>Nombre</th>
                   <th>Piso</th>
                   <th>Sector</th>
@@ -284,18 +444,19 @@ onMounted(() => u.cargar());
               </thead>
               <tbody>
                 <tr v-for="item in u.estado.items" :key="item.id">
+                  <td v-if="u.multigrupo">{{ u.grupoLabel(item.grupoUid) }}</td>
                   <td>{{ item.nombre }}</td>
                   <td>{{ item.piso ?? "—" }}</td>
                   <td>
                     <Select
                       v-if="u.sectoresOpciones.length"
                       v-model="item.sectorRef"
-                      :options="u.sectoresOpciones"
+                      :options="opcionesSectorFila"
                       optionLabel="label"
                       optionValue="ref"
                       placeholder="Sin sector"
-                      clearable
                       class="w-full"
+                      @change="onSectorFilaChange(item)"
                     />
                     <span v-else>Sin sector</span>
                   </td>
@@ -312,19 +473,24 @@ onMounted(() => u.cargar());
               class="bg-surface border border-border p-3 border-round"
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="font-medium">{{ item.nombre }}</span>
+                <div class="min-w-0">
+                  <span class="font-medium">{{ item.nombre }}</span>
+                  <span v-if="u.multigrupo" class="block text-xs text-surface-400">
+                    {{ u.grupoLabel(item.grupoUid) }}
+                  </span>
+                </div>
                 <Tag :value="`Piso ${item.piso ?? '—'}`" severity="secondary" size="small" />
               </div>
               <div class="mt-2 flex flex-col gap-1">
                 <Select
                   v-if="u.sectoresOpciones.length"
                   v-model="item.sectorRef"
-                  :options="u.sectoresOpciones"
+                  :options="opcionesSectorFila"
                   optionLabel="label"
                   optionValue="ref"
                   placeholder="Sin sector"
-                  clearable
                   class="w-full"
+                  @change="onSectorFilaChange(item)"
                 />
                 <span v-else class="text-sm text-surface-400">Sin sector</span>
               </div>
@@ -336,7 +502,8 @@ onMounted(() => u.cargar());
         <div v-else class="mt-4 flex flex-col gap-3">
           <div class="flex flex-wrap gap-2">
             <Tag :value="`${u.estado.items.length} ${etiquetas.plural}`" severity="info" size="small" />
-            <Tag :value="`Prefijo: ${u.estado.prefijo || '—'}`" severity="secondary" size="small" />
+            <Tag v-if="u.multigrupo" :value="`${u.estado.grupos.length} grupos`" severity="secondary" size="small" />
+            <Tag v-else :value="`Prefijo: ${u.estado.grupos[0].prefijo || '—'}`" severity="secondary" size="small" />
           </div>
 
           <Message
@@ -352,6 +519,7 @@ onMounted(() => u.cargar());
             <table>
               <thead>
                 <tr>
+                  <th v-if="u.multigrupo">Grupo</th>
                   <th>Nombre</th>
                   <th>Piso</th>
                   <th>Sector</th>
@@ -360,6 +528,7 @@ onMounted(() => u.cargar());
               </thead>
               <tbody>
                 <tr v-for="item in u.estado.items" :key="item.id">
+                  <td v-if="u.multigrupo">{{ u.grupoLabel(item.grupoUid) }}</td>
                   <td>{{ item.nombre }}</td>
                   <td>{{ item.piso ?? "—" }}</td>
                   <td>{{ sectorLabel(item.sectorRef) }}</td>
@@ -384,7 +553,12 @@ onMounted(() => u.cargar());
               class="bg-surface border border-border p-3 border-round"
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="font-medium">{{ item.nombre }}</span>
+                <div class="min-w-0">
+                  <span class="font-medium">{{ item.nombre }}</span>
+                  <span v-if="u.multigrupo" class="block text-xs text-surface-400">
+                    {{ u.grupoLabel(item.grupoUid) }}
+                  </span>
+                </div>
                 <Tag :value="`Piso ${item.piso ?? '—'}`" severity="secondary" size="small" />
               </div>
               <div class="mt-1 flex items-center justify-between gap-2 text-sm">
