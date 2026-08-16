@@ -69,16 +69,17 @@ V57-V61).
   unitarios de estacionamiento/bodega resuelven el sector con `findByIdAndCondominioId`
   (sector de otro condominio → 409). Tests: 12+12 nuevos, regresión verde (Estacionamiento 14,
   Bodega 14, UnidadesBatch 14, SectoresBatch 6, CapacidadUnidades 9).
-- **Estado frontend: ✅ implementado** — paso `estacionamientos-bodegas` en `SETUP_PASOS`
-  (entre unidades y planilla) con **pestañas separadas** (`SetupEstacionamientosBodegasView.vue`,
-  solo si aplican: capacidad declarada > 0 o ya hay creados); `useSetupEntidades.js` +
+- **Estado frontend: ✅ implementado** — dos pasos **separados** `estacionamientos` y `bodegas`
+  en `SETUP_PASOS` (rutas `setup/estacionamientos` y `setup/bodegas`, cada uno **condicional**:
+  oculto si no hay capacidad declarada ni creados; `SetupLayout` usa `:key="route.name"` para
+  remontar `SetupEntidadesView` al navegar entre ambos); `useSetupEntidades.js` +
   `SetupEntidadesView.vue` (generalización de las 5 fases de unidades sin tipo; **estacionamientos
   con MÚLTIPLES GRUPOS en una sola ventana** — propietarios `E-` + visitas `EV-` fusionados en un
   único batch, columna "Grupo" en revisión; bodegas un solo bloque; piso como columna con
   subterráneos negativos; sectores nuevos vía `POST /sectores/batch`);
   `estacionamientosService.js`/`bodegasService.js` con `crearBatch`; `useSetupConfiguracion`
-  carga `getCapacidad` y oculta el paso si no aplica. **Fase 5 con modo edición + re-entrada
-  CRUD completo**: toggle global "Editar" (celdas editables, "+ Agregar fila", papelera con
+  carga `getCapacidad` y oculta cada paso si su entidad no aplica. **Fase 5 con modo edición +
+  re-entrada CRUD completo**: toggle global "Editar" (celdas editables, "+ Agregar fila", papelera con
   "Eliminado", Cancelar con snapshot); `cargar()` consulta existentes vía `cfg.listar` y entra
   en `modoReedicion` (oculta stepper/nav, solo "Guardar"); `enviar()` en reedición = batch solo
   de filas nuevas + PUT individual de editadas + PATCH desactivar de eliminadas, con mensaje
@@ -87,7 +88,7 @@ V57-V61).
   se edita como prefijo no editable + sufijo (`prefijoDe`/`sufijoDe`), el Select de tipo
   (Propietarios/Visitas) reclasifica todas las filas; fase 1 con prefijo disabled; re-entrada
   asegura el grupo `EV-` e infiere `grupoUid` por prefijo más largo (`grupoPorNombre`). Tests
-  166/166 OK, build OK.
+  167/167 OK, build OK.
 
 ### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
 - **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)

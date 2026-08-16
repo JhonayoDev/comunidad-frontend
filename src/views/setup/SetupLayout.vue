@@ -111,7 +111,7 @@ function irDashboard() {
       </div>
 
       <router-view v-slot="{ Component }">
-        <component :is="Component" @actualizado="cargar" />
+        <component :is="Component" :key="route.name" @actualizado="cargar" />
       </router-view>
 
       <div class="flex justify-between items-center gap-2">

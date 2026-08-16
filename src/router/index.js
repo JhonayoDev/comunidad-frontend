@@ -220,9 +220,16 @@ const routes = [
             component: () => import("../views/setup/SetupUnidadesView.vue"),
           },
           {
-            path: "estacionamientos-bodegas",
-            name: "SetupEstacionamientosBodegas",
-            component: () => import("../views/setup/SetupEstacionamientosBodegasView.vue"),
+            path: "estacionamientos",
+            name: "SetupEstacionamientos",
+            component: () => import("../views/setup/SetupEntidadesView.vue"),
+            props: { entidad: "estacionamiento" },
+          },
+          {
+            path: "bodegas",
+            name: "SetupBodegas",
+            component: () => import("../views/setup/SetupEntidadesView.vue"),
+            props: { entidad: "bodega" },
           },
           {
             path: "planilla",

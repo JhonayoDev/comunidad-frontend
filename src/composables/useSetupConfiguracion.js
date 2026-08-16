@@ -12,11 +12,18 @@ export const SETUP_PASOS = [
     routeName: "SetupUnidades",
   },
   {
-    key: "estacionamientos-bodegas",
-    label: "Estacionamientos y bodegas",
-    descripcion: "Crea estacionamientos y bodegas (si aplican)",
+    key: "estacionamientos",
+    label: "Estacionamientos",
+    descripcion: "Crea los estacionamientos del condominio",
     icon: "pi pi-car",
-    routeName: "SetupEstacionamientosBodegas",
+    routeName: "SetupEstacionamientos",
+  },
+  {
+    key: "bodegas",
+    label: "Bodegas",
+    descripcion: "Crea las bodegas del condominio (si aplican)",
+    icon: "pi pi-box",
+    routeName: "SetupBodegas",
   },
   {
     key: "planilla",
@@ -100,11 +107,11 @@ export function useSetupConfiguracion() {
   }
 
   function pasoOculto(key) {
-    if (key !== "estacionamientos-bodegas") return false;
+    if (key !== "estacionamientos" && key !== "bodegas") return false;
     // Sin datos de capacidad (aún cargando o endpoint 404) → oculto para no
-    // bloquear el wizard; la vista de pestañas carga su propia capacidad.
+    // bloquear el wizard.
     if (!capacidad.value) return true;
-    return !aplicaEntidad("estacionamiento") && !aplicaEntidad("bodega");
+    return !aplicaEntidad(key === "estacionamientos" ? "estacionamiento" : "bodega");
   }
 
   function pasoCompletado(key) {
@@ -114,14 +121,12 @@ export function useSetupConfiguracion() {
     if (key === "planilla") {
       return (totales.value.residentesActivos ?? 0) > 0;
     }
-    if (key === "estacionamientos-bodegas") {
+    if (key === "estacionamientos" || key === "bodegas") {
       if (!capacidad.value) return true; // oculto → no bloquea
-      const estAplica = aplicaEntidad("estacionamiento");
-      const bodAplica = aplicaEntidad("bodega");
-      if (!estAplica && !bodAplica) return true;
-      const estOk = !estAplica || (capacidad.value.totalEstacionamientos ?? 0) > 0;
-      const bodOk = !bodAplica || (capacidad.value.totalBodegas ?? 0) > 0;
-      return estOk && bodOk;
+      const tipo = key === "estacionamientos" ? "estacionamiento" : "bodega";
+      if (!aplicaEntidad(tipo)) return true;
+      const t = tipo === "estacionamiento" ? capacidad.value.totalEstacionamientos : capacidad.value.totalBodegas;
+      return (t ?? 0) > 0;
     }
     // Pasos 2-5 (accesos, áreas comunes, cargos, personal) aún no tienen
     // lógica real — se marcan como pendientes hasta implementarse.

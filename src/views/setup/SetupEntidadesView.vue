@@ -140,7 +140,8 @@ onMounted(() => u.cargar());
         </template>
         <template v-else>
           Define las {{ etiquetas.plural }} del condominio. El prefijo del
-          nombre es editable y el piso se guarda como columna, no en el nombre.
+          nombre es fijo y solo se edita el número; el piso se guarda como
+          columna, no en el nombre.
         </template>
       </p>
 
