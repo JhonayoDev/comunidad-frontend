@@ -15,12 +15,18 @@ vi.mock("@/services/unidadesService", () => ({
 
 vi.mock("@/services/estacionamientosService", () => ({
   estacionamientosService: {
+    getEstacionamientos: vi.fn(),
+    actualizarEstacionamiento: vi.fn(),
+    desactivarEstacionamiento: vi.fn(),
     crearEstacionamientosBatch: vi.fn(),
   },
 }));
 
 vi.mock("@/services/bodegasService", () => ({
   bodegasService: {
+    getBodegas: vi.fn(),
+    actualizarBodega: vi.fn(),
+    desactivarBodega: vi.fn(),
     crearBodegasBatch: vi.fn(),
   },
 }));
@@ -200,6 +206,7 @@ describe("useSetupEntidades", () => {
   it("enviar crea sectores nuevos y luego un solo batch con todos los grupos", async () => {
     unidadesService.getSectores.mockResolvedValue({ data: [] });
     unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({ data: [] });
     unidadesService.crearSectoresBatch.mockResolvedValue({
       data: { creados: [{ id: "id-a", nombre: "Estacionamiento Torre A" }] },
     });
@@ -300,6 +307,7 @@ describe("useSetupEntidades", () => {
   it("degrada la fase de sectores si no hay permiso (403)", async () => {
     unidadesService.getSectores.mockRejectedValue({ response: { status: 403 } });
     unidadesService.getCapacidad.mockRejectedValue({ response: { status: 404 } });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({ data: [] });
     const u = useSetupEntidades({ entidad: "estacionamiento" });
     await u.cargar();
     expect(u.sectoresHabilitados).toBe(false);
@@ -329,6 +337,7 @@ describe("useSetupEntidades", () => {
     );
     unidadesService.getSectores.mockResolvedValue({ data: [] });
     unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({ data: [] });
     const u = useSetupEntidades({ entidad: "estacionamiento" });
     await u.cargar();
     expect(u.borradorRestaurado).toBe(true);
@@ -347,9 +356,200 @@ describe("useSetupEntidades", () => {
     );
     unidadesService.getSectores.mockResolvedValue({ data: [] });
     unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({ data: [] });
     const u = useSetupEntidades({ entidad: "estacionamiento" });
     await u.cargar();
     expect(u.borradorRestaurado).toBe(false);
     expect(sessionStorage.getItem("comunidad:setup-estacionamientos:cid-1")).toBeNull();
+  });
+
+  it("agregarFila agrega una fila nueva; eliminarFila quita las nuevas y marca las existentes", () => {
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    u.estado.grupos[0].modo = "correlativo";
+    u.estado.grupos[0].cantidad = 1;
+    u.generarItems();
+    const existente = u.estado.items[0];
+    existente.entidadId = "e1";
+    existente.esNuevo = false;
+    existente.original = { nombre: "E-1", piso: null, sectorRef: null };
+
+    u.agregarFila();
+    expect(u.estado.items).toHaveLength(2);
+    expect(u.estado.items[1].esNuevo).toBe(true);
+    expect(u.estado.items[1].entidadId).toBeNull();
+
+    u.eliminarFila(u.estado.items[1]);
+    expect(u.estado.items).toHaveLength(1);
+
+    u.eliminarFila(existente);
+    expect(existente.marcadoEliminar).toBe(true);
+    expect(u.estado.items).toHaveLength(1);
+  });
+
+  it("agregarFila prefill el nombre con el prefijo del primer grupo", () => {
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    u.agregarFila();
+    const nueva = u.estado.items[u.estado.items.length - 1];
+    expect(nueva.nombre).toBe("E-");
+    expect(u.sufijoDe(nueva)).toBe("");
+    expect(u.itemsValidos).toBe(false);
+
+    const bod = useSetupEntidades({ entidad: "bodega" });
+    bod.agregarFila();
+    expect(bod.estado.items[bod.estado.items.length - 1].nombre).toBe("B-");
+  });
+
+  it("itemsValidos rechaza nombres con sufijo vacío (solo prefijo)", () => {
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    u.estado.grupos[0].modo = "correlativo";
+    u.estado.grupos[0].cantidad = 1;
+    u.generarItems();
+    u.estado.items[0].nombre = "E-";
+    expect(u.itemsValidos).toBe(false);
+    u.estado.items[0].nombre = "E-5";
+    expect(u.itemsValidos).toBe(true);
+  });
+
+  it("sufijoDe devuelve el nombre completo si no arranca con el prefijo del grupo", () => {
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    u.estado.grupos[0].modo = "correlativo";
+    u.estado.grupos[0].cantidad = 1;
+    u.generarItems();
+    u.estado.items[0].nombre = "F-1";
+    expect(u.sufijoDe(u.estado.items[0])).toBe("F-1");
+  });
+
+  it("itemsValidos exige nombres no vacíos y únicos entre filas activas", () => {
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    u.estado.grupos[0].modo = "correlativo";
+    u.estado.grupos[0].cantidad = 2;
+    u.generarItems();
+    expect(u.itemsValidos).toBe(true);
+
+    u.estado.items[1].nombre = "";
+    expect(u.itemsValidos).toBe(false);
+    u.estado.items[1].nombre = "E-1";
+    expect(u.itemsValidos).toBe(false);
+
+    u.estado.items[1].nombre = "E-2";
+    u.estado.items[0].marcadoEliminar = true;
+    expect(u.itemsValidos).toBe(true);
+  });
+
+  it("cargar entra en modo reedición si ya existen creados (sin borrador)", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [{ id: "s1", nombre: "Sector A" }] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [
+        { id: "e1", nombre: "E-1", piso: 1, sectorId: "s1", activo: true },
+        { id: "e2", nombre: "E-2", piso: null, sectorId: null, activo: true },
+      ],
+    });
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+    expect(u.estado.paso).toBe(5);
+    expect(u.estado.items).toHaveLength(2);
+    expect(u.estado.items[0].entidadId).toBe("e1");
+    expect(u.estado.items[0].esNuevo).toBe(false);
+    expect(u.estado.items[0].sectorRef).toBe("s1");
+    expect(u.estado.sectorOrigen).toBe("existente");
+  });
+
+  it("cargar en reedición asegura el grupo EV- e infiere el tipo por prefijo", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [
+        { id: "e1", nombre: "E-1", piso: null, sectorId: null, activo: true },
+        { id: "e2", nombre: "EV-1", piso: null, sectorId: null, activo: true },
+      ],
+    });
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+    expect(u.estado.grupos).toHaveLength(2);
+    expect(u.estado.grupos[1].prefijo).toBe("EV-");
+    expect(u.estado.items[0].grupoUid).toBe(u.estado.grupos[0].uid);
+    expect(u.estado.items[1].grupoUid).toBe(u.estado.grupos[1].uid);
+  });
+
+  it("enviar en reedición: batch para nuevas, PUT para editadas y desactivar para eliminadas", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [
+        { id: "e1", nombre: "E-1", piso: 1, sectorId: null, activo: true },
+        { id: "e2", nombre: "E-2", piso: null, sectorId: null, activo: true },
+      ],
+    });
+    estacionamientosService.crearEstacionamientosBatch.mockResolvedValue({
+      data: { creados: [{ id: "e3", nombre: "E-3" }] },
+    });
+    estacionamientosService.actualizarEstacionamiento.mockResolvedValue({ data: {} });
+    estacionamientosService.desactivarEstacionamiento.mockResolvedValue({ data: {} });
+
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+
+    u.estado.items[0].nombre = "E-1 renovado";
+    u.eliminarFila(u.estado.items[1]);
+    u.agregarFila();
+    u.estado.items[2].nombre = "E-3";
+    u.estado.items[2].piso = 2;
+
+    const ok = await u.enviar();
+    expect(ok).toBe(true);
+    expect(estacionamientosService.crearEstacionamientosBatch).toHaveBeenCalledWith("cid-1", {
+      estacionamientos: [{ nombre: "E-3", piso: 2, sectorId: null }],
+    });
+    expect(estacionamientosService.actualizarEstacionamiento).toHaveBeenCalledWith("cid-1", "e1", {
+      nombre: "E-1 renovado",
+      piso: 1,
+      sectorId: null,
+    });
+    expect(estacionamientosService.desactivarEstacionamiento).toHaveBeenCalledWith("cid-1", "e2");
+    expect(u.resultado).toEqual({ creadas: 1, actualizadas: 1, eliminadas: 1 });
+    expect(u.estado.items.some((x) => x.entidadId === "e2")).toBe(false);
+  });
+
+  it("enviar en reedición no llama al batch si no hay filas nuevas", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [{ id: "e1", nombre: "E-1", piso: null, sectorId: null, activo: true }],
+    });
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    const ok = await u.enviar();
+    expect(ok).toBe(true);
+    expect(estacionamientosService.crearEstacionamientosBatch).not.toHaveBeenCalled();
+    expect(u.resultado).toEqual({ creadas: 0, actualizadas: 0, eliminadas: 0 });
+  });
+
+  it("envelopeExcedido en reedición cuenta solo las filas nuevas", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({
+      data: { totalActual: 2, planUnidadLimit: 3 },
+    });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [
+        { id: "e1", nombre: "E-1", piso: null, sectorId: null, activo: true },
+        { id: "e2", nombre: "E-2", piso: null, sectorId: null, activo: true },
+      ],
+    });
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+    expect(u.envelopeExcedido).toBe(false);
+
+    u.agregarFila();
+    u.estado.items[2].nombre = "E-3";
+    expect(u.envelopeExcedido).toBe(false);
+
+    u.agregarFila();
+    u.estado.items[3].nombre = "E-4";
+    expect(u.envelopeExcedido).toBe(true);
   });
 });

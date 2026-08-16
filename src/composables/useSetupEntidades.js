@@ -14,6 +14,9 @@ const CONFIG = {
     clave: "estacionamientos",
     borrador: (cid) => `comunidad:setup-estacionamientos:${cid}`,
     batch: (cid, payload) => estacionamientosService.crearEstacionamientosBatch(cid, payload),
+    listar: (cid) => estacionamientosService.getEstacionamientos(cid),
+    actualizar: (cid, id, data) => estacionamientosService.actualizarEstacionamiento(cid, id, data),
+    desactivar: (cid, id) => estacionamientosService.desactivarEstacionamiento(cid, id),
     prefijoDefault: "E-",
     grupoNombreDefault: "Propietarios",
     multigrupo: true,
@@ -24,6 +27,9 @@ const CONFIG = {
     clave: "bodegas",
     borrador: (cid) => `comunidad:setup-bodegas:${cid}`,
     batch: (cid, payload) => bodegasService.crearBodegasBatch(cid, payload),
+    listar: (cid) => bodegasService.getBodegas(cid),
+    actualizar: (cid, id, data) => bodegasService.actualizarBodega(cid, id, data),
+    desactivar: (cid, id) => bodegasService.desactivarBodega(cid, id),
     prefijoDefault: "B-",
     grupoNombreDefault: "",
     multigrupo: false,
@@ -59,6 +65,7 @@ export function useSetupEntidades({ entidad } = {}) {
   const sectoresExistentes = ref([]);
   const sectoresHabilitados = ref(true);
   const capacidad = ref(null);
+  const modoReedicion = ref(false);
 
   // Crea un grupo nuevo. En estacionamientos, el segundo grupo se sugiere como
   // "Visitas · EV-" (el caso común); el resto es editable.
@@ -87,7 +94,7 @@ export function useSetupEntidades({ entidad } = {}) {
     grupos: [nuevoGrupo()],
     sectorOrigen: "sin-sector", // sin-sector | nuevo | existente
     sectoresNuevos: [{ uid: uid("sector"), nombre: "", descripcion: "" }],
-    items: [], // [{ id, grupoUid, nombre, piso, sectorRef, error }]
+    items: [], // [{ id, grupoUid, nombre, piso, sectorRef, error, entidadId, esNuevo, marcadoEliminar, original }]
   });
 
   // ─── Numeración (fase 2) ───
@@ -130,6 +137,10 @@ export function useSetupEntidades({ entidad } = {}) {
           piso: n.piso,
           sectorRef: previo.get(n.nombre) ?? null,
           error: null,
+          entidadId: null,
+          esNuevo: true,
+          marcadoEliminar: false,
+          original: null,
         });
       }
     }
@@ -152,6 +163,28 @@ export function useSetupEntidades({ entidad } = {}) {
     const g = estado.grupos.find((x) => x.uid === grupoUid);
     if (!g) return "";
     return (g.nombre || "").trim() || g.prefijo || "Grupo";
+  }
+
+  // Prefijo fijo del grupo (no editable en la UI). El nombre de cada ítem se
+  // compone como prefijo + sufijo; el sufijo es lo único editable.
+  function prefijoDe(grupoUid) {
+    const g = estado.grupos.find((x) => x.uid === grupoUid);
+    return g?.prefijo || "";
+  }
+
+  function sufijoDe(item) {
+    const p = prefijoDe(item.grupoUid);
+    return item.nombre.startsWith(p) ? item.nombre.slice(p.length) : item.nombre;
+  }
+
+  // Infiere el grupo de un nombre por prefijo (el más largo primero, para que
+  // "EV-1" matchee "EV-" y no "E-"). Fallback al primer grupo.
+  function grupoPorNombre(nombre) {
+    const ordenados = [...estado.grupos].sort(
+      (a, b) => (b.prefijo || "").length - (a.prefijo || "").length,
+    );
+    const g = ordenados.find((x) => x.prefijo && String(nombre || "").startsWith(x.prefijo));
+    return g?.uid ?? estado.grupos[0]?.uid ?? null;
   }
 
   // ─── Sectores (fases 3-4) ───
@@ -191,6 +224,50 @@ export function useSetupEntidades({ entidad } = {}) {
     estado.items.forEach((x) => (x.sectorRef = sectorRef));
   }
 
+  // ─── Edición manual (fase 5) ───
+  function agregarFila() {
+    const grupoUid = estado.grupos[0]?.uid ?? null;
+    estado.items.push({
+      id: uid("item"),
+      grupoUid,
+      nombre: prefijoDe(grupoUid),
+      piso: null,
+      sectorRef: null,
+      error: null,
+      entidadId: null,
+      esNuevo: true,
+      marcadoEliminar: false,
+      original: null,
+    });
+  }
+
+  function eliminarFila(item) {
+    if (item.entidadId) {
+      // Existente en backend → se marca para desactivar al guardar.
+      item.marcadoEliminar = true;
+    } else {
+      const idx = estado.items.findIndex((x) => x.id === item.id);
+      if (idx !== -1) estado.items.splice(idx, 1);
+    }
+  }
+
+  function cambiado(x) {
+    const o = x.original;
+    if (!o) return false;
+    return o.nombre !== x.nombre || o.piso !== x.piso || o.sectorRef !== x.sectorRef;
+  }
+
+  const itemsValidos = computed(() => {
+    const activos = estado.items.filter((x) => !x.marcadoEliminar);
+    if (!activos.length) return false;
+    // El sufijo (parte editable del nombre) no puede quedar vacío: impide
+    // guardar un ítem con solo el prefijo (p.ej. "E-" o "B-").
+    if (activos.some((x) => !sufijoDe(x).trim())) return false;
+    const nombres = activos.map((x) => (x.nombre || "").trim());
+    if (nombres.some((n) => !n)) return false;
+    return new Set(nombres).size === nombres.length;
+  });
+
   // ─── Validación por fase ───
   function validoPaso(paso) {
     switch (paso) {
@@ -213,7 +290,7 @@ export function useSetupEntidades({ entidad } = {}) {
       case 4:
         return true; // "Sin sector" es una asignación válida
       case 5:
-        return estado.items.length > 0;
+        return itemsValidos.value;
       default:
         return true;
     }
@@ -236,7 +313,9 @@ export function useSetupEntidades({ entidad } = {}) {
 
   const envelopeExcedido = computed(() => {
     if (!capacidad.value) return false;
-    const totalNuevas = estado.items.length || totalGeneradas.value;
+    const totalNuevas = modoReedicion.value
+      ? estado.items.filter((x) => x.esNuevo && !x.marcadoEliminar).length
+      : estado.items.length || totalGeneradas.value;
     return (capacidad.value.totalActual ?? 0) + totalNuevas > (capacidad.value.planUnidadLimit ?? Infinity);
   });
 
@@ -261,10 +340,24 @@ export function useSetupEntidades({ entidad } = {}) {
       if (!raw) return false;
       const data = JSON.parse(raw);
       if (data.estado && Array.isArray(data.estado.grupos) && Array.isArray(data.estado.items)) {
+        // Normaliza ítems por si el borrador viene de una versión anterior.
+        data.estado.items = (data.estado.items || []).map((x) => ({
+          id: x.id || uid("item"),
+          grupoUid: x.grupoUid ?? null,
+          nombre: x.nombre ?? "",
+          piso: x.piso ?? null,
+          sectorRef: x.sectorRef ?? null,
+          error: x.error ?? null,
+          entidadId: x.entidadId ?? null,
+          esNuevo: x.esNuevo ?? true,
+          marcadoEliminar: x.marcadoEliminar ?? false,
+          original: x.original ?? null,
+        }));
         Object.assign(estado, data.estado);
         if (Array.isArray(data.sectoresExistentes)) {
           sectoresExistentes.value = data.sectoresExistentes;
         }
+        modoReedicion.value = data.estado.items.some((x) => x.entidadId);
         borradorRestaurado.value = true;
         return true;
       }
@@ -288,36 +381,90 @@ export function useSetupEntidades({ entidad } = {}) {
 
   watch(estado, guardarBorrador, { deep: true });
 
-  // ─── Envío batch (fase 5): sectores primero, entidades después ───
+  // ─── Envío (fase 5): sectores primero, entidades después ───
   async function enviar() {
     if (!cid || !estado.items.length) return;
     enviando.value = true;
     error.value = null;
     try {
-      // 1) Sectores nuevos (si aplica)
+      const activos = estado.items.filter((x) => !x.marcadoEliminar);
+      let creadas = 0;
+      let actualizadas = 0;
+      let eliminadas = 0;
+
+      // 1) Sectores nuevos (solo aplica en creación inicial con agrupación "nuevo")
       const idPorRef = new Map();
       if (sectoresHabilitados.value && estado.sectorOrigen === "nuevo") {
         const nombres = estado.sectoresNuevos
           .map((s) => ({ nombre: (s.nombre || "").trim(), descripcion: (s.descripcion || "").trim() }))
           .filter((s) => s.nombre);
-        const { data } = await unidadesService.crearSectoresBatch(cid, { sectores: nombres });
-        (data.creados || []).forEach((s) => idPorRef.set(s.nombre, s.id));
+        if (nombres.length) {
+          const { data } = await unidadesService.crearSectoresBatch(cid, { sectores: nombres });
+          (data.creados || []).forEach((s) => idPorRef.set(s.nombre, s.id));
+        }
       }
 
-      // 2) Batch de la entidad (todos los grupos fusionados en una sola petición)
-      const payload = estado.items.map((x) => {
-        let sectorId = null;
+      const resolverSector = (x) => {
         if (estado.sectorOrigen === "nuevo" && x.sectorRef) {
           const nuevo = estado.sectoresNuevos.find((s) => s.uid === x.sectorRef);
-          sectorId = idPorRef.get((nuevo?.nombre || "").trim()) ?? null;
-        } else if (estado.sectorOrigen === "existente") {
-          sectorId = x.sectorRef;
+          return idPorRef.get((nuevo?.nombre || "").trim()) ?? null;
         }
-        return { nombre: x.nombre, piso: x.piso, sectorId };
-      });
+        if (estado.sectorOrigen === "existente") return x.sectorRef;
+        return null;
+      };
 
-      const { data } = await cfg.batch(cid, { [cfg.clave]: payload });
-      resultado.value = { creadas: (data.creados || []).length };
+      if (modoReedicion.value) {
+        // 2a) Filas nuevas → batch
+        const nuevos = activos.filter((x) => x.esNuevo);
+        if (nuevos.length) {
+          const payload = nuevos.map((x) => ({ nombre: x.nombre, piso: x.piso, sectorId: resolverSector(x) }));
+          const { data } = await cfg.batch(cid, { [cfg.clave]: payload });
+          creadas = (data.creados || []).length;
+          const porNombre = new Map((data.creados || []).map((c) => [c.nombre, c]));
+          nuevos.forEach((x) => {
+            const c = porNombre.get(x.nombre);
+            if (c) {
+              x.entidadId = c.id;
+              x.esNuevo = false;
+              x.original = { nombre: x.nombre, piso: x.piso, sectorRef: x.sectorRef };
+            }
+          });
+        }
+
+        // 2b) Existentes con cambios → PUT individual
+        const editados = activos.filter((x) => !x.esNuevo && cambiado(x));
+        for (const x of editados) {
+          try {
+            await cfg.actualizar(cid, x.entidadId, { nombre: x.nombre, piso: x.piso, sectorId: resolverSector(x) });
+            x.original = { nombre: x.nombre, piso: x.piso, sectorRef: x.sectorRef };
+            actualizadas += 1;
+          } catch (e) {
+            x.error = e?.response?.data?.message || `No se pudo actualizar ${x.nombre}`;
+            throw e;
+          }
+        }
+
+        // 2c) Existentes marcados para eliminar → desactivar
+        const aEliminar = estado.items.filter((x) => x.marcadoEliminar && x.entidadId);
+        for (const x of aEliminar) {
+          try {
+            await cfg.desactivar(cid, x.entidadId);
+            eliminadas += 1;
+            const idx = estado.items.findIndex((i) => i.id === x.id);
+            if (idx !== -1) estado.items.splice(idx, 1);
+          } catch (e) {
+            x.error = e?.response?.data?.message || `No se pudo eliminar ${x.nombre}`;
+            throw e;
+          }
+        }
+      } else {
+        // Creación inicial: batch de todas las filas activas
+        const payload = activos.map((x) => ({ nombre: x.nombre, piso: x.piso, sectorId: resolverSector(x) }));
+        const { data } = await cfg.batch(cid, { [cfg.clave]: payload });
+        creadas = (data.creados || []).length;
+      }
+
+      resultado.value = { creadas, actualizadas, eliminadas };
       descartarBorrador();
       return true;
     } catch (e) {
@@ -330,7 +477,12 @@ export function useSetupEntidades({ entidad } = {}) {
           const match = new RegExp(`${cfg.clave}\\[(\\d+)\\]`).exec(f.field || "");
           if (match) {
             const idx = Number(match[1]);
-            if (estado.items[idx]) estado.items[idx].error = f.message;
+            // En reedición el batch solo contiene filas nuevas; en creación
+            // inicial el índice coincide con estado.items.
+            const fila = modoReedicion.value
+              ? estado.items.filter((x) => x.esNuevo && !x.marcadoEliminar)[idx]
+              : estado.items[idx];
+            if (fila) fila.error = f.message;
           }
         });
       }
@@ -376,6 +528,40 @@ export function useSetupEntidades({ entidad } = {}) {
         estado.sectorOrigen = "sin-sector";
         estado.items.forEach((x) => (x.sectorRef = null));
       }
+      // Re-entrada: si ya existen creados y no hay borrador en curso, cargarlos
+      // para reedición (editar/agregar/eliminar) en vez de empezar de cero.
+      if (!borradorRestaurado.value && cid) {
+        try {
+          const { data } = await cfg.listar(cid);
+          const existentes = Array.isArray(data) ? data.filter((e) => e.activo !== false) : [];
+          if (existentes.length > 0) {
+            modoReedicion.value = true;
+            if (sectoresHabilitados.value) estado.sectorOrigen = "existente";
+            // En multigrupo la reedición salta las fases 1-2, así que hay que
+            // asegurar el grupo estándar de visitas (EV-) para poder agregar
+            // filas de ese tipo.
+            if (cfg.multigrupo && !estado.grupos.some((g) => g.prefijo === "EV-")) {
+              agregarGrupo();
+            }
+            estado.items = existentes.map((e) => ({
+              id: uid("item"),
+              grupoUid: grupoPorNombre(e.nombre),
+              nombre: e.nombre,
+              piso: e.piso,
+              sectorRef: e.sectorId ?? null,
+              error: null,
+              entidadId: e.id,
+              esNuevo: false,
+              marcadoEliminar: false,
+              original: { nombre: e.nombre, piso: e.piso, sectorRef: e.sectorId ?? null },
+            }));
+            estado.paso = 5;
+          }
+        } catch (e) {
+          console.error(`No se pudieron cargar los ${cfg.labelPlural} existentes`, e);
+          modoReedicion.value = false;
+        }
+      }
     } catch (e) {
       console.error(`Error al cargar el wizard de ${cfg.labelPlural}`, e);
       error.value = `No se pudo cargar el wizard de ${cfg.labelPlural}`;
@@ -395,6 +581,7 @@ export function useSetupEntidades({ entidad } = {}) {
     sectoresHabilitados,
     sectoresOpciones,
     capacidad,
+    modoReedicion,
     multigrupo: cfg.multigrupo,
     estado,
     nombresPreview,
@@ -402,6 +589,7 @@ export function useSetupEntidades({ entidad } = {}) {
     nombresDuplicados,
     totalGeneradas,
     envelopeExcedido,
+    itemsValidos,
     validoPaso,
     siguiente,
     atras,
@@ -409,10 +597,15 @@ export function useSetupEntidades({ entidad } = {}) {
     agregarGrupo,
     eliminarGrupo,
     grupoLabel,
+    prefijoDe,
+    sufijoDe,
+    grupoPorNombre,
     agregarSectorNuevo,
     eliminarSectorNuevo,
     asignarSector,
     asignarTodos,
+    agregarFila,
+    eliminarFila,
     guardarBorrador,
     cargarBorrador,
     descartarBorrador,

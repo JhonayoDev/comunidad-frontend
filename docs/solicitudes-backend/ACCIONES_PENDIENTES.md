@@ -77,7 +77,17 @@ V57-V61).
   único batch, columna "Grupo" en revisión; bodegas un solo bloque; piso como columna con
   subterráneos negativos; sectores nuevos vía `POST /sectores/batch`);
   `estacionamientosService.js`/`bodegasService.js` con `crearBatch`; `useSetupConfiguracion`
-  carga `getCapacidad` y oculta el paso si no aplica. Tests 153/153 OK, build OK.
+  carga `getCapacidad` y oculta el paso si no aplica. **Fase 5 con modo edición + re-entrada
+  CRUD completo**: toggle global "Editar" (celdas editables, "+ Agregar fila", papelera con
+  "Eliminado", Cancelar con snapshot); `cargar()` consulta existentes vía `cfg.listar` y entra
+  en `modoReedicion` (oculta stepper/nav, solo "Guardar"); `enviar()` en reedición = batch solo
+  de filas nuevas + PUT individual de editadas + PATCH desactivar de eliminadas, con mensaje
+  "X creados, Y actualizados, Z eliminados"; `itemsValidos` bloquea Guardar; `envelopeExcedido`
+  cuenta solo filas nuevas en reedición. **Columna "Tipo" + prefijo fijo**: en fase 5 el nombre
+  se edita como prefijo no editable + sufijo (`prefijoDe`/`sufijoDe`), el Select de tipo
+  (Propietarios/Visitas) reclasifica todas las filas; fase 1 con prefijo disabled; re-entrada
+  asegura el grupo `EV-` e infiere `grupoUid` por prefijo más largo (`grupoPorNombre`). Tests
+  166/166 OK, build OK.
 
 ### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
 - **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)

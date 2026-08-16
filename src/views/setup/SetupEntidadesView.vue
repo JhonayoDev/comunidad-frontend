@@ -53,6 +53,55 @@ function onSectorFilaChange(item) {
   if (item.sectorRef === SIN_SECTOR) item.sectorRef = null;
 }
 
+const opcionesTipo = computed(() =>
+  u.estado.grupos.map((g) => ({ value: g.uid, label: u.grupoLabel(g.uid) })),
+);
+
+function onGrupoItem(item, nuevoUid) {
+  const pViejo = u.prefijoDe(item.grupoUid);
+  const sufijo = item.nombre.startsWith(pViejo) ? item.nombre.slice(pViejo.length) : item.nombre;
+  item.grupoUid = nuevoUid;
+  item.nombre = u.prefijoDe(nuevoUid) + sufijo;
+}
+
+function onSufijoItem(item, sufijo) {
+  item.nombre = u.prefijoDe(item.grupoUid) + (sufijo || "");
+}
+
+const editando = ref(false);
+const snapshotEdicion = ref(null);
+
+function entrarEdicion() {
+  snapshotEdicion.value = JSON.parse(JSON.stringify(u.estado.items));
+  editando.value = true;
+}
+
+function cancelarEdicion() {
+  if (snapshotEdicion.value) u.estado.items = snapshotEdicion.value;
+  editando.value = false;
+}
+
+function salirEdicion() {
+  editando.value = false;
+}
+
+watch(
+  () => u.modoReedicion,
+  (v) => {
+    if (v) editando.value = true;
+  },
+);
+
+const mensajeResultado = computed(() => {
+  const r = u.resultado;
+  if (!r) return "";
+  const partes = [];
+  if (r.creadas) partes.push(`${r.creadas} ${etiquetas.plural} creados`);
+  if (r.actualizadas) partes.push(`${r.actualizadas} actualizados`);
+  if (r.eliminadas) partes.push(`${r.eliminadas} eliminados`);
+  return partes.length ? partes.join(", ") + "." : "Sin cambios.";
+});
+
 function sectorLabel(ref) {
   const o = u.sectoresOpciones.find((s) => s.ref === ref);
   return o ? o.label : "Sin sector";
@@ -75,12 +124,16 @@ onMounted(() => u.cargar());
     <template #title>
       <div class="flex items-center gap-2">
         <i :class="props.entidad === 'bodega' ? 'pi pi-box' : 'pi pi-car'"></i>
-        <span>Creación de {{ etiquetas.plural }}</span>
+        <span>{{ u.modoReedicion ? "Edición de" : "Creación de" }} {{ etiquetas.plural }}</span>
       </div>
     </template>
     <template #content>
       <p class="text-sm text-surface-400 m-0">
-        <template v-if="u.multigrupo">
+        <template v-if="u.modoReedicion">
+          Revisa y edita los {{ etiquetas.plural }} ya creados: corrige nombre,
+          piso o sector, agrega más filas o elimina los que no correspondan.
+        </template>
+        <template v-else-if="u.multigrupo">
           Registra todos los estacionamientos en una sola ventana: propietarios
           (prefijo E-) y visitas (prefijo EV-). El piso se guarda como columna,
           no en el nombre.
@@ -96,7 +149,7 @@ onMounted(() => u.cargar());
 
       <template v-else>
         <!-- Stepper de fases -->
-        <div class="mt-4 flex flex-col sm:flex-row gap-2">
+        <div v-if="!u.modoReedicion" class="mt-4 flex flex-col sm:flex-row gap-2">
           <button
             v-for="p in PASOS_ENTIDADES"
             :key="p.numero"
@@ -147,7 +200,10 @@ onMounted(() => u.cargar());
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Prefijo</label>
-                  <InputText v-model="g.prefijo" placeholder="E-" />
+                  <InputText :model-value="g.prefijo" disabled />
+                  <small class="text-xs text-surface-400">
+                    Fijo para mantener la integridad de los nombres.
+                  </small>
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Cantidad</label>
@@ -170,9 +226,10 @@ onMounted(() => u.cargar());
           <template v-else>
             <div class="flex flex-col gap-1">
               <label class="text-sm">Prefijo del nombre</label>
-              <InputText v-model="u.estado.grupos[0].prefijo" placeholder="B-" />
+              <InputText :model-value="u.estado.grupos[0].prefijo" disabled />
               <small class="text-xs text-surface-400">
-                Ej: "B-" genera B-1, B-2, ...
+                Fijo para mantener la integridad de los nombres. Ej: "B-"
+                genera B-1, B-2, ...
               </small>
             </div>
             <div class="flex flex-col gap-1">
@@ -500,10 +557,21 @@ onMounted(() => u.cargar());
 
         <!-- Fase 5: Revisar y guardar -->
         <div v-else class="mt-4 flex flex-col gap-3">
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <Tag :value="`${u.estado.items.length} ${etiquetas.plural}`" severity="info" size="small" />
-            <Tag v-if="u.multigrupo" :value="`${u.estado.grupos.length} grupos`" severity="secondary" size="small" />
-            <Tag v-else :value="`Prefijo: ${u.estado.grupos[0].prefijo || '—'}`" severity="secondary" size="small" />
+            <Button
+              v-if="!editando"
+              label="Editar"
+              icon="pi pi-pencil"
+              variant="text"
+              size="small"
+              @click="entrarEdicion"
+            />
+            <template v-else>
+              <Button label="Listo" icon="pi pi-check" variant="text" size="small" @click="salirEdicion" />
+              <Button label="Cancelar" variant="text" severity="secondary" size="small" @click="cancelarEdicion" />
+              <Button label="Agregar fila" icon="pi pi-plus" variant="text" size="small" @click="u.agregarFila" />
+            </template>
           </div>
 
           <Message
@@ -519,69 +587,188 @@ onMounted(() => u.cargar());
             <table>
               <thead>
                 <tr>
-                  <th v-if="u.multigrupo">Grupo</th>
+                  <th v-if="u.multigrupo">Tipo</th>
                   <th>Nombre</th>
                   <th>Piso</th>
                   <th>Sector</th>
                   <th>Estado</th>
+                  <th v-if="editando"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in u.estado.items" :key="item.id">
-                  <td v-if="u.multigrupo">{{ u.grupoLabel(item.grupoUid) }}</td>
-                  <td>{{ item.nombre }}</td>
-                  <td>{{ item.piso ?? "—" }}</td>
-                  <td>{{ sectorLabel(item.sectorRef) }}</td>
+                <tr
+                  v-for="item in u.estado.items"
+                  :key="item.id"
+                  :class="item.marcadoEliminar ? 'opacity-50' : ''"
+                >
+                  <td v-if="u.multigrupo">
+                    <template v-if="editando && !item.marcadoEliminar">
+                      <Select
+                        :model-value="item.grupoUid"
+                        :options="opcionesTipo"
+                        optionLabel="label"
+                        optionValue="value"
+                        class="w-full"
+                        @update:model-value="onGrupoItem(item, $event)"
+                      />
+                    </template>
+                    <span v-else>{{ u.grupoLabel(item.grupoUid) }}</span>
+                  </td>
                   <td>
-                    <Tag
-                      v-if="item.error"
-                      :value="item.error"
-                      severity="danger"
-                      size="small"
-                    />
+                    <template v-if="editando && !item.marcadoEliminar">
+                      <div class="flex items-center gap-1">
+                        <span class="text-surface-400 font-medium whitespace-nowrap">{{ u.prefijoDe(item.grupoUid) }}</span>
+                        <InputText
+                          :model-value="u.sufijoDe(item)"
+                          size="small"
+                          class="w-full"
+                          @update:model-value="onSufijoItem(item, $event)"
+                        />
+                      </div>
+                    </template>
+                    <template v-else>
+                      <span :class="item.marcadoEliminar ? 'line-through' : ''">{{ item.nombre }}</span>
+                      <Tag v-if="item.esNuevo" value="Nuevo" severity="success" size="small" class="ml-2" />
+                    </template>
+                  </td>
+                  <td>
+                    <template v-if="editando && !item.marcadoEliminar">
+                      <InputNumber
+                        v-model="item.piso"
+                        size="small"
+                        class="w-full"
+                        :min-fraction-digits="0"
+                        :max-fraction-digits="0"
+                      />
+                    </template>
+                    <span v-else>{{ item.piso ?? "—" }}</span>
+                  </td>
+                  <td>
+                    <template v-if="editando && !item.marcadoEliminar && u.sectoresOpciones.length">
+                      <Select
+                        v-model="item.sectorRef"
+                        :options="opcionesSectorFila"
+                        optionLabel="label"
+                        optionValue="ref"
+                        placeholder="Sin sector"
+                        class="w-full"
+                        @change="onSectorFilaChange(item)"
+                      />
+                    </template>
+                    <span v-else>{{ sectorLabel(item.sectorRef) }}</span>
+                  </td>
+                  <td>
+                    <Tag v-if="item.error" :value="item.error" severity="danger" size="small" />
+                    <Tag v-else-if="item.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
                     <span v-else class="text-green-500 text-sm">Listo</span>
+                  </td>
+                  <td v-if="editando">
+                    <Button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      variant="text"
+                      size="small"
+                      @click="u.eliminarFila(item)"
+                    />
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
+          <!-- Cards mobile -->
           <div class="flex flex-col gap-2 md:hidden">
             <div
               v-for="item in u.estado.items"
               :key="item.id"
               class="bg-surface border border-border p-3 border-round"
+              :class="item.marcadoEliminar ? 'opacity-50' : ''"
             >
               <div class="flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                  <span class="font-medium">{{ item.nombre }}</span>
-                  <span v-if="u.multigrupo" class="block text-xs text-surface-400">
+                <div class="min-w-0 flex-1">
+                  <template v-if="editando && !item.marcadoEliminar">
+                    <div class="flex items-center gap-1">
+                      <span class="text-surface-400 font-medium whitespace-nowrap">{{ u.prefijoDe(item.grupoUid) }}</span>
+                      <InputText
+                        :model-value="u.sufijoDe(item)"
+                        size="small"
+                        class="w-full"
+                        @update:model-value="onSufijoItem(item, $event)"
+                      />
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span class="font-medium" :class="item.marcadoEliminar ? 'line-through' : ''">{{ item.nombre }}</span>
+                    <Tag v-if="item.esNuevo" value="Nuevo" severity="success" size="small" class="ml-2" />
+                  </template>
+                  <span v-if="u.multigrupo && !(editando && !item.marcadoEliminar)" class="block text-xs text-surface-400">
                     {{ u.grupoLabel(item.grupoUid) }}
                   </span>
                 </div>
-                <Tag :value="`Piso ${item.piso ?? '—'}`" severity="secondary" size="small" />
+                <div class="flex items-center gap-1">
+                  <Tag v-if="!editando" :value="`Piso ${item.piso ?? '—'}`" severity="secondary" size="small" />
+                  <Button
+                    v-if="editando"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    variant="text"
+                    size="small"
+                    @click="u.eliminarFila(item)"
+                  />
+                </div>
               </div>
-              <div class="mt-1 flex items-center justify-between gap-2 text-sm">
-                <span class="text-surface-400">{{ sectorLabel(item.sectorRef) }}</span>
-                <Tag
-                  v-if="item.error"
-                  :value="item.error"
-                  severity="danger"
-                  size="small"
-                />
+              <div class="mt-2 flex flex-col gap-1">
+                <template v-if="editando && !item.marcadoEliminar">
+                  <template v-if="u.multigrupo">
+                    <label class="text-xs text-surface-400">Tipo</label>
+                    <Select
+                      :model-value="item.grupoUid"
+                      :options="opcionesTipo"
+                      optionLabel="label"
+                      optionValue="value"
+                      class="w-full"
+                      @update:model-value="onGrupoItem(item, $event)"
+                    />
+                  </template>
+                  <div class="flex items-center gap-2">
+                    <label class="text-xs text-surface-400 w-10">Piso</label>
+                    <InputNumber
+                      v-model="item.piso"
+                      size="small"
+                      class="flex-1"
+                      :min-fraction-digits="0"
+                      :max-fraction-digits="0"
+                    />
+                  </div>
+                  <template v-if="u.sectoresOpciones.length">
+                    <label class="text-xs text-surface-400">Sector</label>
+                    <Select
+                      v-model="item.sectorRef"
+                      :options="opcionesSectorFila"
+                      optionLabel="label"
+                      optionValue="ref"
+                      placeholder="Sin sector"
+                      class="w-full"
+                      @change="onSectorFilaChange(item)"
+                    />
+                  </template>
+                </template>
+                <span v-else class="text-sm text-surface-400">{{ sectorLabel(item.sectorRef) }}</span>
+                <Tag v-if="item.error" :value="item.error" severity="danger" size="small" />
+                <Tag v-else-if="item.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
               </div>
             </div>
           </div>
 
           <p v-if="u.resultado" class="text-sm text-green-500 mt-2 m-0">
-            {{ u.resultado.creadas }} {{ etiquetas.plural }} creados. Paso completado.
+            {{ mensajeResultado }} Paso completado.
           </p>
         </div>
 
         <!-- Navegación -->
         <div class="mt-4 flex justify-between items-center gap-2">
           <Button
-            v-if="u.estado.paso > 1"
+            v-if="u.estado.paso > 1 && !u.modoReedicion"
             label="Anterior"
             icon="pi pi-arrow-left"
             variant="text"
@@ -605,7 +792,7 @@ onMounted(() => u.cargar());
             :label="`Guardar ${etiquetas.plural}`"
             icon="pi pi-save"
             :loading="u.enviando"
-            :disabled="!u.estado.items.length"
+            :disabled="!u.itemsValidos"
             @click="guardar"
           />
         </div>
