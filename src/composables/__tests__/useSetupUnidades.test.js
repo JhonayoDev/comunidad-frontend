@@ -9,8 +9,11 @@ vi.mock("@/services/unidadesService", () => ({
   unidadesService: {
     getSectores: vi.fn(),
     getCapacidad: vi.fn(),
+    getUnidades: vi.fn(),
     crearSectoresBatch: vi.fn(),
     crearUnidadesBatch: vi.fn(),
+    actualizarUnidad: vi.fn(),
+    desactivarUnidad: vi.fn(),
   },
 }));
 
@@ -84,11 +87,9 @@ describe("useSetupUnidades", () => {
     expect(u.validoPaso(3)).toBe(true);
   });
 
-  it("fase 3: requiere sector existente si se elige esa opción", () => {
+  it("fase 3: 'existente' no exige selección (la asignación ocurre en fase 4)", () => {
     const u = useSetupUnidades();
     u.estado.sectorOrigen = "existente";
-    expect(u.validoPaso(3)).toBe(false);
-    u.estado.sectorExistenteId = "uuid-sector";
     expect(u.validoPaso(3)).toBe(true);
   });
 
@@ -217,5 +218,152 @@ describe("useSetupUnidades", () => {
     expect(u.borradorRestaurado).toBe(true);
     expect(u.estado.sectorOrigen).toBe("sin-sector");
     expect(u.estado.unidades.every((x) => x.sectorRef === null)).toBe(true);
+  });
+
+  // ─── Reedición (V64) ───
+
+  it("cargar entra en reedición si ya existen unidades (excluye CONDOMINIO e inactivas)", async () => {
+    unidadesService.getSectores.mockResolvedValue({
+      data: [{ id: "sec-1", nombre: "Torre A" }],
+    });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [
+        { id: "u1", numero: "1", tipo: "CASA", piso: 1, activo: true, sectorNombre: "Torre A" },
+        { id: "u2", numero: "2", tipo: "DEPARTAMENTO", piso: 2, activo: true, sectorNombre: null },
+        { id: "u3", numero: "Condominio", tipo: "CONDOMINIO", piso: null, activo: true, sectorNombre: null },
+        { id: "u4", numero: "3", tipo: "CASA", piso: null, activo: false, sectorNombre: null },
+      ],
+    });
+    const u = useSetupUnidades();
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+    expect(u.estado.paso).toBe(5);
+    expect(u.estado.sectorOrigen).toBe("existente");
+    expect(u.estado.unidades.map((x) => x.numero)).toEqual(["1", "2"]);
+    expect(u.estado.unidades[0].unidadId).toBe("u1");
+    expect(u.estado.unidades[0].esNuevo).toBe(false);
+    expect(u.estado.unidades[0].sectorRef).toBe("sec-1");
+    expect(u.estado.unidades[1].sectorRef).toBeNull();
+    expect(u.estado.tipo).toBe("CASA");
+  });
+
+  it("no entra en reedición si no hay unidades creadas", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getUnidades.mockResolvedValue({ data: [] });
+    const u = useSetupUnidades();
+    await u.cargar();
+    expect(u.modoReedicion).toBe(false);
+    expect(u.estado.paso).toBe(1);
+  });
+
+  it("itemsValidos rechaza números vacíos o duplicados y permite eliminar todo", () => {
+    const u = useSetupUnidades();
+    u.estado.unidades = [
+      { id: "a", numero: "1", tipo: "CASA", esNuevo: true, marcadoEliminar: false },
+      { id: "b", numero: "1", tipo: "CASA", esNuevo: true, marcadoEliminar: false },
+    ];
+    expect(u.itemsValidos).toBe(false);
+    u.estado.unidades[1].numero = "2";
+    expect(u.itemsValidos).toBe(true);
+    u.estado.unidades[0].numero = "";
+    expect(u.itemsValidos).toBe(false);
+    u.estado.unidades[0].marcadoEliminar = true;
+    u.estado.unidades[1].marcadoEliminar = true;
+    expect(u.itemsValidos).toBe(true);
+  });
+
+  it("enviar en reedición: batch de nuevas + PUT de editadas + desactivar eliminadas", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [
+        { id: "u1", numero: "1", tipo: "CASA", piso: 1, activo: true, sectorNombre: null },
+        { id: "u2", numero: "2", tipo: "CASA", piso: 2, activo: true, sectorNombre: null },
+      ],
+    });
+    unidadesService.crearUnidadesBatch.mockResolvedValue({
+      data: { creadas: [{ id: "u3", numero: "3" }] },
+    });
+    unidadesService.actualizarUnidad.mockResolvedValue({ data: {} });
+    unidadesService.desactivarUnidad.mockResolvedValue({ data: {} });
+
+    const u = useSetupUnidades();
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+
+    // Editar la 1 (numero), eliminar la 2, agregar una nueva
+    u.estado.unidades[0].numero = "10";
+    u.estado.unidades[1].marcadoEliminar = true;
+    u.agregarFila();
+    u.estado.unidades[2].numero = "3";
+
+    const ok = await u.enviar();
+    expect(ok).toBe(true);
+    expect(unidadesService.crearUnidadesBatch).toHaveBeenCalledWith("cid-1", {
+      unidades: [{ numero: "3", tipo: "CASA", piso: null, sectorId: null }],
+    });
+    expect(unidadesService.actualizarUnidad).toHaveBeenCalledWith("cid-1", "u1", {
+      numero: "10",
+      tipo: "CASA",
+      piso: 1,
+      sectorId: null,
+    });
+    expect(unidadesService.desactivarUnidad).toHaveBeenCalledWith("cid-1", "u2");
+    expect(u.resultado).toEqual({ creadas: 1, actualizadas: 1, eliminadas: 1 });
+    expect(u.estado.unidades.some((x) => x.unidadId === "u2")).toBe(false);
+  });
+
+  it("enviar en reedición: el error de vínculos activos de un PUT se mapea a la fila", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [
+        { id: "u1", numero: "1", tipo: "CASA", piso: 1, activo: true, sectorNombre: null },
+      ],
+    });
+    unidadesService.actualizarUnidad.mockRejectedValue({
+      response: {
+        status: 409,
+        data: {
+          message:
+            "La unidad tiene 2 vínculo(s) activo(s) y no se puede cambiar el número ni el tipo. Solo se puede asignar sector o piso.",
+        },
+      },
+    });
+
+    const u = useSetupUnidades();
+    await u.cargar();
+    u.estado.unidades[0].numero = "99";
+
+    const ok = await u.enviar();
+    expect(ok).toBe(false);
+    expect(u.estado.unidades[0].error).toContain("vínculo(s) activo(s)");
+    expect(u.error).toContain("vínculo(s) activo(s)");
+  });
+
+  it("enviar en reedición: eliminar todo vuelve al wizard de creación (fase 1)", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [
+        { id: "u1", numero: "1", tipo: "CASA", piso: 1, activo: true, sectorNombre: null },
+      ],
+    });
+    unidadesService.desactivarUnidad.mockResolvedValue({ data: {} });
+
+    const u = useSetupUnidades();
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+    u.estado.unidades[0].marcadoEliminar = true;
+
+    const ok = await u.enviar();
+    expect(ok).toBe(true);
+    expect(unidadesService.desactivarUnidad).toHaveBeenCalledWith("cid-1", "u1");
+    expect(u.modoReedicion).toBe(false);
+    expect(u.estado.paso).toBe(1);
+    expect(u.estado.unidades).toEqual([]);
+    expect(u.resultado).toBeNull();
   });
 });

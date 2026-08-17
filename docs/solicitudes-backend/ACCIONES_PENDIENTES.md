@@ -101,7 +101,30 @@ V57-V61).
 - **Estado frontend: ✅ implementado** — `itemsValidos` permite "eliminar todo" en reedición;
   `guardar()` sale del modo edición al guardar bien; `enviar()` vuelve a modo creación (fase 1) si
   tras guardar no quedan entidades activas ni filas nuevas (reset de `estado` + `resultado=null`).
-  Tests 170/170 OK, build OK.
+   Tests 170/170 OK, build OK.
+
+### [ ] P12. Reutilizar números de unidades desactivadas + protección de integridad al renombrar/cambiar tipo con vínculos activos (unidades, estacionamientos y bodegas)
+- **Solicitud:** `SOLICITUD_REUTILIZAR_NUMEROS_UNIDADES_Y_PROTECCION_VINCULOS.md` (2026-08-17)
+- **Estado backend: ✅ implementado** (informe de handoff recibido). Parte A: migración V64
+  (constraint `uq_unidad_numero` → índice único parcial `WHERE activo`, patrón V63) + dedupe
+  `existsByCondominioIdAndNumeroAndActivoTrue` en las 3 llamadas (`crear:137`, `crearBatch:202`,
+  `actualizar:253`). Parte B: si la entidad tiene **vínculos activos** → ❌ renombrar
+  (`numero`/`nombre`), ❌ cambiar `tipo` (unidades), ❌ desactivar (ampliado a **personas +
+  vehículos**); ✅ `sector`/`piso` siempre editables (tags). Aplica a `UnidadService.actualizar`,
+  `EstacionamientoService.actualizar` y `BodegaService.actualizar` (409 con mensaje legible).
+- **Estado frontend: ✅ implementado** — reedición del wizard paso 1 (unidades): `cargar()`
+  consulta existentes (excluye CONDOMINIO e inactivas), fase 5 en modo lectura + edición
+  (Editar/Listo/Cancelar, celdas, "+ Agregar fila", papelera), `itemsValidos` (números únicos,
+  permite "eliminar todo"), `enviar()` batch nuevas + PUT editadas + desactivar eliminadas +
+  vuelta a fase 1 si no quedan, navegación inferior oculta durante edición, patrón "Sin sector"
+  en fase 4 (fix `clearable` roto), fix typo "Lista"→"Listo". En estacionamientos/bodegas:
+  indicador de inmutabilidad (`tieneVinculos` derivado de `propietario`/`arrendatarioEfectivo`/
+  `arrendatariosFuturos`) deshabilita nombre/tipo en edición. Tests 176/176 OK, build OK.
+- **Gap anotado:** `UnidadResumenResponse` NO expone el conteo de vínculos activos (solo
+  `sectorNombre`, sin `sectorId`), por lo que en unidades el indicador de inmutabilidad no se
+  puede prender de forma preventiva — se depende del 409 mapeado a la fila. Si se quiere el
+  candado preventivo en unidades, pedir al backend un campo `vinculosActivos` (o `sectorId`) en
+  `UnidadResumenResponse`.
 
 ### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
 - **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)

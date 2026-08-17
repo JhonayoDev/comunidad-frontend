@@ -39,6 +39,7 @@ export function useSetupUnidades() {
   const sectoresExistentes = ref([]);
   const sectoresHabilitados = ref(true);
   const capacidad = ref(null);
+  const modoReedicion = ref(false);
 
   const estado = reactive({
     paso: 1,
@@ -52,7 +53,8 @@ export function useSetupUnidades() {
     sectorOrigen: "sin-sector", // sin-sector | nuevo | existente
     sectoresNuevos: [{ uid: uid("sector"), nombre: "", descripcion: "" }],
     sectorExistenteId: null,
-    unidades: [], // [{ id, numero, piso, sectorRef, error }]
+    // [{ id, numero, tipo, piso, sectorRef, error, unidadId, esNuevo, marcadoEliminar, original }]
+    unidades: [],
   });
 
   // ─── Numeración (fase 2) ───
@@ -72,11 +74,62 @@ export function useSetupUnidades() {
     estado.unidades = numerosPreview.value.map((n) => ({
       id: uid("unidad"),
       numero: n.numero,
+      tipo: estado.tipo,
       piso: n.piso,
       sectorRef: previo.get(n.numero) ?? null,
       error: null,
+      unidadId: null,
+      esNuevo: true,
+      marcadoEliminar: false,
+      original: null,
     }));
   }
+
+  // ─── Edición manual (fase 5) ───
+  function agregarFila() {
+    estado.unidades.push({
+      id: uid("unidad"),
+      numero: "",
+      tipo: estado.tipo,
+      piso: null,
+      sectorRef: null,
+      error: null,
+      unidadId: null,
+      esNuevo: true,
+      marcadoEliminar: false,
+      original: null,
+    });
+  }
+
+  function eliminarFila(un) {
+    if (un.unidadId) {
+      // Existente en backend → se marca para desactivar al guardar.
+      un.marcadoEliminar = true;
+    } else {
+      const idx = estado.unidades.findIndex((x) => x.id === un.id);
+      if (idx !== -1) estado.unidades.splice(idx, 1);
+    }
+  }
+
+  function cambiado(x) {
+    const o = x.original;
+    if (!o) return false;
+    return (
+      o.numero !== x.numero ||
+      o.tipo !== x.tipo ||
+      o.piso !== x.piso ||
+      o.sectorRef !== x.sectorRef
+    );
+  }
+
+  const itemsValidos = computed(() => {
+    const activos = estado.unidades.filter((x) => !x.marcadoEliminar);
+    // En reedición, "eliminar todo" es válido: se guardan las desactivaciones.
+    if (!activos.length) return estado.unidades.some((x) => x.marcadoEliminar);
+    const numeros = activos.map((x) => (x.numero || "").trim());
+    if (numeros.some((n) => !n)) return false;
+    return new Set(numeros).size === numeros.length;
+  });
 
   // ─── Sectores (fases 3-4) ───
   const sectoresOpciones = computed(() => {
@@ -132,12 +185,12 @@ export function useSetupUnidades() {
           if (!nombres.length) return false;
           return new Set(nombres).size === nombres.length;
         }
-        return !!estado.sectorExistenteId;
+        return true; // la asignación por unidad ocurre en la fase 4
       }
       case 4:
         return true; // "Sin sector" es una asignación válida
       case 5:
-        return estado.unidades.length > 0;
+        return itemsValidos.value;
       default:
         return true;
     }
@@ -162,7 +215,9 @@ export function useSetupUnidades() {
 
   const envelopeExcedido = computed(() => {
     if (!capacidad.value) return false;
-    const totalNuevas = estado.unidades.length || totalGeneradas.value;
+    const totalNuevas = modoReedicion.value
+      ? estado.unidades.filter((x) => x.esNuevo && !x.marcadoEliminar).length
+      : estado.unidades.length || totalGeneradas.value;
     return (capacidad.value.totalActual ?? 0) + totalNuevas > (capacidad.value.planUnidadLimit ?? Infinity);
   });
 
@@ -187,13 +242,29 @@ export function useSetupUnidades() {
       if (!raw) return false;
       const data = JSON.parse(raw);
       if (data.estado && Array.isArray(data.estado.unidades)) {
+        // Normaliza unidades por si el borrador viene de una versión anterior.
+        data.estado.unidades = (data.estado.unidades || []).map((x) => ({
+          id: x.id || uid("unidad"),
+          numero: x.numero ?? "",
+          tipo: x.tipo ?? "CASA",
+          piso: x.piso ?? null,
+          sectorRef: x.sectorRef ?? null,
+          error: x.error ?? null,
+          unidadId: x.unidadId ?? null,
+          esNuevo: x.esNuevo ?? true,
+          marcadoEliminar: x.marcadoEliminar ?? false,
+          original: x.original ?? null,
+        }));
         Object.assign(estado, data.estado);
         if (Array.isArray(data.sectoresExistentes)) {
           sectoresExistentes.value = data.sectoresExistentes;
         }
+        modoReedicion.value = data.estado.unidades.some((x) => x.unidadId);
         borradorRestaurado.value = true;
         return true;
       }
+      // Borrador incompatible (forma anterior sin unidades) → descartar.
+      sessionStorage.removeItem(CLAVE_BORRADOR(cid));
     } catch (e) {
       console.error("Error al restaurar borrador de unidades", e);
     }
@@ -212,36 +283,127 @@ export function useSetupUnidades() {
 
   watch(estado, guardarBorrador, { deep: true });
 
-  // ─── Envío batch (fase 5): sectores primero, unidades después ───
+  // ─── Envío (fase 5): sectores primero, unidades después ───
   async function enviar() {
     if (!cid || !estado.unidades.length) return;
     enviando.value = true;
     error.value = null;
     try {
-      // 1) Sectores nuevos (si aplica)
+      const activos = estado.unidades.filter((x) => !x.marcadoEliminar);
+      let creadas = 0;
+      let actualizadas = 0;
+      let eliminadas = 0;
+
+      // 1) Sectores nuevos (solo aplica en creación inicial con agrupación "nuevo")
       const idPorRef = new Map();
       if (sectoresHabilitados.value && estado.sectorOrigen === "nuevo") {
         const nombres = estado.sectoresNuevos
           .map((s) => ({ nombre: (s.nombre || "").trim(), descripcion: (s.descripcion || "").trim() }))
           .filter((s) => s.nombre);
-        const { data } = await unidadesService.crearSectoresBatch(cid, { sectores: nombres });
-        (data.creados || []).forEach((s) => idPorRef.set(s.nombre, s.id));
+        if (nombres.length) {
+          const { data } = await unidadesService.crearSectoresBatch(cid, { sectores: nombres });
+          (data.creados || []).forEach((s) => idPorRef.set(s.nombre, s.id));
+        }
       }
 
-      // 2) Unidades batch
-      const payload = estado.unidades.map((u) => {
-        let sectorId = null;
-        if (estado.sectorOrigen === "nuevo" && u.sectorRef) {
-          const nuevo = estado.sectoresNuevos.find((s) => s.uid === u.sectorRef);
-          sectorId = idPorRef.get((nuevo?.nombre || "").trim()) ?? null;
-        } else if (estado.sectorOrigen === "existente") {
-          sectorId = u.sectorRef;
+      const resolverSector = (x) => {
+        if (estado.sectorOrigen === "nuevo" && x.sectorRef) {
+          const nuevo = estado.sectoresNuevos.find((s) => s.uid === x.sectorRef);
+          return idPorRef.get((nuevo?.nombre || "").trim()) ?? null;
         }
-        return { numero: u.numero, tipo: estado.tipo, piso: u.piso, sectorId };
-      });
+        if (estado.sectorOrigen === "existente") return x.sectorRef;
+        return null;
+      };
 
-      const { data } = await unidadesService.crearUnidadesBatch(cid, { unidades: payload });
-      resultado.value = { creadas: (data.creadas || []).length };
+      if (modoReedicion.value) {
+        // 2a) Filas nuevas → batch
+        const nuevos = activos.filter((x) => x.esNuevo);
+        if (nuevos.length) {
+          const payload = nuevos.map((x) => ({
+            numero: x.numero,
+            tipo: x.tipo,
+            piso: x.piso,
+            sectorId: resolverSector(x),
+          }));
+          const { data } = await unidadesService.crearUnidadesBatch(cid, { unidades: payload });
+          creadas = (data.creadas || []).length;
+          const porNumero = new Map((data.creadas || []).map((c) => [c.numero, c]));
+          nuevos.forEach((x) => {
+            const c = porNumero.get(x.numero);
+            if (c) {
+              x.unidadId = c.id;
+              x.esNuevo = false;
+              x.original = { numero: x.numero, tipo: x.tipo, piso: x.piso, sectorRef: x.sectorRef };
+            }
+          });
+        }
+
+        // 2b) Existentes con cambios → PUT individual
+        const editados = activos.filter((x) => !x.esNuevo && cambiado(x));
+        for (const x of editados) {
+          try {
+            await unidadesService.actualizarUnidad(cid, x.unidadId, {
+              numero: x.numero,
+              tipo: x.tipo,
+              piso: x.piso,
+              sectorId: resolverSector(x),
+            });
+            x.original = { numero: x.numero, tipo: x.tipo, piso: x.piso, sectorRef: x.sectorRef };
+            actualizadas += 1;
+          } catch (e) {
+            x.error = e?.response?.data?.message || `No se pudo actualizar la unidad ${x.numero}`;
+            throw e;
+          }
+        }
+
+        // 2c) Existentes marcados para eliminar → desactivar
+        const aEliminar = estado.unidades.filter((x) => x.marcadoEliminar && x.unidadId);
+        for (const x of aEliminar) {
+          try {
+            await unidadesService.desactivarUnidad(cid, x.unidadId);
+            eliminadas += 1;
+            const idx = estado.unidades.findIndex((i) => i.id === x.id);
+            if (idx !== -1) estado.unidades.splice(idx, 1);
+          } catch (e) {
+            x.error = e?.response?.data?.message || `No se pudo eliminar la unidad ${x.numero}`;
+            throw e;
+          }
+        }
+      } else {
+        // Creación inicial: batch de todas las filas activas
+        const payload = activos.map((x) => ({
+          numero: x.numero,
+          tipo: x.tipo,
+          piso: x.piso,
+          sectorId: resolverSector(x),
+        }));
+        const { data } = await unidadesService.crearUnidadesBatch(cid, { unidades: payload });
+        creadas = (data.creadas || []).length;
+      }
+
+      // Si en reedición se eliminaron todas las unidades y no quedan filas
+      // nuevas, volver al wizard de creación (fase 1) para poder regenerarlas
+      // con la misma numeración (el backend V64 permite reutilizar números).
+      if (modoReedicion.value && estado.unidades.length === 0) {
+        modoReedicion.value = false;
+        estado.tipo = "CASA";
+        estado.cantidad = 1;
+        estado.modo = "correlativo";
+        estado.desde = "1";
+        estado.pisos = 1;
+        estado.porPiso = 1;
+        estado.personalizado = "";
+        estado.sectorOrigen = "sin-sector";
+        estado.sectoresNuevos = [{ uid: uid("sector"), nombre: "", descripcion: "" }];
+        estado.sectorExistenteId = null;
+        estado.unidades = [];
+        estado.paso = 1;
+        resultado.value = null;
+        descartarBorrador();
+        return true;
+      }
+
+      resultado.value = { creadas, actualizadas, eliminadas };
       descartarBorrador();
       return true;
     } catch (e) {
@@ -249,12 +411,17 @@ export function useSetupUnidades() {
       error.value = e?.response?.data?.message || "No se pudieron guardar las unidades";
       const fields = e?.response?.data?.fields;
       if (Array.isArray(fields)) {
-        estado.unidades.forEach((u) => (u.error = null));
+        estado.unidades.forEach((x) => (x.error = null));
         fields.forEach((f) => {
           const match = /unidades\[(\d+)\]/.exec(f.field || "");
           if (match) {
             const idx = Number(match[1]);
-            if (estado.unidades[idx]) estado.unidades[idx].error = f.message;
+            // En reedición el batch solo contiene filas nuevas; en creación
+            // inicial el índice coincide con estado.unidades.
+            const fila = modoReedicion.value
+              ? estado.unidades.filter((x) => x.esNuevo && !x.marcadoEliminar)[idx]
+              : estado.unidades[idx];
+            if (fila) fila.error = f.message;
           }
         });
       }
@@ -301,6 +468,46 @@ export function useSetupUnidades() {
         estado.sectorExistenteId = null;
         estado.unidades.forEach((u) => (u.sectorRef = null));
       }
+      // Re-entrada: si ya existen unidades creadas y no hay borrador en curso,
+      // cargarlas para reedición (editar/agregar/eliminar) en vez de empezar
+      // de cero. Se excluye la unidad CONDOMINIO (automática, no editable).
+      if (!borradorRestaurado.value && cid) {
+        try {
+          const { data } = await unidadesService.getUnidades(cid);
+          const existentes = Array.isArray(data)
+            ? data.filter((e) => e.activo !== false && e.tipo !== "CONDOMINIO")
+            : [];
+          if (existentes.length > 0) {
+            modoReedicion.value = true;
+            if (sectoresHabilitados.value) estado.sectorOrigen = "existente";
+            // UnidadResumenResponse no trae sectorId, solo sectorNombre:
+            // se resuelve contra la lista de sectores cargada.
+            const sectorIdPorNombre = new Map(
+              sectoresExistentes.value.map((s) => [s.nombre, s.id]),
+            );
+            estado.tipo = existentes[0].tipo;
+            estado.unidades = existentes.map((e) => {
+              const sectorRef = sectorIdPorNombre.get(e.sectorNombre) ?? null;
+              return {
+                id: uid("unidad"),
+                numero: e.numero,
+                tipo: e.tipo,
+                piso: e.piso,
+                sectorRef,
+                error: null,
+                unidadId: e.id,
+                esNuevo: false,
+                marcadoEliminar: false,
+                original: { numero: e.numero, tipo: e.tipo, piso: e.piso, sectorRef },
+              };
+            });
+            estado.paso = 5;
+          }
+        } catch (e) {
+          console.error("No se pudieron cargar las unidades existentes", e);
+          modoReedicion.value = false;
+        }
+      }
     } catch (e) {
       console.error("Error al cargar el wizard de unidades", e);
       error.value = "No se pudo cargar el wizard de unidades";
@@ -320,10 +527,12 @@ export function useSetupUnidades() {
     sectoresHabilitados,
     sectoresOpciones,
     capacidad,
+    modoReedicion,
     estado,
     numerosPreview,
     totalGeneradas,
     envelopeExcedido,
+    itemsValidos,
     validoPaso,
     siguiente,
     atras,
@@ -332,6 +541,8 @@ export function useSetupUnidades() {
     eliminarSectorNuevo,
     asignarSector,
     asignarTodos,
+    agregarFila,
+    eliminarFila,
     guardarBorrador,
     cargarBorrador,
     descartarBorrador,

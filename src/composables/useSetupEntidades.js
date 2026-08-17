@@ -353,6 +353,7 @@ export function useSetupEntidades({ entidad } = {}) {
           esNuevo: x.esNuevo ?? true,
           marcadoEliminar: x.marcadoEliminar ?? false,
           original: x.original ?? null,
+          tieneVinculos: x.tieneVinculos ?? false,
         }));
         Object.assign(estado, data.estado);
         if (Array.isArray(data.sectoresExistentes)) {
@@ -570,6 +571,13 @@ export function useSetupEntidades({ entidad } = {}) {
               esNuevo: false,
               marcadoEliminar: false,
               original: { nombre: e.nombre, piso: e.piso, sectorRef: e.sectorId ?? null },
+              // Con vínculos activos el nombre/tipo son inmutables (backend 409):
+              // solo sector y piso son editables. Se deriva de la respuesta.
+              tieneVinculos: !!(
+                e.propietario ||
+                e.arrendatarioEfectivo ||
+                (e.arrendatariosFuturos && e.arrendatariosFuturos.length)
+              ),
             }));
             estado.paso = 5;
           }

@@ -606,6 +606,7 @@ onMounted(() => u.cargar());
                         optionLabel="label"
                         optionValue="value"
                         class="w-full"
+                        :disabled="item.tieneVinculos"
                         @update:model-value="onGrupoItem(item, $event)"
                       />
                     </template>
@@ -619,8 +620,14 @@ onMounted(() => u.cargar());
                           :model-value="u.sufijoDe(item)"
                           size="small"
                           class="w-full"
+                          :disabled="item.tieneVinculos"
                           @update:model-value="onSufijoItem(item, $event)"
                         />
+                        <i
+                          v-if="item.tieneVinculos"
+                          class="pi pi-lock text-surface-400"
+                          title="Tiene vínculos activos: el nombre no se puede cambiar, solo sector o piso."
+                        ></i>
                       </div>
                     </template>
                     <template v-else>
@@ -690,8 +697,14 @@ onMounted(() => u.cargar());
                         :model-value="u.sufijoDe(item)"
                         size="small"
                         class="w-full"
+                        :disabled="item.tieneVinculos"
                         @update:model-value="onSufijoItem(item, $event)"
                       />
+                      <i
+                        v-if="item.tieneVinculos"
+                        class="pi pi-lock text-surface-400"
+                        title="Tiene vínculos activos: el nombre no se puede cambiar, solo sector o piso."
+                      ></i>
                     </div>
                   </template>
                   <template v-else>
@@ -724,6 +737,7 @@ onMounted(() => u.cargar());
                       optionLabel="label"
                       optionValue="value"
                       class="w-full"
+                      :disabled="item.tieneVinculos"
                       @update:model-value="onGrupoItem(item, $event)"
                     />
                   </template>
