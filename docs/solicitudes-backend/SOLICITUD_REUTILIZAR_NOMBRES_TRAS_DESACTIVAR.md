@@ -3,9 +3,16 @@
 **Versión:** 1.0
 **Fecha:** 2026-08-16
 **Audiencia:** Equipo backend (Spring Boot / JPA)
-**Estado:** Pendiente de implementación
+**Estado:** ✅ Implementada (backend, commit `0940ad6` en `feature/batch-estacionamientos-bodegas`)
 **Relacionado:** `BodegaRepository.java`, `EstacionamientoRepository.java`, `BodegaService.java`,
 `EstacionamientoService.java`, `SOLICITUD_BATCH_ESTACIONAMIENTOS_BODEGAS.md` (implementada)
+
+> **Nota de implementación (backend, commit `0940ad6`):** migración
+> `V63__reutilizar_nombres_tras_desactivar.sql` (constraints UNIQUE → índices únicos parciales
+> `WHERE activo` en `estacionamientos` y `bodegas`), dedupe cambiado a
+> `existsByCondominioIdAndNombreAndActivoTrue` en las 6 llamadas (`crear`, `crearBatch`,
+> `actualizar` de ambos servicios). Tests actualizados: recrear/renombrar/batch con nombres
+> desactivados → 201/200 (estacionamientos y bodegas).
 
 ---
 

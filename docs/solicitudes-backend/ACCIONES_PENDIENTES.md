@@ -155,6 +155,25 @@ V57-V61).
 - La vinculación vehículo→estacionamiento (obsoleta) se eliminó de `VehiculosView.vue` y
   `vehiculosService.js` (los endpoints no existen en `VehiculoController`).
 
+### [ ] F5. Manejo global de demoras de respuesta (timeout) — revisar cómo tratarlo (NUEVO)
+- **Caso ejemplo (2026-08-16):** al guardar estacionamientos en el wizard (fase 5, reedición),
+  `enviar()` de `useSetupEntidades.js` lanzó `AxiosError: timeout of 10000ms exceeded`
+  (`console.error` en línea 487). Al reintentar, guardó bien.
+- **Diagnóstico:** la instancia axios global (`src/services/api.js:11`) tiene `timeout: 10000`.
+  `enviar()` hace una cadena de requests secuenciales (batch + PUTs + PATCHes), cada uno con ese
+  tope. Causa más probable: **cold start del backend remoto** (`apicomunidad.ideaspace.dpdns.org`)
+  — el primer request tras inactividad superó los 10s; al reintentar el servidor ya estaba tibio.
+  El batch es atómico (todo-o-nada), por lo que el intento con timeout no creó nada y el reintento
+  con los mismos nombres funcionó. En reedición los PUT/PATCH son idempotentes → reintentar es seguro.
+- **Pendiente de decidir (global, no solo este caso):**
+  - ¿Extender el timeout por request a los endpoints batch (`crearEstacionamientosBatch`,
+    `crearBodegasBatch`, `crearSectoresBatch`, `crearUnidadesBatch`) con `{ timeout: 30000 }`?
+  - ¿Mensaje distinto ante timeout en `enviar()` (detectar `e.code === 'ECONNABORTED'` +
+    `/timeout/` en `e.message`) en vez del genérico "No se pudieron guardar..."?
+  - ¿Política global de timeouts/retry en `api.js`? (NO auto-reintento del batch: no es
+    idempotente y un reintento automático podría duplicar si el primer intento commiteó).
+- **Impacto:** wizard de estacionamientos/bodegas (fase 5) y wizard paso 1 de unidades (batch).
+
 ## Implementadas (referencia)
 
 | Ítem | Estado |

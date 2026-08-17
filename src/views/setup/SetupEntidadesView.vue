@@ -762,8 +762,9 @@ onMounted(() => u.cargar());
           </p>
         </div>
 
-        <!-- Navegación -->
-        <div class="mt-4 flex justify-between items-center gap-2">
+        <!-- Navegación (oculta durante el modo edición: solo la toolbar de
+             edición Listo/Cancelar/Agregar fila controla la fase 5) -->
+        <div v-if="!editando" class="mt-4 flex justify-between items-center gap-2">
           <Button
             v-if="u.estado.paso > 1 && !u.modoReedicion"
             label="Anterior"
