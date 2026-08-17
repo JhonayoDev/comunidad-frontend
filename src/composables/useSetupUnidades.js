@@ -2,6 +2,7 @@ import { ref, computed, reactive, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { unidadesService } from "@/services/unidadesService";
 import { generarNumeros, parsearListaPersonalizada } from "@/utils/numeracionUnidades";
+import { compararUnidades } from "@/utils/ordenamientoNatural";
 
 const CLAVE_BORRADOR = (cid) => `comunidad:setup-unidades:${cid}`;
 
@@ -109,6 +110,12 @@ export function useSetupUnidades() {
       const idx = estado.unidades.findIndex((x) => x.id === un.id);
       if (idx !== -1) estado.unidades.splice(idx, 1);
     }
+  }
+
+  // Reordena las unidades con orden natural (1, 2, 3, ..., 10, 11...). Se
+  // invoca al salir del modo edición para revisar el listado antes de guardar.
+  function ordenarUnidades() {
+    estado.unidades.sort((a, b) => compararUnidades(a.numero, b.numero));
   }
 
   function cambiado(x) {
@@ -543,6 +550,7 @@ export function useSetupUnidades() {
     asignarTodos,
     agregarFila,
     eliminarFila,
+    ordenarUnidades,
     guardarBorrador,
     cargarBorrador,
     descartarBorrador,

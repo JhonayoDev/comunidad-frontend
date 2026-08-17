@@ -1,8 +1,15 @@
 import api from "./api";
+import { compararUnidades } from "@/utils/ordenamientoNatural";
 
 export const bodegasService = {
-  getBodegas(condominioId) {
-    return api.get(`/condominios/${condominioId}/bodegas`);
+  async getBodegas(condominioId) {
+    const res = await api.get(`/condominios/${condominioId}/bodegas`);
+    // El backend ordena `nombre` como VARCHAR (lexicográfico: B-1, B-10, B-2...).
+    // Se reordena en el frontend con orden natural (B-1, B-2, ..., B-10, B-11...).
+    if (Array.isArray(res.data)) {
+      res.data.sort((a, b) => compararUnidades(a.nombre, b.nombre));
+    }
+    return res;
   },
 
   getBodega(condominioId, id) {

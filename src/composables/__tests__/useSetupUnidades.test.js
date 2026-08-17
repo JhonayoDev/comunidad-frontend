@@ -75,6 +75,18 @@ describe("useSetupUnidades", () => {
     expect(u.estado.unidades[1].sectorRef).toBeNull();
   });
 
+  it("ordenarUnidades reordena con orden natural al salir de edición", () => {
+    const u = useSetupUnidades();
+    u.estado.unidades = [
+      { id: "a", numero: "1", tipo: "CASA" },
+      { id: "b", numero: "10", tipo: "CASA" },
+      { id: "c", numero: "2", tipo: "CASA" },
+      { id: "d", numero: "11", tipo: "CASA" },
+    ];
+    u.ordenarUnidades();
+    expect(u.estado.unidades.map((x) => x.numero)).toEqual(["1", "2", "10", "11"]);
+  });
+
   it("fase 3: valida nombres de sectores nuevos únicos", () => {
     const u = useSetupUnidades();
     u.estado.sectorOrigen = "nuevo";

@@ -83,6 +83,7 @@ function cancelarEdicion() {
 
 function salirEdicion() {
   editando.value = false;
+  u.ordenarItems();
 }
 
 const mensajeResultado = computed(() => {

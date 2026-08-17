@@ -4,6 +4,7 @@ import { unidadesService } from "@/services/unidadesService";
 import { estacionamientosService } from "@/services/estacionamientosService";
 import { bodegasService } from "@/services/bodegasService";
 import { generarNombres, parsearListaPersonalizada } from "@/utils/numeracionUnidades";
+import { compararUnidades } from "@/utils/ordenamientoNatural";
 
 // Configuración por entidad: estacionamientos y bodegas comparten el mismo
 // flujo de 5 fases (sin tipo). Los estacionamientos soportan MÚLTIPLES GRUPOS
@@ -249,6 +250,12 @@ export function useSetupEntidades({ entidad } = {}) {
       const idx = estado.items.findIndex((x) => x.id === item.id);
       if (idx !== -1) estado.items.splice(idx, 1);
     }
+  }
+
+  // Reordena los ítems con orden natural (E-1, E-2, ..., E-10, EV-1...). Se
+  // invoca al salir del modo edición para revisar el listado antes de guardar.
+  function ordenarItems() {
+    estado.items.sort((a, b) => compararUnidades(a.nombre, b.nombre));
   }
 
   function cambiado(x) {
@@ -630,6 +637,7 @@ export function useSetupEntidades({ entidad } = {}) {
     asignarTodos,
     agregarFila,
     eliminarFila,
+    ordenarItems,
     guardarBorrador,
     cargarBorrador,
     descartarBorrador,

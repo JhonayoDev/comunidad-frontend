@@ -77,6 +77,7 @@ function cancelarEdicion() {
 
 function salirEdicion() {
   editando.value = false;
+  u.ordenarUnidades();
 }
 
 const mensajeResultado = computed(() => {

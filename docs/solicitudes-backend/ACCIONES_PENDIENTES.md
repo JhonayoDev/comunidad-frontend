@@ -126,6 +126,18 @@ V57-V61).
   candado preventivo en unidades, pedir al backend un campo `vinculosActivos` (o `sectorId`) en
   `UnidadResumenResponse`.
 
+### [ ] P13. Orden natural de unidades en el backend (NUEVO — revisión futura)
+- **Causa raíz:** `UnidadRepository` ordena `ORDER BY u.numero ASC` y `numero` es VARCHAR →
+  orden **lexicográfico** (`1, 10, 11, 12, 2, 20, 21...`).
+- **Workaround frontend (✅ implementado):** `src/utils/ordenamientoNatural.js`
+  (`compararUnidades`/`ordenarUnidades`) + `unidadesService.getUnidades` reordena `res.data`
+  in-place con orden natural (`1, 2, 3, ..., 10, 11, ..., 20, 21`; números antes que texto →
+  unidad CONDOMINIO al final; maneja mixtos `A-1`/`Casa 10`). Tests 6/6, suite 182/182 OK.
+- **Propuesta para futuro (backend):** orden natural en la query, p.ej.
+  `ORDER BY (numero ~ '^\d+$') DESC, LENGTH(numero), numero` (o campo de orden numérico
+  explícito), para que también clientes externos (móvil/API) queden ordenados. Revisar al
+  tocar el repo de unidades.
+
 ### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
 - **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)
 - **Estado backend: ✅ implementado** en `feature/batch-unidades-sectores` — `POST

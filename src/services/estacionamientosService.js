@@ -1,8 +1,15 @@
 import api from "./api";
+import { compararUnidades } from "@/utils/ordenamientoNatural";
 
 export const estacionamientosService = {
-  getEstacionamientos(condominioId) {
-    return api.get(`/condominios/${condominioId}/estacionamientos`);
+  async getEstacionamientos(condominioId) {
+    const res = await api.get(`/condominios/${condominioId}/estacionamientos`);
+    // El backend ordena `nombre` como VARCHAR (lexicográfico: E-1, E-10, E-2...).
+    // Se reordena en el frontend con orden natural (E-1, E-2, ..., E-10, E-11...).
+    if (Array.isArray(res.data)) {
+      res.data.sort((a, b) => compararUnidades(a.nombre, b.nombre));
+    }
+    return res;
   },
 
   getEstacionamiento(condominioId, id) {

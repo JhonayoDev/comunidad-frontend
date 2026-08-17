@@ -399,6 +399,31 @@ describe("useSetupEntidades", () => {
     expect(bod.estado.items[bod.estado.items.length - 1].nombre).toBe("B-");
   });
 
+  it("ordenarItems reordena con orden natural al salir de edición", () => {
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    u.estado.items = [
+      { id: "a", nombre: "E-1", grupoUid: "g1" },
+      { id: "b", nombre: "EV-1", grupoUid: "g2" },
+      { id: "c", nombre: "EV-2", grupoUid: "g2" },
+      { id: "d", nombre: "E-2", grupoUid: "g1" },
+    ];
+    u.ordenarItems();
+    expect(u.estado.items.map((x) => x.nombre)).toEqual([
+      "E-1", "E-2", "EV-1", "EV-2",
+    ]);
+  });
+
+  it("ordenarItems también ordena bodegas (B-1, B-2, ..., B-10)", () => {
+    const u = useSetupEntidades({ entidad: "bodega" });
+    u.estado.items = [
+      { id: "a", nombre: "B-10", grupoUid: "g1" },
+      { id: "b", nombre: "B-2", grupoUid: "g1" },
+      { id: "c", nombre: "B-1", grupoUid: "g1" },
+    ];
+    u.ordenarItems();
+    expect(u.estado.items.map((x) => x.nombre)).toEqual(["B-1", "B-2", "B-10"]);
+  });
+
   it("itemsValidos rechaza nombres con sufijo vacío (solo prefijo)", () => {
     const u = useSetupEntidades({ entidad: "estacionamiento" });
     u.estado.grupos[0].modo = "correlativo";
