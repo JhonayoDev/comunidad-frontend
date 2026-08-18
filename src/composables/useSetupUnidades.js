@@ -41,6 +41,8 @@ export function useSetupUnidades() {
   const sectoresHabilitados = ref(true);
   const capacidad = ref(null);
   const modoReedicion = ref(false);
+  const pisosDisponibles = ref([]);
+  const pisosHabilitados = ref(true);
 
   const estado = reactive({
     paso: 1,
@@ -106,6 +108,7 @@ export function useSetupUnidades() {
     if (un.unidadId) {
       // Existente en backend → se marca para desactivar al guardar.
       un.marcadoEliminar = true;
+      un.error = null;
     } else {
       const idx = estado.unidades.findIndex((x) => x.id === un.id);
       if (idx !== -1) estado.unidades.splice(idx, 1);
@@ -138,6 +141,8 @@ export function useSetupUnidades() {
     return new Set(numeros).size === numeros.length;
   });
 
+  const tieneErrores = computed(() => estado.unidades.some((x) => x.error));
+
   // ─── Sectores (fases 3-4) ───
   const sectoresOpciones = computed(() => {
     if (!sectoresHabilitados.value || estado.sectorOrigen === "sin-sector") return [];
@@ -154,6 +159,40 @@ export function useSetupUnidades() {
       label: s.nombre,
     }));
   });
+
+  // ─── Pisos (catálogo declarado; numeración "por-piso" y columna Piso) ───
+  const pisosOpciones = computed(() => {
+    if (!pisosHabilitados.value) return [];
+    return pisosDisponibles.value.map((p) => ({
+      value: p.numero,
+      label: p.nombre ? `${p.numero} · ${p.nombre}` : `${p.numero}`,
+    }));
+  });
+
+  const pisosLista = computed(() =>
+    pisosDisponibles.value.map((p) => p.numero).join(",")
+  );
+
+  async function cargarPisos() {
+    if (!cid) return;
+    try {
+      const { data } = await unidadesService.getPisos(cid);
+      pisosDisponibles.value = Array.isArray(data)
+        ? data
+            .filter((p) => p.activo !== false)
+            .map((p) => ({ id: p.id, numero: p.numero, nombre: p.nombre }))
+        : [];
+      pisosHabilitados.value = true;
+    } catch (e) {
+      if (e?.response?.status === 403) {
+        // Sin permiso PISO_VER → se omite el catálogo y el piso queda libre.
+        pisosHabilitados.value = false;
+      } else {
+        console.error("Error al cargar pisos declarados", e);
+      }
+      pisosDisponibles.value = [];
+    }
+  }
 
   function agregarSectorNuevo() {
     estado.sectoresNuevos.push({ uid: uid("sector"), nombre: "", descripcion: "" });
@@ -300,6 +339,7 @@ export function useSetupUnidades() {
       let creadas = 0;
       let actualizadas = 0;
       let eliminadas = 0;
+      let hayErrores = false;
 
       // 1) Sectores nuevos (solo aplica en creación inicial con agrupación "nuevo")
       const idPorRef = new Map();
@@ -372,8 +412,12 @@ export function useSetupUnidades() {
             const idx = estado.unidades.findIndex((i) => i.id === x.id);
             if (idx !== -1) estado.unidades.splice(idx, 1);
           } catch (e) {
+            // La desactivación falló (p.ej. 409: vínculos activos) → la fila
+            // vuelve a su estado normal (NO quedó eliminada) y se muestra el
+            // error. Una fila que falla no aborta el resto.
+            x.marcadoEliminar = false;
             x.error = e?.response?.data?.message || `No se pudo eliminar la unidad ${x.numero}`;
-            throw e;
+            hayErrores = true;
           }
         }
       } else {
@@ -411,8 +455,8 @@ export function useSetupUnidades() {
       }
 
       resultado.value = { creadas, actualizadas, eliminadas };
-      descartarBorrador();
-      return true;
+      if (!hayErrores) descartarBorrador();
+      return !hayErrores;
     } catch (e) {
       console.error("Error al guardar unidades", e);
       error.value = e?.response?.data?.message || "No se pudieron guardar las unidades";
@@ -466,6 +510,7 @@ export function useSetupUnidades() {
           }
           capacidad.value = null;
         }
+        await cargarPisos();
       }
       cargarBorrador();
       // Si el cargo perdió/omite permisos SECTOR_*, descartar cualquier
@@ -533,6 +578,10 @@ export function useSetupUnidades() {
     sectoresExistentes,
     sectoresHabilitados,
     sectoresOpciones,
+    pisosDisponibles,
+    pisosHabilitados,
+    pisosOpciones,
+    pisosLista,
     capacidad,
     modoReedicion,
     estado,
@@ -540,10 +589,12 @@ export function useSetupUnidades() {
     totalGeneradas,
     envelopeExcedido,
     itemsValidos,
+    tieneErrores,
     validoPaso,
     siguiente,
     atras,
     generarUnidades,
+    cargarPisos,
     agregarSectorNuevo,
     eliminarSectorNuevo,
     asignarSector,

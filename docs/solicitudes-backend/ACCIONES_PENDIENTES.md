@@ -138,6 +138,53 @@ V57-V61).
   explícito), para que también clientes externos (móvil/API) queden ordenados. Revisar al
   tocar el repo de unidades.
 
+### [x] P14. Reutilizar nombres de sectores desactivados (dedupe ignora `activo=false`)
+- **Solicitud:** `SOLICITUD_SECTORES_NOMBRES_REUTILIZABLES.md` (2026-08-17)
+- **Estado backend: ✅ implementado (V65).** `SectorRepository.existsByCondominioIdAndNombreAndActivoTrue`
+  en las 3 llamadas (`SectorService.crear:53`, `crearBatch:88`, `actualizar:117-120`). Migración
+  `V65__sectores_nombres_reutilizables.sql`: sanitiza duplicados activos y crea el índice parcial
+  `uq_sector_cond_nombre_activo ON sectores (condominio_id, nombre) WHERE activo`. Reglas nuevas:
+  recrear un nombre desactivado → 201; renombrar a un nombre desactivado → 200; dedupe solo entre
+  activos; **reactivación protegida** (`actualizar` valida solo si el resultado es activo Y cambia el
+  nombre o el sector estaba inactivo → 409 si el nombre lo ocupa otro activo). `desactivar` intacto
+  (204 / 409 con conteos). `GET /sectores` sigue devolviendo solo activos.
+- **Estado frontend: ✅ implementado** — vista de gestión de sectores (etapa 2 del wizard):
+  `SetupSectoresView.vue` + `useSetupSectores.js` (listar activos con orden natural, crear/editar
+  nombre+descripción, desactivar con 409 mapeado a la fila "sector en uso", "eliminar todo" válido,
+  degradación con aviso si el cargo no tiene `SECTOR_*` — el cargo ADMINISTRADOR residente no los
+  tiene; rol ADMINISTRADOR sí, V62). `unidadesService` += `actualizarSector`/`desactivarSector`.
+  `SETUP_PASOS` += paso `sectores` (etapa 2, siempre visible, completado con `unidades > 0`).
+  Tests 8/8 nuevos, suite 193/193 OK, build OK.
+
+### [x] P15. Entidad `Piso` — catálogo de pisos del condominio
+- **Solicitud:** `SOLICITUD_ENTIDAD_PISOS.md` (2026-08-17)
+- **Estado backend: ✅ implementado (V66).** Tabla `pisos` (numero Integer con negativos,
+  nombre/descripcion opcionales, `activo`), índice único parcial
+  `uq_piso_cond_numero_activo (condominio_id, numero) WHERE activo` (desactivar libera el
+  número, patrón V65), permisos `PISO_VER/CREAR/EDITAR/ELIMINAR` — **cargo ADMINISTRADOR con
+  los 4** (a diferencia de V62), PRESIDENTE 4, SECRETARIO VER/CREAR/EDITAR, CONSERJE/GUARDIA
+  VER. `PisoController` espejo de sectores (`GET/POST/POST batch/PUT/PATCH desactivar` bajo
+  `/api/v1/condominios/{cid}/pisos`); `PisoService.actualizar` valida el dedupe solo si el
+  resultado queda activo Y cambió el número o estaba inactivo (reactivación protegida);
+  `desactivar` → 409 con conteos (unidades/bodegas/estacionamientos/espacios comunes activos
+  con ese `piso`). Tests 27 nuevos (PisoIntegrationTest 22 + PisosBatchIntegrationTest 5),
+  suite backend 805 OK.
+- **Estado frontend: ✅ implementado** — vista de gestión de pisos (etapa 3 del wizard):
+  `SetupPisosView.vue` + `useSetupPisos.js` (espejo de sectores: listar activos ordenados por
+  número con subterráneos primero, crear/editar número+nombre+descripción, desactivar con 409
+  mapeado a la fila "piso en uso" que revierte `marcadoEliminar=false`, banner de resumen,
+  Tag compacto "No eliminado" y ConfirmDialog — patrón A+B+C+D); `unidadesService` +=
+  `getPisos`/`crearPiso`/`crearPisosBatch`/`actualizarPiso`/`desactivarPiso`. `SETUP_PASOS` +=
+  paso `pisos` (etapa 3, entre sectores y estacionamientos, siempre visible, completado con
+  `unidades > 0`). Tests 8/8 nuevos (`useSetupPisos.test.js`), suite 203/203 OK, build OK.
+- **Acople al wizard de unidades/estacionamientos/bodegas: ✅ implementado** — `useSetupUnidades`
+  y `useSetupEntidades` cargan el catálogo (`cargarPisos()` → `GET /pisos`, degradación 403 →
+  `pisosHabilitados=false` y piso libre) y exponen `pisosDisponibles`/`pisosOpciones`/`pisosLista`;
+  en la numeración "por-piso" de estacionamientos/bodegas se muestra "Pisos declarados: X" con
+  botón "Usar declarados" (prefill de la lista `"1,2,-1"`); en fase 5/reedición la columna Piso
+  pasa a `Select` de los pisos declarados (opción sentinela "Sin piso", patrón `SIN_SECTOR`) con
+  fallback a `InputNumber` si no hay catálogo. Tests 4/4 nuevos, suite 207/207 OK, build OK.
+
 ### [ ] P9. Batch de unidades y sectores (para wizard paso 1)
 - **Solicitud:** `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (2026-08-15)
 - **Estado backend: ✅ implementado** en `feature/batch-unidades-sectores` — `POST
@@ -223,4 +270,5 @@ V57-V61).
 | Planes inactivos + reactivación — `SOLICITUD_PLANES_INACTIVOS_REACTIVAR.md` | ✅ Implementado |
 | Plantillas globales superadmin — `SOLICITUD_PLANTILLAS_GLOBALES_SUPERADMIN.md` | ✅ Implementado |
 | Batch de unidades y sectores — `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (P9) | ✅ Implementado |
+| Entidad `Piso` (catálogo de pisos) — `SOLICITUD_ENTIDAD_PISOS.md` (P15, V66) | ✅ Implementado |
 | `SOLICITUD_IMPORTACION_MASIVA_EXCEL_CSV.md` (ver P2) | ⏳ Pendiente |

@@ -67,6 +67,8 @@ export function useSetupEntidades({ entidad } = {}) {
   const sectoresHabilitados = ref(true);
   const capacidad = ref(null);
   const modoReedicion = ref(false);
+  const pisosDisponibles = ref([]);
+  const pisosHabilitados = ref(true);
 
   // Crea un grupo nuevo. En estacionamientos, el segundo grupo se sugiere como
   // "Visitas · EV-" (el caso común); el resto es editable.
@@ -205,6 +207,40 @@ export function useSetupEntidades({ entidad } = {}) {
     }));
   });
 
+  // ─── Pisos (catálogo declarado; numeración "por-piso" y columna Piso) ───
+  const pisosOpciones = computed(() => {
+    if (!pisosHabilitados.value) return [];
+    return pisosDisponibles.value.map((p) => ({
+      value: p.numero,
+      label: p.nombre ? `${p.numero} · ${p.nombre}` : `${p.numero}`,
+    }));
+  });
+
+  const pisosLista = computed(() =>
+    pisosDisponibles.value.map((p) => p.numero).join(",")
+  );
+
+  async function cargarPisos() {
+    if (!cid) return;
+    try {
+      const { data } = await unidadesService.getPisos(cid);
+      pisosDisponibles.value = Array.isArray(data)
+        ? data
+            .filter((p) => p.activo !== false)
+            .map((p) => ({ id: p.id, numero: p.numero, nombre: p.nombre }))
+        : [];
+      pisosHabilitados.value = true;
+    } catch (e) {
+      if (e?.response?.status === 403) {
+        // Sin permiso PISO_VER → se omite el catálogo y el piso queda libre.
+        pisosHabilitados.value = false;
+      } else {
+        console.error("Error al cargar pisos declarados", e);
+      }
+      pisosDisponibles.value = [];
+    }
+  }
+
   function agregarSectorNuevo() {
     estado.sectoresNuevos.push({ uid: uid("sector"), nombre: "", descripcion: "" });
   }
@@ -246,6 +282,7 @@ export function useSetupEntidades({ entidad } = {}) {
     if (item.entidadId) {
       // Existente en backend → se marca para desactivar al guardar.
       item.marcadoEliminar = true;
+      item.error = null;
     } else {
       const idx = estado.items.findIndex((x) => x.id === item.id);
       if (idx !== -1) estado.items.splice(idx, 1);
@@ -275,6 +312,8 @@ export function useSetupEntidades({ entidad } = {}) {
     if (nombres.some((n) => !n)) return false;
     return new Set(nombres).size === nombres.length;
   });
+
+  const tieneErrores = computed(() => estado.items.some((x) => x.error));
 
   // ─── Validación por fase ───
   function validoPaso(paso) {
@@ -400,6 +439,7 @@ export function useSetupEntidades({ entidad } = {}) {
       let creadas = 0;
       let actualizadas = 0;
       let eliminadas = 0;
+      let hayErrores = false;
 
       // 1) Sectores nuevos (solo aplica en creación inicial con agrupación "nuevo")
       const idPorRef = new Map();
@@ -462,8 +502,12 @@ export function useSetupEntidades({ entidad } = {}) {
             const idx = estado.items.findIndex((i) => i.id === x.id);
             if (idx !== -1) estado.items.splice(idx, 1);
           } catch (e) {
+            // La desactivación falló (p.ej. 409: vínculos activos) → la fila
+            // vuelve a su estado normal (NO quedó eliminada) y se muestra el
+            // error. Una fila que falla no aborta el resto.
+            x.marcadoEliminar = false;
             x.error = e?.response?.data?.message || `No se pudo eliminar ${x.nombre}`;
-            throw e;
+            hayErrores = true;
           }
         }
       } else {
@@ -489,8 +533,8 @@ export function useSetupEntidades({ entidad } = {}) {
       }
 
       resultado.value = { creadas, actualizadas, eliminadas };
-      descartarBorrador();
-      return true;
+      if (!hayErrores) descartarBorrador();
+      return !hayErrores;
     } catch (e) {
       console.error(`Error al guardar ${cfg.labelPlural}`, e);
       error.value = e?.response?.data?.message || `No se pudieron guardar los ${cfg.labelPlural}`;
@@ -544,6 +588,7 @@ export function useSetupEntidades({ entidad } = {}) {
           }
           capacidad.value = null;
         }
+        await cargarPisos();
       }
       cargarBorrador();
       // Si el cargo perdió/omite permisos SECTOR_*, descartar cualquier
@@ -611,6 +656,10 @@ export function useSetupEntidades({ entidad } = {}) {
     sectoresExistentes,
     sectoresHabilitados,
     sectoresOpciones,
+    pisosDisponibles,
+    pisosHabilitados,
+    pisosOpciones,
+    pisosLista,
     capacidad,
     modoReedicion,
     multigrupo: cfg.multigrupo,
@@ -621,10 +670,12 @@ export function useSetupEntidades({ entidad } = {}) {
     totalGeneradas,
     envelopeExcedido,
     itemsValidos,
+    tieneErrores,
     validoPaso,
     siguiente,
     atras,
     generarItems,
+    cargarPisos,
     agregarGrupo,
     eliminarGrupo,
     grupoLabel,

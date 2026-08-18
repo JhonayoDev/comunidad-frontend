@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
+import { useConfirm } from "primevue/useconfirm";
 import { useSetupEntidades, PASOS_ENTIDADES } from "@/composables/useSetupEntidades";
 import { MODOS_NUMERACION } from "@/utils/numeracionUnidades";
 
@@ -12,6 +13,7 @@ import Select from "primevue/select";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
+import ConfirmDialog from "primevue/confirmdialog";
 
 const props = defineProps({
   entidad: { type: String, default: "estacionamiento" },
@@ -19,6 +21,7 @@ const props = defineProps({
 const emit = defineEmits(["actualizado"]);
 
 const u = useSetupEntidades({ entidad: props.entidad });
+const confirm = useConfirm();
 
 const etiquetas = computed(() => ({
   singular: props.entidad === "bodega" ? "bodega" : "estacionamiento",
@@ -53,6 +56,27 @@ function onSectorFilaChange(item) {
   if (item.sectorRef === SIN_SECTOR) item.sectorRef = null;
 }
 
+const SIN_PISO = "__sin_piso__";
+
+const opcionesPisoFila = computed(() => [
+  { value: SIN_PISO, label: "Sin piso" },
+  ...u.pisosOpciones,
+]);
+
+function onPisoFilaChange(item) {
+  if (item.piso === SIN_PISO) item.piso = null;
+}
+
+function pisoLabel(item) {
+  if (item.piso === null || item.piso === undefined) return "—";
+  const o = u.pisosOpciones.find((p) => p.value === item.piso);
+  return o ? o.label : `${item.piso}`;
+}
+
+function usarPisosDeclarados(g) {
+  g.pisos = u.pisosLista;
+}
+
 const opcionesTipo = computed(() =>
   u.estado.grupos.map((g) => ({ value: g.uid, label: u.grupoLabel(g.uid) })),
 );
@@ -72,6 +96,8 @@ const editando = ref(false);
 const snapshotEdicion = ref(null);
 
 function entrarEdicion() {
+  // Los errores de un guardado anterior no deben persistir al reintentar.
+  u.estado.items.forEach((x) => (x.error = null));
   snapshotEdicion.value = JSON.parse(JSON.stringify(u.estado.items));
   editando.value = true;
 }
@@ -86,6 +112,17 @@ function salirEdicion() {
   u.ordenarItems();
 }
 
+function confirmarEliminar(item) {
+  confirm.require({
+    message: `¿Desactivar "${item.nombre}"? No se podrá si tiene personas u otras entidades activas vinculadas.`,
+    header: `Desactivar ${etiquetas.singular}`,
+    icon: "pi pi-exclamation-triangle",
+    acceptLabel: "Desactivar",
+    rejectLabel: "Cancelar",
+    accept: () => u.eliminarFila(item),
+  });
+}
+
 const mensajeResultado = computed(() => {
   const r = u.resultado;
   if (!r) return "";
@@ -95,6 +132,10 @@ const mensajeResultado = computed(() => {
   if (r.eliminadas) partes.push(`${r.eliminadas} eliminados`);
   return partes.length ? partes.join(", ") + "." : "Sin cambios.";
 });
+
+const erroresResumen = computed(() =>
+  u.estado.items.filter((x) => x.error).map((x) => `${x.nombre}: ${x.error}`)
+);
 
 function sectorLabel(ref) {
   const o = u.sectoresOpciones.find((s) => s.ref === ref);
@@ -308,6 +349,24 @@ onMounted(() => u.cargar());
                 </div>
               </div>
 
+              <div
+                v-if="g.modo === 'por-piso' && u.pisosDisponibles.length"
+                class="flex flex-wrap items-center gap-2"
+              >
+                <Tag
+                  :value="`Pisos declarados: ${u.pisosLista}`"
+                  severity="info"
+                  size="small"
+                />
+                <Button
+                  label="Usar declarados"
+                  icon="pi pi-check"
+                  size="small"
+                  variant="text"
+                  @click="usarPisosDeclarados(g)"
+                />
+              </div>
+
               <div v-else class="flex flex-col gap-1">
                 <label class="text-sm">Lista de nombres (uno por línea o separados por coma)</label>
                 <Textarea v-model="g.personalizado" rows="4" />
@@ -380,6 +439,24 @@ onMounted(() => u.cargar());
                   class="w-full"
                 />
               </div>
+            </div>
+
+            <div
+              v-if="u.estado.grupos[0].modo === 'por-piso' && u.pisosDisponibles.length"
+              class="flex flex-wrap items-center gap-2"
+            >
+              <Tag
+                :value="`Pisos declarados: ${u.pisosLista}`"
+                severity="info"
+                size="small"
+              />
+              <Button
+                label="Usar declarados"
+                icon="pi pi-check"
+                size="small"
+                variant="text"
+                @click="usarPisosDeclarados(u.estado.grupos[0])"
+              />
             </div>
 
             <div v-else class="flex flex-col gap-1">
@@ -573,6 +650,17 @@ onMounted(() => u.cargar());
           </div>
 
           <Message
+            v-if="erroresResumen.length"
+            severity="error"
+            :closable="false"
+          >
+            <div class="flex flex-col gap-1">
+              <span>No se pudieron guardar los siguientes {{ etiquetas.plural }}:</span>
+              <span v-for="(e, i) in erroresResumen" :key="i" class="text-sm">{{ e }}</span>
+            </div>
+          </Message>
+
+          <Message
             v-if="u.envelopeExcedido"
             severity="warn"
             :closable="false"
@@ -638,7 +726,18 @@ onMounted(() => u.cargar());
                   </td>
                   <td>
                     <template v-if="editando && !item.marcadoEliminar">
+                      <Select
+                        v-if="opcionesPisoFila.length"
+                        v-model="item.piso"
+                        :options="opcionesPisoFila"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Sin piso"
+                        class="w-full"
+                        @change="onPisoFilaChange(item)"
+                      />
                       <InputNumber
+                        v-else
                         v-model="item.piso"
                         size="small"
                         class="w-full"
@@ -646,7 +745,7 @@ onMounted(() => u.cargar());
                         :max-fraction-digits="0"
                       />
                     </template>
-                    <span v-else>{{ item.piso ?? "—" }}</span>
+                    <span v-else>{{ pisoLabel(item) }}</span>
                   </td>
                   <td>
                     <template v-if="editando && !item.marcadoEliminar && u.sectoresOpciones.length">
@@ -663,7 +762,13 @@ onMounted(() => u.cargar());
                     <span v-else>{{ sectorLabel(item.sectorRef) }}</span>
                   </td>
                   <td>
-                    <Tag v-if="item.error" :value="item.error" severity="danger" size="small" />
+                    <Tag
+                      v-if="item.error"
+                      value="No eliminado"
+                      severity="danger"
+                      size="small"
+                      :title="item.error"
+                    />
                     <Tag v-else-if="item.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
                     <span v-else class="text-green-500 text-sm">Listo</span>
                   </td>
@@ -673,7 +778,7 @@ onMounted(() => u.cargar());
                       severity="danger"
                       variant="text"
                       size="small"
-                      @click="u.eliminarFila(item)"
+                      @click="confirmarEliminar(item)"
                     />
                   </td>
                 </tr>
@@ -724,7 +829,7 @@ onMounted(() => u.cargar());
                     severity="danger"
                     variant="text"
                     size="small"
-                    @click="u.eliminarFila(item)"
+                    @click="confirmarEliminar(item)"
                   />
                 </div>
               </div>
@@ -744,7 +849,18 @@ onMounted(() => u.cargar());
                   </template>
                   <div class="flex items-center gap-2">
                     <label class="text-xs text-surface-400 w-10">Piso</label>
+                    <Select
+                      v-if="opcionesPisoFila.length"
+                      v-model="item.piso"
+                      :options="opcionesPisoFila"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Sin piso"
+                      class="flex-1"
+                      @change="onPisoFilaChange(item)"
+                    />
                     <InputNumber
+                      v-else
                       v-model="item.piso"
                       size="small"
                       class="flex-1"
@@ -773,7 +889,7 @@ onMounted(() => u.cargar());
           </div>
 
           <p v-if="u.resultado" class="text-sm text-green-500 mt-2 m-0">
-            {{ mensajeResultado }} Paso completado.
+            {{ mensajeResultado }}<template v-if="!u.tieneErrores"> Paso completado.</template>
           </p>
         </div>
 
@@ -812,4 +928,5 @@ onMounted(() => u.cargar());
       </template>
     </template>
   </Card>
+  <ConfirmDialog />
 </template>

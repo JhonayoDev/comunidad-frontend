@@ -40,6 +40,34 @@ export const unidadesService = {
     return api.post(`/condominios/${condominioId}/sectores/batch`, data);
   },
 
+  actualizarSector(condominioId, id, data) {
+    return api.put(`/condominios/${condominioId}/sectores/${id}`, data);
+  },
+
+  desactivarSector(condominioId, id) {
+    return api.patch(`/condominios/${condominioId}/sectores/${id}/desactivar`);
+  },
+
+  getPisos(condominioId) {
+    return api.get(`/condominios/${condominioId}/pisos`);
+  },
+
+  crearPiso(condominioId, data) {
+    return api.post(`/condominios/${condominioId}/pisos`, data);
+  },
+
+  crearPisosBatch(condominioId, data) {
+    return api.post(`/condominios/${condominioId}/pisos/batch`, data);
+  },
+
+  actualizarPiso(condominioId, id, data) {
+    return api.put(`/condominios/${condominioId}/pisos/${id}`, data);
+  },
+
+  desactivarPiso(condominioId, id) {
+    return api.patch(`/condominios/${condominioId}/pisos/${id}/desactivar`);
+  },
+
   crearUnidadesBatch(condominioId, data) {
     return api.post(`/condominios/${condominioId}/unidades/batch`, data);
   },

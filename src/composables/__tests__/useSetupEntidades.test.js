@@ -8,6 +8,7 @@ vi.mock("@/stores/authStore", () => ({
 vi.mock("@/services/unidadesService", () => ({
   unidadesService: {
     getSectores: vi.fn(),
+    getPisos: vi.fn(),
     getCapacidad: vi.fn(),
     crearSectoresBatch: vi.fn(),
   },
@@ -39,6 +40,7 @@ describe("useSetupEntidades", () => {
   beforeEach(() => {
     sessionStorage.clear();
     vi.clearAllMocks();
+    unidadesService.getPisos.mockResolvedValue({ data: [] });
   });
 
   it("expone las 5 fases del wizard", () => {
@@ -652,5 +654,79 @@ describe("useSetupEntidades", () => {
     expect(u.modoReedicion).toBe(true);
     expect(u.estado.items).toHaveLength(1);
     expect(u.resultado).toEqual({ creadas: 1, actualizadas: 0, eliminadas: 1 });
+  });
+
+  it("enviar en reedición: un 409 al desactivar revierte la fila y no aborta el resto", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [
+        { id: "e1", nombre: "E-1", piso: null, sectorId: null, activo: true },
+        { id: "e2", nombre: "E-2", piso: null, sectorId: null, activo: true },
+      ],
+    });
+    estacionamientosService.desactivarEstacionamiento
+      .mockResolvedValueOnce({ data: {} })
+      .mockRejectedValueOnce({
+        response: {
+          status: 409,
+          data: {
+            message: "El estacionamiento E-2 tiene 2 vínculo(s) activo(s) y no se puede desactivar",
+          },
+        },
+      });
+
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+    u.eliminarFila(u.estado.items[0]);
+    u.eliminarFila(u.estado.items[1]);
+
+    const ok = await u.enviar();
+    expect(ok).toBe(false);
+    expect(u.tieneErrores).toBe(true);
+    // La fila que falló NO quedó eliminada: vuelve a su estado normal.
+    const e2 = u.estado.items.find((x) => x.entidadId === "e2");
+    expect(e2).toBeDefined();
+    expect(e2.marcadoEliminar).toBe(false);
+    expect(e2.error).toContain("vínculo(s) activo(s)");
+    // La que sí se pudo desactivar se eliminó de la lista.
+    expect(u.estado.items.some((x) => x.entidadId === "e1")).toBe(false);
+    expect(u.resultado).toEqual({ creadas: 0, actualizadas: 0, eliminadas: 1 });
+  });
+
+  // ─── Catálogo de pisos (V66) ───
+
+  it("cargar carga el catálogo de pisos declarados (GET /pisos) y expone opciones", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({ data: [] });
+    unidadesService.getPisos.mockResolvedValue({
+      data: [
+        { id: "p1", numero: 1, nombre: "Primer piso", activo: true },
+        { id: "p2", numero: -1, nombre: null, activo: true },
+      ],
+    });
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.pisosHabilitados).toBe(true);
+    expect(u.pisosDisponibles.map((p) => p.numero)).toEqual([1, -1]);
+    expect(u.pisosOpciones).toEqual([
+      { value: 1, label: "1 · Primer piso" },
+      { value: -1, label: "-1" },
+    ]);
+    expect(u.pisosLista).toBe("1,-1");
+  });
+
+  it("degrada el catálogo de pisos si no hay permiso (403) → piso libre", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({ data: [] });
+    unidadesService.getPisos.mockRejectedValue({ response: { status: 403 } });
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.pisosHabilitados).toBe(false);
+    expect(u.pisosDisponibles).toEqual([]);
+    expect(u.pisosOpciones).toEqual([]);
   });
 });

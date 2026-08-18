@@ -8,6 +8,7 @@ vi.mock("@/stores/authStore", () => ({
 vi.mock("@/services/unidadesService", () => ({
   unidadesService: {
     getSectores: vi.fn(),
+    getPisos: vi.fn(),
     getCapacidad: vi.fn(),
     getUnidades: vi.fn(),
     crearSectoresBatch: vi.fn(),
@@ -23,6 +24,7 @@ describe("useSetupUnidades", () => {
   beforeEach(() => {
     sessionStorage.clear();
     vi.clearAllMocks();
+    unidadesService.getPisos.mockResolvedValue({ data: [] });
   });
 
   it("expone los tipos de unidad creables (sin CONDOMINIO/ESTACIONAMIENTO/BODEGA)", () => {
@@ -377,5 +379,78 @@ describe("useSetupUnidades", () => {
     expect(u.estado.paso).toBe(1);
     expect(u.estado.unidades).toEqual([]);
     expect(u.resultado).toBeNull();
+  });
+
+  it("enviar en reedición: un 409 al desactivar revierte la fila y no aborta el resto", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [
+        { id: "u1", numero: "1", tipo: "CASA", piso: 1, activo: true, sectorNombre: null },
+        { id: "u2", numero: "2", tipo: "CASA", piso: 2, activo: true, sectorNombre: null },
+      ],
+    });
+    unidadesService.desactivarUnidad
+      .mockResolvedValueOnce({ data: {} })
+      .mockRejectedValueOnce({
+        response: {
+          status: 409,
+          data: {
+            message: "La unidad 2 tiene 3 vínculo(s) activo(s) y no se puede desactivar",
+          },
+        },
+      });
+
+    const u = useSetupUnidades();
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+    u.estado.unidades[0].marcadoEliminar = true;
+    u.estado.unidades[1].marcadoEliminar = true;
+
+    const ok = await u.enviar();
+    expect(ok).toBe(false);
+    expect(u.tieneErrores).toBe(true);
+    // La fila que falló NO quedó eliminada: vuelve a su estado normal.
+    const u2 = u.estado.unidades.find((x) => x.unidadId === "u2");
+    expect(u2).toBeDefined();
+    expect(u2.marcadoEliminar).toBe(false);
+    expect(u2.error).toContain("vínculo(s) activo(s)");
+    // La que sí se pudo desactivar se eliminó de la lista.
+    expect(u.estado.unidades.some((x) => x.unidadId === "u1")).toBe(false);
+    expect(u.resultado).toEqual({ creadas: 0, actualizadas: 0, eliminadas: 1 });
+  });
+
+  // ─── Catálogo de pisos (V66) ───
+
+  it("cargar carga el catálogo de pisos declarados (GET /pisos) y expone opciones", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getPisos.mockResolvedValue({
+      data: [
+        { id: "p1", numero: 1, nombre: "Primer piso", activo: true },
+        { id: "p2", numero: -1, nombre: "Subterráneo", activo: true },
+        { id: "p3", numero: 2, nombre: null, activo: false },
+      ],
+    });
+    const u = useSetupUnidades();
+    await u.cargar();
+    expect(u.pisosHabilitados).toBe(true);
+    expect(u.pisosDisponibles.map((p) => p.numero)).toEqual([1, -1]);
+    expect(u.pisosOpciones).toEqual([
+      { value: 1, label: "1 · Primer piso" },
+      { value: -1, label: "-1 · Subterráneo" },
+    ]);
+    expect(u.pisosLista).toBe("1,-1");
+  });
+
+  it("degrada el catálogo de pisos si no hay permiso (403) → piso libre", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getPisos.mockRejectedValue({ response: { status: 403 } });
+    const u = useSetupUnidades();
+    await u.cargar();
+    expect(u.pisosHabilitados).toBe(false);
+    expect(u.pisosDisponibles).toEqual([]);
+    expect(u.pisosOpciones).toEqual([]);
   });
 });

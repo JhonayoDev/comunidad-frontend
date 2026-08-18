@@ -12,6 +12,20 @@ export const SETUP_PASOS = [
     routeName: "SetupUnidades",
   },
   {
+    key: "sectores",
+    label: "Sectores",
+    descripcion: "Gestiona los sectores del condominio",
+    icon: "pi pi-sitemap",
+    routeName: "SetupSectores",
+  },
+  {
+    key: "pisos",
+    label: "Pisos",
+    descripcion: "Declara los pisos del condominio",
+    icon: "pi pi-th-large",
+    routeName: "SetupPisos",
+  },
+  {
     key: "estacionamientos",
     label: "Estacionamientos",
     descripcion: "Crea los estacionamientos del condominio",
@@ -116,6 +130,16 @@ export function useSetupConfiguracion() {
 
   function pasoCompletado(key) {
     if (key === "unidades") {
+      return (totales.value.unidades ?? 0) > 0;
+    }
+    if (key === "sectores") {
+      // Etapa 2: se marca completada cuando hay unidades (los sectores son
+      // opcionales y se gestionan libremente desde su vista).
+      return (totales.value.unidades ?? 0) > 0;
+    }
+    if (key === "pisos") {
+      // Catálogo de pisos: opcional (edificio de un solo nivel no requiere
+      // declararlo). Se marca completada con unidades, como sectores.
       return (totales.value.unidades ?? 0) > 0;
     }
     if (key === "planilla") {
