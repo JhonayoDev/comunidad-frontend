@@ -31,4 +31,18 @@ export const bodegasService = {
   crearBodegasBatch(condominioId, data) {
     return api.post(`/condominios/${condominioId}/bodegas/batch`, data);
   },
+
+  vinculos(condominioId, id) {
+    return api.get(`/condominios/${condominioId}/bodegas/${id}/vinculos`);
+  },
+
+  vincular(condominioId, id, data) {
+    return api.post(`/condominios/${condominioId}/bodegas/${id}/vinculos`, data);
+  },
+
+  desvincular(condominioId, id, vinculoId) {
+    return api.patch(
+      `/condominios/${condominioId}/bodegas/${id}/vinculos/${vinculoId}/desactivar`,
+    );
+  },
 };

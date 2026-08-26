@@ -18,12 +18,22 @@ V57-V61).
 - **Impacto frontend:** agregar la acción `PLAN_DESACTIVAR` al filtro de `SaasAuditoriaView.vue`
   (hoy solo existe `PLAN_REACTIVAR` en el backend).
 
-### [ ] P2. Importación masiva Excel/CSV (contrato v2.0)
-- **Solicitud:** `SOLICITUD_IMPORTACION_MASIVA_EXCEL_CSV.md` (formato persona-por-fila)
-- **Qué falta:** endpoints `POST /importaciones/preview` y `POST /importaciones/{id}/ejecutar`
-  (permiso `IMPORTACION_DATOS`). El frontend (`ImportacionMasivaView.vue` y `SetupPlanillaView.vue`)
-  ya valida localmente y el botón "Importar datos"/"Guardar planilla" es simulado
-  (`usePlanillaDatos.enviar`).
+### [x] P2. Importación masiva de la planilla de integrantes (contrato v3.0) — ✅ Implementado
+- **Solicitud:** `SOLICITUD_IMPORTACION_PLANILLA_V3.md` (reemplaza la v2.0, desactualizada al
+  modelo V58/V59: estacionamientos/bodegas como entidades propias, sin vínculo vehículo→est)
+- **Backend (implementado, V67):** `POST /importaciones/preview` (multipart `archivo` o JSON
+  `{filas}`), `POST /importaciones/{importacionId}/ejecutar` (transacción, borrador consumido →
+  404 en segunda llamada), `GET /importaciones/plantilla` (CSV). Permiso `IMPORTACION_DATOS` en
+  rol ADMINISTRADOR + cargos ADMINISTRADOR/PRESIDENTE/SECRETARIO. Columna `esResponsable` en
+  `vinculos_persona_unidad` (máx 1 por unidad → 409 en `POST /vinculos`). Dedupe por
+  unidad/email/patente/nombre; estados por fila OK/ERROR/OMITIDA; límite 1000 filas; borrador
+  30 min. Informe de handoff: `docs/informes/INFORME_FRONTEND_IMPORTACION_PLANILLA.md`.
+- **Frontend (integrado):** `importacionService.js` (preview archivo/JSON, ejecutar, plantilla);
+  `usePlanillaDatos` con `preview()`/`ejecutar()`/`enviar()` reales (preview→ejecutar) +
+  `previewData` + `descargarPlantilla()` + refs `estacionamientos`/`bodegas` para AutoComplete;
+  `PlanillaDatos.vue` con AutoComplete de casas/est/bodegas declarados y resumen del preview;
+  `ImportacionMasivaView.vue` con flujo Previsualizar → "Importar N filas" → resultado real;
+  `SetupPlanillaView.vue` label "Paso 6 · Planilla de integrantes". Tests 211/211 OK, build OK.
 
 ### [ ] P3. Reenvío de email de configuración de contraseña
 - **Solicitud:** `SOLICITUD_REENVIO_EMAIL_CONFIGURAR_CONTRASENA.md`
@@ -271,4 +281,4 @@ V57-V61).
 | Plantillas globales superadmin — `SOLICITUD_PLANTILLAS_GLOBALES_SUPERADMIN.md` | ✅ Implementado |
 | Batch de unidades y sectores — `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (P9) | ✅ Implementado |
 | Entidad `Piso` (catálogo de pisos) — `SOLICITUD_ENTIDAD_PISOS.md` (P15, V66) | ✅ Implementado |
-| `SOLICITUD_IMPORTACION_MASIVA_EXCEL_CSV.md` (ver P2) | ⏳ Pendiente |
+| Importación de la planilla de integrantes — `SOLICITUD_IMPORTACION_PLANILLA_V3.md` (P2, V67) | ✅ Implementado |

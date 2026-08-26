@@ -3,6 +3,8 @@
 // futura vista de gestión (CRM). Una fila = una persona vinculada a una
 // unidad, con 0..N vehículos/estacionamientos/bodegas en columnas fijas.
 
+import { normalizarRut, normalizarTelefono } from "@/utils/validadoresChile";
+
 export const TIPOS_UNIDAD = ["CASA", "DEPARTAMENTO", "ESTACIONAMIENTO", "BODEGA", "OTRO"];
 export const TIPOS_VINCULO = ["PROPIETARIO", "ARRENDATARIO", "RESIDENTE_ADICIONAL"];
 export const TIPOS_VEHICULO = ["AUTO", "CAMIONETA", "MOTO", "FURGON", "CAMION", "OTRO"];
@@ -70,14 +72,21 @@ export function clavesColumnas(columnas) {
   return columnas.map((c) => c.key);
 }
 
-// Convierte una fila plana (objeto con claves de columna) en el payload
-// anidado que espera el backend: { persona, vinculo, vehiculos[], bodegas[] }.
-export function filaAPayload(fila) {
+// True si el nombre corresponde a un estacionamiento de visitas (convención
+// de prefijo EV- del backend). Los EV-* no se asignan a casas.
+export function esEstacionamientoVisita(nombre) {
+  return /^ev-/i.test(String(nombre || "").trim());
+}
+
+// Convierte una fila plana (formato CSV: patente1..3 / est1..3 / bodega1..3)
+// al shape dinámico de la planilla: { vehiculos[], bodegas[] }.
+export function filaCrudaADinamica(fila) {
   const vehiculos = [];
   for (let i = 1; i <= MAX_VEHICULOS; i++) {
     const patente = (fila[`patente${i}`] || "").trim();
     if (!patente) continue;
     vehiculos.push({
+      uid: `veh-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`,
       patente,
       tipo: (fila[`tipo_vehiculo${i}`] || "").trim() || "AUTO",
       marca: (fila[`marca${i}`] || "").trim(),
@@ -89,23 +98,53 @@ export function filaAPayload(fila) {
   const bodegas = [];
   for (let i = 1; i <= MAX_BODEGAS; i++) {
     const b = (fila[`bodega${i}`] || "").trim();
-    if (b) bodegas.push(b);
+    if (b) bodegas.push({ uid: `bod-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`, nombre: b });
   }
+  return { ...fila, vehiculos, bodegas };
+}
+
+// Convierte una lista de filas planas (CSV) al shape dinámico.
+export function filasCrudasADinamicas(filas) {
+  return (filas || []).map(filaCrudaADinamica);
+}
+
+// True si la fila usa el shape dinámico (vehiculos[]/bodegas[]).
+export function esFilaDinamica(fila) {
+  return Array.isArray(fila?.vehiculos) || Array.isArray(fila?.bodegas);
+}
+
+// Convierte una fila (dinámica o legacy plana) al payload anidado que espera
+// el backend: { persona, vinculo, vehiculos[], bodegas[] }.
+export function filaAPayload(fila) {
+  const f = esFilaDinamica(fila) ? fila : filaCrudaADinamica(fila);
+  const vehiculos = (f.vehiculos || [])
+    .map((v) => ({
+      patente: (v.patente || "").trim(),
+      tipo: (v.tipo || "").trim() || "AUTO",
+      marca: (v.marca || "").trim(),
+      modelo: (v.modelo || "").trim(),
+      color: (v.color || "").trim(),
+      estacionamiento: (v.estacionamiento || "").trim(),
+    }))
+    .filter((v) => v.patente);
+  const bodegas = (f.bodegas || [])
+    .map((b) => (typeof b === "string" ? b : b.nombre || "").trim())
+    .filter(Boolean);
   return {
-    unidad: (fila.unidad || "").trim(),
-    tipoUnidad: (fila.tipo_unidad || "").trim(),
-    sector: (fila.sector || "").trim(),
+    unidad: (f.unidad || "").trim(),
+    tipoUnidad: (f.tipo_unidad || "").trim(),
+    sector: (f.sector || "").trim(),
     persona: {
-      nombre: (fila.nombre || "").trim(),
-      email: (fila.email || "").trim(),
-      rut: (fila.rut || "").trim(),
-      telefono: (fila.telefono || "").trim(),
+      nombre: (f.nombre || "").trim(),
+      email: (f.email || "").trim(),
+      rut: normalizarRut(f.rut),
+      telefono: normalizarTelefono(f.telefono),
     },
     vinculo: {
-      tipo: (fila.tipo_vinculo || "").trim(),
-      esOcupante: esSi(fila.es_ocupante),
-      recibeNotificaciones: esSi(fila.recibe_notificaciones),
-      esResponsable: esSi(fila.es_responsable),
+      tipo: (f.tipo_vinculo || "").trim(),
+      esOcupante: esSi(f.es_ocupante),
+      recibeNotificaciones: esSi(f.recibe_notificaciones),
+      esResponsable: esSi(f.es_responsable),
     },
     vehiculos,
     bodegas,

@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { parsearCsv, normalizarFilas } from "@/utils/csvParser";
 import { usePlanillaDatos } from "@/composables/usePlanillaDatos";
-import { COLUMNAS_DEFAULT, clavesColumnas } from "@/data/planillaColumnas";
+import { COLUMNAS_DEFAULT, clavesColumnas, filasCrudasADinamicas } from "@/data/planillaColumnas";
 import PlanillaDatos from "@/components/planilla/PlanillaDatos.vue";
 
 import Card from "primevue/card";
@@ -29,7 +29,10 @@ function procesarCsv(texto) {
   const claves = clavesColumnas(COLUMNAS_DEFAULT);
   encabezadosFaltantes.value = claves.filter((c) => !encabezados.includes(c));
   const filasNorm = normalizarFilas(encabezados, filasCrudas, COLUMNAS_DEFAULT);
-  planilla.filas = filasNorm.map((f) => ({ id: `csv-${Math.random().toString(36).slice(2)}`, ...f }));
+  planilla.filas = filasCrudasADinamicas(filasNorm).map((f) => ({
+    id: `csv-${Math.random().toString(36).slice(2)}`,
+    ...f,
+  }));
 }
 
 function cargarArchivo(event) {
@@ -47,17 +50,15 @@ function cargarEjemplo() {
 }
 
 function descargarPlantilla() {
-  const blob = new Blob([EJEMPLO_CSV], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "plantilla_importacion.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+  planilla.descargarPlantilla();
+}
+
+function previsualizar() {
+  planilla.preview();
 }
 
 function importar() {
-  planilla.enviar();
+  planilla.ejecutar();
 }
 </script>
 
@@ -125,20 +126,34 @@ function importar() {
             />
           </div>
           <div class="flex-1 text-sm text-surface-400">
-            <template v-if="planilla.filasError.length">
+            <template v-if="planilla.previewData">
+              Previsualización: {{ planilla.previewData.filasOk }} filas OK ·
+              {{ planilla.previewData.filasError }} con error ·
+              {{ planilla.previewData.totalFilas - planilla.previewData.filasOk - planilla.previewData.filasError }}
+              omitidas.
+            </template>
+            <template v-else-if="planilla.filasError.length">
               {{ planilla.filasError.length }} fila(s) con errores no se importarán.
               Corrige la planilla y vuelve a intentarlo.
             </template>
             <template v-else>
-              Se importarán {{ planilla.filasValidas.length }} filas en una sola
-              transacción.
+              Previsualiza la planilla antes de importar.
             </template>
           </div>
           <Button
-            label="Importar datos"
-            icon="pi pi-check"
+            v-if="!planilla.previewData"
+            label="Previsualizar"
+            icon="pi pi-eye"
             :loading="planilla.enviando"
             :disabled="!planilla.filasValidas.length"
+            @click="previsualizar"
+          />
+          <Button
+            v-else
+            :label="`Importar ${planilla.previewData.filasOk} filas`"
+            icon="pi pi-check"
+            :loading="planilla.enviando"
+            :disabled="!planilla.previewData.filasOk"
             @click="importar"
           />
         </div>
@@ -146,16 +161,23 @@ function importar() {
         <Message v-if="planilla.resultado" severity="success" :closable="false" class="mt-3">
           <template #default>
             <div class="text-sm">
-              <strong>Simulación:</strong> {{ planilla.resultado.filasOk }} filas OK ·
-              {{ planilla.resultado.unidadesCreadas }} unidades ·
-              {{ planilla.resultado.personasCreadas }} personas ·
-              {{ planilla.resultado.vinculosCreados }} vínculos ·
-              {{ planilla.resultado.vehiculosCreados }} vehículos ·
-              {{ planilla.resultado.estacionamientosVinculados }} estacionamientos.
-              <span class="block mt-1 text-xs">
-                El endpoint real (<code>POST /importaciones/{id}/ejecutar</code>) está
-                pendiente de implementación en el backend
-                (<code>docs/solicitudes-backend/SOLICITUD_IMPORTACION_MASIVA_EXCEL_CSV.md</code>).
+              <strong>Importación completada:</strong>
+              {{ planilla.resultado.filasOk }} filas OK ·
+              {{ planilla.resultado.filasOmitidas }} omitidas ·
+              {{ planilla.resultado.filasError }} con error.
+              <span class="block mt-1">
+                {{ planilla.resultado.unidadesCreadas }} unidades ·
+                {{ planilla.resultado.personasCreadas }} personas
+                ({{ planilla.resultado.personasReutilizadas }} reutilizadas) ·
+                {{ planilla.resultado.vinculosCreados }} vínculos ·
+                {{ planilla.resultado.vehiculosCreados }} vehículos ·
+                {{ planilla.resultado.estacionamientosVinculados }} estacionamientos ·
+                {{ planilla.resultado.bodegasVinculadas }} bodegas.
+              </span>
+              <span v-if="planilla.resultado.errores?.length" class="block mt-1 text-danger">
+                <span v-for="(e, i) in planilla.resultado.errores" :key="i" class="block">
+                  Fila {{ e.numeroFila }}: {{ e.mensaje }}
+                </span>
               </span>
             </div>
           </template>

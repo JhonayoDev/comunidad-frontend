@@ -13,7 +13,7 @@ const planilla = usePlanillaDatos({ cargarExistentes: true });
 
 async function guardar() {
   await planilla.enviar();
-  if (planilla.resultado && !planilla.filasError.length) {
+  if (planilla.resultado) {
     emit("actualizado");
   }
 }
@@ -26,7 +26,7 @@ onMounted(() => planilla.cargar());
     <template #title>
       <div class="flex items-center gap-2">
         <i class="pi pi-users"></i>
-        <span>Paso 2 · Planilla de integrantes</span>
+        <span>Paso 6 · Planilla de integrantes</span>
       </div>
     </template>
     <template #content>
@@ -53,7 +53,7 @@ onMounted(() => planilla.cargar());
       </div>
 
       <div class="mt-3">
-        <PlanillaDatos :planilla="planilla" @guardar="guardar" />
+        <PlanillaDatos :planilla="planilla" solo-unidades-existentes @guardar="guardar" />
       </div>
 
       <div class="mt-4 flex justify-end">
@@ -61,14 +61,24 @@ onMounted(() => planilla.cargar());
           label="Guardar planilla"
           icon="pi pi-save"
           :loading="planilla.enviando"
-          :disabled="!planilla.filasValidas.length"
+          :disabled="!planilla.hayCambios"
           @click="guardar"
         />
       </div>
 
       <p v-if="planilla.resultado" class="text-sm text-green-500 mt-2 m-0">
-        Planilla guardada ({{ planilla.resultado.filasOk }} filas). Paso
-        completado.
+        Planilla guardada: {{ planilla.resultado.filasOk ?? planilla.resultado.creadas }} filas
+        nuevas · {{ planilla.resultado.actualizadas }} actualizadas ·
+        {{ planilla.resultado.eliminadas }} eliminadas ·
+        {{ planilla.resultado.personasCreadas ?? 0 }} personas ·
+        {{ planilla.resultado.vinculosCreados ?? 0 }} vínculos ·
+        {{ planilla.resultado.vehiculosCreados ?? 0 }} vehículos ·
+        {{ planilla.resultado.estacionamientosVinculados ?? 0 }} estacionamientos ·
+        {{ planilla.resultado.bodegasVinculadas ?? 0 }} bodegas. Paso completado.
+      </p>
+      <p v-else-if="planilla.previewData" class="text-sm text-amber-500 mt-2 m-0">
+        La previsualización detectó {{ planilla.previewData.filasError }} fila(s) con
+        error. Corrige la planilla y vuelve a intentarlo.
       </p>
     </template>
   </Card>

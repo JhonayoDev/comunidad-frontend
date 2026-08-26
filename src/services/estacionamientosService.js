@@ -31,4 +31,18 @@ export const estacionamientosService = {
   crearEstacionamientosBatch(condominioId, data) {
     return api.post(`/condominios/${condominioId}/estacionamientos/batch`, data);
   },
+
+  vinculos(condominioId, id) {
+    return api.get(`/condominios/${condominioId}/estacionamientos/${id}/vinculos`);
+  },
+
+  vincular(condominioId, id, data) {
+    return api.post(`/condominios/${condominioId}/estacionamientos/${id}/vinculos`, data);
+  },
+
+  desvincular(condominioId, id, vinculoId) {
+    return api.patch(
+      `/condominios/${condominioId}/estacionamientos/${id}/vinculos/${vinculoId}/desactivar`,
+    );
+  },
 };
