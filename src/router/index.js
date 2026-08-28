@@ -194,6 +194,84 @@ const routes = [
           cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
       },
+      {
+        path: "importacion",
+        name: "Importacion",
+        component: () => import("../views/admin/ImportacionMasivaView.vue"),
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
+        },
+      },
+      // ── Wizard de configuración del condominio (admin) ─────────────
+      {
+        path: "setup",
+        name: "Setup",
+        redirect: () => ({ name: "SetupUnidades" }),
+        component: () => import("../views/setup/SetupLayout.vue"),
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
+        },
+        children: [
+          {
+            path: "unidades",
+            name: "SetupUnidades",
+            component: () => import("../views/setup/SetupUnidadesView.vue"),
+          },
+          {
+            path: "sectores",
+            name: "SetupSectores",
+            component: () => import("../views/setup/SetupSectoresView.vue"),
+          },
+          {
+            path: "pisos",
+            name: "SetupPisos",
+            component: () => import("../views/setup/SetupPisosView.vue"),
+          },
+          {
+            path: "estacionamientos",
+            name: "SetupEstacionamientos",
+            component: () => import("../views/setup/SetupEntidadesView.vue"),
+            props: { entidad: "estacionamiento" },
+          },
+          {
+            path: "bodegas",
+            name: "SetupBodegas",
+            component: () => import("../views/setup/SetupEntidadesView.vue"),
+            props: { entidad: "bodega" },
+          },
+          {
+            path: "planilla",
+            name: "SetupPlanilla",
+            component: () => import("../views/setup/SetupPlanillaView.vue"),
+          },
+          {
+            path: "accesos",
+            name: "SetupAccesos",
+            component: () => import("../views/common/EnConstruccionView.vue"),
+            props: { modulo: "Accesos del condominio" },
+          },
+          {
+            path: "areas-comunes",
+            name: "SetupAreasComunes",
+            component: () => import("../views/common/EnConstruccionView.vue"),
+            props: { modulo: "Áreas comunes" },
+          },
+          {
+            path: "cargos",
+            name: "SetupCargos",
+            component: () => import("../views/common/EnConstruccionView.vue"),
+            props: { modulo: "Cargos de gestión" },
+          },
+          {
+            path: "personal",
+            name: "SetupPersonal",
+            component: () => import("../views/common/EnConstruccionView.vue"),
+            props: { modulo: "Personal de trabajo" },
+          },
+        ],
+      },
       // ── Finanzas (cargos) ─────────────────────────
       {
         path: "finanzas",

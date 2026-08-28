@@ -25,6 +25,8 @@ const NAV_ITEMS_BY_ROLE = {
   ],
   ADMINISTRADOR: [
     { label: "Inicio", icon: "pi pi-home", routeName: "Dashboard" },
+    { label: "Configurar", icon: "pi pi-cog", routeName: "Setup" },
+    { label: "Importar datos", icon: "pi pi-file-arrow-up", routeName: "Importacion" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
     { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
@@ -130,6 +132,8 @@ const CARGO_NAV_ITEMS = {
   ],
   ADMINISTRADOR: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
+    { label: "Configurar", icon: "pi pi-cog", routeName: "Setup" },
+    { label: "Importar datos", icon: "pi pi-file-arrow-up", routeName: "Importacion" },
     { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
     { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
     { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },

@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { adminService } from "@/services/adminService";
+import { unidadesService } from "@/services/unidadesService";
 import { useValidacionChile } from "@/composables/useValidacionChile";
 
 import Card from "primevue/card";
@@ -22,6 +23,7 @@ const auth = useAuthStore();
 const loading = ref(true);
 const error = ref(null);
 const condominio = ref(null);
+const capacidad = ref(null);
 
 const showSuspender = ref(false);
 const showEditar = ref(false);
@@ -53,6 +55,21 @@ const capacidadResumen = computed(() =>
     total: condominio.value?.[`total${cfg.suffix}`] ?? 0,
   })),
 );
+
+const envelope = computed(() => {
+  const c = capacidad.value;
+  if (!c) return null;
+  return {
+    totalActual: c.totalActual ?? 0,
+    planUnidadLimit: c.planUnidadLimit ?? null,
+  };
+});
+
+const envelopePct = computed(() => {
+  const e = envelope.value;
+  if (!e || !e.planUnidadLimit) return 0;
+  return Math.min(100, Math.round((e.totalActual / e.planUnidadLimit) * 100));
+});
 
 const {
   errores,
@@ -99,6 +116,17 @@ async function cargar() {
       responsableEmail: data.responsableEmail || "",
       responsableTelefono: data.responsableTelefono || "",
     };
+    try {
+      const { data: capData } = await unidadesService.getCapacidad(id);
+      capacidad.value = capData;
+    } catch (e) {
+      // Degradación suave por seguridad: si el endpoint falla, la vista
+      // funciona sin el envelope (solo muestra los conteos por tipo).
+      if (e?.response?.status !== 404) {
+        console.error("Error al cargar capacidad del condominio", e);
+      }
+      capacidad.value = null;
+    }
   } catch (e) {
     console.error("Error al cargar condominio", e);
     error.value = "No se pudo cargar el detalle del condominio";
@@ -223,6 +251,17 @@ async function guardarCapacidad() {
       payload,
     );
     condominio.value = data;
+    try {
+      const { data: capData } = await unidadesService.getCapacidad(
+        route.params.id,
+      );
+      capacidad.value = capData;
+    } catch (e) {
+      if (e?.response?.status !== 404) {
+        console.error("Error al recargar capacidad", e);
+      }
+      capacidad.value = null;
+    }
     showCapacidad.value = false;
   } catch (e) {
     console.error("Error al guardar capacidad", e);
@@ -380,7 +419,7 @@ onMounted(cargar);
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
               <i class="pi pi-building text-primary"></i>
-              <span>Capacidad de unidades</span>
+              <span>Capacidad y uso del plan</span>
             </div>
             <Button
               label="Editar capacidad"
@@ -393,6 +432,11 @@ onMounted(cargar);
           </div>
         </template>
         <template #content>
+          <p class="text-xs text-surface-500 m-0 mb-3">
+            Estacionamientos y bodegas son entidades independientes (no
+            unidades). Las capacidades por tipo son informativas; el límite real
+            es el envelope del plan.
+          </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div
               v-for="c in capacidadResumen"
@@ -416,6 +460,29 @@ onMounted(cargar);
                   <span class="text-xs text-surface-400">(sin límite)</span>
                 </template>
               </span>
+            </div>
+          </div>
+          <div
+            v-if="envelope"
+            class="mt-3 p-2 border-round bg-surface-50"
+          >
+            <div class="flex items-center justify-between text-sm">
+              <span class="font-medium">Envelope del plan</span>
+              <span
+                :class="
+                  envelopePct >= 100 ? 'text-red-500' : 'text-surface-600'
+                "
+              >
+                {{ envelope.totalActual }} de
+                {{ envelope.planUnidadLimit }}
+              </span>
+            </div>
+            <div class="mt-2 h-2 w-full bg-surface-200 rounded-full overflow-hidden">
+              <div
+                class="h-full rounded-full transition-all"
+                :class="envelopePct >= 100 ? 'bg-red-500' : 'bg-primary'"
+                :style="{ width: envelopePct + '%' }"
+              ></div>
             </div>
           </div>
         </template>
@@ -552,8 +619,9 @@ onMounted(cargar);
     >
       <div class="flex flex-col gap-3">
         <p class="text-xs text-surface-500 m-0">
-          Define el tope de unidades de cada tipo según el contrato. El
-          administrador no podrá crear unidades más allá de estos límites.
+          Declara la capacidad esperada por tipo (informativa). El límite real
+          es el envelope del plan: unidades + estacionamientos + bodegas no
+          pueden superar el cupo del plan.
         </p>
         <div
           v-for="cfg in capacidadConfig"

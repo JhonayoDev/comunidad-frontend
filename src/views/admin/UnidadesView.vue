@@ -34,8 +34,6 @@ const formEditar = ref({ numero: "", tipo: "CASA", sectorId: null, direccion: ""
 const tiposUnidad = [
   { label: "Casa", value: "CASA" },
   { label: "Departamento", value: "DEPARTAMENTO" },
-  { label: "Estacionamiento", value: "ESTACIONAMIENTO" },
-  { label: "Bodega", value: "BODEGA" },
   { label: "Otro", value: "OTRO" },
 ];
 
@@ -62,6 +60,11 @@ function capacidadDe(tipo) {
 }
 
 function usoDe(tipo) {
+  if (capacidad.value) {
+    const cfg = capacidadConfig.find((c) => c.tipo === tipo);
+    const total = cfg ? capacidad.value[`total${cfg.suffix}`] : null;
+    if (total != null) return total;
+  }
   return usoPorTipo.value[tipo] || 0;
 }
 
@@ -86,17 +89,25 @@ async function cargar() {
   loading.value = true;
   error.value = null;
   try {
-    const [uniRes, secRes] = await Promise.all([
-      unidadesService.getUnidades(cid),
-      unidadesService.getSectores(cid),
-    ]);
-    unidades.value = uniRes.data;
-    sectores.value = secRes.data;
+    const { data } = await unidadesService.getUnidades(cid);
+    unidades.value = data;
     try {
-      const { data } = await unidadesService.getCapacidad(cid);
-      capacidad.value = data;
+      const secRes = await unidadesService.getSectores(cid);
+      sectores.value = secRes.data;
     } catch (e) {
-      console.error("Error al cargar capacidad del condominio", e);
+      // El backend no expone endpoint de sectores — la vista degrada sin ellos
+      console.error("Error al cargar sectores", e);
+      sectores.value = [];
+    }
+    try {
+      const { data: capData } = await unidadesService.getCapacidad(cid);
+      capacidad.value = capData;
+    } catch (e) {
+      // Si el endpoint de capacidad no está disponible, la vista degrada
+      // sin el cupo (solo muestra el uso derivado de la lista de unidades).
+      if (e?.response?.status !== 404) {
+        console.error("Error al cargar capacidad del condominio", e);
+      }
       capacidad.value = null;
     }
   } catch (e) {
@@ -173,7 +184,7 @@ async function desactivarUnidad(u) {
 
 function sectorLabel(id) {
   const s = sectores.value.find((s) => s.id === id);
-  return s ? `Sector ${s.numero}` : "—";
+  return s ? (s.nombre || "Sector") : "—";
 }
 
 onMounted(cargar);
@@ -203,6 +214,10 @@ onMounted(cargar);
           >
         </Tag>
       </div>
+      <small class="text-xs text-surface-400">
+        Los estacionamientos y bodegas son entidades independientes y no se registran aquí como
+        unidades.
+      </small>
       <div v-if="!unidades.length" class="text-center text-surface-400 py-8">No hay unidades</div>
       <div v-else class="flex flex-col gap-2">
         <div v-for="u in unidades" :key="u.id" class="surface-card p-3 border-round shadow-1 flex items-center justify-between">
@@ -248,7 +263,7 @@ onMounted(cargar);
         >
         <div class="flex flex-col gap-1">
           <label class="text-sm">Sector</label>
-          <Select v-model="formCrear.sectorId" :options="sectores" optionLabel="numero" optionValue="id" placeholder="Seleccionar" clearable />
+          <Select v-model="formCrear.sectorId" :options="sectores" optionLabel="nombre" optionValue="id" placeholder="Seleccionar" clearable />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Dirección</label>
@@ -281,7 +296,7 @@ onMounted(cargar);
         >
         <div class="flex flex-col gap-1">
           <label class="text-sm">Sector</label>
-          <Select v-model="formEditar.sectorId" :options="sectores" optionLabel="numero" optionValue="id" placeholder="Seleccionar" clearable />
+          <Select v-model="formEditar.sectorId" :options="sectores" optionLabel="nombre" optionValue="id" placeholder="Seleccionar" clearable />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Dirección</label>
