@@ -2,12 +2,16 @@ import { useQuery } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
 import { autorizacionesService } from "@/services/autorizacionesService";
-import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
 import { computed } from "vue";
+
+// [SSE-REMOVAL] Dashboard guardia sin SSE: snapshot + listas con polling fijo.
+// Las métricas en vivo (visitas/encomiendas/autorizacionesPendientes) vienen
+// de GET /dashboard/metrics vía useDashboardMetrics (30s). El snapshot
+// /dashboard/guardia y la lista de autorizaciones se refrescan en background
+// con refetchInterval 30s (refetchIntervalInBackground false en metrics).
 
 export function useDashboardGuardia() {
   const auth = useAuthStore();
-  const { refetchIntervalMetrica } = useMetricasTiempoReal();
 
   const dashboardQuery = useQuery({
     queryKey: ["dashboardGuardia", auth.condominioActualId],
@@ -16,7 +20,9 @@ export function useDashboardGuardia() {
       return data;
     },
     enabled: !!auth.condominioActualId,
-    refetchInterval: refetchIntervalMetrica,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    staleTime: 10_000,
   });
 
   const autorizacionesQuery = useQuery({
@@ -29,7 +35,9 @@ export function useDashboardGuardia() {
       return data || [];
     },
     enabled: !!auth.condominioActualId,
-    refetchInterval: refetchIntervalMetrica,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+    staleTime: 10_000,
   });
 
   const loading = dashboardQuery.isLoading || autorizacionesQuery.isLoading;

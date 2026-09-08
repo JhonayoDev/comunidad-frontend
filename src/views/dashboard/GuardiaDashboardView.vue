@@ -4,7 +4,6 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useTurno } from "@/composables/useTurno";
 import { useDashboardGuardia } from "@/composables/useDashboardGuardia";
-import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
 import TarjetaAccesosActivos from "@/components/stats/TarjetaAccesosActivos.vue";
 import TarjetaEncomiendasPendientes from "@/components/stats/TarjetaEncomiendasPendientes.vue";
 import ChecklistDialog from "@/components/bitacora/ChecklistDialog.vue";
@@ -51,8 +50,6 @@ const {
   cargarDashboard,
   severityEstado,
 } = useDashboardGuardia();
-
-const { estaVivo } = useMetricasTiempoReal();
 
 const mergedError = computed(() => turnoError.value || error.value);
 

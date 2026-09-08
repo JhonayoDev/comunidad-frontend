@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { metricas } from "@/composables/useMetricasTiempoReal";
+import { useDashboardMetrics } from "@/composables/useDashboardMetrics";
 import Card from "primevue/card";
 import Badge from "primevue/badge";
 
@@ -11,12 +11,10 @@ const props = defineProps({
 
 const emit = defineEmits(["click"]);
 
-// Conteo en vivo vía SSE (`encomiendasPendientes`). Antes del primer evento,
-// se muestra `conteoInicial` (sembrado desde el snapshot del dashboard) — no se
-// fetchea la lista completa `GET /encomiendas/activas` solo para contar.
-const pendientes = computed(
-  () => metricas.encomiendasPendientes ?? props.conteoInicial ?? 0,
-);
+// [SSE-REMOVAL] Conteo vía polling GET /dashboard/metrics (30s, Cache-Control no-cache).
+// Antes del primer poll se muestra `conteoInicial` (seed del snapshot /dashboard/guardia).
+const { encomiendasPendientes } = useDashboardMetrics();
+const pendientes = computed(() => encomiendasPendientes.value ?? props.conteoInicial ?? 0);
 </script>
 
 <template>
