@@ -29,11 +29,19 @@ watch(cargo, async () => {
   await cargar();
   expandidos.value = new Set(porModulo.value.map((g) => g.codigo));
 });
-watch(porModulo, (grupos) => {
-  // si aparece un nuevo grupo por búsqueda, expandirlo
+watch(porModulo, (grupos, prev) => {
+  // solo expandir grupos que aparecen por primera vez (ej. filtro de búsqueda),
+  // sin re-expandir los que el usuario colapsó manualmente
+  const prevCodigos = new Set((prev || []).map((g) => g.codigo));
   const next = new Set(expandidos.value);
-  grupos.forEach((g) => next.add(g.codigo));
-  expandidos.value = next;
+  let cambio = false;
+  grupos.forEach((g) => {
+    if (!prevCodigos.has(g.codigo) && !next.has(g.codigo)) {
+      next.add(g.codigo);
+      cambio = true;
+    }
+  });
+  if (cambio) expandidos.value = next;
 });
 
 function toggleGrupo(codigo) {
