@@ -222,12 +222,14 @@ Histórico V57-V61 conservado abajo.
   `SaasEmailConfigView.vue` (ruta `superadmin/condominios/:id/email`, `SUPER_ADMIN|SOPORTE`, Card Config SMTP con host/port/user/pass/remitente/activo/TLS + Guardar/Eliminar/Probar + Card Routing por `tipoNotificacion` → `BREVO|SMTP_PROPIO` con tabla `.planilla` + Dialog); acceso desde `SaasCondominioDetailView` card "Email".
   Ver `docs/arquitectura/PLAN_OPTIMIZACION_ANUNCIO.md` y migraciones V71-V74.
 
-### [ ] P17. Anuncio async fan-out (Plan A)
+### [x] P17. Anuncio async fan-out (Plan A) — ✅ F4a user-friendly
 - **Backend (✅ `b1b0538`):** `AnuncioService.publicar` → `AnuncioPublicadoEvent` → `AnuncioEntregasHandler` `@Async("anuncioAsyncExecutor") AFTER_COMMIT`
   fan-out vía `NotificacionService.procesarEvento` (reusa idempotencia + `EntregaImmediateHandler`/`RetryEntregasJob`). Mismo contrato `POST /condominios/{id}/anuncios` (201 inmediato).
-- **Frontend (✅ compatible):** `anunciosService.crear`/`AnunciosView.vue` sin cambio requerido. Opcional: toast "Anuncio publicado — entregas en curso (async)" tras 201.
+- **Frontend (✅ F4a):** `AnunciosView.vue` muestra tras 201 `Message success` “Anuncio publicado. Se está notificando a la audiencia seleccionada.” (5s, sin exponer async/infra), luego `cargar()`. Mensaje a nivel usuario.
 
-### [x] P18. Polling metrics — hardening `@RequiresModule` — ✅ F2
+### [x] P18. Polling metrics — hardening `@RequiresModule` — ✅ F2 + F4b/F4c
+- **F4b (timeout):** `api.js:11` mantiene `timeout 10000` global; batch `POST .../batch` (unidades/sectores/pisos/estacionamientos/bodegas) ahora con `{ timeout: 15000 }`. `utils/errores.js` + `esErrorTimeout`/`mensajeError` devuelve mensaje a nivel usuario sin exponer infra (Render/home-server failover se depura en otra épica). `useSetupUnidades.js`/`useSetupEntidades.js` usan `mensajeError` para mostrar amigable.
+- **F4c (SaaS):** Decisión **mantener polling 60s solo con vista activa** (no SSE SaaS). `SuperAdminDashboardView.vue` hace `GET /admin/metrics` al montar; al cambiar de vista y volver se remonta y refetchea (reset del conteo). No se deja intervalo en background. Documentado el 2026-09-08.
 - **Backend:** `DashboardController.java:81` (`GET /dashboard/metrics`, `@RequiresModule(CONTROL_ACCESO)`) y `ResidenteDashboardController.java:57` (`/residente/metrics`, `@RequiresModule(ENCOMIENDAS)`) con `Cache-Control: no-cache`.
 - **Frontend (gap):** `useDashboardMetrics.js`/`useResidenteMetrics.js` hacen polling incondicional. Si módulo no contratado → 403 en loop cada 30s/60s. Pendiente F2: guard por `listarModulos` o catch 403 → pausar query + mensaje "Módulo no contratado".
 - **SSE conservados:** `NotificacionController.java:103` (`/notificaciones/stream`, `NOTIFICACION_VER`, scoped persona) y `AdminMetricsStreamController.java:37` (`/admin/metrics/stream`, `SUPER_ADMIN|SOPORTE`) siguen vigentes.

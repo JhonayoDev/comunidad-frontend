@@ -3,6 +3,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { unidadesService } from "@/services/unidadesService";
 import { generarNumeros, parsearListaPersonalizada } from "@/utils/numeracionUnidades";
 import { compararUnidades } from "@/utils/ordenamientoNatural";
+import { mensajeError } from "@/utils/errores";
 
 const CLAVE_BORRADOR = (cid) => `comunidad:setup-unidades:${cid}`;
 
@@ -459,7 +460,7 @@ export function useSetupUnidades() {
       return !hayErrores;
     } catch (e) {
       console.error("Error al guardar unidades", e);
-      error.value = e?.response?.data?.message || "No se pudieron guardar las unidades";
+      error.value = mensajeError(e, "No se pudieron guardar las unidades");
       const fields = e?.response?.data?.fields;
       if (Array.isArray(fields)) {
         estado.unidades.forEach((x) => (x.error = null));

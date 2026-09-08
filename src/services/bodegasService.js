@@ -29,7 +29,7 @@ export const bodegasService = {
   },
 
   crearBodegasBatch(condominioId, data) {
-    return api.post(`/condominios/${condominioId}/bodegas/batch`, data);
+    return api.post(`/condominios/${condominioId}/bodegas/batch`, data, { timeout: 15000 });
   },
 
   vinculos(condominioId, id) {
