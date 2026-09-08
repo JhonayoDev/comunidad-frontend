@@ -214,11 +214,12 @@ Histórico V57-V61 conservado abajo.
 
 ## Novedades backend pendientes de frontend (V68-V74)
 
-### [ ] P16. Email por condominio — 8B/8C/8D (V71-V74)
+### [x] P16. Email por condominio — 8B/8C/8D (V71-V74) — ✅ Frontend F3 completo
 - **Backend (✅ `6bc7061`):** `V71__condominio_email_config.sql` + `V72-V74` permisos/routing; `CondominioEmailConfig`/`CondominioEmailRouting`,
   `EmailProviderRouter` (resuelve Brevo vs SMTP por condominio), `AdminEmailConfigController` (`GET/PUT/DELETE /admin/condominios/{id}/email/config`,
   `POST /config/test`, `GET/PUT /routing`), `SmtpEmailProvider`/`BrevoEmailProvider`, permisos `EMAIL_CONFIG_VER/EDITAR` (`SUPER_ADMIN`/`SOPORTE`).
-- **Frontend (❌):** sin servicio ni vista. Falta `adminService` métodos + vista `SaasEmailConfigView.vue` (ruta `admin/condominios/:id/email`, form SMTP + routing + test).
+- **Frontend (✅ `chore/f1-higiene-sse-removal` F3):** `adminService` +6 métodos (`getEmailConfig`/`putEmailConfig`/`deleteEmailConfig`/`testEmailConfig`/`getEmailRouting`/`putEmailRouting`);
+  `SaasEmailConfigView.vue` (ruta `superadmin/condominios/:id/email`, `SUPER_ADMIN|SOPORTE`, Card Config SMTP con host/port/user/pass/remitente/activo/TLS + Guardar/Eliminar/Probar + Card Routing por `tipoNotificacion` → `BREVO|SMTP_PROPIO` con tabla `.planilla` + Dialog); acceso desde `SaasCondominioDetailView` card "Email".
   Ver `docs/arquitectura/PLAN_OPTIMIZACION_ANUNCIO.md` y migraciones V71-V74.
 
 ### [ ] P17. Anuncio async fan-out (Plan A)
@@ -226,7 +227,7 @@ Histórico V57-V61 conservado abajo.
   fan-out vía `NotificacionService.procesarEvento` (reusa idempotencia + `EntregaImmediateHandler`/`RetryEntregasJob`). Mismo contrato `POST /condominios/{id}/anuncios` (201 inmediato).
 - **Frontend (✅ compatible):** `anunciosService.crear`/`AnunciosView.vue` sin cambio requerido. Opcional: toast "Anuncio publicado — entregas en curso (async)" tras 201.
 
-### [ ] P18. Polling metrics — hardening `@RequiresModule`
+### [x] P18. Polling metrics — hardening `@RequiresModule` — ✅ F2
 - **Backend:** `DashboardController.java:81` (`GET /dashboard/metrics`, `@RequiresModule(CONTROL_ACCESO)`) y `ResidenteDashboardController.java:57` (`/residente/metrics`, `@RequiresModule(ENCOMIENDAS)`) con `Cache-Control: no-cache`.
 - **Frontend (gap):** `useDashboardMetrics.js`/`useResidenteMetrics.js` hacen polling incondicional. Si módulo no contratado → 403 en loop cada 30s/60s. Pendiente F2: guard por `listarModulos` o catch 403 → pausar query + mensaje "Módulo no contratado".
 - **SSE conservados:** `NotificacionController.java:103` (`/notificaciones/stream`, `NOTIFICACION_VER`, scoped persona) y `AdminMetricsStreamController.java:37` (`/admin/metrics/stream`, `SUPER_ADMIN|SOPORTE`) siguen vigentes.
@@ -307,5 +308,5 @@ Histórico V57-V61 conservado abajo.
 | Entidad `Piso` (catálogo de pisos) — `SOLICITUD_ENTIDAD_PISOS.md` (P15, V66) | ✅ Implementado |
 | Importación de la planilla de integrantes — `SOLICITUD_IMPORTACION_PLANILLA_V3.md` (P2, V67) | ✅ Implementado |
 | Polling operativo/residente reemplaza SSE — `3b2a52d`/`f6aa312`/`3efab9e` + `d7f0f0b` | ✅ Implementado |
-| Email por condominio modelo/routing — V71-V74 (`AdminEmailConfigController`) | ✅ Backend / ❌ Frontend (P16) |
+| Email por condominio modelo/routing — V71-V74 (`AdminEmailConfigController`) | ✅ Implementado (F3) |
 | Anuncio async fan-out — `b1b0538` Plan A | ✅ Backend / ✅ Frontend compatible |

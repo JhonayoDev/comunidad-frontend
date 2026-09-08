@@ -528,6 +528,13 @@ onMounted(cargar);
             <span class="text-xs text-surface-400">Activar/desactivar</span>
           </template>
         </Card>
+        <Card class="cursor-pointer hover:shadow-3" @click="irA('SaasEmailConfig')">
+          <template #content class="flex flex-col items-center gap-1 p-3">
+            <i class="pi pi-envelope text-2xl text-primary"></i>
+            <span class="text-sm font-medium">Email</span>
+            <span class="text-xs text-surface-400">SMTP y routing por condominio</span>
+          </template>
+        </Card>
       </div>
     </template>
 
