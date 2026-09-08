@@ -120,8 +120,7 @@ const routes = [
       {
         path: "superadmin/permisos/cargos",
         name: "CargosPermisos",
-        component: () => import("../views/common/EnConstruccionView.vue"),
-        props: { modulo: "Permisos por Cargo" },
+        component: () => import("../modules/permisos/views/CargosPermisosView.vue"),
         meta: { roles: ["SUPER_ADMIN"] },
       },
       // ── Compartidas ──────────────────────────────
