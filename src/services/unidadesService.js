@@ -37,7 +37,7 @@ export const unidadesService = {
   },
 
   crearSectoresBatch(condominioId, data) {
-    return api.post(`/condominios/${condominioId}/sectores/batch`, data);
+    return api.post(`/condominios/${condominioId}/sectores/batch`, data, { timeout: 15000 });
   },
 
   actualizarSector(condominioId, id, data) {
@@ -57,7 +57,7 @@ export const unidadesService = {
   },
 
   crearPisosBatch(condominioId, data) {
-    return api.post(`/condominios/${condominioId}/pisos/batch`, data);
+    return api.post(`/condominios/${condominioId}/pisos/batch`, data, { timeout: 15000 });
   },
 
   actualizarPiso(condominioId, id, data) {
@@ -69,7 +69,7 @@ export const unidadesService = {
   },
 
   crearUnidadesBatch(condominioId, data) {
-    return api.post(`/condominios/${condominioId}/unidades/batch`, data);
+    return api.post(`/condominios/${condominioId}/unidades/batch`, data, { timeout: 15000 });
   },
 
   getCapacidad(condominioId) {

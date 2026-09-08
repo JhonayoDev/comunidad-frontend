@@ -1,19 +1,21 @@
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useQuery } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
+import { esErrorModuloNoContratado } from "@/utils/errores";
 
-// ─── Polling reemplazo del SSE del residente ─────────────────────────────────
-// Backend deprecó GET /dashboard/residente/stream (SSE) y creó
-// GET /condominios/{id}/dashboard/residente/metrics (Cache-Control: no-cache).
-// Polling 60s para residente (30s guardia, 60s residente por menor criticidad).
-// El stream de notificaciones (/notificaciones/stream) no se toca.
+// ─── Polling dashboard residente ─────────────────────────────────────────────
+// GET /condominios/{id}/dashboard/residente/metrics (Cache-Control: no-cache, @RequiresModule ENCOMIENDAS).
+// Polling 60s (menor criticidad que guardia 30s); SSE solo para notificaciones.
+// Si el módulo ENCOMIENDAS no está contratado → 403 moduleNotSubscribed → pausar polling.
 
 export function useResidenteMetrics() {
   const auth = useAuthStore();
   const condominioId = computed(() => auth.condominioActualId);
 
   const enabled = computed(() => !!condominioId.value);
+
+  const intervalRef = ref(60_000);
 
   const query = useQuery({
     queryKey: computed(() => ["residenteMetrics", condominioId.value]),
@@ -22,9 +24,20 @@ export function useResidenteMetrics() {
       return data;
     },
     enabled,
-    refetchInterval: 60_000,
+    // 403 por módulo no contratado → pausar polling (evita loop 60s). F2 P18.
+    refetchInterval: intervalRef,
     refetchIntervalInBackground: false,
     staleTime: 10_000,
+    retry: (failureCount, error) => {
+      if (esErrorModuloNoContratado(error)) return false;
+      return failureCount < 2;
+    },
+  });
+
+  const isModuleMissing = computed(() => esErrorModuloNoContratado(query.error.value));
+
+  watch(isModuleMissing, (missing) => {
+    intervalRef.value = missing ? false : 60_000;
   });
 
   return {
@@ -32,6 +45,7 @@ export function useResidenteMetrics() {
     isLoading: computed(() => query.isLoading.value),
     error: computed(() => query.error.value),
     refetch: query.refetch,
+    isModuleMissing,
     encomiendasPendientes: computed(() => query.data.value?.encomiendasPendientes ?? null),
   };
 }

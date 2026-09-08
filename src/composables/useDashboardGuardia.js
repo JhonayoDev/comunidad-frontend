@@ -4,11 +4,8 @@ import { dashboardService } from "@/services/dashboardService";
 import { autorizacionesService } from "@/services/autorizacionesService";
 import { computed } from "vue";
 
-// [SSE-REMOVAL] Dashboard guardia sin SSE: snapshot + listas con polling fijo.
-// Las métricas en vivo (visitas/encomiendas/autorizacionesPendientes) vienen
-// de GET /dashboard/metrics vía useDashboardMetrics (30s). El snapshot
-// /dashboard/guardia y la lista de autorizaciones se refrescan en background
-// con refetchInterval 30s (refetchIntervalInBackground false en metrics).
+// Dashboard guardia: polling fijo 30s para snapshot y autorizaciones.
+// Métricas en vivo (visitas/encomiendas) vía GET /dashboard/metrics (useDashboardMetrics, 30s).
 
 export function useDashboardGuardia() {
   const auth = useAuthStore();

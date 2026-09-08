@@ -4,8 +4,12 @@ Archivo maestro consolidado de acciones pendientes. Es la fuente única de verda
 de cada ítem; los archivos de solicitud individuales pueden quedar desactualizados (el
 estado real vive acá).
 
-Actualizado contra el backend `develop` (head `0cea179`, merge `feat/espacios-comunes`,
-V57-V61).
+Actualizado contra el backend `develop` (head `3efab9e`/`6bc7061`, V57-V74).
+Cambios recientes: **SSE dashboard/residente eliminados → polling** (`3efab9e`/`f6aa312`/`3b2a52d`),
+**Email por condominio 8B-8D** (V71-V74: `AdminEmailConfigController`, `EmailProviderRouter`, routing por condominio),
+**Anuncio async fan-out** (`AnuncioEntregasHandler`, `anuncioAsyncExecutor`), **polling metrics** con `Cache-Control: no-cache`.
+Frontend `feature/cambios-sse` (`d7f0f0b`) ya migrado a `useDashboardMetrics`/`useResidenteMetrics`.
+Histórico V57-V61 conservado abajo.
 
 ## Pendientes de implementación (backend)
 
@@ -208,12 +212,35 @@ V57-V61).
   después; errores 409 mapeados a fila; degradación si el cargo no tiene `SECTOR_*` (403).
   `SETUP_PASOS` reordenado: unidades paso 1, planilla paso 2.
 
+## Novedades backend pendientes de frontend (V68-V74)
+
+### [x] P16. Email por condominio — 8B/8C/8D (V71-V74) — ✅ Frontend F3 completo
+- **Backend (✅ `6bc7061`):** `V71__condominio_email_config.sql` + `V72-V74` permisos/routing; `CondominioEmailConfig`/`CondominioEmailRouting`,
+  `EmailProviderRouter` (resuelve Brevo vs SMTP por condominio), `AdminEmailConfigController` (`GET/PUT/DELETE /admin/condominios/{id}/email/config`,
+  `POST /config/test`, `GET/PUT /routing`), `SmtpEmailProvider`/`BrevoEmailProvider`, permisos `EMAIL_CONFIG_VER/EDITAR` (`SUPER_ADMIN`/`SOPORTE`).
+- **Frontend (✅ `chore/f1-higiene-sse-removal` F3):** `adminService` +6 métodos (`getEmailConfig`/`putEmailConfig`/`deleteEmailConfig`/`testEmailConfig`/`getEmailRouting`/`putEmailRouting`);
+  `SaasEmailConfigView.vue` (ruta `superadmin/condominios/:id/email`, `SUPER_ADMIN|SOPORTE`, Card Config SMTP con host/port/user/pass/remitente/activo/TLS + Guardar/Eliminar/Probar + Card Routing por `tipoNotificacion` → `BREVO|SMTP_PROPIO` con tabla `.planilla` + Dialog); acceso desde `SaasCondominioDetailView` card "Email".
+  Ver `docs/arquitectura/PLAN_OPTIMIZACION_ANUNCIO.md` y migraciones V71-V74.
+
+### [x] P17. Anuncio async fan-out (Plan A) — ✅ F4a user-friendly
+- **Backend (✅ `b1b0538`):** `AnuncioService.publicar` → `AnuncioPublicadoEvent` → `AnuncioEntregasHandler` `@Async("anuncioAsyncExecutor") AFTER_COMMIT`
+  fan-out vía `NotificacionService.procesarEvento` (reusa idempotencia + `EntregaImmediateHandler`/`RetryEntregasJob`). Mismo contrato `POST /condominios/{id}/anuncios` (201 inmediato).
+- **Frontend (✅ F4a):** `AnunciosView.vue` muestra tras 201 `Message success` “Anuncio publicado. Se está notificando a la audiencia seleccionada.” (5s, sin exponer async/infra), luego `cargar()`. Mensaje a nivel usuario.
+
+### [x] P18. Polling metrics — hardening `@RequiresModule` — ✅ F2 + F4b/F4c
+- **F4b (timeout):** `api.js:11` mantiene `timeout 10000` global; batch `POST .../batch` (unidades/sectores/pisos/estacionamientos/bodegas) ahora con `{ timeout: 15000 }`. `utils/errores.js` + `esErrorTimeout`/`mensajeError` devuelve mensaje a nivel usuario sin exponer infra (Render/home-server failover se depura en otra épica). `useSetupUnidades.js`/`useSetupEntidades.js` usan `mensajeError` para mostrar amigable.
+- **F4c (SaaS):** Decisión **mantener polling 60s solo con vista activa** (no SSE SaaS). `SuperAdminDashboardView.vue` hace `GET /admin/metrics` al montar; al cambiar de vista y volver se remonta y refetchea (reset del conteo). No se deja intervalo en background. Documentado el 2026-09-08.
+- **Backend:** `DashboardController.java:81` (`GET /dashboard/metrics`, `@RequiresModule(CONTROL_ACCESO)`) y `ResidenteDashboardController.java:57` (`/residente/metrics`, `@RequiresModule(ENCOMIENDAS)`) con `Cache-Control: no-cache`.
+- **Frontend (gap):** `useDashboardMetrics.js`/`useResidenteMetrics.js` hacen polling incondicional. Si módulo no contratado → 403 en loop cada 30s/60s. Pendiente F2: guard por `listarModulos` o catch 403 → pausar query + mensaje "Módulo no contratado".
+- **SSE conservados:** `NotificacionController.java:103` (`/notificaciones/stream`, `NOTIFICACION_VER`, scoped persona) y `AdminMetricsStreamController.java:37` (`/admin/metrics/stream`, `SUPER_ADMIN|SOPORTE`) siguen vigentes.
+
 ## Pendientes de verificación (QA)
 
-### [ ] Q1. Verificación SSE en staging/prod
-- **Checklist:** `verificacion-sse-staging-prod.md`
-- **Qué falta:** verificar `SNAPSHOT_INICIAL`, eventos de cambio y `:ping` en staging/prod
-  (en dev ya está verificado).
+### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod
+- **Backend:** `3b2a52d`/`f6aa312`/`3efab9e` deprecó y eliminó `DashboardStreamController`/`ResidenteDashboardStreamController` y 5 tests asociados.
+- **Frontend:** `d7f0f0b` migró a polling 30s/60s (`useDashboardMetrics`/`useResidenteMetrics`).
+- **Checklist staging/prod (actualizado):** verificar `GET /dashboard/metrics` y `GET /residente/metrics` con `Cache-Control: no-cache` (conteos frescos), 403 sin módulo, `GET /notificaciones/stream` intacto, y que `MainLayout` no abre streams operativos.
+- **Histórico SSE:** `verificacion-sse-staging-prod.md` archivado para dashboard/residente; vigente solo para notificaciones.
 
 ### [ ] Q2. Reproducir pantalla blanca PWA iOS
 - **Instrumentado:** `frontendErrorReporter` + beacons `__frontend-error`/`__frontend-boot`.
@@ -282,3 +309,6 @@ V57-V61).
 | Batch de unidades y sectores — `SOLICITUD_BATCH_UNIDADES_SECTORES.md` (P9) | ✅ Implementado |
 | Entidad `Piso` (catálogo de pisos) — `SOLICITUD_ENTIDAD_PISOS.md` (P15, V66) | ✅ Implementado |
 | Importación de la planilla de integrantes — `SOLICITUD_IMPORTACION_PLANILLA_V3.md` (P2, V67) | ✅ Implementado |
+| Polling operativo/residente reemplaza SSE — `3b2a52d`/`f6aa312`/`3efab9e` + `d7f0f0b` | ✅ Implementado |
+| Email por condominio modelo/routing — V71-V74 (`AdminEmailConfigController`) | ✅ Implementado (F3) |
+| Anuncio async fan-out — `b1b0538` Plan A | ✅ Backend / ✅ Frontend compatible |

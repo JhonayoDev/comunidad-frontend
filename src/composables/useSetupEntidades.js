@@ -5,6 +5,7 @@ import { estacionamientosService } from "@/services/estacionamientosService";
 import { bodegasService } from "@/services/bodegasService";
 import { generarNombres, parsearListaPersonalizada } from "@/utils/numeracionUnidades";
 import { compararUnidades } from "@/utils/ordenamientoNatural";
+import { mensajeError } from "@/utils/errores";
 
 // Configuración por entidad: estacionamientos y bodegas comparten el mismo
 // flujo de 5 fases (sin tipo). Los estacionamientos soportan MÚLTIPLES GRUPOS
@@ -537,7 +538,7 @@ export function useSetupEntidades({ entidad } = {}) {
       return !hayErrores;
     } catch (e) {
       console.error(`Error al guardar ${cfg.labelPlural}`, e);
-      error.value = e?.response?.data?.message || `No se pudieron guardar los ${cfg.labelPlural}`;
+      error.value = mensajeError(e, `No se pudieron guardar los ${cfg.labelPlural}`);
       const fields = e?.response?.data?.fields;
       if (Array.isArray(fields)) {
         estado.items.forEach((x) => (x.error = null));

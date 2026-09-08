@@ -32,10 +32,25 @@ export function esErrorPlan(error) {
 }
 
 /**
+ * ¿El error es por timeout de red (axios ECONNABORTED)?
+ * Se distingue del 5xx por el código y el mensaje "timeout of Xms exceeded".
+ */
+export function esErrorTimeout(error) {
+  return (
+    error?.code === "ECONNABORTED" ||
+    /timeout of \d+ms exceeded/i.test(error?.message || "")
+  );
+}
+
+/**
  * Extrae un mensaje legible del error. Prioriza el message del backend
  * (ErrorResponse), luego el mensaje nativo y finalmente un fallback.
+ * Para timeouts devuelve un mensaje a nivel usuario, sin exponer infra.
  */
 export function mensajeError(error, fallback = "Error inesperado") {
+  if (esErrorTimeout(error)) {
+    return "La operación está tardando más de lo esperado. Por favor, intenta nuevamente en unos segundos.";
+  }
   const msg = error?.response?.data?.message;
   if (typeof msg === "string" && msg.trim()) return msg;
   return error?.message || fallback;

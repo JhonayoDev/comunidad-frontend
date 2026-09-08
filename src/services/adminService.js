@@ -146,4 +146,29 @@ export const adminService = {
   actualizarReglaCatalogo(tipo, data) {
     return api.put(`/admin/notificaciones/catalogo/${tipo}`, data);
   },
+
+  // ── Email por condominio (V71-V74, AdminEmailConfigController) ───────────
+  getEmailConfig(condominioId) {
+    return api.get(`/admin/condominios/${condominioId}/email/config`);
+  },
+
+  putEmailConfig(condominioId, data) {
+    return api.put(`/admin/condominios/${condominioId}/email/config`, data);
+  },
+
+  deleteEmailConfig(condominioId) {
+    return api.delete(`/admin/condominios/${condominioId}/email/config`);
+  },
+
+  testEmailConfig(condominioId, data) {
+    return api.post(`/admin/condominios/${condominioId}/email/config/test`, data);
+  },
+
+  getEmailRouting(condominioId) {
+    return api.get(`/admin/condominios/${condominioId}/email/routing`);
+  },
+
+  putEmailRouting(condominioId, data) {
+    return api.put(`/admin/condominios/${condominioId}/email/routing`, data);
+  },
 };

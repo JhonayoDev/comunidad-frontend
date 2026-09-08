@@ -1,3 +1,10 @@
+> **ARCHIVADO (F1 — SSE-REMOVAL 2026-09-08):** Este spec diseñó los buses SSE de dashboard/residente (`GET /dashboard/stream`, `GET /dashboard/residente/stream`).
+> El backend eliminó ambos buses en `3efab9e refactor(sse): eliminar buses SSE deprecados dashboard y residente` y los reemplazó por polling
+> `GET /condominios/{id}/dashboard/metrics` (30s, `CONTROL_ACCESO`) y `GET /condominios/{id}/dashboard/residente/metrics` (60s, `ENCOMIENDAS`) con `Cache-Control: no-cache` (`3b2a52d`/`f6aa312`).
+> El frontend migró en `feature/cambios-sse` (`d7f0f0b`) a `useDashboardMetrics`/`useResidenteMetrics`. Se conserva por historial; no implementar.
+
+---
+
 # Requerimientos — Estadísticas en Tiempo Real para Dashboards (SSE)
 
 **Versión:** 1.0

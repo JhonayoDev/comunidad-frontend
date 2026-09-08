@@ -29,7 +29,7 @@ export const estacionamientosService = {
   },
 
   crearEstacionamientosBatch(condominioId, data) {
-    return api.post(`/condominios/${condominioId}/estacionamientos/batch`, data);
+    return api.post(`/condominios/${condominioId}/estacionamientos/batch`, data, { timeout: 15000 });
   },
 
   vinculos(condominioId, id) {
