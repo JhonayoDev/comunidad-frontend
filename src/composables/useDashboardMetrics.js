@@ -3,11 +3,9 @@ import { useQuery } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
 
-// ─── Polling reemplazo del SSE del dashboard operativo ───────────────────────
-// Backend feature/cambios-rendimiento deprecó GET /dashboard/stream (SSE) y
-// creó GET /condominios/{id}/dashboard/metrics (Cache-Control: no-cache).
-// TanStack Query hace polling 30s (30-60s, elegido 30s para guardia/operativo).
-// El stream de notificaciones (/notificaciones/stream) es INDEPENDIENTE y no se toca.
+// ─── Polling dashboard operativo ─────────────────────────────────────────────
+// GET /condominios/{id}/dashboard/metrics (Cache-Control: no-cache, @RequiresModule CONTROL_ACCESO).
+// Polling 30s con TanStack Query; SSE solo queda para notificaciones (/notificaciones/stream).
 
 export function useDashboardMetrics() {
   const auth = useAuthStore();

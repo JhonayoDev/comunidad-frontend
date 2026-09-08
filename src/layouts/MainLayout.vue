@@ -77,8 +77,8 @@ watch(
   },
 );
 
-// [SSE-REMOVAL] Dashboard operativo y residente migrados a polling (30s/60s)
-// vía useDashboardMetrics/useResidenteMetrics. Solo notificaciones mantiene SSE.
+// Dashboard operativo/residente vía polling (useDashboardMetrics 30s / useResidenteMetrics 60s).
+// Solo notificaciones mantiene SSE.
 
 // Registra la suscripción SSE app-wide de notificaciones (bandeja) para que
 // el badge/campanita se actualice en vivo. Único stream SSE activo.
@@ -86,7 +86,7 @@ useNotificacionesTiempoReal();
 
 // ─── Stream SSE de notificaciones (único bus SSE activo) ────────────────────
 // Conexión app-wide: se mantiene mientras el usuario tenga condominio +
-// permiso NOTIFICACION_VER. Dashboard metrics pollings son independientes.
+// permiso NOTIFICACION_VER. Pollings de dashboard son independientes.
 watchEffect(() => {
   const cid = auth.condominioActualId;
   const permisos = auth.permisos || [];

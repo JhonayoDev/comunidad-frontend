@@ -80,20 +80,6 @@ onMounted(() => {
     </template>
 
     <template v-else-if="dashboard">
-      <!-- Estado de la conexión SSE: las tarjetas de métricas se alimentan en
-           vivo por el stream; si cae, los conteos quedan en el último valor
-           conocido. Solo si no se recupera en la gracia (1 min) se activa el
-           polling de respaldo a 2 min (no inunda de peticiones). -->
-      <!-- <div class="flex items-center gap-2 self-start">
-        <span
-          class="w-2.5 h-2.5 rounded-full"
-          :class="estaVivo ? 'bg-green-500' : 'bg-amber-500'"
-        ></span>
-        <span class="text-xs text-surface-500">
-          {{ estaVivo ? "Conexión en vivo" : "Reconectando…" }}
-        </span>
-      </div> -->
-
       <TurnoCard
         :turno="turno"
         :loading="turnoLoading"

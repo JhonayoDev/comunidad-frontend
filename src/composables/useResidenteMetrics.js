@@ -3,11 +3,9 @@ import { useQuery } from "@tanstack/vue-query";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
 
-// ─── Polling reemplazo del SSE del residente ─────────────────────────────────
-// Backend deprecó GET /dashboard/residente/stream (SSE) y creó
-// GET /condominios/{id}/dashboard/residente/metrics (Cache-Control: no-cache).
-// Polling 60s para residente (30s guardia, 60s residente por menor criticidad).
-// El stream de notificaciones (/notificaciones/stream) no se toca.
+// ─── Polling dashboard residente ─────────────────────────────────────────────
+// GET /condominios/{id}/dashboard/residente/metrics (Cache-Control: no-cache, @RequiresModule ENCOMIENDAS).
+// Polling 60s (menor criticidad que guardia 30s); SSE solo para notificaciones.
 
 export function useResidenteMetrics() {
   const auth = useAuthStore();

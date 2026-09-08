@@ -18,7 +18,7 @@ const props = defineProps({
 
 const router = useRouter();
 
-// [SSE-REMOVAL] Polling reemplazo SSE residente: GET /residente/metrics (60s, Cache-Control no-cache).
+// Polling GET /dashboard/residente/metrics (60s, Cache-Control no-cache).
 // Badge usa encomiendasPendientes del polling cuando está disponible, fallback a longitud de lista.
 const { encomiendasPendientes } = useResidenteMetrics();
 

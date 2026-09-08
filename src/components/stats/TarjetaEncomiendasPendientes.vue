@@ -11,8 +11,8 @@ const props = defineProps({
 
 const emit = defineEmits(["click"]);
 
-// [SSE-REMOVAL] Conteo vía polling GET /dashboard/metrics (30s, Cache-Control no-cache).
-// Antes del primer poll se muestra `conteoInicial` (seed del snapshot /dashboard/guardia).
+// Conteo vía polling GET /dashboard/metrics (30s, Cache-Control no-cache).
+// Antes del primer poll se muestra `conteoInicial` (seed de /dashboard/guardia).
 const { encomiendasPendientes } = useDashboardMetrics();
 const pendientes = computed(() => encomiendasPendientes.value ?? props.conteoInicial ?? 0);
 </script>

@@ -13,12 +13,12 @@ export const dashboardService = {
     return api.get(`/condominios/${condominioId}/dashboard/guardia`);
   },
 
-  // [SSE-REMOVAL] Polling reemplazo SSE operativo (DASHBOARD_GUARDIA/ADMIN, @RequiresModule CONTROL_ACCESO)
+  // Polling operativo (DASHBOARD_GUARDIA/ADMIN, @RequiresModule CONTROL_ACCESO, Cache-Control no-cache)
   getMetrics(condominioId) {
     return api.get(`/condominios/${condominioId}/dashboard/metrics`);
   },
 
-  // [SSE-REMOVAL] Polling reemplazo SSE residente (DASHBOARD_RESIDENTE, @RequiresModule ENCOMIENDAS)
+  // Polling residente (DASHBOARD_RESIDENTE, @RequiresModule ENCOMIENDAS, Cache-Control no-cache)
   getResidenteMetrics(condominioId) {
     return api.get(`/condominios/${condominioId}/dashboard/residente/metrics`);
   },
