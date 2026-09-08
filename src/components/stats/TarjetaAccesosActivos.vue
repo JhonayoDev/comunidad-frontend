@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { metricas } from "@/composables/useMetricasTiempoReal";
+import { useDashboardMetrics } from "@/composables/useDashboardMetrics";
 import Card from "primevue/card";
 import Badge from "primevue/badge";
 
@@ -11,13 +11,10 @@ const props = defineProps({
 
 const emit = defineEmits(["click"]);
 
-// Conteo en vivo vía SSE (`visitasActivas`). Antes del primer evento se muestra
-// `conteoInicial` (sembrado desde el snapshot del dashboard) — no se fetchea
-// `GET /accesos/conteo-activos` solo para contar (mismas condiciones que la
-// tarjeta de encomiendas).
-const activos = computed(
-  () => metricas.visitasActivas ?? props.conteoInicial ?? 0,
-);
+// [SSE-REMOVAL] Conteo vía polling GET /dashboard/metrics (30s, Cache-Control no-cache).
+// Antes del primer poll se muestra `conteoInicial` (seed del snapshot /dashboard/guardia).
+const { visitasActivas } = useDashboardMetrics();
+const activos = computed(() => visitasActivas.value ?? props.conteoInicial ?? 0);
 </script>
 
 <template>

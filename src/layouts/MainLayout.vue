@@ -54,19 +54,9 @@ import NotificationBanner from "@/components/NotificationBanner.vue";
 import { useAuthStore } from "@/stores/authStore";
 import { usePwaStandalone } from "@/composables/usePwaStandalone";
 import {
-  iniciarStream,
-  detenerStream,
-} from "@/services/dashboardStreamService";
-import {
-  iniciarStreamResidente,
-  detenerStreamResidente,
-} from "@/services/residenteStreamService";
-import {
   iniciarStreamNotificaciones,
   detenerStreamNotificaciones,
 } from "@/services/notificacionesStreamService";
-import { useMetricasTiempoReal } from "@/composables/useMetricasTiempoReal";
-import { useMisEncomiendasTiempoReal } from "@/composables/useMisEncomiendasTiempoReal";
 import { useNotificacionesTiempoReal } from "@/composables/useNotificacionesTiempoReal";
 
 const router = useRouter();
@@ -87,56 +77,23 @@ watch(
   },
 );
 
-// Registra la suscripción SSE app-wide (eventos y estado) para que `metricas`
-// se pueble en cualquier rol con dashboard (GUARDIA o ADMIN), no solo cuando
-// se monta el dashboard del guardia. Es idempotente: la suscripción real es
-// singleton a nivel de módulo (asegurarSuscripcion()).
-useMetricasTiempoReal();
+// [SSE-REMOVAL] Dashboard operativo y residente migrados a polling (30s/60s)
+// vía useDashboardMetrics/useResidenteMetrics. Solo notificaciones mantiene SSE.
 
-// Ídem para el canal "mis encomiendas" del residente: registra la suscripción
-// app-wide (invalidación de ["misEncomiendas", cid]) en cualquier rol, para que
-// la tarjeta del residente se actualice en vivo sin depender del componente.
-useMisEncomiendasTiempoReal();
-
-// Ídem para la bandeja de notificaciones: registra la suscripción app-wide
-// (invalidación de ["notificaciones-sync", cid]) en cualquier rol con la
-// bandeja, para que el badge/campanita se actualice en vivo. La conexión del
-// stream se gestiona en el watchEffect de abajo según el permiso NOTIFICACION_VER.
+// Registra la suscripción SSE app-wide de notificaciones (bandeja) para que
+// el badge/campanita se actualice en vivo. Único stream SSE activo.
 useNotificacionesTiempoReal();
 
-// ─── Stream SSE de métricas (dashboard operativo) ────────────────────────────
-// Conexión app-wide: se mantiene mientras el usuario tenga un condominio
-// seleccionado y permiso de dashboard operativo (GUARDIA o ADMIN). Al cambiar
-// condominio o cerrar sesión, el stream se aborta y limpia automáticamente.
-//
-// El canal del residente (dashboard/residente/stream) es un bus INDEPENDIENTE:
-// se conecta cuando el usuario tiene permiso DASHBOARD_RESIDENTE. Un usuario
-// con permisos de ambos canales mantiene ambas conexiones.
+// ─── Stream SSE de notificaciones (único bus SSE activo) ────────────────────
+// Conexión app-wide: se mantiene mientras el usuario tenga condominio +
+// permiso NOTIFICACION_VER. Dashboard metrics pollings son independientes.
 watchEffect(() => {
   const cid = auth.condominioActualId;
   const permisos = auth.permisos || [];
 
-  const tienePermisoDashboard = permisos.some(
-    (cod) => cod === "DASHBOARD_GUARDIA" || cod === "DASHBOARD_ADMIN",
-  );
-  const tienePermisoResidente = permisos.some(
-    (cod) => cod === "DASHBOARD_RESIDENTE",
-  );
   const tienePermisoNotificaciones = permisos.some(
     (cod) => cod === "NOTIFICACION_VER",
   );
-
-  if (cid && tienePermisoDashboard) {
-    iniciarStream(cid);
-  } else {
-    detenerStream();
-  }
-
-  if (cid && tienePermisoResidente) {
-    iniciarStreamResidente(cid);
-  } else {
-    detenerStreamResidente();
-  }
 
   if (cid && tienePermisoNotificaciones) {
     iniciarStreamNotificaciones(cid);
@@ -163,8 +120,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("Briku:navegar", onNavegacionDesdeSW);
-  detenerStream();
-  detenerStreamResidente();
   detenerStreamNotificaciones();
 });
 
