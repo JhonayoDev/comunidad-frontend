@@ -109,14 +109,7 @@ const routes = [
         props: { modulo: "Almacenamiento" },
         meta: { roles: ["SUPER_ADMIN"] },
       },
-      // ── Permisos (SUPER_ADMIN) ────────────────────
-      {
-        path: "superadmin/permisos",
-        name: "PermisosMatrix",
-        component: () => import("../views/common/EnConstruccionView.vue"),
-        props: { modulo: "Matriz de Permisos" },
-        meta: { roles: ["SUPER_ADMIN"] },
-      },
+      // ── Permisos por cargo (SUPER_ADMIN) ──────────
       {
         path: "superadmin/permisos/cargos",
         name: "CargosPermisos",

@@ -10,7 +10,6 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Plantillas Notif.", icon: "pi pi-envelope", routeName: "SaasPlantillas" },
     { label: "Reglas Notif. Global", icon: "pi pi-sliders-h", routeName: "SaasReglasNotificacion" },
     { label: "Auditoría", icon: "pi pi-history", routeName: "SaasAuditoria" },
-    { label: "Permisos", icon: "pi pi-lock", routeName: "PermisosMatrix" },
     { label: "Cargos Perm.", icon: "pi pi-users", routeName: "CargosPermisos" },
     { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "SaasAlmacenamiento" },
     { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
