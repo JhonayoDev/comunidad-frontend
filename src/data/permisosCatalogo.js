@@ -1,7 +1,11 @@
-// Catálogo real de permisos del backend (tabla `permisos`, migraciones V2→V39).
-// Nombres/descripciones copiados de los seeds del backend. Al agregar un
-// permiso nuevo en backend, actualizar este archivo para que los códigos
-// reales resuelvan su nombre/módulo en las vistas.
+// Catálogo real de permisos del backend (tabla `permisos`, migraciones V2→V72).
+// Nombres/descripciones copiados de los seeds del backend. `MODULOS` es agrupación
+// solo de frontend (el backend no entrega `modulo` en `GET /admin/permisos/catalogo`;
+// se enriquece en `useCargoPermisos.js` con este mapa). Al agregar un permiso nuevo
+// en backend (ej. V62 SECTOR_*, V66 PISO_*, V67 IMPORTACION_DATOS, V72 EMAIL_CONFIG_*),
+// actualizar este archivo para que `MisPermisos` y `CargosPermisos` agrupen bien y no caiga
+// en “Permisos sin catalogar”. A futuro, si el backend añade `modulo` al DTO, este mapa
+// puede hidratarse desde la API.
 
 export const MODULOS = [
   { codigo: "GESTION", nombre: "Gestión" },
@@ -38,6 +42,15 @@ export const PERMISOS = [
   { codigo: "CONDOMINIO_EDITAR", nombre: "Editar condominio", modulo: "GESTION", descripcion: "Modificar datos del condominio." },
   { codigo: "USUARIO_GESTIONAR", nombre: "Gestionar usuarios", modulo: "GESTION", descripcion: "Crear, editar y desactivar usuarios del sistema." },
   { codigo: "ROL_GESTIONAR", nombre: "Gestionar roles", modulo: "GESTION", descripcion: "Asignar y revocar roles a usuarios." },
+  { codigo: "SECTOR_VER", nombre: "Ver sectores", modulo: "GESTION", descripcion: "Consultar sectores del condominio." },
+  { codigo: "SECTOR_CREAR", nombre: "Crear sectores", modulo: "GESTION", descripcion: "Registrar nuevos sectores en el condominio." },
+  { codigo: "SECTOR_EDITAR", nombre: "Editar sectores", modulo: "GESTION", descripcion: "Modificar datos de sectores existentes." },
+  { codigo: "SECTOR_ELIMINAR", nombre: "Eliminar sectores", modulo: "GESTION", descripcion: "Desactivar sectores del condominio (soft delete)." },
+  { codigo: "PISO_VER", nombre: "Ver pisos", modulo: "GESTION", descripcion: "Consultar pisos del condominio." },
+  { codigo: "PISO_CREAR", nombre: "Crear pisos", modulo: "GESTION", descripcion: "Registrar nuevos pisos en el condominio." },
+  { codigo: "PISO_EDITAR", nombre: "Editar pisos", modulo: "GESTION", descripcion: "Modificar datos de pisos existentes." },
+  { codigo: "PISO_ELIMINAR", nombre: "Eliminar pisos", modulo: "GESTION", descripcion: "Desactivar pisos del condominio (soft delete)." },
+  { codigo: "IMPORTACION_DATOS", nombre: "Importar datos", modulo: "GESTION", descripcion: "Cargar la planilla de integrantes del condominio (preview/ejecutar/plantilla)." },
   // ── ACCESOS Y SEGURIDAD ──
   { codigo: "ACCESO_VER", nombre: "Ver accesos", modulo: "ACCESOS", descripcion: "Consultar registros de ingreso y salida." },
   { codigo: "ACCESO_REGISTRAR_INGRESO", nombre: "Registrar ingreso", modulo: "ACCESOS", descripcion: "Registrar el ingreso de un visitante al condominio." },
@@ -86,6 +99,8 @@ export const PERMISOS = [
   { codigo: "REGLA_NOTIF_VER", nombre: "Ver reglas notif.", modulo: "COMUNICACION", descripcion: "Consultar reglas de notificación del condominio." },
   { codigo: "REGLA_NOTIF_GESTIONAR", nombre: "Gestionar reglas notif.", modulo: "COMUNICACION", descripcion: "Configurar reglas de notificación por tipo de evento." },
   { codigo: "MENSAJE_GLOBAL_ENVIAR", nombre: "Enviar mensajes globales", modulo: "COMUNICACION", descripcion: "Enviar notificaciones a todos los condominios. Solo SUPER_ADMIN." },
+  { codigo: "EMAIL_CONFIG_VER", nombre: "Ver config email", modulo: "COMUNICACION", descripcion: "Consultar configuración SMTP y routing email del condominio." },
+  { codigo: "EMAIL_CONFIG_EDITAR", nombre: "Editar config email", modulo: "COMUNICACION", descripcion: "Crear, actualizar, eliminar y testear configuración SMTP y routing email del condominio." },
   // ── BITÁCORA ──
   { codigo: "BITACORA_VER", nombre: "Ver bitácora", modulo: "BITACORA", descripcion: "Consultar eventos de turno, colación y novedades." },
   { codigo: "BITACORA_REGISTRAR", nombre: "Registrar bitácora", modulo: "BITACORA", descripcion: "Registrar eventos propios de turno, colación y novedades." },
