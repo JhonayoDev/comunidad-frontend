@@ -1,5 +1,7 @@
 # Solicitud Backend — Reenvío de notificación de encomienda/carta a propietario (o persona específica)
 
+> **MIGRADO A ISSUE** — 2026-09-08: Este doc queda como banner histórico. La trazabilidad vive en **GitHub Project `Gestion Comunidad Briku` (3)** + **Issue #19** `P4 follow-up: reenvío de notificación de encomienda/carta a propietario (PERSONA)` https://github.com/JhonayoDev/comunidad-frontend/issues/19 y su **sub-issue backend** `JhonayoDev/briku` (cuando se cree con `--parent 19`). Ver `AGENTS.md: Workflow — GitHub Project y Issues`. El `Project` es la guía; este `.md` se conserva solo para referencia.
+
 **Fecha:** 2026-09-08
 **Contexto:** `feature/p4-permisos-bff` — regla general `ENCOMIENDA_RECIBIDA` ahora `UNIDAD_TITULAR` (SUPER_ADMIN global). Caso observado: carta a nombre del propietario de una casa arrendada → titular es arrendatario (residente), propietario no residente no recibe nada. Flujo deseado sin romper la regla general.
 **Para:** Equipo backend — dejar documentado para cuando se llegue a la vista `EncomiendasView`/`EncomiendasView detalle`.
