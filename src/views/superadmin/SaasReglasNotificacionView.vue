@@ -49,8 +49,12 @@ const prioridadOptions = [
 ];
 
 const popoverVisibilidad = ref(null);
+const popoverPrioridad = ref(null);
 function toggleVisibilidad(event) {
   popoverVisibilidad.value.toggle(event);
+}
+function togglePrioridad(event) {
+  popoverPrioridad.value.toggle(event);
 }
 
 const canalSeverity = { IN_APP: "info", EMAIL: "warn", PUSH: "success" };
@@ -233,7 +237,10 @@ onMounted(cargar);
                   <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-surface-500">Prioridad</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-surface-500">Prioridad</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                  </div>
                   <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
                 </div>
                 <div class="flex items-center justify-between">
@@ -270,7 +277,12 @@ onMounted(cargar);
                     <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
                   </div>
                 </th>
-                <th>Prioridad</th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Prioridad</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                  </div>
+                </th>
                 <th class="text-right">Acción</th>
               </tr>
             </thead>
@@ -306,7 +318,10 @@ onMounted(cargar);
                   </div>
                 </td>
                 <td class="whitespace-nowrap">
-                  <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
+                  <div class="flex items-center gap-1">
+                    <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                  </div>
                 </td>
                 <td class="text-right whitespace-nowrap">
                   <Button label="Editar" size="small" severity="secondary" variant="outlined" @click="abrirEditar(r)" />
@@ -339,7 +354,10 @@ onMounted(cargar);
           </Message>
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Prioridad</label>
+          <div class="flex items-center gap-1">
+            <label class="text-sm">Prioridad</label>
+            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+          </div>
           <Select v-model="form.prioridad" :options="prioridadOptions" option-label="label" option-value="value" class="w-full" />
         </div>
         <Divider />
@@ -388,6 +406,34 @@ onMounted(cargar);
           <div class="flex flex-col gap-1">
             <span class="font-medium">Solo sistema</span>
             <span class="text-xs text-surface-500">Se envía por los canales configurados, pero <strong>no aparece</strong> en preferencias. El usuario no puede desactivarla. Es de gestión interna del sistema (ej. aviso a guardias en turno, reclamo al comité, reserva a administradores).</span>
+          </div>
+        </div>
+      </div>
+    </Popover>
+
+    <Popover ref="popoverPrioridad" :style="{ width: '360px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-flag text-primary" />
+          <span class="font-bold text-sm">Prioridad</span>
+        </div>
+        <p class="text-xs text-surface-500 m-0">Define orden de reintento y reserva de cuota. No cambia el canal, solo la urgencia con la que el sistema la procesa.</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="BAJA" severity="info" size="small" class="mr-1" /> Baja</span>
+            <span class="text-xs text-surface-500">Informativa. Sin obligatoriedad por defecto. Se reintenta al final, última en cola.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="NORMAL" severity="warn" size="small" class="mr-1" /> Normal</span>
+            <span class="text-xs text-surface-500">Habitual. Se reintenta después de ALTA. Es la prioridad por defecto de la mayoría de avisos.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="ALTA" severity="danger" size="small" class="mr-1" style="background: var(--p-red-100); color: var(--p-red-700)" /> Alta</span>
+            <span class="text-xs text-surface-500">Importante. Reintento prioritario tras CRITICA. Para avisos que deben llegar pronto (visita, reclamo, gasto común).</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="CRITICA" severity="danger" size="small" class="mr-1" /> Crítica</span>
+            <span class="text-xs text-surface-500">Máxima prioridad. Reserva <strong>50 cupos diarios de email</strong> (Brevo 300/día) aun con cuota agotada y se reintenta primero. Solo <code>DEUDA_VENCIDA</code> la usa.</span>
           </div>
         </div>
       </div>
