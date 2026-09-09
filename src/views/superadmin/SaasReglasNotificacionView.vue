@@ -17,6 +17,7 @@ import Message from "primevue/message";
 import Dialog from "primevue/dialog";
 import Divider from "primevue/divider";
 import ConfirmDialog from "primevue/confirmdialog";
+import Popover from "primevue/popover";
 
 const confirm = useConfirm();
 
@@ -47,6 +48,11 @@ const prioridadOptions = [
   { label: "Crítica", value: "CRITICA" },
 ];
 
+const popoverVisibilidad = ref(null);
+function toggleVisibilidad(event) {
+  popoverVisibilidad.value.toggle(event);
+}
+
 const canalSeverity = { IN_APP: "info", EMAIL: "warn", PUSH: "success" };
 
 const seccionesAyuda = [
@@ -71,6 +77,13 @@ const seccionesAyuda = [
       { label: "Normal", desc: PRIORIDAD_DESC.NORMAL },
       { label: "Alta", desc: PRIORIDAD_DESC.ALTA },
       { label: "Crítica", desc: PRIORIDAD_DESC.CRITICA },
+    ],
+  },
+  {
+    titulo: "Visibilidad",
+    items: [
+      { label: "Visible usuario", desc: "Aparece en Perfil > Notificaciones. El usuario puede activar/desactivar los canales no obligatorios." },
+      { label: "Solo sistema", desc: "Se envía por los canales configurados pero no aparece en preferencias. El usuario no puede desactivarla. Es de gestión interna (ej. aviso a guardias en turno, reclamo al comité)." },
     ],
   },
 ];
@@ -207,7 +220,10 @@ onMounted(cargar);
             <template #title>
               <div class="flex items-center justify-between gap-2">
                 <span class="text-sm">{{ tipoLabel(r.tipoNotificacion) }}</span>
-                <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                <div class="flex items-center gap-1">
+                  <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                  <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                </div>
               </div>
             </template>
             <template #content>
@@ -248,7 +264,12 @@ onMounted(cargar);
                 <th>Audiencia</th>
                 <th>Canales</th>
                 <th>Obligatoriedad</th>
-                <th>Visibilidad</th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Visibilidad</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                  </div>
+                </th>
                 <th>Prioridad</th>
                 <th class="text-right">Acción</th>
               </tr>
@@ -279,7 +300,10 @@ onMounted(cargar);
                   </div>
                 </td>
                 <td class="whitespace-nowrap">
-                  <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                  <div class="flex items-center gap-1">
+                    <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                  </div>
                 </td>
                 <td class="whitespace-nowrap">
                   <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
@@ -333,7 +357,10 @@ onMounted(cargar);
             <InputSwitch v-model="form.esObligatoriaPush" />
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm">Visible en panel del usuario</span>
+            <div class="flex items-center gap-1">
+              <span class="text-sm">Visible en preferencias del usuario</span>
+              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+            </div>
             <InputSwitch v-model="form.visibleUsuario" />
           </div>
         </div>
@@ -346,5 +373,24 @@ onMounted(cargar);
     </Dialog>
 
     <ConfirmDialog />
+
+    <Popover ref="popoverVisibilidad" :style="{ width: '340px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-eye text-primary" />
+          <span class="font-bold text-sm">Visibilidad</span>
+        </div>
+        <div class="flex flex-col gap-3 text-sm">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">Visible usuario</span>
+            <span class="text-xs text-surface-500">Aparece en <strong>Perfil &gt; Notificaciones</strong>. El usuario puede activar o desactivar los canales que no sean obligatorios. Se muestra en su bandeja y preferencias.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">Solo sistema</span>
+            <span class="text-xs text-surface-500">Se envía por los canales configurados, pero <strong>no aparece</strong> en preferencias. El usuario no puede desactivarla. Es de gestión interna del sistema (ej. aviso a guardias en turno, reclamo al comité, reserva a administradores).</span>
+          </div>
+        </div>
+      </div>
+    </Popover>
   </div>
 </template>
