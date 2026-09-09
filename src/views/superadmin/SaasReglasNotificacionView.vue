@@ -52,6 +52,7 @@ const popoverVisibilidad = ref(null);
 const popoverPrioridad = ref(null);
 const popoverObligatoriedad = ref(null);
 const popoverCanales = ref(null);
+const popoverAudiencia = ref(null);
 function toggleVisibilidad(event) {
   popoverVisibilidad.value.toggle(event);
 }
@@ -63,6 +64,9 @@ function toggleObligatoriedad(event) {
 }
 function toggleCanales(event) {
   popoverCanales.value.toggle(event);
+}
+function toggleAudiencia(event) {
+  popoverAudiencia.value.toggle(event);
 }
 
 const canalSeverity = { IN_APP: "info", EMAIL: "warn", PUSH: "success" };
@@ -248,7 +252,10 @@ onMounted(cargar);
             <template #content>
               <div class="flex flex-col gap-2 text-sm">
                 <div class="flex items-center justify-between">
-                  <span class="text-surface-500">Audiencia</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-surface-500">Audiencia</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                  </div>
                   <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
                 </div>
                 <div class="flex items-center justify-between">
@@ -287,7 +294,12 @@ onMounted(cargar);
             <thead>
               <tr>
                 <th>Regla</th>
-                <th>Audiencia</th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Audiencia</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                  </div>
+                </th>
                 <th>
                   <div class="flex items-center gap-1">
                     <span>Canales</span>
@@ -320,7 +332,12 @@ onMounted(cargar);
                 <td class="whitespace-nowrap">
                   <div class="font-medium">{{ tipoLabel(r.tipoNotificacion) }}</div>
                 </td>
-                <td class="whitespace-nowrap">{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</td>
+                <td class="whitespace-nowrap">
+                  <div class="flex items-center gap-1">
+                    <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                  </div>
+                </td>
                 <td>
                   <div class="flex items-center gap-1">
                     <div class="flex flex-wrap gap-1">
@@ -368,7 +385,10 @@ onMounted(cargar);
     <Dialog v-model:visible="showEditar" :header="editando ? `Editar — ${tipoLabel(editando.tipoNotificacion)}` : 'Editar regla'" modal :style="{ width: '95%', maxWidth: '520px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Audiencia</label>
+          <div class="flex items-center gap-1">
+            <label class="text-sm">Audiencia</label>
+            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+          </div>
           <Select v-model="form.audiencia" :options="audienciaOptions" option-label="label" option-value="value" class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
@@ -524,6 +544,23 @@ onMounted(cargar);
             <span class="text-xs text-surface-500">Push PWA al dispositivo (<code>userVisibleOnly: true</code>). Requiere permiso del navegador y PWA instalada. Si el usuario no tiene suscripción, esa entrega se omite sin error.</span>
           </div>
         </div>
+      </div>
+    </Popover>
+
+    <Popover ref="popoverAudiencia" :style="{ width: '380px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-users text-primary" />
+          <span class="font-bold text-sm">Audiencia</span>
+        </div>
+        <p class="text-xs text-surface-500 m-0">Quién recibe la notificación. El sistema resuelve <code>DestinatarioResolver.java:48</code> consultando <code>vinculo_persona_unidad</code> y <code>miembros_condominio</code> con <code>recibeNotificaciones</code>. Se deduplica por persona.</p>
+        <div class="flex flex-col gap-2 text-sm overflow-y-auto pr-1" style="max-height: 45vh">
+          <div v-for="(desc, codigo) in AUDIENCIA_DESC" :key="codigo" class="flex flex-col gap-1">
+            <span class="font-medium">{{ AUDIENCIA_LABELS[codigo] || codigo }} <span class="font-mono text-xs text-surface-400">({{ codigo }})</span></span>
+            <span class="text-xs text-surface-500">{{ desc }}</span>
+          </div>
+        </div>
+        <Message severity="info" :closable="false" size="small" class="text-xs">Tip: <code>GUARDIAS_EN_TURNO</code> filtra por bitácora <code>EN_TURNO/EN_COLACION</code>; si ninguno está, avisa a todos los guardias para no perder avisos críticos. <code>TODOS</code> es vínculos activos + miembros con cargo.</Message>
       </div>
     </Popover>
   </div>
