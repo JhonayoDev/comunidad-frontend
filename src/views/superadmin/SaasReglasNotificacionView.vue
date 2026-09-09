@@ -17,6 +17,7 @@ import Message from "primevue/message";
 import Dialog from "primevue/dialog";
 import Divider from "primevue/divider";
 import ConfirmDialog from "primevue/confirmdialog";
+import Popover from "primevue/popover";
 
 const confirm = useConfirm();
 
@@ -47,6 +48,27 @@ const prioridadOptions = [
   { label: "Crítica", value: "CRITICA" },
 ];
 
+const popoverVisibilidad = ref(null);
+const popoverPrioridad = ref(null);
+const popoverObligatoriedad = ref(null);
+const popoverCanales = ref(null);
+const popoverAudiencia = ref(null);
+function toggleVisibilidad(event) {
+  popoverVisibilidad.value.toggle(event);
+}
+function togglePrioridad(event) {
+  popoverPrioridad.value.toggle(event);
+}
+function toggleObligatoriedad(event) {
+  popoverObligatoriedad.value.toggle(event);
+}
+function toggleCanales(event) {
+  popoverCanales.value.toggle(event);
+}
+function toggleAudiencia(event) {
+  popoverAudiencia.value.toggle(event);
+}
+
 const canalSeverity = { IN_APP: "info", EMAIL: "warn", PUSH: "success" };
 
 const seccionesAyuda = [
@@ -71,6 +93,20 @@ const seccionesAyuda = [
       { label: "Normal", desc: PRIORIDAD_DESC.NORMAL },
       { label: "Alta", desc: PRIORIDAD_DESC.ALTA },
       { label: "Crítica", desc: PRIORIDAD_DESC.CRITICA },
+    ],
+  },
+  {
+    titulo: "Visibilidad",
+    items: [
+      { label: "Visible usuario", desc: "Aparece en Perfil > Notificaciones. El usuario puede activar/desactivar los canales no obligatorios." },
+      { label: "Solo sistema", desc: "Se envía por los canales configurados pero no aparece en preferencias. El usuario no puede desactivarla. Es de gestión interna (ej. aviso a guardias en turno, reclamo al comité)." },
+    ],
+  },
+  {
+    titulo: "Obligatoriedad",
+    items: [
+      { label: "No obligatorio", desc: "El usuario puede activar o desactivar el canal en Perfil > Notificaciones." },
+      { label: "Obligatorio", desc: "El destinatario (según Audiencia) no puede desactivar ese canal. Aunque lo apague, el sistema igual lo envía. Afecta al usuario final; lo ve como toggle bloqueado con Tag 'obligatorio'." },
     ],
   },
 ];
@@ -207,29 +243,42 @@ onMounted(cargar);
             <template #title>
               <div class="flex items-center justify-between gap-2">
                 <span class="text-sm">{{ tipoLabel(r.tipoNotificacion) }}</span>
-                <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                <div class="flex items-center gap-1">
+                  <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                  <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                </div>
               </div>
             </template>
             <template #content>
               <div class="flex flex-col gap-2 text-sm">
                 <div class="flex items-center justify-between">
-                  <span class="text-surface-500">Audiencia</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-surface-500">Audiencia</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                  </div>
                   <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-surface-500">Prioridad</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-surface-500">Prioridad</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                  </div>
                   <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-surface-500">Canales</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-surface-500">Canales</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+                  </div>
                   <div class="flex flex-wrap gap-1 justify-end">
                     <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
                   </div>
                 </div>
-                <div class="flex flex-wrap gap-1 mt-1">
+                <div class="flex flex-wrap gap-1 mt-1 items-center">
                   <Tag v-if="r.esObligatoriaInapp" value="App obligatoria" severity="danger" size="small" />
                   <Tag v-if="r.esObligatoriaEmail" value="Email obligatorio" severity="danger" size="small" />
                   <Tag v-if="r.esObligatoriaPush" value="Push obligatorio" severity="danger" size="small" />
+                  <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
                 </div>
               </div>
             </template>
@@ -245,11 +294,36 @@ onMounted(cargar);
             <thead>
               <tr>
                 <th>Regla</th>
-                <th>Audiencia</th>
-                <th>Canales</th>
-                <th>Obligatoriedad</th>
-                <th>Visibilidad</th>
-                <th>Prioridad</th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Audiencia</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                  </div>
+                </th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Canales</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+                  </div>
+                </th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Obligatoriedad</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+                  </div>
+                </th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Visibilidad</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                  </div>
+                </th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Prioridad</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                  </div>
+                </th>
                 <th class="text-right">Acción</th>
               </tr>
             </thead>
@@ -258,10 +332,18 @@ onMounted(cargar);
                 <td class="whitespace-nowrap">
                   <div class="font-medium">{{ tipoLabel(r.tipoNotificacion) }}</div>
                 </td>
-                <td class="whitespace-nowrap">{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</td>
+                <td class="whitespace-nowrap">
+                  <div class="flex items-center gap-1">
+                    <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                  </div>
+                </td>
                 <td>
-                  <div class="flex flex-wrap gap-1">
-                    <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
+                  <div class="flex items-center gap-1">
+                    <div class="flex flex-wrap gap-1">
+                      <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
+                    </div>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
                   </div>
                 </td>
                 <td class="whitespace-nowrap">
@@ -279,10 +361,16 @@ onMounted(cargar);
                   </div>
                 </td>
                 <td class="whitespace-nowrap">
-                  <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                  <div class="flex items-center gap-1">
+                    <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                  </div>
                 </td>
                 <td class="whitespace-nowrap">
-                  <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
+                  <div class="flex items-center gap-1">
+                    <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                  </div>
                 </td>
                 <td class="text-right whitespace-nowrap">
                   <Button label="Editar" size="small" severity="secondary" variant="outlined" @click="abrirEditar(r)" />
@@ -297,11 +385,17 @@ onMounted(cargar);
     <Dialog v-model:visible="showEditar" :header="editando ? `Editar — ${tipoLabel(editando.tipoNotificacion)}` : 'Editar regla'" modal :style="{ width: '95%', maxWidth: '520px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Audiencia</label>
+          <div class="flex items-center gap-1">
+            <label class="text-sm">Audiencia</label>
+            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+          </div>
           <Select v-model="form.audiencia" :options="audienciaOptions" option-label="label" option-value="value" class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Canales</label>
+          <div class="flex items-center gap-1">
+            <label class="text-sm">Canales</label>
+            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+          </div>
           <MultiSelect v-model="form.canales" :options="canalOptions" option-label="label" option-value="value" placeholder="Seleccionar canales" :show-toggle-all="false" class="w-full" :class="{ 'p-invalid': !canalesValidos }">
             <template #header>
               <div class="flex items-center gap-2 px-3 py-2">
@@ -315,25 +409,40 @@ onMounted(cargar);
           </Message>
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Prioridad</label>
+          <div class="flex items-center gap-1">
+            <label class="text-sm">Prioridad</label>
+            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+          </div>
           <Select v-model="form.prioridad" :options="prioridadOptions" option-label="label" option-value="value" class="w-full" />
         </div>
         <Divider />
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
-            <span class="text-sm">App obligatoria</span>
+            <div class="flex items-center gap-1">
+              <span class="text-sm">App obligatoria</span>
+              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+            </div>
             <InputSwitch v-model="form.esObligatoriaInapp" />
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm">Email obligatorio</span>
+            <div class="flex items-center gap-1">
+              <span class="text-sm">Email obligatorio</span>
+              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+            </div>
             <InputSwitch v-model="form.esObligatoriaEmail" />
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm">Push obligatorio</span>
+            <div class="flex items-center gap-1">
+              <span class="text-sm">Push obligatorio</span>
+              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+            </div>
             <InputSwitch v-model="form.esObligatoriaPush" />
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm">Visible en panel del usuario</span>
+            <div class="flex items-center gap-1">
+              <span class="text-sm">Visible en preferencias del usuario</span>
+              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+            </div>
             <InputSwitch v-model="form.visibleUsuario" />
           </div>
         </div>
@@ -346,5 +455,113 @@ onMounted(cargar);
     </Dialog>
 
     <ConfirmDialog />
+
+    <Popover ref="popoverVisibilidad" :style="{ width: '340px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-eye text-primary" />
+          <span class="font-bold text-sm">Visibilidad</span>
+        </div>
+        <div class="flex flex-col gap-3 text-sm">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">Visible usuario</span>
+            <span class="text-xs text-surface-500">Aparece en <strong>Perfil &gt; Notificaciones</strong>. El usuario puede activar o desactivar los canales que no sean obligatorios. Se muestra en su bandeja y preferencias.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">Solo sistema</span>
+            <span class="text-xs text-surface-500">Se envía por los canales configurados, pero <strong>no aparece</strong> en preferencias. El usuario no puede desactivarla. Es de gestión interna del sistema (ej. aviso a guardias en turno, reclamo al comité, reserva a administradores).</span>
+          </div>
+        </div>
+      </div>
+    </Popover>
+
+    <Popover ref="popoverPrioridad" :style="{ width: '360px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-flag text-primary" />
+          <span class="font-bold text-sm">Prioridad</span>
+        </div>
+        <p class="text-xs text-surface-500 m-0">Define orden de reintento y reserva de cuota. No cambia el canal, solo la urgencia con la que el sistema la procesa.</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="BAJA" severity="info" size="small" class="mr-1" /> Baja</span>
+            <span class="text-xs text-surface-500">Informativa. Sin obligatoriedad por defecto. Se reintenta al final, última en cola.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="NORMAL" severity="warn" size="small" class="mr-1" /> Normal</span>
+            <span class="text-xs text-surface-500">Habitual. Se reintenta después de ALTA. Es la prioridad por defecto de la mayoría de avisos.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="ALTA" severity="danger" size="small" class="mr-1" style="background: var(--p-red-100); color: var(--p-red-700)" /> Alta</span>
+            <span class="text-xs text-surface-500">Importante. Reintento prioritario tras CRITICA. Para avisos que deben llegar pronto (visita, reclamo, gasto común).</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="CRITICA" severity="danger" size="small" class="mr-1" /> Crítica</span>
+            <span class="text-xs text-surface-500">Máxima prioridad. Reserva <strong>50 cupos diarios de email</strong> (Brevo 300/día) aun con cuota agotada y se reintenta primero. Solo <code>DEUDA_VENCIDA</code> la usa.</span>
+          </div>
+        </div>
+      </div>
+    </Popover>
+
+    <Popover ref="popoverObligatoriedad" :style="{ width: '360px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-lock text-primary" />
+          <span class="font-bold text-sm">Obligatoriedad por canal</span>
+        </div>
+        <p class="text-xs text-surface-500 m-0">Cuando <strong>SUPER_ADMIN</strong> (global) o <strong>ADMINISTRADOR</strong> (por condominio) marca un canal como obligatorio, el <strong>destinatario</strong> (según <em>Audiencia</em>: Unidad, Guardias en turno, etc.) <strong>no puede desactivar</strong> ese canal en <strong>Perfil &gt; Notificaciones</strong>.</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">¿A quién afecta?</span>
+            <span class="text-xs text-surface-500">Al usuario final que recibe la notificación. Aunque apague el canal en sus preferencias, el sistema igual lo envía por ese canal. Ej.: <code>ENCOMIENDA_RECIBIDA</code> con <em>Email obligatorio</em> → el ocupante de la unidad no puede quitar el Email para esa notificación.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">¿Quién lo ve?</span>
+            <span class="text-xs text-surface-500"><strong>SUPER_ADMIN/SOPORTE</strong> lo configura en el catálogo global; <strong>ADMINISTRADOR</strong> lo puede sobrescribir por condominio. El <strong>usuario final</strong> lo ve como toggle bloqueado con candado y <em>Tag “obligatorio”</em> en sus preferencias. Si <em>Visible usuario = Solo sistema</em>, ni siquiera aparece para configurar.</span>
+          </div>
+        </div>
+      </div>
+    </Popover>
+
+    <Popover ref="popoverCanales" :style="{ width: '360px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-send text-primary" />
+          <span class="font-bold text-sm">Canales</span>
+        </div>
+        <p class="text-xs text-surface-500 m-0">Define por dónde se entrega la notificación. El sistema crea una <em>entrega</em> por cada canal seleccionado que el destinatario tenga activo (o sea obligatorio). Si el usuario apagó un canal no obligatorio, esa entrega no se crea.</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="App" severity="info" size="small" class="mr-1" /> IN_APP</span>
+            <span class="text-xs text-surface-500">Bandeja dentro de la app + SSE <code>/notificaciones/stream</code> (siempre disponible, no consume cuota email, se confirma al SNAPSHOT). Es el canal base, casi siempre presente.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="Email" severity="warn" size="small" class="mr-1" /> EMAIL</span>
+            <span class="text-xs text-surface-500">Correo del destinatario via <strong>Brevo API</strong> global o <strong>SMTP propio</strong> por condominio (<code>SaasEmailConfig</code> V71). Consume cuota <strong>300/día</strong> (50 reservados para <code>CRITICA</code>), con reintento y backoff. Requiere <code>remitenteDefault</code> configurado.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="Push" severity="success" size="small" class="mr-1" /> PUSH</span>
+            <span class="text-xs text-surface-500">Push PWA al dispositivo (<code>userVisibleOnly: true</code>). Requiere permiso del navegador y PWA instalada. Si el usuario no tiene suscripción, esa entrega se omite sin error.</span>
+          </div>
+        </div>
+      </div>
+    </Popover>
+
+    <Popover ref="popoverAudiencia" :style="{ width: '380px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-users text-primary" />
+          <span class="font-bold text-sm">Audiencia</span>
+        </div>
+        <p class="text-xs text-surface-500 m-0">Quién recibe la notificación. El sistema resuelve <code>DestinatarioResolver.java:48</code> consultando <code>vinculo_persona_unidad</code> y <code>miembros_condominio</code> con <code>recibeNotificaciones</code>. Se deduplica por persona.</p>
+        <div class="flex flex-col gap-2 text-sm overflow-y-auto pr-1" style="max-height: 45vh">
+          <div v-for="(desc, codigo) in AUDIENCIA_DESC" :key="codigo" class="flex flex-col gap-1">
+            <span class="font-medium">{{ AUDIENCIA_LABELS[codigo] || codigo }} <span class="font-mono text-xs text-surface-400">({{ codigo }})</span></span>
+            <span class="text-xs text-surface-500">{{ desc }}</span>
+          </div>
+        </div>
+        <Message severity="info" :closable="false" size="small" class="text-xs">Tip: <code>GUARDIAS_EN_TURNO</code> filtra por bitácora <code>EN_TURNO/EN_COLACION</code>; si ninguno está, avisa a todos los guardias para no perder avisos críticos. <code>TODOS</code> es vínculos activos + miembros con cargo.</Message>
+      </div>
+    </Popover>
   </div>
 </template>

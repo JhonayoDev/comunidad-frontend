@@ -53,10 +53,10 @@ export const PRIORIDAD_SEVERITY = {
 };
 
 export const PRIORIDAD_DESC = {
-  BAJA: "Urgencia baja: se guarda en la notificación como informativa.",
-  NORMAL: "Urgencia normal: notificación habitual.",
-  ALTA: "Urgencia alta: notificación importante.",
-  CRITICA: "Urgencia crítica: notificación de máxima prioridad.",
+  BAJA: "Informativa. Sin obligatoriedad por defecto. En reintentos de entrega se procesa al final (última en cola).",
+  NORMAL: "Habitual. Se reintenta después de ALTA. Es la prioridad por defecto de la mayoría de avisos.",
+  ALTA: "Importante. Reintento prioritario tras CRITICA. Usada para avisos que deben llegar pronto (ej. visita, reclamo, gasto común).",
+  CRITICA: "Máxima prioridad. Reserva 50 cupos diarios de email (Brevo 300/día) aun con cuota agotada y se reintenta primero. Solo DEUDA_VENCIDA la usa.",
 };
 
 export const CANAL_LABELS = {
