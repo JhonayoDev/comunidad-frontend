@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useQuery } from "@tanstack/vue-query";
 import { encomiendasService } from "@/services/encomiendasService";
-import { useMisEncomiendasTiempoReal } from "@/composables/useMisEncomiendasTiempoReal";
+import { useResidenteMetrics } from "@/composables/useResidenteMetrics";
 
 import Card from "primevue/card";
 import Badge from "primevue/badge";
@@ -18,11 +18,9 @@ const props = defineProps({
 
 const router = useRouter();
 
-// SSE del residente: invalida la query ante cambios en vivo (ENCOMIENDA_RECIBIDA/
-// ENTREGADA/CERRADA) y siembra el badge desde el SNAPSHOT_INICIAL. Si el stream
-// cae pasada la gracia (1 min), activa polling de respaldo (2 min).
-const { refetchIntervalResidente, pendientesResidente } =
-  useMisEncomiendasTiempoReal();
+// Polling GET /dashboard/residente/metrics (60s, Cache-Control no-cache).
+// Badge usa encomiendasPendientes del polling cuando está disponible, fallback a longitud de lista.
+const { encomiendasPendientes } = useResidenteMetrics();
 
 const queryKey = computed(() => ["misEncomiendas", props.condominioId]);
 const enabled = computed(() => !!props.condominioId);
@@ -36,14 +34,15 @@ const { data: encomiendas, isLoading: loading, isError: error } = useQuery({
     return (data || []).filter((e) => e.estado === "PENDIENTE");
   },
   enabled,
-  refetchInterval: refetchIntervalResidente,
+  refetchInterval: 60_000,
+  refetchIntervalInBackground: false,
+  staleTime: 10_000,
 });
 
 const encomiendasLista = computed(() => encomiendas.value ?? []);
 
-// Badge: seed del snapshot SSE mientras esté fresco; ante un cambio (el
-// snapshot se descarta) vuelve a la longitud de la lista ya reconciliada.
-const badgeConteo = computed(() => pendientesResidente.value ?? encomiendasLista.value.length);
+// Badge: count del polling (60s) cuando está disponible; fallback a longitud de lista.
+const badgeConteo = computed(() => encomiendasPendientes.value ?? encomiendasLista.value.length);
 
 function severityEncomienda(estado) {
   if (estado === "ENTREGADA") return "info";

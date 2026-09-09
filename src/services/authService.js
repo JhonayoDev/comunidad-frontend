@@ -34,16 +34,16 @@ export const authService = {
   resetPassword({ token, newPassword, confirmPassword }) {
     return authHttp.post("/auth/reset-password", {
       token,
-      newPassword,
-      confirmPassword,
+      passwordNueva: newPassword,
+      passwordNuevaConfirmacion: confirmPassword,
     });
   },
 
   setupPassword({ token, newPassword, confirmPassword }) {
     return authHttp.post("/auth/setup-password", {
       token,
-      newPassword,
-      confirmPassword,
+      passwordNueva: newPassword,
+      passwordNuevaConfirmacion: confirmPassword,
     });
   },
 };

@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { vehiculosService } from "@/services/vehiculosService";
+import { unidadesService } from "@/services/unidadesService";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -22,34 +23,47 @@ const cid = () => auth.condominioActualId;
 const loading = ref(true);
 const error = ref(null);
 const vehiculos = ref([]);
+const unidades = ref([]);
 const filtroPatente = ref("");
 
 const showCrear = ref(false);
 const showEditar = ref(false);
-const showEstacionamiento = ref(false);
 const vehiculoEditando = ref(null);
 const enviando = ref(false);
 
-const formCrear = ref({ patente: "", marca: "", modelo: "", color: "", tipo: "AUTO", propietarioNombre: "" });
-const formEditar = ref({ patente: "", marca: "", modelo: "", color: "", tipo: "AUTO", propietarioNombre: "" });
-const formEstacionamiento = ref({ numero: "" });
+const formCrear = ref({ patente: "", tipo: "AUTO", unidadId: null, marca: "", modelo: "", color: "" });
+const formEditar = ref({ tipo: "AUTO", unidadId: null, marca: "", modelo: "", color: "" });
 
 const tiposVehiculo = [
   { label: "Auto", value: "AUTO" },
   { label: "Camioneta", value: "CAMIONETA" },
   { label: "Moto", value: "MOTO" },
+  { label: "Furgón", value: "FURGON" },
+  { label: "Camión", value: "CAMION" },
   { label: "Otro", value: "OTRO" },
 ];
+
+const unidadesResidenciales = computed(() =>
+  unidades.value.filter((u) => u.tipo === "CASA" || u.tipo === "DEPARTAMENTO"),
+);
+
+const vehiculosFiltrados = computed(() => {
+  if (!filtroPatente.value) return vehiculos.value;
+  const q = filtroPatente.value.toLowerCase();
+  return vehiculos.value.filter((v) => v.patente?.toLowerCase().includes(q));
+});
 
 async function cargar() {
   if (!cid()) return;
   loading.value = true;
   error.value = null;
   try {
-    const params = {};
-    if (filtroPatente.value) params.patente = filtroPatente.value;
-    const { data } = await vehiculosService.listar(cid(), params);
-    vehiculos.value = data;
+    const [vehRes, uniRes] = await Promise.all([
+      vehiculosService.listar(cid()),
+      unidadesService.getUnidades(cid()),
+    ]);
+    vehiculos.value = vehRes.data;
+    unidades.value = uniRes.data;
   } catch (e) {
     console.error("Error al cargar vehículos", e);
     error.value = "No se pudieron cargar los vehículos";
@@ -59,7 +73,7 @@ async function cargar() {
 }
 
 function abrirCrear() {
-  formCrear.value = { patente: "", marca: "", modelo: "", color: "", tipo: "AUTO", propietarioNombre: "" };
+  formCrear.value = { patente: "", tipo: "AUTO", unidadId: null, marca: "", modelo: "", color: "" };
   showCrear.value = true;
 }
 
@@ -72,6 +86,7 @@ async function crearVehiculo() {
     await cargar();
   } catch (e) {
     console.error("Error al crear vehículo", e);
+    error.value = "Error al crear vehículo";
   } finally {
     enviando.value = false;
   }
@@ -79,7 +94,7 @@ async function crearVehiculo() {
 
 function abrirEditar(v) {
   vehiculoEditando.value = v;
-  formEditar.value = { patente: v.patente, marca: v.marca, modelo: v.modelo, color: v.color, tipo: v.tipo, propietarioNombre: v.propietarioNombre || "" };
+  formEditar.value = { tipo: v.tipo, unidadId: v.unidadId || null, marca: v.marca, modelo: v.modelo, color: v.color };
   showEditar.value = true;
 }
 
@@ -118,42 +133,6 @@ async function desactivarVehiculo(v) {
   }
 }
 
-function abrirEstacionamiento(v) {
-  vehiculoEditando.value = v;
-  formEstacionamiento.value = { numero: "" };
-  showEstacionamiento.value = true;
-}
-
-async function vincularEstacionamiento() {
-  if (!cid() || !vehiculoEditando.value) return;
-  enviando.value = true;
-  try {
-    await vehiculosService.vincularEstacionamiento(cid(), vehiculoEditando.value.id, formEstacionamiento.value);
-    showEstacionamiento.value = false;
-    await cargar();
-  } catch (e) {
-    console.error("Error al vincular estacionamiento", e);
-  } finally {
-    enviando.value = false;
-  }
-}
-
-async function desvincularEstacionamiento(v) {
-  if (!cid()) return;
-  try {
-    await vehiculosService.desvincularEstacionamiento(cid(), v.id);
-    await cargar();
-  } catch (e) {
-    console.error("Error al desvincular estacionamiento", e);
-  }
-}
-
-let timeout;
-function onBuscar() {
-  clearTimeout(timeout);
-  timeout = setTimeout(cargar, 300);
-}
-
 onMounted(cargar);
 </script>
 
@@ -166,7 +145,7 @@ onMounted(cargar);
 
     <Card>
       <template #content>
-        <InputText v-model="filtroPatente" placeholder="Buscar por patente..." class="w-full uppercase" @input="onBuscar" />
+        <InputText v-model="filtroPatente" placeholder="Buscar por patente..." class="w-full uppercase" />
       </template>
     </Card>
 
@@ -174,9 +153,9 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!vehiculos.length" class="text-center text-surface-400 py-8">No hay vehículos registrados</div>
+      <div v-if="!vehiculosFiltrados.length" class="text-center text-surface-400 py-8">No hay vehículos registrados</div>
       <div v-else class="flex flex-col gap-2">
-        <div v-for="v in vehiculos" :key="v.id" class="surface-card p-3 border-round shadow-1">
+        <div v-for="v in vehiculosFiltrados" :key="v.id" class="surface-card p-3 border-round shadow-1">
           <div class="flex items-center justify-between">
             <div>
               <div class="flex items-center gap-2">
@@ -185,13 +164,9 @@ onMounted(cargar);
                 <Tag v-if="!v.activo" value="Baja" severity="secondary" size="small" />
               </div>
               <span class="text-sm text-surface-500">{{ v.marca }} {{ v.modelo }} — {{ v.color }}</span>
-              <span v-if="v.propietarioNombre" class="text-xs text-surface-400 ml-2">{{ v.propietarioNombre }}</span>
-              <div v-if="v.estacionamientos?.length" class="text-xs text-surface-400">
-                Est.: {{ v.estacionamientos.map(e => `N°${e.numero}`).join(', ') }}
-              </div>
+              <span v-if="v.unidadNumero" class="text-xs text-surface-400 ml-2">Unidad {{ v.unidadNumero }}</span>
             </div>
             <div class="flex items-center gap-1">
-              <Button v-if="v.activo" icon="pi pi-car" variant="text" size="small" severity="success" @click="abrirEstacionamiento(v)" />
               <Button icon="pi pi-pencil" variant="text" size="small" severity="secondary" @click="abrirEditar(v)" />
               <Button v-if="v.activo" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="confirmarDesactivar(v)" />
             </div>
@@ -202,44 +177,64 @@ onMounted(cargar);
 
     <Dialog v-model:visible="showCrear" header="Nuevo vehículo" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-1"><label class="text-sm">Patente</label><InputText v-model="formCrear.patente" class="uppercase" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Marca</label><InputText v-model="formCrear.marca" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Modelo</label><InputText v-model="formCrear.modelo" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Color</label><InputText v-model="formCrear.color" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Tipo</label><Select v-model="formCrear.tipo" :options="tiposVehiculo" optionLabel="label" optionValue="value" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Propietario</label><InputText v-model="formCrear.propietarioNombre" placeholder="Opcional" /></div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Patente *</label>
+          <InputText v-model="formCrear.patente" class="uppercase" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Unidad *</label>
+          <Select v-model="formCrear.unidadId" :options="unidadesResidenciales" optionLabel="numero" optionValue="id" placeholder="Seleccionar casa/departamento" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Tipo *</label>
+          <Select v-model="formCrear.tipo" :options="tiposVehiculo" optionLabel="label" optionValue="value" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Marca</label>
+          <InputText v-model="formCrear.marca" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Modelo</label>
+          <InputText v-model="formCrear.modelo" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Color</label>
+          <InputText v-model="formCrear.color" />
+        </div>
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" variant="text" @click="showCrear = false" />
-        <Button label="Crear" :loading="enviando" @click="crearVehiculo" />
+        <Button label="Crear" :loading="enviando" :disabled="!formCrear.patente || !formCrear.unidadId" @click="crearVehiculo" />
       </template>
     </Dialog>
 
     <Dialog v-model:visible="showEditar" header="Editar vehículo" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-1"><label class="text-sm">Patente</label><InputText v-model="formEditar.patente" class="uppercase" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Marca</label><InputText v-model="formEditar.marca" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Modelo</label><InputText v-model="formEditar.modelo" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Color</label><InputText v-model="formEditar.color" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Tipo</label><Select v-model="formEditar.tipo" :options="tiposVehiculo" optionLabel="label" optionValue="value" /></div>
-        <div class="flex flex-col gap-1"><label class="text-sm">Propietario</label><InputText v-model="formEditar.propietarioNombre" /></div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Unidad</label>
+          <Select v-model="formEditar.unidadId" :options="unidadesResidenciales" optionLabel="numero" optionValue="id" placeholder="Seleccionar casa/departamento" clearable />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Tipo *</label>
+          <Select v-model="formEditar.tipo" :options="tiposVehiculo" optionLabel="label" optionValue="value" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Marca</label>
+          <InputText v-model="formEditar.marca" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Modelo</label>
+          <InputText v-model="formEditar.modelo" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm">Color</label>
+          <InputText v-model="formEditar.color" />
+        </div>
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" variant="text" @click="showEditar = false" />
-        <Button label="Guardar" :loading="enviando" @click="editarVehiculo" />
+        <Button label="Guardar" :loading="enviando" :disabled="!formEditar.unidadId" @click="editarVehiculo" />
       </template>
-    </Dialog>
-
-    <Dialog v-model:visible="showEstacionamiento" header="Vincular estacionamiento" modal :style="{ width: '95%', maxWidth: '350px' }">
-      <p class="text-sm text-surface-500 m-0 mb-3">Para {{ vehiculoEditando?.patente }}</p>
-      <div class="flex flex-col gap-1">
-        <label class="text-sm">N° estacionamiento</label>
-        <InputText v-model="formEstacionamiento.numero" placeholder="Ej: 12" />
-      </div>
-      <div class="flex justify-between mt-3">
-        <Button v-if="vehiculoEditando?.estacionamientos?.length" label="Desvincular" severity="danger" variant="text" @click="desvincularEstacionamiento(vehiculoEditando); showEstacionamiento = false" />
-        <Button label="Vincular" :loading="enviando" @click="vincularEstacionamiento" />
-      </div>
     </Dialog>
 
     <ConfirmDialog />

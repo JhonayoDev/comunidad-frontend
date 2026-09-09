@@ -7,13 +7,13 @@
       <template v-for="item in items" :key="item.routeName">
         <div
           v-if="item.isCentralFab"
-          class="relative -top-3.5 flex flex-col items-center"
+          class="relative -top-1.5 flex flex-col items-center px-2"
         >
           <Button
             :icon="item.icon"
             severity="primary"
             rounded
-            class="!w-12 !h-12 !p-0 shadow-lg transform transition-transform active:scale-95"
+            class="w-12! h-12! p-0! shadow-lg transform transition-transform active:scale-95"
             aria-label="Volver al inicio"
             @click="go(item)"
           />
@@ -36,8 +36,24 @@
           ]"
           @click="go(item)"
         >
-          <i :class="[item.icon, 'text-xl mb-0.5']"></i>
-          <span class="text-[11px] leading-none">{{ item.label }}</span>
+          <!-- Cápsula de selección: vidrio esmerilado como el header (fondo
+               translúcido + blur + bordes redondeados). AJUSTAR AQUÍ:
+               · Fondo: bg-background-inverse/35 (invierte el token según tema).
+               · Tamaño: max-w-[4.75rem] (labels largos como "Encomiendas" no desbordan).
+               · Definición: ring-border/20 + shadow-sm. -->
+          <span
+            :class="[
+              'flex flex-col items-center justify-center gap-0.5 w-full max-w-[4.75rem] py-1.5 px-2 rounded-2xl transition-all duration-200',
+              activo(item)
+                ? 'bg-background-inverse/35 backdrop-blur-sm ring-1 ring-border/20 shadow-sm'
+                : 'active:scale-95',
+            ]"
+          >
+            <i :class="[item.icon, 'text-xl']"></i>
+            <span class="text-[11px] leading-none whitespace-nowrap">
+              {{ item.label }}
+            </span>
+          </span>
         </button>
       </template>
     </div>

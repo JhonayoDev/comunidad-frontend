@@ -27,17 +27,24 @@ export function useReglasNotificacion() {
     return REGLAS_CATALOGO.map((defaultRule) => {
       const override = overrides.find((o) => o.tipoNotificacion === defaultRule.tipo);
       if (!override) {
-        return { ...defaultRule, esSobrescritura: false, habilitada: true };
+        return {
+          ...defaultRule,
+          canales: [...defaultRule.canales],
+          esSobrescritura: false,
+          habilitada: true,
+        };
       }
-      const habilitada = override.habilitada !== null ? override.habilitada : true;
       return {
         tipo: defaultRule.tipo,
         audiencia: override.audiencia || defaultRule.audiencia,
-        canales: override.canales ? override.canales.split(",") : [...defaultRule.canales],
+        canales: override.canales?.length ? [...override.canales] : [...defaultRule.canales],
         prioridad: override.prioridad || defaultRule.prioridad,
-        esObligatoria: defaultRule.esObligatoria,
+        esObligatoriaInapp: override.esObligatoriaInapp ?? defaultRule.esObligatoriaInapp,
+        esObligatoriaEmail: override.esObligatoriaEmail ?? defaultRule.esObligatoriaEmail,
+        esObligatoriaPush: override.esObligatoriaPush ?? defaultRule.esObligatoriaPush,
+        visibleUsuario: override.visibleUsuario ?? defaultRule.visibleUsuario,
         esSobrescritura: true,
-        habilitada,
+        habilitada: override.habilitada ?? true,
       };
     });
   });
@@ -70,9 +77,28 @@ export function useReglasNotificacion() {
     },
   });
 
-  async function actualizarRegla(tipoNotificacion, data) {
+  // El backend hace upsert pisando TODOS los campos (null = heredar del
+  // catálogo global). Para no perder config (ej. cambiar canales re-habilita
+  // una regla deshabilitada), siempre se envía el estado completo combinado.
+  function payloadCompleto(regla) {
+    return {
+      audiencia: regla.audiencia,
+      canales: regla.canales,
+      prioridad: regla.prioridad,
+      esObligatoriaInapp: regla.esObligatoriaInapp,
+      esObligatoriaEmail: regla.esObligatoriaEmail,
+      esObligatoriaPush: regla.esObligatoriaPush,
+      visibleUsuario: regla.visibleUsuario,
+      habilitada: regla.habilitada,
+    };
+  }
+
+  async function actualizarRegla(regla) {
     try {
-      await guardarReglaMutation.mutateAsync({ tipoNotificacion, data });
+      await guardarReglaMutation.mutateAsync({
+        tipoNotificacion: regla.tipo,
+        data: payloadCompleto(regla),
+      });
       return true;
     } catch (e) {
       error.value = e.response?.data?.message || "Error al guardar regla";

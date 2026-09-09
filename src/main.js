@@ -19,7 +19,7 @@ import "primeicons/primeicons.css";
 import "./style.css";
 import { vPermiso } from "./directives/permiso";
 import { iniciarCoordinadorRefresh } from "./utils/refreshCoordinator";
-import { ocultarSplash } from "./utils/splash";
+import { iniciarCierreSplash } from "./utils/splash";
 
 // Captura global de errores: se instala antes que cualquier otro módulo para
 // atrapar fallos de import/render; el overlay evita pantallas blancas mudas.
@@ -94,6 +94,11 @@ app.use(PrimeVue, {
     clear: "Limpiar",
     dateFormat: "dd/mm/yy", // Formato por defecto para la región
     weekHeader: "Sm",
+    // Medidor de fortaleza de contraseña (componente Password)
+    weak: "Débil",
+    medium: "Media",
+    strong: "Fuerte",
+    passwordPrompt: "Ingresa una contraseña",
   },
   pt: {
     card: {
@@ -164,9 +169,16 @@ app.directive("permiso", vPermiso);
 // preventivo al volver de background + sincronización con IndexedDB/SW).
 iniciarCoordinadorRefresh();
 
+// El splash vive inline en index.html (sin reemplazo DOM → sin flash). Solo
+// se oculta cuando la app ya está lista: navegación inicial resuelta con sus
+// guards/chunks y un frame pintado, para que se desvanezca sobre el login
+// real y no sobre un fondo blanco (ver src/utils/splash.js).
 app.mount("#app");
 
 marcarHito("boot:mounted");
 
-// Desvanece el splash in-app cuando la app está montada y la animación terminó.
-ocultarSplash();
+router.isReady().then(() => {
+  requestAnimationFrame(() => {
+    iniciarCierreSplash();
+  });
+});

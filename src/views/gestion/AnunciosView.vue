@@ -24,6 +24,7 @@ const mostrandoTodos = ref(false);
 
 const showCrear = ref(false);
 const enviando = ref(false);
+const mensajeExito = ref(null);
 
 const form = ref({
   titulo: "",
@@ -86,12 +87,15 @@ async function crear() {
   const cid = auth.condominioActualId;
   if (!cid) return;
   enviando.value = true;
+  mensajeExito.value = null;
   try {
     await anunciosService.crear(cid, {
       ...form.value,
       fechaExpiracion: form.value.fechaExpiracion || null,
     });
     showCrear.value = false;
+    mensajeExito.value = "Anuncio publicado. Se está notificando a la audiencia seleccionada.";
+    setTimeout(() => (mensajeExito.value = null), 5000);
     await cargar();
   } catch (e) {
     console.error("Error al crear anuncio", e);
@@ -129,6 +133,8 @@ onMounted(cargar);
         <Button label="Nuevo anuncio" icon="pi pi-plus" size="small" @click="abrirCrear" />
       </div>
     </div>
+
+    <Message v-if="mensajeExito" severity="success" :closable="true" @close="mensajeExito = null">{{ mensajeExito }}</Message>
 
     <Skeleton v-if="loading" width="100%" height="300px" />
     <Message v-else-if="error" severity="error">{{ error }}</Message>

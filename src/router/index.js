@@ -10,10 +10,10 @@ const routes = [
     meta: { public: true },
     children: [
       { path: "",                    redirect: "/login" },
-      { path: "/login",              name: "Login",          component: () => import("../views/auth/LoginView.vue") },
-      { path: "/recuperar-password", name: "ForgotPassword",  component: () => import("../views/auth/ForgotPasswordView.vue") },
-      { path: "/reset-password",     name: "ResetPassword",   component: () => import("../views/auth/ResetPasswordView.vue") },
-      { path: "/setup-password",     name: "SetupPassword",    component: () => import("../views/auth/SetupPasswordView.vue") },
+      { path: "/login",              name: "Login",          alias: "/auth/login",              component: () => import("../views/auth/LoginView.vue") },
+      { path: "/recuperar-password", name: "ForgotPassword",  alias: "/auth/recuperar-password", component: () => import("../views/auth/ForgotPasswordView.vue") },
+      { path: "/reset-password",     name: "ResetPassword",   alias: "/auth/reset-password",     component: () => import("../views/auth/ResetPasswordView.vue") },
+      { path: "/setup-password",     name: "SetupPassword",   alias: "/auth/setup-password",     component: () => import("../views/auth/SetupPasswordView.vue") },
     ],
   },
 
@@ -43,9 +43,39 @@ const routes = [
         meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
       },
       {
+        path: "superadmin/plantillas",
+        name: "SaasPlantillas",
+        component: () => import("../views/superadmin/SaasPlantillasView.vue"),
+        meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
+      },
+      {
+        path: "superadmin/reglas-notificacion",
+        name: "SaasReglasNotificacion",
+        component: () => import("../views/superadmin/SaasReglasNotificacionView.vue"),
+        meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
+      },
+      {
+        path: "superadmin/condominios",
+        name: "SaasCondominios",
+        component: () => import("../views/superadmin/SaasCondominiosView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/nuevo",
+        name: "SaasCrearCondominio",
+        component: () => import("../views/superadmin/SaasCrearCondominioView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
         path: "superadmin/condominios/:id",
         name: "SaasCondominioDetail",
         component: () => import("../views/superadmin/SaasCondominioDetailView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/setup",
+        name: "SaasCondominioSetup",
+        component: () => import("../views/superadmin/SaasCondominioSetupView.vue"),
         meta: { roles: ["SUPER_ADMIN"] },
       },
       {
@@ -61,28 +91,36 @@ const routes = [
         meta: { roles: ["SUPER_ADMIN"] },
       },
       {
-        path: "superadmin/condominios/:id/onboarding",
-        name: "SaasOnboarding",
-        component: () => import("../views/superadmin/SaasOnboardingView.vue"),
-        meta: { roles: ["SUPER_ADMIN"] },
-      },
-      {
         path: "superadmin/condominios/:id/modulos",
         name: "SaasModulos",
         component: () => import("../views/superadmin/SaasModulosView.vue"),
+        meta: { roles: ["SUPER_ADMIN"] },
+      },
+      {
+        path: "superadmin/condominios/:id/email",
+        name: "SaasEmailConfig",
+        component: () => import("../views/superadmin/SaasEmailConfigView.vue"),
+        meta: { roles: ["SUPER_ADMIN", "SOPORTE"] },
+      },
+      {
+        path: "superadmin/almacenamiento",
+        name: "SaasAlmacenamiento",
+        component: () => import("../views/common/EnConstruccionView.vue"),
+        props: { modulo: "Almacenamiento" },
         meta: { roles: ["SUPER_ADMIN"] },
       },
       // ── Permisos (SUPER_ADMIN) ────────────────────
       {
         path: "superadmin/permisos",
         name: "PermisosMatrix",
-        component: () => import("../views/admin/permisos/PermisosMatrixView.vue"),
+        component: () => import("../views/common/EnConstruccionView.vue"),
+        props: { modulo: "Matriz de Permisos" },
         meta: { roles: ["SUPER_ADMIN"] },
       },
       {
         path: "superadmin/permisos/cargos",
         name: "CargosPermisos",
-        component: () => import("../views/admin/permisos/CargosPermisosView.vue"),
+        component: () => import("../modules/permisos/views/CargosPermisosView.vue"),
         meta: { roles: ["SUPER_ADMIN"] },
       },
       // ── Compartidas ──────────────────────────────
@@ -160,6 +198,84 @@ const routes = [
           roles: ["ADMINISTRADOR"],
           cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
+      },
+      {
+        path: "importacion",
+        name: "Importacion",
+        component: () => import("../views/admin/ImportacionMasivaView.vue"),
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
+        },
+      },
+      // ── Wizard de configuración del condominio (admin) ─────────────
+      {
+        path: "setup",
+        name: "Setup",
+        redirect: () => ({ name: "SetupUnidades" }),
+        component: () => import("../views/setup/SetupLayout.vue"),
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
+        },
+        children: [
+          {
+            path: "unidades",
+            name: "SetupUnidades",
+            component: () => import("../views/setup/SetupUnidadesView.vue"),
+          },
+          {
+            path: "sectores",
+            name: "SetupSectores",
+            component: () => import("../views/setup/SetupSectoresView.vue"),
+          },
+          {
+            path: "pisos",
+            name: "SetupPisos",
+            component: () => import("../views/setup/SetupPisosView.vue"),
+          },
+          {
+            path: "estacionamientos",
+            name: "SetupEstacionamientos",
+            component: () => import("../views/setup/SetupEntidadesView.vue"),
+            props: { entidad: "estacionamiento" },
+          },
+          {
+            path: "bodegas",
+            name: "SetupBodegas",
+            component: () => import("../views/setup/SetupEntidadesView.vue"),
+            props: { entidad: "bodega" },
+          },
+          {
+            path: "planilla",
+            name: "SetupPlanilla",
+            component: () => import("../views/setup/SetupPlanillaView.vue"),
+          },
+          {
+            path: "accesos",
+            name: "SetupAccesos",
+            component: () => import("../views/common/EnConstruccionView.vue"),
+            props: { modulo: "Accesos del condominio" },
+          },
+          {
+            path: "areas-comunes",
+            name: "SetupAreasComunes",
+            component: () => import("../views/common/EnConstruccionView.vue"),
+            props: { modulo: "Áreas comunes" },
+          },
+          {
+            path: "cargos",
+            name: "SetupCargos",
+            component: () => import("../views/common/EnConstruccionView.vue"),
+            props: { modulo: "Cargos de gestión" },
+          },
+          {
+            path: "personal",
+            name: "SetupPersonal",
+            component: () => import("../views/common/EnConstruccionView.vue"),
+            props: { modulo: "Personal de trabajo" },
+          },
+        ],
       },
       // ── Finanzas (cargos) ─────────────────────────
       {
@@ -257,13 +373,13 @@ const routes = [
         path: "notificaciones/reglas",
         name: "ReglasNotificacion",
         component: () => import("../views/gestion/ReglasNotificacionView.vue"),
-        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], cargos: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["ADMINISTRADOR"] },
       },
       {
         path: "notificaciones/unidades-personas",
         name: "UnidadesPersonas",
         component: () => import("../views/gestion/UnidadesPersonasView.vue"),
-        meta: { roles: ["ADMINISTRADOR", "SUPER_ADMIN"], cargos: ["ADMINISTRADOR"] },
+        meta: { roles: ["ADMINISTRADOR"], cargos: ["ADMINISTRADOR"] },
       },
       // ── Almacenamiento (Admin Config) ──────────────
       {

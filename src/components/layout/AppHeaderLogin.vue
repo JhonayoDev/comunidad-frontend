@@ -6,7 +6,7 @@
       <img
         src="/icons/favicon.svg"
         alt="Logo"
-        class="w-10 h-10 border-circle overflow-hidden object-cover cursor-pointer"
+        class="app-logo w-10 h-10 border-circle overflow-hidden object-cover cursor-pointer"
       />
     </div>
 

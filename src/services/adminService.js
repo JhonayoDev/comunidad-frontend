@@ -93,8 +93,10 @@ export const adminService = {
   },
 
   // ── Planes ─────────────────────────────────────────────────────
-  listarPlanes() {
-    return api.get("/admin/planes");
+  listarPlanes(incluirInactivos = false) {
+    return api.get("/admin/planes", {
+      params: { incluirInactivos },
+    });
   },
 
   crearPlan(data) {
@@ -107,5 +109,66 @@ export const adminService = {
 
   desactivarPlan(id) {
     return api.patch(`/admin/planes/${id}/desactivar`);
+  },
+
+  reactivarPlan(id) {
+    return api.patch(`/admin/planes/${id}/reactivar`);
+  },
+
+  // ── Plantillas de notificación (globales) ──────────────────────
+  listarPlantillasNotificacion(incluirInactivos = false) {
+    return api.get("/admin/plantillas-notificacion", {
+      params: { incluirInactivos },
+    });
+  },
+
+  actualizarPlantillaNotificacion(codigo, data) {
+    return api.put(`/admin/plantillas-notificacion/${codigo}`, data);
+  },
+
+  desactivarPlantillaNotificacion(codigo) {
+    return api.patch(`/admin/plantillas-notificacion/${codigo}/desactivar`);
+  },
+
+  reactivarPlantillaNotificacion(codigo) {
+    return api.patch(`/admin/plantillas-notificacion/${codigo}/reactivar`);
+  },
+
+  // ── Catálogo global de reglas de notificación ─────────────────────
+  listarCatalogoReglas() {
+    return api.get("/admin/notificaciones/catalogo");
+  },
+
+  obtenerReglaCatalogo(tipo) {
+    return api.get(`/admin/notificaciones/catalogo/${tipo}`);
+  },
+
+  actualizarReglaCatalogo(tipo, data) {
+    return api.put(`/admin/notificaciones/catalogo/${tipo}`, data);
+  },
+
+  // ── Email por condominio (V71-V74, AdminEmailConfigController) ───────────
+  getEmailConfig(condominioId) {
+    return api.get(`/admin/condominios/${condominioId}/email/config`);
+  },
+
+  putEmailConfig(condominioId, data) {
+    return api.put(`/admin/condominios/${condominioId}/email/config`, data);
+  },
+
+  deleteEmailConfig(condominioId) {
+    return api.delete(`/admin/condominios/${condominioId}/email/config`);
+  },
+
+  testEmailConfig(condominioId, data) {
+    return api.post(`/admin/condominios/${condominioId}/email/config/test`, data);
+  },
+
+  getEmailRouting(condominioId) {
+    return api.get(`/admin/condominios/${condominioId}/email/routing`);
+  },
+
+  putEmailRouting(condominioId, data) {
+    return api.put(`/admin/condominios/${condominioId}/email/routing`, data);
   },
 };

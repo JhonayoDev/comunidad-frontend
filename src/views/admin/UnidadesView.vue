@@ -34,11 +34,54 @@ const formEditar = ref({ numero: "", tipo: "CASA", sectorId: null, direccion: ""
 const tiposUnidad = [
   { label: "Casa", value: "CASA" },
   { label: "Departamento", value: "DEPARTAMENTO" },
-  { label: "Local", value: "LOCAL" },
-  { label: "Oficina", value: "OFICINA" },
-  { label: "Bodega", value: "BODEGA" },
-  { label: "Estacionamiento", value: "ESTACIONAMIENTO" },
+  { label: "Otro", value: "OTRO" },
 ];
+
+const capacidadConfig = [
+  { tipo: "CASA", label: "Casas", suffix: "Casas" },
+  { tipo: "DEPARTAMENTO", label: "Departamentos", suffix: "Departamentos" },
+  { tipo: "ESTACIONAMIENTO", label: "Estacionamientos", suffix: "Estacionamientos" },
+  { tipo: "BODEGA", label: "Bodegas", suffix: "Bodegas" },
+  { tipo: "OTRO", label: "Otro", suffix: "Otro" },
+];
+const capacidad = ref(null);
+
+const usoPorTipo = computed(() => {
+  const map = {};
+  unidades.value.forEach((u) => {
+    map[u.tipo] = (map[u.tipo] || 0) + 1;
+  });
+  return map;
+});
+
+function capacidadDe(tipo) {
+  const cfg = capacidadConfig.find((c) => c.tipo === tipo);
+  return capacidad.value?.[`capacidad${cfg.suffix}`] ?? null;
+}
+
+function usoDe(tipo) {
+  if (capacidad.value) {
+    const cfg = capacidadConfig.find((c) => c.tipo === tipo);
+    const total = cfg ? capacidad.value[`total${cfg.suffix}`] : null;
+    if (total != null) return total;
+  }
+  return usoPorTipo.value[tipo] || 0;
+}
+
+function tipoAlLimite(tipo) {
+  const cap = capacidadDe(tipo);
+  return cap != null && usoDe(tipo) >= cap;
+}
+
+function tipoAlLimiteAlEditar(nuevoTipo) {
+  const u = unidadEditando.value;
+  if (!u || nuevoTipo === u.tipo) return false;
+  return tipoAlLimite(nuevoTipo);
+}
+
+function tipoLabel(tipo) {
+  return capacidadConfig.find((c) => c.tipo === tipo)?.label || tipo;
+}
 
 async function cargar() {
   const cid = auth.condominioActualId;
@@ -46,12 +89,27 @@ async function cargar() {
   loading.value = true;
   error.value = null;
   try {
-    const [uniRes, secRes] = await Promise.all([
-      unidadesService.getUnidades(cid),
-      unidadesService.getSectores(cid),
-    ]);
-    unidades.value = uniRes.data;
-    sectores.value = secRes.data;
+    const { data } = await unidadesService.getUnidades(cid);
+    unidades.value = data;
+    try {
+      const secRes = await unidadesService.getSectores(cid);
+      sectores.value = secRes.data;
+    } catch (e) {
+      // El backend no expone endpoint de sectores — la vista degrada sin ellos
+      console.error("Error al cargar sectores", e);
+      sectores.value = [];
+    }
+    try {
+      const { data: capData } = await unidadesService.getCapacidad(cid);
+      capacidad.value = capData;
+    } catch (e) {
+      // Si el endpoint de capacidad no está disponible, la vista degrada
+      // sin el cupo (solo muestra el uso derivado de la lista de unidades).
+      if (e?.response?.status !== 404) {
+        console.error("Error al cargar capacidad del condominio", e);
+      }
+      capacidad.value = null;
+    }
   } catch (e) {
     console.error("Error al cargar unidades", e);
     error.value = "No se pudieron cargar las unidades";
@@ -126,7 +184,7 @@ async function desactivarUnidad(u) {
 
 function sectorLabel(id) {
   const s = sectores.value.find((s) => s.id === id);
-  return s ? `Sector ${s.numero}` : "—";
+  return s ? (s.nombre || "Sector") : "—";
 }
 
 onMounted(cargar);
@@ -143,6 +201,23 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
+      <div class="flex flex-wrap gap-2">
+        <Tag
+          v-for="c in capacidadConfig"
+          :key="c.tipo"
+          :severity="tipoAlLimite(c.tipo) ? 'danger' : 'info'"
+          size="small"
+        >
+          {{ c.label }}: {{ usoDe(c.tipo) }}<template
+            v-if="capacidadDe(c.tipo) != null"
+            > / {{ capacidadDe(c.tipo) }}</template
+          >
+        </Tag>
+      </div>
+      <small class="text-xs text-surface-400">
+        Los estacionamientos y bodegas son entidades independientes y no se registran aquí como
+        unidades.
+      </small>
       <div v-if="!unidades.length" class="text-center text-surface-400 py-8">No hay unidades</div>
       <div v-else class="flex flex-col gap-2">
         <div v-for="u in unidades" :key="u.id" class="surface-card p-3 border-round shadow-1 flex items-center justify-between">
@@ -172,9 +247,23 @@ onMounted(cargar);
           <label class="text-sm">Tipo</label>
           <Select v-model="formCrear.tipo" :options="tiposUnidad" optionLabel="label" optionValue="value" />
         </div>
+        <Message
+          v-if="tipoAlLimite(formCrear.tipo)"
+          severity="warn"
+          :closable="false"
+          >Se alcanzó la capacidad de {{ tipoLabel(formCrear.tipo) }} ({{
+            capacidadDe(formCrear.tipo)
+          }}). No se pueden crear más.</Message
+        >
+        <small
+          v-else-if="capacidadDe(formCrear.tipo) != null"
+          class="text-xs text-surface-400"
+          >Cupo: {{ usoDe(formCrear.tipo) }} de
+          {{ capacidadDe(formCrear.tipo) }}.</small
+        >
         <div class="flex flex-col gap-1">
           <label class="text-sm">Sector</label>
-          <Select v-model="formCrear.sectorId" :options="sectores" optionLabel="numero" optionValue="id" placeholder="Seleccionar" clearable />
+          <Select v-model="formCrear.sectorId" :options="sectores" optionLabel="nombre" optionValue="id" placeholder="Seleccionar" clearable />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Dirección</label>
@@ -183,7 +272,7 @@ onMounted(cargar);
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" variant="text" @click="showCrear = false" />
-        <Button label="Crear" :loading="enviando" @click="crearUnidad" />
+        <Button label="Crear" :loading="enviando" :disabled="tipoAlLimite(formCrear.tipo)" @click="crearUnidad" />
       </template>
     </Dialog>
 
@@ -197,9 +286,17 @@ onMounted(cargar);
           <label class="text-sm">Tipo</label>
           <Select v-model="formEditar.tipo" :options="tiposUnidad" optionLabel="label" optionValue="value" />
         </div>
+        <Message
+          v-if="tipoAlLimiteAlEditar(formEditar.tipo)"
+          severity="warn"
+          :closable="false"
+          >{{ tipoLabel(formEditar.tipo) }} ya alcanzó su capacidad ({{
+            capacidadDe(formEditar.tipo)
+          }}). No se puede cambiar el tipo a esta unidad.</Message
+        >
         <div class="flex flex-col gap-1">
           <label class="text-sm">Sector</label>
-          <Select v-model="formEditar.sectorId" :options="sectores" optionLabel="numero" optionValue="id" placeholder="Seleccionar" clearable />
+          <Select v-model="formEditar.sectorId" :options="sectores" optionLabel="nombre" optionValue="id" placeholder="Seleccionar" clearable />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Dirección</label>
@@ -208,7 +305,7 @@ onMounted(cargar);
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" variant="text" @click="showEditar = false" />
-        <Button label="Guardar" :loading="enviando" @click="editarUnidad" />
+        <Button label="Guardar" :loading="enviando" :disabled="tipoAlLimiteAlEditar(formEditar.tipo)" @click="editarUnidad" />
       </template>
     </Dialog>
 

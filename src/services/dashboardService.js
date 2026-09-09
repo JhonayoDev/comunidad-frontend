@@ -12,4 +12,14 @@ export const dashboardService = {
   guardia(condominioId) {
     return api.get(`/condominios/${condominioId}/dashboard/guardia`);
   },
+
+  // Polling operativo (DASHBOARD_GUARDIA/ADMIN, @RequiresModule CONTROL_ACCESO, Cache-Control no-cache)
+  getMetrics(condominioId) {
+    return api.get(`/condominios/${condominioId}/dashboard/metrics`);
+  },
+
+  // Polling residente (DASHBOARD_RESIDENTE, @RequiresModule ENCOMIENDAS, Cache-Control no-cache)
+  getResidenteMetrics(condominioId) {
+    return api.get(`/condominios/${condominioId}/dashboard/residente/metrics`);
+  },
 };

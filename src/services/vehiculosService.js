@@ -20,12 +20,4 @@ export const vehiculosService = {
   desactivar(condominioId, id) {
     return api.patch(`/condominios/${condominioId}/vehiculos/${id}/desactivar`);
   },
-
-  vincularEstacionamiento(condominioId, vehiculoId, data) {
-    return api.post(`/condominios/${condominioId}/vehiculos/${vehiculoId}/estacionamiento`, data);
-  },
-
-  desvincularEstacionamiento(condominioId, vehiculoId) {
-    return api.delete(`/condominios/${condominioId}/vehiculos/${vehiculoId}/estacionamiento`);
-  },
 };

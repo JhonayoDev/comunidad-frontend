@@ -1,43 +1,75 @@
 /**
  * splash.js
  *
- * Oculta el splash screen in-app (definido inline en index.html) una vez que
- * la app está montada y la animación del logo terminó.
+ * Orquesta el cierre del splash inline de index.html (#briku-splash).
+ * El splash NO se reemplaza desde JS (eso causaba flash blanco); solo se
+ * oculta cuando la app ya está lista y, en modo splash completo, cuando la
+ * animación de salida del logo terminó.
  *
- * El splash vive como hermano de #app en el HTML (no dentro de #app, porque
- * Vue reemplaza el contenido de #app al montar). Se pinta antes de que cargue
- * el bundle JS y cubre el tiempo de descarga del bundle + el primer render.
- *
- * index.html expone dos globals:
- *   - window.__brikuSplashAnimado  → true cuando termina `brikuLogoExit`
- *   - window.__brikuOcultarSplash  → añade `.hide` (fade-out) y elimina el nodo
- *
- * Llamar a ocultarSplash() desde main.js justo después de app.mount("#app").
+ * Dos modos según la clase .modo-carga puesta por el script inline:
+ *  - modo-carga (F5 en app / rutas privadas): el loader no tiene animación
+ *    de salida → ocultar apenas la app esté lista.
+ *  - modo normal (login / primera apertura): apuntar --briku-exit-x/y al
+ *    logo del header (.app-logo) para la fusión y esperar a que termine
+ *    `brikuLogoExit`.
  */
 
-const MAX_ESPERA_MS = 5500;
+const MAX_ESPERA_MS = 8000;
+const MAX_ESPERA_HEADER_MS = 2000;
 
-export function ocultarSplash() {
-  const el = document.getElementById("briku-splash");
-  if (!el) return;
+export function iniciarCierreSplash() {
+  const splash = document.getElementById("briku-splash");
+  if (!splash || !splash.isConnected) return;
 
-  const ocultar = () => {
-    if (typeof window.__brikuOcultarSplash === "function") {
-      window.__brikuOcultarSplash();
-    }
-  };
+  const modoCarga = splash.classList.contains("modo-carga");
 
-  // Si la animación ya terminó (app lenta, animación rápida), oculta ya.
-  if (window.__brikuSplashAnimado === true) {
-    ocultar();
-    return;
+  // En modo carga no hay animación de logo → ocultable apenas lista.
+  let animacionLogoTerminada = modoCarga;
+
+  const logo = splash.querySelector(".splash-stage .logo");
+  if (logo) {
+    logo.addEventListener("animationend", (event) => {
+      if (event.animationName === "brikuLogoExit") {
+        animacionLogoTerminada = true;
+      }
+    });
   }
 
-  // Espera a que termine la animación, con tope de seguridad para que el
-  // splash nunca se quede pegado si el evento animationend no dispara.
+  // Apunta la salida del logo al ícono del header (solo modo splash completo).
+  // El header lo monta la app; se reintenta hasta que exista.
+  const inicioBusquedaHeader = Date.now();
+  const apuntarLogoHeader = () => {
+    const headerLogo = document.querySelector(".app-logo");
+    if (headerLogo) {
+      const r = headerLogo.getBoundingClientRect();
+      splash.style.setProperty(
+        "--briku-exit-x",
+        `${r.left + r.width / 2 - window.innerWidth / 2}px`,
+      );
+      splash.style.setProperty(
+        "--briku-exit-y",
+        `${r.top + r.height / 2 - window.innerHeight / 2}px`,
+      );
+      return;
+    }
+    if (Date.now() - inicioBusquedaHeader < MAX_ESPERA_HEADER_MS) {
+      requestAnimationFrame(apuntarLogoHeader);
+    }
+  };
+  requestAnimationFrame(apuntarLogoHeader);
+
+  const ocultar = () => {
+    if (!splash.isConnected) return;
+    splash.classList.add("hide");
+    setTimeout(() => splash.remove(), 500);
+  };
+
+  // Espera a que la app esté lista (main.js la llama tras router.isReady)
+  // y a que la animación de salida termine; tope de seguridad.
   const inicio = Date.now();
   const check = () => {
-    if (window.__brikuSplashAnimado === true || Date.now() - inicio > MAX_ESPERA_MS) {
+    const expiro = Date.now() - inicio > MAX_ESPERA_MS;
+    if (animacionLogoTerminada || expiro) {
       ocultar();
     } else {
       requestAnimationFrame(check);

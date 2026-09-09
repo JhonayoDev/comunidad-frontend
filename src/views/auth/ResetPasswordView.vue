@@ -56,18 +56,26 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <Card class="max-w-sm w-full bg-surface">
-    <template #title> Restablecer contraseña </template>
+  <Card class="max-w-sm w-full bg-surface/75">
+    <template #title>
+      <div class="primary-text">Restablecer contraseña</div>
+    </template>
 
-    <template #subtitle> Ingresa tu nueva contraseña </template>
+    <template #subtitle>
+      <div class="secondary-text">Ingresa tu nueva contraseña</div>
+    </template>
 
     <template #content>
-      <form v-if="!success" @submit.prevent="handleSubmit" class="space-y-6 mt-3">
-        <div class="flex flex-col gap-2">
+      <form
+        v-if="!success"
+        @submit.prevent="handleSubmit"
+        class="space-y-6 max-sm:space-y-4 mt-3"
+      >
+        <div class="primary-text flex flex-col gap-2">
           <label>Nueva contraseña</label>
           <Password v-model="newPassword" :feedback="true" toggleMask fluid />
         </div>
-        <div class="flex flex-col gap-2">
+        <div class="primary-text flex flex-col gap-2">
           <label>Confirmar contraseña</label>
           <Password
             v-model="confirmPassword"
@@ -89,6 +97,7 @@ async function handleSubmit() {
           fluid
         />
         <Button
+          class="primary-text"
           label="Volver al login"
           icon="pi pi-arrow-left"
           variant="text"
@@ -96,12 +105,13 @@ async function handleSubmit() {
           @click="router.push({ name: 'Login' })"
         />
       </form>
-      <div v-else class="flex flex-col items-center gap-3">
+      <div v-else class="primary-text flex flex-col items-center gap-3">
         <Message severity="success">
           Contraseña restablecida exitosamente. Ahora puedes iniciar sesión con
           tu nueva contraseña.
         </Message>
         <Button
+          class="primary-text"
           label="Ir al login"
           icon="pi pi-sign-in"
           fluid
@@ -112,4 +122,11 @@ async function handleSubmit() {
   </Card>
 </template>
 
-<style scoped></style>
+<style scoped>
+.primary-text {
+  color: var(--p-surface-900);
+}
+.secondary-text {
+  color: var(--p-surface-600);
+}
+</style>
