@@ -1,9 +1,9 @@
-# Módulo Permisos — BFF (feature/p4-permisos-bff)
+# Módulo Permisos (feature/p4-permisos-bff)
 
-**Enfoque:** Back-for-Frontend iterativo. Construimos el módulo frontend con `permisosCatalogo.js` real (V2→V39, 70 códigos) y mocks de `cargo_permisos` derivados de las migraciones backend (V12/V20/V39/V62/V72). Una vez afinada la UX (lista por cargo → matriz), elaboramos la solicitud backend con los endpoints exactos que el módulo necesita — sin pedir de más.
+**Estado:** Integrado con backend real `AdminCargoPermisoController` (V2.1 `a46ada6`, `GET /admin/permisos/catalogo` + `GET/PUT /admin/cargos/{cargo}/permisos`, `ROL_GESTIONAR`). Mock `localStorage` retirado en `2bd8fb9`.
 
 **Rama:** `feature/p4-permisos-bff` (desde `develop` con F1-F4).
-**Referencia:** `docs/solicitudes-backend/SOLICITUD_ADMIN_PERMISOS_POR_CARGO.md` (pendiente), `docs/informes/ANALISIS_FASES_PENDIENTES_2026-09-08.md`.
+**Referencia:** `docs/solicitudes-backend/SOLICITUD_P4_PERMISOS_CARGO_V2.md` (BFF validado), `docs/informes/INFORME_FRONTEND_P4_PERMISOS_CARGO.md` (handoff backend), `docs/informes/ANALISIS_FASES_PENDIENTES_2026-09-08.md`.
 
 ## Estructura
 
@@ -28,16 +28,13 @@ src/modules/permisos/
 1. **Lista por cargo** (mobile-first): `Select` cargo arriba → lista agrupada por `MODULOS` (`GESTION`, `ACCESOS`…) con `Checkbox` + `InputText` búsqueda + `Tag` conteo. `Guardar` hace PUT reemplazo total. `MisPermisosView.vue` queda como referencia solo-lectura.
 2. **Matriz** (segunda vista, tras afinar): tabla `.planilla` con cargos como columnas, permisos como filas, `Checkbox` por celda + `ConfirmDialog` al guardar.
 
-## Contrato BFF provisional (mock)
+## Contrato (real)
 
-- `getCatalogo()` → `PERMISOS` de `permisosCatalogo.js`
-- `getCargoPermisos(cargo)` → `Set` derivado de seeds `cargo_permisos` (V12 etc.) — se guarda en `localStorage` `bff:cargo-permisos` para iterar sin backend
-- `putCargoPermisos(cargo, codigos[])` → valida contra `PERMISOS`, audita en `console.info`, persiste en `localStorage`
+- `getCatalogo()` → `GET /admin/permisos/catalogo` (~98, sin `modulo`, enriquecido con `permisosCatalogo.js`)
+- `getCargoPermisos(cargo)` → `GET /admin/cargos/{cargo}/permisos` (`codigosPermiso` + `permisosDetalle`)
+- `putCargoPermisos(cargo, codigos[])` → `PUT /admin/cargos/{cargo}/permisos` `{codigosPermiso}` (reemplazo total, `400 fields`, `cargoPermisoEditado` audit)
 
-Cuando el backend implemente `GET /admin/permisos/catalogo` y `GET/PUT /admin/cargos/{cargo}/permisos` (`ROL_GESTIONAR`), el service cambia a `api.get/put` sin tocar componentes.
+## Uso
 
-## Cómo iterar
-
-1. Abrir `src/modules/permisos/views/CargosPermisosView.vue` en `superadmin/permisos/cargos` (temporal, `SUPER_ADMIN`).
-2. Probar con 2-3 cargos (ADMINISTRADOR, PRESIDENTE, GUARDIA) y ajustar agrupación/búsqueda.
-3. Una vez UX afinada, generar `SOLICITUD_P4_V2.md` con los endpoints exactos validados contra el módulo.
+- `superadmin/permisos/cargos` (`SUPER_ADMIN`, `ROL_GESTIONAR`) — lista por cargo colapsable + búsqueda + `Guardar` (reemplazo total auditado).
+- `superadmin/permisos` (matriz) sigue en `EnConstruccionView` hasta V3.

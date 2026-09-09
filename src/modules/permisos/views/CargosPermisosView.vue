@@ -78,7 +78,7 @@ function confirmarGuardar() {
 <template>
   <div class="p-4 flex flex-col gap-4">
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
-      <h1 class="text-xl font-bold m-0">Permisos por cargo — BFF</h1>
+      <h1 class="text-xl font-bold m-0">Permisos por cargo</h1>
       <Tag :value="`${totalActivos} activos`" severity="info" />
     </div>
 
@@ -90,9 +90,6 @@ function confirmarGuardar() {
           <Button label="Guardar" icon="pi pi-save" :loading="guardando" @click="confirmarGuardar" />
         </div>
         <Message v-if="error" severity="error" :closable="false" class="mt-2">{{ error }}</Message>
-        <Message severity="info" :closable="false" class="mt-2 text-xs">
-          Módulo BFF en iteración — datos en <code>localStorage bff:cargo-permisos</code> (mock de `cargo_permisos` V12→V72). Al implementar el backend, el service cambia a <code>GET/PUT /admin/cargos/{cargo}/permisos</code> sin tocar esta vista.
-        </Message>
         <Message v-if="cargo === 'ADMINISTRADOR'" severity="warn" :closable="false" class="mt-2 text-xs">
           <strong>ADMINISTRADOR</strong> como <em>cargo</em> (esta vista, <code>cargo_permisos</code>) aplica tanto al <strong>administrador externo</strong> (rol <code>ADMINISTRADOR</code> + cargo <code>ADMINISTRADOR</code>) como al <strong>propietario administrador</strong> (rol <code>RESIDENTE</code> + cargo <code>ADMINISTRADOR</code>). Sus permisos efectivos son <code>rol + cargo</code>; editar este cargo afecta a ambos. Los permisos del <em>rol</em> <code>ADMINISTRADOR</code> (<code>rol_permisos</code>) se gestionan aparte en “Matriz de Permisos”.
         </Message>
