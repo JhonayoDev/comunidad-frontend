@@ -105,8 +105,7 @@ const routes = [
       {
         path: "superadmin/almacenamiento",
         name: "SaasAlmacenamiento",
-        component: () => import("../views/common/EnConstruccionView.vue"),
-        props: { modulo: "Almacenamiento" },
+        component: () => import("../views/superadmin/SaasAlmacenamientoView.vue"),
         meta: { roles: ["SUPER_ADMIN"] },
       },
       // ── Permisos por cargo (SUPER_ADMIN) ──────────
