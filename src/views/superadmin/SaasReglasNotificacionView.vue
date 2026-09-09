@@ -51,6 +51,7 @@ const prioridadOptions = [
 const popoverVisibilidad = ref(null);
 const popoverPrioridad = ref(null);
 const popoverObligatoriedad = ref(null);
+const popoverCanales = ref(null);
 function toggleVisibilidad(event) {
   popoverVisibilidad.value.toggle(event);
 }
@@ -59,6 +60,9 @@ function togglePrioridad(event) {
 }
 function toggleObligatoriedad(event) {
   popoverObligatoriedad.value.toggle(event);
+}
+function toggleCanales(event) {
+  popoverCanales.value.toggle(event);
 }
 
 const canalSeverity = { IN_APP: "info", EMAIL: "warn", PUSH: "success" };
@@ -255,7 +259,10 @@ onMounted(cargar);
                   <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-surface-500">Canales</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-surface-500">Canales</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+                  </div>
                   <div class="flex flex-wrap gap-1 justify-end">
                     <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
                   </div>
@@ -281,7 +288,12 @@ onMounted(cargar);
               <tr>
                 <th>Regla</th>
                 <th>Audiencia</th>
-                <th>Canales</th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Canales</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+                  </div>
+                </th>
                 <th>
                   <div class="flex items-center gap-1">
                     <span>Obligatoriedad</span>
@@ -310,8 +322,11 @@ onMounted(cargar);
                 </td>
                 <td class="whitespace-nowrap">{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</td>
                 <td>
-                  <div class="flex flex-wrap gap-1">
-                    <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
+                  <div class="flex items-center gap-1">
+                    <div class="flex flex-wrap gap-1">
+                      <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
+                    </div>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
                   </div>
                 </td>
                 <td class="whitespace-nowrap">
@@ -357,7 +372,10 @@ onMounted(cargar);
           <Select v-model="form.audiencia" :options="audienciaOptions" option-label="label" option-value="value" class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-sm">Canales</label>
+          <div class="flex items-center gap-1">
+            <label class="text-sm">Canales</label>
+            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+          </div>
           <MultiSelect v-model="form.canales" :options="canalOptions" option-label="label" option-value="value" placeholder="Seleccionar canales" :show-toggle-all="false" class="w-full" :class="{ 'p-invalid': !canalesValidos }">
             <template #header>
               <div class="flex items-center gap-2 px-3 py-2">
@@ -480,6 +498,30 @@ onMounted(cargar);
           <div class="flex flex-col gap-1">
             <span class="font-medium">¿Quién lo ve?</span>
             <span class="text-xs text-surface-500"><strong>SUPER_ADMIN/SOPORTE</strong> lo configura en el catálogo global; <strong>ADMINISTRADOR</strong> lo puede sobrescribir por condominio. El <strong>usuario final</strong> lo ve como toggle bloqueado con candado y <em>Tag “obligatorio”</em> en sus preferencias. Si <em>Visible usuario = Solo sistema</em>, ni siquiera aparece para configurar.</span>
+          </div>
+        </div>
+      </div>
+    </Popover>
+
+    <Popover ref="popoverCanales" :style="{ width: '360px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-send text-primary" />
+          <span class="font-bold text-sm">Canales</span>
+        </div>
+        <p class="text-xs text-surface-500 m-0">Define por dónde se entrega la notificación. El sistema crea una <em>entrega</em> por cada canal seleccionado que el destinatario tenga activo (o sea obligatorio). Si el usuario apagó un canal no obligatorio, esa entrega no se crea.</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="App" severity="info" size="small" class="mr-1" /> IN_APP</span>
+            <span class="text-xs text-surface-500">Bandeja dentro de la app + SSE <code>/notificaciones/stream</code> (siempre disponible, no consume cuota email, se confirma al SNAPSHOT). Es el canal base, casi siempre presente.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="Email" severity="warn" size="small" class="mr-1" /> EMAIL</span>
+            <span class="text-xs text-surface-500">Correo del destinatario via <strong>Brevo API</strong> global o <strong>SMTP propio</strong> por condominio (<code>SaasEmailConfig</code> V71). Consume cuota <strong>300/día</strong> (50 reservados para <code>CRITICA</code>), con reintento y backoff. Requiere <code>remitenteDefault</code> configurado.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium"><Tag value="Push" severity="success" size="small" class="mr-1" /> PUSH</span>
+            <span class="text-xs text-surface-500">Push PWA al dispositivo (<code>userVisibleOnly: true</code>). Requiere permiso del navegador y PWA instalada. Si el usuario no tiene suscripción, esa entrega se omite sin error.</span>
           </div>
         </div>
       </div>
