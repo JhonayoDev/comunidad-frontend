@@ -50,11 +50,15 @@ const prioridadOptions = [
 
 const popoverVisibilidad = ref(null);
 const popoverPrioridad = ref(null);
+const popoverObligatoriedad = ref(null);
 function toggleVisibilidad(event) {
   popoverVisibilidad.value.toggle(event);
 }
 function togglePrioridad(event) {
   popoverPrioridad.value.toggle(event);
+}
+function toggleObligatoriedad(event) {
+  popoverObligatoriedad.value.toggle(event);
 }
 
 const canalSeverity = { IN_APP: "info", EMAIL: "warn", PUSH: "success" };
@@ -88,6 +92,13 @@ const seccionesAyuda = [
     items: [
       { label: "Visible usuario", desc: "Aparece en Perfil > Notificaciones. El usuario puede activar/desactivar los canales no obligatorios." },
       { label: "Solo sistema", desc: "Se envía por los canales configurados pero no aparece en preferencias. El usuario no puede desactivarla. Es de gestión interna (ej. aviso a guardias en turno, reclamo al comité)." },
+    ],
+  },
+  {
+    titulo: "Obligatoriedad",
+    items: [
+      { label: "No obligatorio", desc: "El usuario puede activar o desactivar el canal en Perfil > Notificaciones." },
+      { label: "Obligatorio", desc: "El destinatario (según Audiencia) no puede desactivar ese canal. Aunque lo apague, el sistema igual lo envía. Afecta al usuario final; lo ve como toggle bloqueado con Tag 'obligatorio'." },
     ],
   },
 ];
@@ -249,10 +260,11 @@ onMounted(cargar);
                     <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
                   </div>
                 </div>
-                <div class="flex flex-wrap gap-1 mt-1">
+                <div class="flex flex-wrap gap-1 mt-1 items-center">
                   <Tag v-if="r.esObligatoriaInapp" value="App obligatoria" severity="danger" size="small" />
                   <Tag v-if="r.esObligatoriaEmail" value="Email obligatorio" severity="danger" size="small" />
                   <Tag v-if="r.esObligatoriaPush" value="Push obligatorio" severity="danger" size="small" />
+                  <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
                 </div>
               </div>
             </template>
@@ -270,7 +282,12 @@ onMounted(cargar);
                 <th>Regla</th>
                 <th>Audiencia</th>
                 <th>Canales</th>
-                <th>Obligatoriedad</th>
+                <th>
+                  <div class="flex items-center gap-1">
+                    <span>Obligatoriedad</span>
+                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+                  </div>
+                </th>
                 <th>
                   <div class="flex items-center gap-1">
                     <span>Visibilidad</span>
@@ -363,15 +380,24 @@ onMounted(cargar);
         <Divider />
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
-            <span class="text-sm">App obligatoria</span>
+            <div class="flex items-center gap-1">
+              <span class="text-sm">App obligatoria</span>
+              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+            </div>
             <InputSwitch v-model="form.esObligatoriaInapp" />
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm">Email obligatorio</span>
+            <div class="flex items-center gap-1">
+              <span class="text-sm">Email obligatorio</span>
+              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+            </div>
             <InputSwitch v-model="form.esObligatoriaEmail" />
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-sm">Push obligatorio</span>
+            <div class="flex items-center gap-1">
+              <span class="text-sm">Push obligatorio</span>
+              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+            </div>
             <InputSwitch v-model="form.esObligatoriaPush" />
           </div>
           <div class="flex items-center justify-between">
@@ -434,6 +460,26 @@ onMounted(cargar);
           <div class="flex flex-col gap-1">
             <span class="font-medium"><Tag value="CRITICA" severity="danger" size="small" class="mr-1" /> Crítica</span>
             <span class="text-xs text-surface-500">Máxima prioridad. Reserva <strong>50 cupos diarios de email</strong> (Brevo 300/día) aun con cuota agotada y se reintenta primero. Solo <code>DEUDA_VENCIDA</code> la usa.</span>
+          </div>
+        </div>
+      </div>
+    </Popover>
+
+    <Popover ref="popoverObligatoriedad" :style="{ width: '360px', maxWidth: '90vw' }">
+      <div class="flex flex-col gap-3 p-1">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-lock text-primary" />
+          <span class="font-bold text-sm">Obligatoriedad por canal</span>
+        </div>
+        <p class="text-xs text-surface-500 m-0">Cuando <strong>SUPER_ADMIN</strong> (global) o <strong>ADMINISTRADOR</strong> (por condominio) marca un canal como obligatorio, el <strong>destinatario</strong> (según <em>Audiencia</em>: Unidad, Guardias en turno, etc.) <strong>no puede desactivar</strong> ese canal en <strong>Perfil &gt; Notificaciones</strong>.</p>
+        <div class="flex flex-col gap-2 text-sm">
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">¿A quién afecta?</span>
+            <span class="text-xs text-surface-500">Al usuario final que recibe la notificación. Aunque apague el canal en sus preferencias, el sistema igual lo envía por ese canal. Ej.: <code>ENCOMIENDA_RECIBIDA</code> con <em>Email obligatorio</em> → el ocupante de la unidad no puede quitar el Email para esa notificación.</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="font-medium">¿Quién lo ve?</span>
+            <span class="text-xs text-surface-500"><strong>SUPER_ADMIN/SOPORTE</strong> lo configura en el catálogo global; <strong>ADMINISTRADOR</strong> lo puede sobrescribir por condominio. El <strong>usuario final</strong> lo ve como toggle bloqueado con candado y <em>Tag “obligatorio”</em> en sus preferencias. Si <em>Visible usuario = Solo sistema</em>, ni siquiera aparece para configurar.</span>
           </div>
         </div>
       </div>
