@@ -66,6 +66,9 @@ export const PERMISOS = [
   { codigo: "CASO_VER", nombre: "Ver casos", modulo: "CASOS", descripcion: "Consultar casos del condominio." },
   { codigo: "CASO_CREAR", nombre: "Crear casos", modulo: "CASOS", descripcion: "Registrar nuevos casos." },
   { codigo: "CASO_GESTIONAR", nombre: "Gestionar casos", modulo: "CASOS", descripcion: "Cambiar estado de casos y asignar responsables." },
+  { codigo: "RECLAMO_VER", nombre: "Ver reclamos", modulo: "CASOS", descripcion: "Consultar reclamos del condominio." },
+  { codigo: "RECLAMO_CREAR", nombre: "Crear reclamos", modulo: "CASOS", descripcion: "Registrar nuevos reclamos." },
+  { codigo: "RECLAMO_GESTIONAR", nombre: "Gestionar reclamos", modulo: "CASOS", descripcion: "Cambiar estado de reclamos y asignar responsables." },
   // ── RESERVAS ──
   { codigo: "RESERVA_VER", nombre: "Ver reservas", modulo: "RESERVAS", descripcion: "Consultar reservas de espacios comunes." },
   { codigo: "RESERVA_CREAR", nombre: "Crear reservas", modulo: "RESERVAS", descripcion: "Registrar nuevas reservas." },
