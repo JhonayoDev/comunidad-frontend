@@ -47,12 +47,10 @@ Histórico V57-V61 conservado abajo.
   `POST /condominios/{cid}/personas/{personaId}/usuario/reconfigurar` (permiso `USUARIO_GESTIONAR`)
   que genera un token `SETUP_PASSWORD` nuevo y reenvía el email.
 
-### [ ] P4. Administración de permisos por cargo/rol
-- **Solicitud:** `SOLICITUD_ADMIN_PERMISOS_POR_CARGO.md`
-- **Qué falta:** `GET /admin/permisos/catalogo`, `GET/PUT /admin/cargos/{cargo}/permisos`,
-  `GET/PUT /admin/roles/{rol}/permisos`, permiso `ROL_GESTIONAR`. Hoy solo existe lectura
-  efectiva vía `GET /me/permisos`. `PermisosMatrixView`/`CargosPermisosView` están en
-  `EnConstruccionView` hasta que exista.
+### [ ] P4. Administración de permisos por cargo/rol — BFF V2 en iteración
+- **Solicitud:** `SOLICITUD_ADMIN_PERMISOS_POR_CARGO.md` (v1) + `SOLICITUD_P4_PERMISOS_CARGO_V2.md` (2026-09-08, BFF validado en `feature/p4-permisos-bff`)
+- **Qué falta (V2 BFF):** `GET /admin/permisos/catalogo` + `GET/PUT /admin/cargos/{cargo}/permisos` (`ROL_GESTIONAR`, reemplazo total, `400 fields`, `cargoPermisoEditado`). Hoy solo `GET /me/permisos`. `GET/PUT /admin/roles/{rol}/permisos` queda para V3 (matriz).
+- **Frontend BFF:** `src/modules/permisos/` (lista por cargo validada, `localStorage bff:cargo-permisos`, colapsables + Ir arriba, `SUPER_ADMIN` en `superadmin/permisos/cargos`) — ver `SOLICITUD_P4_PERMISOS_CARGO_V2.md` §2. `PermisosMatrixView` en `EnConstruccionView` hasta V3.
 
 ### [ ] P5. Cerrar encomiendas con cargo ADMINISTRADOR
 - **Solicitud:** `SOLICITUD_CARGO_ADMINISTRADOR_CIERRE_ENCOMIENDAS.md` (pendiente de análisis)
