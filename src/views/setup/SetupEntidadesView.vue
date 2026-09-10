@@ -17,6 +17,7 @@ import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import ConfirmDialog from "primevue/confirmdialog";
+import Paginator from "primevue/paginator";
 
 const props = defineProps({
   entidad: { type: String, default: "estacionamiento" },
@@ -139,6 +140,20 @@ const mensajeResultado = computed(() => {
   if (r.eliminadas) partes.push(`${r.eliminadas} eliminados`);
   return partes.length ? partes.join(", ") + "." : "Sin cambios.";
 });
+
+// ── Paginación para 200+ ítems (Meta: virtualización progresiva) ──
+const pagina = ref(0);
+const porPagina = 50;
+const itemsPaginados = computed(() => {
+  const start = pagina.value * porPagina;
+  return u.estado.items.slice(start, start + porPagina);
+});
+watch(
+  () => u.estado.items.length,
+  () => {
+    pagina.value = 0;
+  },
+);
 
 const erroresResumen = computed(() =>
   u.estado.items.filter((x) => x.error).map((x) => `${x.nombre}: ${x.error}`),
@@ -656,7 +671,7 @@ onMounted(() => u.cargar());
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in u.estado.items" :key="item.id">
+                <tr v-for="item in itemsPaginados" :key="item.id">
                   <td v-if="u.multigrupo">{{ u.grupoLabel(item.grupoUid) }}</td>
                   <td>{{ item.nombre }}</td>
                   <td>{{ item.piso ?? "—" }}</td>
@@ -676,6 +691,14 @@ onMounted(() => u.cargar());
                 </tr>
               </tbody>
             </table>
+            <Paginator
+              v-if="u.estado.items.length > porPagina"
+              :rows="porPagina"
+              :totalRecords="u.estado.items.length"
+              :first="pagina * porPagina"
+              class="mt-2"
+              @page="pagina = $event.page"
+            />
           </div>
 
           <!-- Cards mobile -->
@@ -684,7 +707,7 @@ onMounted(() => u.cargar());
             class="flex flex-col gap-2 md:hidden"
           >
             <div
-              v-for="item in u.estado.items"
+              v-for="item in itemsPaginados"
               :key="item.id"
               class="bg-surface border border-border p-3 border-round"
             >
@@ -719,6 +742,14 @@ onMounted(() => u.cargar());
               </div>
             </div>
           </div>
+            <Paginator
+              v-if="u.estado.items.length > porPagina"
+              :rows="porPagina"
+              :totalRecords="u.estado.items.length"
+              :first="pagina * porPagina"
+              class="mt-2 md:hidden"
+              @page="pagina = $event.page"
+            />
         </div>
 
         <!-- Fase 5: Revisar y guardar -->
@@ -794,7 +825,7 @@ onMounted(() => u.cargar());
               </thead>
               <tbody>
                 <tr
-                  v-for="item in u.estado.items"
+                  v-for="item in itemsPaginados"
                   :key="item.id"
                   :class="item.marcadoEliminar ? 'opacity-50' : ''"
                 >
@@ -918,12 +949,20 @@ onMounted(() => u.cargar());
                 </tr>
               </tbody>
             </table>
+            <Paginator
+              v-if="u.estado.items.length > porPagina"
+              :rows="porPagina"
+              :totalRecords="u.estado.items.length"
+              :first="pagina * porPagina"
+              class="mt-2"
+              @page="pagina = $event.page"
+            />
           </div>
 
           <!-- Cards mobile -->
           <div class="flex flex-col gap-2 md:hidden">
             <div
-              v-for="item in u.estado.items"
+              v-for="item in itemsPaginados"
               :key="item.id"
               class="bg-surface border border-border p-3 border-round"
               :class="item.marcadoEliminar ? 'opacity-50' : ''"
@@ -1054,6 +1093,14 @@ onMounted(() => u.cargar());
               </div>
             </div>
           </div>
+            <Paginator
+              v-if="u.estado.items.length > porPagina"
+              :rows="porPagina"
+              :totalRecords="u.estado.items.length"
+              :first="pagina * porPagina"
+              class="mt-2 md:hidden"
+              @page="pagina = $event.page"
+            />
 
           <Message
             v-if="u.resultado"

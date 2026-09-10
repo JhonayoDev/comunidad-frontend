@@ -19,6 +19,7 @@ import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import ConfirmDialog from "primevue/confirmdialog";
+import Paginator from "primevue/paginator";
 
 const emit = defineEmits(["actualizado"]);
 
@@ -121,6 +122,26 @@ watch(
   () => u.estado.paso,
   () => {
     asignarTodosValor.value = null;
+  },
+);
+
+// ── Paginación para 200+ unidades (Meta: virtualización progresiva) ──
+const pagina = ref(0);
+const porPagina = 50;
+const unidadesPaginadas = computed(() => {
+  const start = pagina.value * porPagina;
+  return u.estado.unidades.slice(start, start + porPagina);
+});
+watch(
+  () => u.estado.unidades.length,
+  () => {
+    pagina.value = 0;
+  },
+);
+watch(
+  () => u.estado.paso,
+  () => {
+    pagina.value = 0;
   },
 );
 
@@ -619,7 +640,7 @@ onMounted(() => u.cargar());
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="un in u.estado.unidades" :key="un.id">
+                <tr v-for="un in unidadesPaginadas" :key="un.id">
                   <td>
                     <Checkbox
                       :modelValue="seleccionados.has(un.id)"
@@ -646,6 +667,14 @@ onMounted(() => u.cargar());
                 </tr>
               </tbody>
             </table>
+            <Paginator
+              v-if="u.estado.unidades.length > porPagina"
+              :rows="porPagina"
+              :totalRecords="u.estado.unidades.length"
+              :first="pagina * porPagina"
+              class="mt-2"
+              @page="pagina = $event.page"
+            />
           </div>
 
           <!-- Cards mobile -->
@@ -654,7 +683,7 @@ onMounted(() => u.cargar());
             class="flex flex-col gap-2 md:hidden"
           >
             <div
-              v-for="un in u.estado.unidades"
+              v-for="un in unidadesPaginadas"
               :key="un.id"
               class="bg-surface border border-border p-3 border-round"
               :class="
@@ -688,6 +717,14 @@ onMounted(() => u.cargar());
                 <span v-else class="text-sm text-text-muted">Sin sector</span>
               </div>
             </div>
+            <Paginator
+              v-if="u.estado.unidades.length > porPagina"
+              :rows="porPagina"
+              :totalRecords="u.estado.unidades.length"
+              :first="pagina * porPagina"
+              class="mt-2"
+              @page="pagina = $event.page"
+            />
           </div>
         </div>
 
@@ -763,7 +800,7 @@ onMounted(() => u.cargar());
               </thead>
               <tbody>
                 <tr
-                  v-for="un in u.estado.unidades"
+                  v-for="un in unidadesPaginadas"
                   :key="un.id"
                   :class="un.marcadoEliminar ? 'opacity-50' : ''"
                 >
@@ -871,12 +908,20 @@ onMounted(() => u.cargar());
                 </tr>
               </tbody>
             </table>
+            <Paginator
+              v-if="u.estado.unidades.length > porPagina"
+              :rows="porPagina"
+              :totalRecords="u.estado.unidades.length"
+              :first="pagina * porPagina"
+              class="mt-2"
+              @page="pagina = $event.page"
+            />
           </div>
 
           <!-- Cards mobile -->
           <div class="flex flex-col gap-2 md:hidden">
             <div
-              v-for="un in u.estado.unidades"
+              v-for="un in unidadesPaginadas"
               :key="un.id"
               class="bg-surface border border-border p-3 border-round"
               :class="un.marcadoEliminar ? 'opacity-50' : ''"
@@ -983,6 +1028,14 @@ onMounted(() => u.cargar());
                 />
               </div>
             </div>
+            <Paginator
+              v-if="u.estado.unidades.length > porPagina"
+              :rows="porPagina"
+              :totalRecords="u.estado.unidades.length"
+              :first="pagina * porPagina"
+              class="mt-2 md:hidden"
+              @page="pagina = $event.page"
+            />
           </div>
 
           <Message
