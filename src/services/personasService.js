@@ -48,6 +48,10 @@ export const personasService = {
     return api.post(`/condominios/${cid}/personas/${personaId}/usuario`, data);
   },
 
+  reenviarSetup(cid, personaId) {
+    return api.post(`/condominios/${cid}/personas/${personaId}/usuario/reconfigurar`);
+  },
+
   activarUsuario(cid, usuarioId) {
     return api.patch(`/condominios/${cid}/usuarios/${usuarioId}/activar`);
   },

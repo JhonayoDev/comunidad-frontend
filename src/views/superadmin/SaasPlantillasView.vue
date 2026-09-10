@@ -51,7 +51,7 @@ const canalOptions = [
 
 const canalSeverity = { IN_APP: "info", EMAIL: "warn", PUSH: "success" };
 
-const variables = ["{{nombre}}", "{{unidad}}", "{{condominio}}", "{{fecha}}", "{{extra}}", "{{imagen_url}}"];
+const variables = ["{{nombre}}", "{{unidad}}", "{{condominio}}", "{{fecha}}", "{{extra}}", "{{imagen_url}}", "{{link}}", "{{logo_url}}"];
 const copiada = ref("");
 
 const ejemplo = {
@@ -60,6 +60,8 @@ const ejemplo = {
   condominio: "Condominio Los Robles",
   fecha: "12 ago 2026",
   extra: "Encomienda #123",
+  link: "https://comunidad.briku.cl/auth/setup-password?token=abc123",
+  logo_url: "https://comunidad.briku.cl/logo.png",
 };
 
 const plantillasFiltradas = computed(() => {
@@ -234,7 +236,9 @@ function interpolar(texto) {
     .replace(/\{\{condominio\}\}/g, ejemplo.condominio)
     .replace(/\{\{fecha\}\}/g, ejemplo.fecha)
     .replace(/\{\{extra\}\}/g, ejemplo.extra)
-    .replace(/\{\{imagen_url\}\}/g, "https://ejemplo.cl/imagen.png");
+    .replace(/\{\{imagen_url\}\}/g, "https://ejemplo.cl/imagen.png")
+    .replace(/\{\{link\}\}/g, ejemplo.link)
+    .replace(/\{\{logo_url\}\}/g, ejemplo.logo_url);
 }
 
 function abrirPreview(p) {

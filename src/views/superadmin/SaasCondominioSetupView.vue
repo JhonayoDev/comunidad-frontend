@@ -132,6 +132,8 @@ const cuentaAdminPersonaId = ref(null);
 const cuentaAdminEmail = ref(null);
 const cuentaAdminPasswordSetAt = ref(null);
 const verificandoCuenta = ref(false);
+const reenviando = ref(false);
+const resultadoReenvio = ref(null);
 let cuentaPollingTimer = null;
 
 // ── Onboarding helpers ────────────────────────────────
@@ -222,6 +224,27 @@ async function verificarCuenta() {
     await cargarEstadoCuentaAdmin();
   } finally {
     verificandoCuenta.value = false;
+  }
+}
+
+async function reenviarEmail() {
+  if (!cuentaAdminPersonaId.value) return;
+  reenviando.value = true;
+  resultadoReenvio.value = null;
+  try {
+    await personasService.reenviarSetup(cid, cuentaAdminPersonaId.value);
+    resultadoReenvio.value = {
+      severity: "success",
+      text: `Se reenvió el email a ${cuentaAdminEmail.value} con un nuevo enlace (válido 24h, invalida el anterior).`,
+    };
+  } catch (e) {
+    console.error("Error al reenviar email de configuración", e);
+    resultadoReenvio.value = {
+      severity: "error",
+      text: e?.response?.data?.message || "No se pudo reenviar el email.",
+    };
+  } finally {
+    reenviando.value = false;
   }
 }
 
@@ -932,16 +955,28 @@ onUnmounted(() => {
               manualmente.</Message
             >
 
-            <div v-if="!cuentaAdminPasswordSetAt">
-              <Button
-                label="Verificar de nuevo"
-                icon="pi pi-refresh"
-                size="small"
-                severity="secondary"
-                variant="outlined"
-                :loading="verificandoCuenta"
-                @click="verificarCuenta"
-              />
+            <div v-if="!cuentaAdminPasswordSetAt" class="flex flex-col gap-2">
+              <div class="flex flex-wrap gap-2">
+                <Button
+                  label="Verificar de nuevo"
+                  icon="pi pi-refresh"
+                  size="small"
+                  severity="secondary"
+                  variant="outlined"
+                  :loading="verificandoCuenta"
+                  @click="verificarCuenta"
+                />
+                <Button
+                  label="Reenviar email"
+                  icon="pi pi-send"
+                  size="small"
+                  severity="secondary"
+                  :loading="reenviando"
+                  @click="reenviarEmail"
+                />
+              </div>
+              <Message v-if="resultadoReenvio" :severity="resultadoReenvio.severity" :closable="false">{{ resultadoReenvio.text }}</Message>
+              <small class="text-xs text-surface-400">Si la persona no entró en 24h el link expira y el anterior queda inválido. Reenviar genera un nuevo token de 24h.</small>
             </div>
           </div>
         </template>
