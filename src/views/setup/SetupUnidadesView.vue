@@ -985,10 +985,18 @@ onMounted(() => u.cargar());
             </div>
           </div>
 
-          <p v-if="u.resultado" class="text-sm text-green-500 mt-2 m-0">
-            {{ mensajeResultado
-            }}<template v-if="!u.tieneErrores"> Paso completado.</template>
-          </p>
+          <Message
+            v-if="u.resultado"
+            :severity="u.tieneErrores ? 'warn' : 'success'"
+            :closable="false"
+            class="mt-2"
+          >
+            <span class="flex items-center gap-2">
+              <i :class="u.tieneErrores ? 'pi pi-exclamation-triangle' : 'pi pi-check-circle'"></i>
+              {{ mensajeResultado }}
+              <template v-if="!u.tieneErrores"> Paso completado.</template>
+            </span>
+          </Message>
         </div>
 
         <!-- Navegación (oculta durante el modo edición: solo la toolbar de

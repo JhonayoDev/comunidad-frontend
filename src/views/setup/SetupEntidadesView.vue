@@ -265,7 +265,11 @@ onMounted(() => u.cargar());
                     placeholder="Ej: ER-"
                   />
                   <small class="text-xs text-text-muted">
-                    {{ i < 2 ? "Fijo para mantener la integridad de los nombres." : "Editable — usa uno distinto a E- y EV- para evitar colisión (ej: ER-)." }}
+                    {{
+                      i < 2
+                        ? "Fijo para mantener la integridad de los nombres."
+                        : "Editable — usa uno distinto a E- y EV- para evitar colisión (ej: ER-)."
+                    }}
                   </small>
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
@@ -561,7 +565,7 @@ onMounted(() => u.cargar());
 
             <div
               v-if="u.estado.sectorOrigen === 'sin-sector'"
-              class="text-sm text-surface-400"
+              class="text-sm text-text-muted"
             >
               Los {{ etiquetas.plural }} se crearán sin sector asignado.
             </div>
@@ -729,7 +733,6 @@ onMounted(() => u.cargar());
               v-if="!editando"
               label="Editar"
               icon="pi pi-pencil"
-              variant="text"
               size="small"
               @click="entrarEdicion"
             />
@@ -737,13 +740,11 @@ onMounted(() => u.cargar());
               <Button
                 label="Listo"
                 icon="pi pi-check"
-                variant="text"
                 size="small"
                 @click="salirEdicion"
               />
               <Button
                 label="Cancelar"
-                variant="text"
                 severity="secondary"
                 size="small"
                 @click="cancelarEdicion"
@@ -751,7 +752,6 @@ onMounted(() => u.cargar());
               <Button
                 label="Agregar fila"
                 icon="pi pi-plus"
-                variant="text"
                 size="small"
                 @click="u.agregarFila"
               />
@@ -816,7 +816,7 @@ onMounted(() => u.cargar());
                     <template v-if="editando && !item.marcadoEliminar">
                       <div class="flex items-center gap-1">
                         <span
-                          class="text-surface-400 font-medium whitespace-nowrap"
+                          class="text-text-muted font-medium whitespace-nowrap"
                           >{{ u.prefijoDe(item.grupoUid) }}</span
                         >
                         <InputText
@@ -828,7 +828,7 @@ onMounted(() => u.cargar());
                         />
                         <i
                           v-if="item.tieneVinculos"
-                          class="pi pi-lock text-surface-400"
+                          class="pi pi-lock text-text-muted"
                           title="Tiene vínculos activos: el nombre no se puede cambiar, solo sector o piso."
                         ></i>
                       </div>
@@ -931,9 +931,9 @@ onMounted(() => u.cargar());
               <div class="flex items-center justify-between gap-2">
                 <div class="min-w-0 flex-1">
                   <template v-if="editando && !item.marcadoEliminar">
-                    <div class="flex items-center gap-1">
+                    <div class="flex flex-row items-center gap-1">
                       <span
-                        class="text-surface-400 font-medium whitespace-nowrap"
+                        class="text-text-muted font-medium whitespace-nowrap"
                         >{{ u.prefijoDe(item.grupoUid) }}</span
                       >
                       <InputText
@@ -1055,10 +1055,18 @@ onMounted(() => u.cargar());
             </div>
           </div>
 
-          <p v-if="u.resultado" class="text-sm text-green-500 mt-2 m-0">
-            {{ mensajeResultado
-            }}<template v-if="!u.tieneErrores"> Paso completado.</template>
-          </p>
+          <Message
+            v-if="u.resultado"
+            :severity="u.tieneErrores ? 'warn' : 'success'"
+            :closable="false"
+            class="mt-2"
+          >
+            <span class="flex items-center gap-2">
+              <i :class="u.tieneErrores ? 'pi pi-exclamation-triangle' : 'pi pi-check-circle'"></i>
+              {{ mensajeResultado }}
+              <template v-if="!u.tieneErrores"> Paso completado.</template>
+            </span>
+          </Message>
         </div>
 
         <!-- Navegación (oculta durante el modo edición: solo la toolbar de
@@ -1071,6 +1079,7 @@ onMounted(() => u.cargar());
             v-if="u.estado.paso > 1 && !u.modoReedicion"
             label="Anterior"
             icon="pi pi-arrow-left"
+            class="text-text/80"
             variant="text"
             size="small"
             @click="u.atras"
