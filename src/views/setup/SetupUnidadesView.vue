@@ -81,7 +81,9 @@ function aplicarBulk() {
     if (seleccionados.value.has(x.id)) x.sectorRef = sector;
   });
   bulkSector.value = null;
-  mostrarFeedback(`${c} ${c === 1 ? "unidad asignada" : "unidades asignadas"} a ${label} ✓`);
+  mostrarFeedback(
+    `${c} ${c === 1 ? "unidad asignada" : "unidades asignadas"} a ${label} ✓`,
+  );
 }
 
 function aplicarRango() {
@@ -123,10 +125,13 @@ watch(
 );
 
 function aplicarAsignarTodos() {
-  const sector = asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value;
+  const sector =
+    asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value;
   u.asignarTodos(sector);
   const label = sectorLabel(sector);
-  mostrarFeedback(`${u.estado.unidades.length} unidades asignadas a ${label} ✓`);
+  mostrarFeedback(
+    `${u.estado.unidades.length} unidades asignadas a ${label} ✓`,
+  );
 }
 
 function onSectorFilaChange(un) {
@@ -281,7 +286,7 @@ onMounted(() => u.cargar());
               "
               >{{ p.numero }}</span
             >
-            <span class="hidden sm:inline font-medium">{{ p.label }}</span>
+            <span class="sm:inline font-medium">{{ p.label }}</span>
           </button>
         </div>
 
@@ -477,7 +482,7 @@ onMounted(() => u.cargar());
         <div v-else-if="u.estado.paso === 4" class="mt-4 flex flex-col gap-3">
           <div
             v-if="u.sectoresOpciones.length"
-            class="flex flex-col sm:flex-row gap-2 items-center"
+            class="flex flex-col sm:flex-row gap-2"
           >
             <label class="text-sm">Asignar todos a:</label>
             <Select
@@ -505,10 +510,10 @@ onMounted(() => u.cargar());
             v-if="u.sectoresOpciones.length && u.estado.unidades.length"
             class="flex flex-col gap-2 p-2 border border-border border-round bg-surface-50"
           >
-            <span class="text-xs font-medium text-surface-500"
+            <span class="text-xs font-medium text-text/90"
               >Asignar por rango</span
             >
-            <div class="flex flex-col sm:flex-row gap-2 items-end">
+            <div class="flex flex-col sm:flex-row gap-2 items-start">
               <div class="flex flex-col gap-1 flex-1">
                 <label class="text-xs">Desde</label>
                 <InputNumber
@@ -546,7 +551,7 @@ onMounted(() => u.cargar());
                 @click="aplicarRango"
               />
             </div>
-            <small class="text-xs text-surface-400"
+            <small class="text-xs text-text/80"
               >Ej: 1-33 → Sector 1, 34-52 → Sector 2. Usa números de
               unidad.</small
             >
@@ -584,7 +589,13 @@ onMounted(() => u.cargar());
             />
           </div>
 
-          <Message v-if="feedbackAsignacion" severity="success" :closable="false" class="py-2">{{ feedbackAsignacion }}</Message>
+          <Message
+            v-if="feedbackAsignacion"
+            severity="success"
+            :closable="false"
+            class="py-2"
+            >{{ feedbackAsignacion }}</Message
+          >
 
           <!-- Tabla desktop -->
           <div
@@ -674,7 +685,7 @@ onMounted(() => u.cargar());
                   class="w-full"
                   @change="onSectorFilaChange(un)"
                 />
-                <span v-else class="text-sm text-surface-400">Sin sector</span>
+                <span v-else class="text-sm text-text-muted">Sin sector</span>
               </div>
             </div>
           </div>
@@ -692,7 +703,7 @@ onMounted(() => u.cargar());
               v-if="!editando"
               label="Editar"
               icon="pi pi-pencil"
-              variant="text"
+              severity="secondary"
               size="small"
               @click="entrarEdicion"
             />
@@ -700,13 +711,11 @@ onMounted(() => u.cargar());
               <Button
                 label="Listo"
                 icon="pi pi-check"
-                variant="text"
                 size="small"
                 @click="salirEdicion"
               />
               <Button
                 label="Cancelar"
-                variant="text"
                 severity="secondary"
                 size="small"
                 @click="cancelarEdicion"
@@ -714,7 +723,6 @@ onMounted(() => u.cargar());
               <Button
                 label="Agregar fila"
                 icon="pi pi-plus"
-                variant="text"
                 size="small"
                 @click="u.agregarFila"
               />
