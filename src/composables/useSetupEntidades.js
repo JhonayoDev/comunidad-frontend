@@ -72,13 +72,25 @@ export function useSetupEntidades({ entidad } = {}) {
   const pisosHabilitados = ref(true);
 
   // Crea un grupo nuevo. En estacionamientos, el segundo grupo se sugiere como
-  // "Visitas · EV-" (el caso común); el resto es editable.
+  // "Visitas · EV-" (el caso común); el tercero como "Reservados · ER-".
+  // Los prefijos de grupos adicionales son editables para evitar colisión E-.
   function nuevoGrupo(gruposActuales = []) {
     let prefijo = cfg.prefijoDefault;
     let nombre = cfg.grupoNombreDefault;
-    if (cfg.multigrupo && gruposActuales.length > 0 && !gruposActuales.some((g) => g.prefijo === "EV-")) {
-      prefijo = "EV-";
-      nombre = "Visitas";
+    if (cfg.multigrupo && gruposActuales.length > 0) {
+      const tieneEV = gruposActuales.some((g) => g.prefijo === "EV-");
+      const tieneER = gruposActuales.some((g) => g.prefijo === "ER-");
+      if (!tieneEV) {
+        prefijo = "EV-";
+        nombre = "Visitas";
+      } else if (!tieneER) {
+        prefijo = "ER-";
+        nombre = "Reservados";
+      } else {
+        // Cuarto grupo en adelante: E3-, E4-... para no colisionar con E-/EV-/ER-
+        prefijo = `E${gruposActuales.length + 1}-`;
+        nombre = `Grupo ${gruposActuales.length + 1}`;
+      }
     }
     return {
       uid: uid("grupo"),
