@@ -227,9 +227,19 @@ export default definePreset(Aura, {
         },
       },
       text: {
+        primary: {
+          color: "{primary.400}",
+          hoverBackground:
+            "color-mix(in srgb, {primary.400} 12%, transparent)",
+          activeBackground:
+            "color-mix(in srgb, {primary.400} 20%, transparent)",
+        },
         secondary: {
-          hoverBackground: "transparent",
-          activeBackground: "transparent",
+          color: "{primary.textSecondary}",
+          hoverBackground:
+            "color-mix(in srgb, {primary.textSecondary} 8%, transparent)",
+          activeBackground:
+            "color-mix(in srgb, {primary.textSecondary} 16%, transparent)",
         },
       },
     },
