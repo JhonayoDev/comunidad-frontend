@@ -44,9 +44,18 @@ const rangoDesde = ref(null);
 const rangoHasta = ref(null);
 const rangoSector = ref(null);
 const bulkSector = ref(null);
+const feedbackAsignacion = ref(null);
+let feedbackTimer = null;
+function mostrarFeedback(msg) {
+  feedbackAsignacion.value = msg;
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => (feedbackAsignacion.value = null), 2800);
+}
 
 const todosSeleccionados = computed(
-  () => u.estado.unidades.length > 0 && seleccionados.value.size === u.estado.unidades.length,
+  () =>
+    u.estado.unidades.length > 0 &&
+    seleccionados.value.size === u.estado.unidades.length,
 );
 const algunoSeleccionado = computed(() => seleccionados.value.size > 0);
 
@@ -58,15 +67,21 @@ function toggleSeleccion(id) {
 }
 
 function toggleTodos(checked) {
-  seleccionados.value = checked ? new Set(u.estado.unidades.map((x) => x.id)) : new Set();
+  seleccionados.value = checked
+    ? new Set(u.estado.unidades.map((x) => x.id))
+    : new Set();
 }
 
 function aplicarBulk() {
   const sector = bulkSector.value === SIN_SECTOR ? null : bulkSector.value;
+  const c = seleccionados.value.size;
+  if (!c) return;
+  const label = sectorLabel(sector);
   u.estado.unidades.forEach((x) => {
     if (seleccionados.value.has(x.id)) x.sectorRef = sector;
   });
   bulkSector.value = null;
+  mostrarFeedback(`${c} ${c === 1 ? "unidad asignada" : "unidades asignadas"} a ${label} ✓`);
 }
 
 function aplicarRango() {
@@ -74,12 +89,18 @@ function aplicarRango() {
   const h = Number(rangoHasta.value);
   if (!Number.isFinite(d) || !Number.isFinite(h) || d > h) return;
   const sector = rangoSector.value === SIN_SECTOR ? null : rangoSector.value;
-  // si rangoSector es null (sin elegir), no hace nada
   if (rangoSector.value === null || rangoSector.value === undefined) return;
+  let c = 0;
   u.estado.unidades.forEach((x) => {
     const n = Number(x.numero);
-    if (Number.isFinite(n) && n >= d && n <= h) x.sectorRef = sector;
+    if (Number.isFinite(n) && n >= d && n <= h) {
+      x.sectorRef = sector;
+      c += 1;
+    }
   });
+  const label = sectorLabel(sector);
+  if (c) mostrarFeedback(`${c} unidades (${d}–${h}) asignadas a ${label} ✓`);
+  else mostrarFeedback(`Ninguna unidad en rango ${d}–${h}`);
 }
 
 watch(
@@ -102,9 +123,10 @@ watch(
 );
 
 function aplicarAsignarTodos() {
-  u.asignarTodos(
-    asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value,
-  );
+  const sector = asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value;
+  u.asignarTodos(sector);
+  const label = sectorLabel(sector);
+  mostrarFeedback(`${u.estado.unidades.length} unidades asignadas a ${label} ✓`);
 }
 
 function onSectorFilaChange(un) {
@@ -483,15 +505,27 @@ onMounted(() => u.cargar());
             v-if="u.sectoresOpciones.length && u.estado.unidades.length"
             class="flex flex-col gap-2 p-2 border border-border border-round bg-surface-50"
           >
-            <span class="text-xs font-medium text-surface-500">Asignar por rango</span>
+            <span class="text-xs font-medium text-surface-500"
+              >Asignar por rango</span
+            >
             <div class="flex flex-col sm:flex-row gap-2 items-end">
               <div class="flex flex-col gap-1 flex-1">
                 <label class="text-xs">Desde</label>
-                <InputNumber v-model="rangoDesde" :min="1" placeholder="1" class="w-full" />
+                <InputNumber
+                  v-model="rangoDesde"
+                  :min="1"
+                  placeholder="1"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1 flex-1">
                 <label class="text-xs">Hasta</label>
-                <InputNumber v-model="rangoHasta" :min="1" placeholder="33" class="w-full" />
+                <InputNumber
+                  v-model="rangoHasta"
+                  :min="1"
+                  placeholder="33"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1 flex-1 sm:flex-none sm:w-48">
                 <label class="text-xs">Sector</label>
@@ -512,7 +546,10 @@ onMounted(() => u.cargar());
                 @click="aplicarRango"
               />
             </div>
-            <small class="text-xs text-surface-400">Ej: 1-33 → Sector 1, 34-52 → Sector 2. Usa números de unidad.</small>
+            <small class="text-xs text-surface-400"
+              >Ej: 1-33 → Sector 1, 34-52 → Sector 2. Usa números de
+              unidad.</small
+            >
           </div>
 
           <!-- Barra masiva (selección múltiple) -->
@@ -520,7 +557,9 @@ onMounted(() => u.cargar());
             v-if="u.sectoresOpciones.length && algunoSeleccionado"
             class="flex flex-col sm:flex-row gap-2 items-center p-2 border border-primary-200 bg-primary-50 border-round"
           >
-            <span class="text-sm font-medium">{{ seleccionados.size }} seleccionadas</span>
+            <span class="text-sm font-medium"
+              >{{ seleccionados.size }} seleccionadas</span
+            >
             <Select
               v-model="bulkSector"
               :options="opcionesSectorFila"
@@ -536,16 +575,31 @@ onMounted(() => u.cargar());
               :disabled="bulkSector === null"
               @click="aplicarBulk"
             />
-            <Button label="Limpiar" size="small" variant="text" severity="secondary" @click="toggleTodos(false)" />
+            <Button
+              label="Limpiar"
+              size="small"
+              variant="text"
+              severity="secondary"
+              @click="toggleTodos(false)"
+            />
           </div>
 
+          <Message v-if="feedbackAsignacion" severity="success" :closable="false" class="py-2">{{ feedbackAsignacion }}</Message>
+
           <!-- Tabla desktop -->
-          <div v-if="u.estado.unidades.length" class="planilla hidden md:block overflow-x-auto">
+          <div
+            v-if="u.estado.unidades.length"
+            class="planilla hidden md:block overflow-x-auto"
+          >
             <table>
               <thead>
                 <tr>
                   <th class="w-10">
-                    <Checkbox :modelValue="todosSeleccionados" binary @update:modelValue="toggleTodos" />
+                    <Checkbox
+                      :modelValue="todosSeleccionados"
+                      binary
+                      @update:modelValue="toggleTodos"
+                    />
                   </th>
                   <th>Número</th>
                   <th>Tipo</th>
@@ -555,7 +609,13 @@ onMounted(() => u.cargar());
               </thead>
               <tbody>
                 <tr v-for="un in u.estado.unidades" :key="un.id">
-                  <td><Checkbox :modelValue="seleccionados.has(un.id)" binary @update:modelValue="toggleSeleccion(un.id)" /></td>
+                  <td>
+                    <Checkbox
+                      :modelValue="seleccionados.has(un.id)"
+                      binary
+                      @update:modelValue="toggleSeleccion(un.id)"
+                    />
+                  </td>
                   <td>{{ un.numero }}</td>
                   <td>{{ tipoLabel(un.tipo) }}</td>
                   <td>{{ un.piso ?? "—" }}</td>
@@ -586,11 +646,19 @@ onMounted(() => u.cargar());
               v-for="un in u.estado.unidades"
               :key="un.id"
               class="bg-surface border border-border p-3 border-round"
-              :class="seleccionados.has(un.id) ? 'border-primary-300 bg-primary-50' : ''"
+              :class="
+                seleccionados.has(un.id)
+                  ? 'border-primary-300 bg-primary-50'
+                  : ''
+              "
             >
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
-                  <Checkbox :modelValue="seleccionados.has(un.id)" binary @update:modelValue="toggleSeleccion(un.id)" />
+                  <Checkbox
+                    :modelValue="seleccionados.has(un.id)"
+                    binary
+                    @update:modelValue="toggleSeleccion(un.id)"
+                  />
                   <span class="font-medium">{{ un.numero }}</span>
                 </div>
                 <Tag :value="tipoLabel(un.tipo)" severity="info" size="small" />
