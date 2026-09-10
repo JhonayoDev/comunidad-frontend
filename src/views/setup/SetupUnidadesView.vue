@@ -14,6 +14,7 @@ import InputNumber from "primevue/inputnumber";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
+import Checkbox from "primevue/checkbox";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
@@ -37,6 +38,62 @@ const opcionesSectorFila = computed(() => [
   ...u.sectoresOpciones,
 ]);
 
+// ── Selección múltiple + rango (fase 4, 204 casas) ──
+const seleccionados = ref(new Set());
+const rangoDesde = ref(null);
+const rangoHasta = ref(null);
+const rangoSector = ref(null);
+const bulkSector = ref(null);
+
+const todosSeleccionados = computed(
+  () => u.estado.unidades.length > 0 && seleccionados.value.size === u.estado.unidades.length,
+);
+const algunoSeleccionado = computed(() => seleccionados.value.size > 0);
+
+function toggleSeleccion(id) {
+  const next = new Set(seleccionados.value);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  seleccionados.value = next;
+}
+
+function toggleTodos(checked) {
+  seleccionados.value = checked ? new Set(u.estado.unidades.map((x) => x.id)) : new Set();
+}
+
+function aplicarBulk() {
+  const sector = bulkSector.value === SIN_SECTOR ? null : bulkSector.value;
+  u.estado.unidades.forEach((x) => {
+    if (seleccionados.value.has(x.id)) x.sectorRef = sector;
+  });
+  bulkSector.value = null;
+}
+
+function aplicarRango() {
+  const d = Number(rangoDesde.value);
+  const h = Number(rangoHasta.value);
+  if (!Number.isFinite(d) || !Number.isFinite(h) || d > h) return;
+  const sector = rangoSector.value === SIN_SECTOR ? null : rangoSector.value;
+  // si rangoSector es null (sin elegir), no hace nada
+  if (rangoSector.value === null || rangoSector.value === undefined) return;
+  u.estado.unidades.forEach((x) => {
+    const n = Number(x.numero);
+    if (Number.isFinite(n) && n >= d && n <= h) x.sectorRef = sector;
+  });
+}
+
+watch(
+  () => u.estado.unidades.length,
+  () => {
+    // limpiar selección si se regeneran unidades (fase 2)
+    seleccionados.value = new Set();
+    rangoDesde.value = null;
+    rangoHasta.value = null;
+    rangoSector.value = null;
+    bulkSector.value = null;
+  },
+);
+
 watch(
   () => u.estado.paso,
   () => {
@@ -45,7 +102,9 @@ watch(
 );
 
 function aplicarAsignarTodos() {
-  u.asignarTodos(asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value);
+  u.asignarTodos(
+    asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value,
+  );
 }
 
 function onSectorFilaChange(un) {
@@ -124,7 +183,9 @@ const mensajeResultado = computed(() => {
 });
 
 const erroresResumen = computed(() =>
-  u.estado.unidades.filter((x) => x.error).map((x) => `${x.numero}: ${x.error}`)
+  u.estado.unidades
+    .filter((x) => x.error)
+    .map((x) => `${x.numero}: ${x.error}`),
 );
 
 async function guardar() {
@@ -143,11 +204,15 @@ onMounted(() => u.cargar());
     <template #title>
       <div class="flex items-center gap-2">
         <i class="pi pi-home"></i>
-        <span>{{ u.modoReedicion ? "Edición de unidades" : "Paso 1 · Creación de unidades" }}</span>
+        <span>{{
+          u.modoReedicion
+            ? "Edición de unidades"
+            : "Paso 1 · Creación de unidades"
+        }}</span>
       </div>
     </template>
     <template #content>
-      <p class="text-sm text-surface-400 m-0">
+      <p class="text-sm text-text/80 m-0">
         <template v-if="u.modoReedicion">
           Revisa y edita las unidades ya creadas: corrige número, tipo, piso o
           sector, agrega más filas o elimina las que no correspondan. La unidad
@@ -161,11 +226,16 @@ onMounted(() => u.cargar());
       </p>
 
       <Skeleton v-if="u.cargando" width="100%" height="200px" class="mt-3" />
-      <Message v-else-if="u.error" severity="error" class="mt-3">{{ u.error }}</Message>
+      <Message v-else-if="u.error" severity="error" class="mt-3">{{
+        u.error
+      }}</Message>
 
       <template v-else>
         <!-- Stepper de fases (oculto en reedición: se entra directo a fase 5) -->
-        <div v-if="!u.modoReedicion" class="mt-4 flex flex-col sm:flex-row gap-2">
+        <div
+          v-if="!u.modoReedicion"
+          class="mt-4 flex flex-col sm:flex-row gap-2"
+        >
           <button
             v-for="p in PASOS_UNIDADES"
             :key="p.numero"
@@ -182,7 +252,11 @@ onMounted(() => u.cargar());
           >
             <span
               class="w-5 h-5 flex items-center justify-center border-round-full text-xs font-bold"
-              :class="u.estado.paso > p.numero ? 'bg-primary text-white' : 'bg-emphasis'"
+              :class="
+                u.estado.paso > p.numero
+                  ? 'bg-primary text-white'
+                  : 'bg-emphasis'
+              "
               >{{ p.numero }}</span
             >
             <span class="hidden sm:inline font-medium">{{ p.label }}</span>
@@ -235,7 +309,10 @@ onMounted(() => u.cargar());
             </button>
           </div>
 
-          <div v-if="u.estado.modo === 'correlativo'" class="flex flex-col sm:flex-row gap-3">
+          <div
+            v-if="u.estado.modo === 'correlativo'"
+            class="flex flex-col sm:flex-row gap-3"
+          >
             <div class="flex flex-col gap-1 flex-1">
               <label class="text-sm">Desde</label>
               <InputText v-model="u.estado.desde" placeholder="1" />
@@ -251,14 +328,27 @@ onMounted(() => u.cargar());
             </div>
           </div>
 
-          <div v-else-if="u.estado.modo === 'por-piso'" class="flex flex-col sm:flex-row gap-3">
+          <div
+            v-else-if="u.estado.modo === 'por-piso'"
+            class="flex flex-col sm:flex-row gap-3"
+          >
             <div class="flex flex-col gap-1 flex-1">
               <label class="text-sm">Pisos</label>
-              <InputNumber v-model="u.estado.pisos" :min="1" :max="99" class="w-full" />
+              <InputNumber
+                v-model="u.estado.pisos"
+                :min="1"
+                :max="99"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1 flex-1">
               <label class="text-sm">Unidades por piso</label>
-              <InputNumber v-model="u.estado.porPiso" :min="1" :max="99" class="w-full" />
+              <InputNumber
+                v-model="u.estado.porPiso"
+                :min="1"
+                :max="99"
+                class="w-full"
+              />
             </div>
           </div>
 
@@ -271,7 +361,9 @@ onMounted(() => u.cargar());
           />
 
           <div v-else class="flex flex-col gap-1">
-            <label class="text-sm">Lista de números (uno por línea o separados por coma)</label>
+            <label class="text-sm"
+              >Lista de números (uno por línea o separados por coma)</label
+            >
             <Textarea v-model="u.estado.personalizado" rows="6" />
           </div>
 
@@ -284,7 +376,11 @@ onMounted(() => u.cargar());
 
         <!-- Fase 3: Sectores -->
         <div v-else-if="u.estado.paso === 3" class="mt-4 flex flex-col gap-3">
-          <Message v-if="!u.sectoresHabilitados" severity="warn" :closable="false">
+          <Message
+            v-if="!u.sectoresHabilitados"
+            severity="warn"
+            :closable="false"
+          >
             Tu cargo no tiene permisos para agrupar por sectores. Las unidades
             se guardarán sin agrupar.
           </Message>
@@ -304,11 +400,17 @@ onMounted(() => u.cargar());
               />
             </div>
 
-            <div v-if="u.estado.sectorOrigen === 'sin-sector'" class="text-sm text-surface-400">
+            <div
+              v-if="u.estado.sectorOrigen === 'sin-sector'"
+              class="text-sm text-surface-400"
+            >
               Las unidades se crearán sin sector asignado.
             </div>
 
-            <div v-else-if="u.estado.sectorOrigen === 'nuevo'" class="flex flex-col gap-3">
+            <div
+              v-else-if="u.estado.sectorOrigen === 'nuevo'"
+              class="flex flex-col gap-3"
+            >
               <div
                 v-for="(s, i) in u.estado.sectoresNuevos"
                 :key="s.uid"
@@ -336,7 +438,7 @@ onMounted(() => u.cargar());
                   label="Agregar sector"
                   icon="pi pi-plus"
                   size="small"
-                  variant="text"
+                  severity="secondary"
                   @click="u.agregarSectorNuevo"
                 />
               </div>
@@ -351,7 +453,10 @@ onMounted(() => u.cargar());
 
         <!-- Fase 4: Asignación -->
         <div v-else-if="u.estado.paso === 4" class="mt-4 flex flex-col gap-3">
-          <div v-if="u.sectoresOpciones.length" class="flex flex-col sm:flex-row gap-2 items-center">
+          <div
+            v-if="u.sectoresOpciones.length"
+            class="flex flex-col sm:flex-row gap-2 items-center"
+          >
             <label class="text-sm">Asignar todos a:</label>
             <Select
               v-model="asignarTodosValor"
@@ -373,11 +478,75 @@ onMounted(() => u.cargar());
             Las unidades se guardarán sin sector.
           </small>
 
+          <!-- Asignación por rango (1-33 → Sector 1) -->
+          <div
+            v-if="u.sectoresOpciones.length && u.estado.unidades.length"
+            class="flex flex-col gap-2 p-2 border border-border border-round bg-surface-50"
+          >
+            <span class="text-xs font-medium text-surface-500">Asignar por rango</span>
+            <div class="flex flex-col sm:flex-row gap-2 items-end">
+              <div class="flex flex-col gap-1 flex-1">
+                <label class="text-xs">Desde</label>
+                <InputNumber v-model="rangoDesde" :min="1" placeholder="1" class="w-full" />
+              </div>
+              <div class="flex flex-col gap-1 flex-1">
+                <label class="text-xs">Hasta</label>
+                <InputNumber v-model="rangoHasta" :min="1" placeholder="33" class="w-full" />
+              </div>
+              <div class="flex flex-col gap-1 flex-1 sm:flex-none sm:w-48">
+                <label class="text-xs">Sector</label>
+                <Select
+                  v-model="rangoSector"
+                  :options="opcionesSectorFila"
+                  optionLabel="label"
+                  optionValue="ref"
+                  placeholder="Sin sector"
+                  class="w-full"
+                />
+              </div>
+              <Button
+                label="Aplicar rango"
+                icon="pi pi-arrow-right"
+                size="small"
+                :disabled="!rangoDesde || !rangoHasta || rangoSector === null"
+                @click="aplicarRango"
+              />
+            </div>
+            <small class="text-xs text-surface-400">Ej: 1-33 → Sector 1, 34-52 → Sector 2. Usa números de unidad.</small>
+          </div>
+
+          <!-- Barra masiva (selección múltiple) -->
+          <div
+            v-if="u.sectoresOpciones.length && algunoSeleccionado"
+            class="flex flex-col sm:flex-row gap-2 items-center p-2 border border-primary-200 bg-primary-50 border-round"
+          >
+            <span class="text-sm font-medium">{{ seleccionados.size }} seleccionadas</span>
+            <Select
+              v-model="bulkSector"
+              :options="opcionesSectorFila"
+              optionLabel="label"
+              optionValue="ref"
+              placeholder="Sector para lote"
+              class="flex-1 sm:flex-none sm:w-48"
+            />
+            <Button
+              label="Aplicar a lote"
+              icon="pi pi-check"
+              size="small"
+              :disabled="bulkSector === null"
+              @click="aplicarBulk"
+            />
+            <Button label="Limpiar" size="small" variant="text" severity="secondary" @click="toggleTodos(false)" />
+          </div>
+
           <!-- Tabla desktop -->
-          <div v-if="u.estado.unidades.length" class="planilla hidden md:block">
+          <div v-if="u.estado.unidades.length" class="planilla hidden md:block overflow-x-auto">
             <table>
               <thead>
                 <tr>
+                  <th class="w-10">
+                    <Checkbox :modelValue="todosSeleccionados" binary @update:modelValue="toggleTodos" />
+                  </th>
                   <th>Número</th>
                   <th>Tipo</th>
                   <th>Piso</th>
@@ -386,6 +555,7 @@ onMounted(() => u.cargar());
               </thead>
               <tbody>
                 <tr v-for="un in u.estado.unidades" :key="un.id">
+                  <td><Checkbox :modelValue="seleccionados.has(un.id)" binary @update:modelValue="toggleSeleccion(un.id)" /></td>
                   <td>{{ un.numero }}</td>
                   <td>{{ tipoLabel(un.tipo) }}</td>
                   <td>{{ un.piso ?? "—" }}</td>
@@ -408,14 +578,21 @@ onMounted(() => u.cargar());
           </div>
 
           <!-- Cards mobile -->
-          <div v-if="u.estado.unidades.length" class="flex flex-col gap-2 md:hidden">
+          <div
+            v-if="u.estado.unidades.length"
+            class="flex flex-col gap-2 md:hidden"
+          >
             <div
               v-for="un in u.estado.unidades"
               :key="un.id"
               class="bg-surface border border-border p-3 border-round"
+              :class="seleccionados.has(un.id) ? 'border-primary-300 bg-primary-50' : ''"
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="font-medium">{{ un.numero }}</span>
+                <div class="flex items-center gap-2">
+                  <Checkbox :modelValue="seleccionados.has(un.id)" binary @update:modelValue="toggleSeleccion(un.id)" />
+                  <span class="font-medium">{{ un.numero }}</span>
+                </div>
                 <Tag :value="tipoLabel(un.tipo)" severity="info" size="small" />
               </div>
               <div class="mt-2 flex flex-col gap-1">
@@ -438,7 +615,11 @@ onMounted(() => u.cargar());
         <!-- Fase 5: Revisar y guardar -->
         <div v-else class="mt-4 flex flex-col gap-3">
           <div class="flex flex-wrap items-center gap-2">
-            <Tag :value="`${u.estado.unidades.length} unidades`" severity="info" size="small" />
+            <Tag
+              :value="`${u.estado.unidades.length} unidades`"
+              severity="info"
+              size="small"
+            />
             <Button
               v-if="!editando"
               label="Editar"
@@ -448,9 +629,27 @@ onMounted(() => u.cargar());
               @click="entrarEdicion"
             />
             <template v-else>
-              <Button label="Listo" icon="pi pi-check" variant="text" size="small" @click="salirEdicion" />
-              <Button label="Cancelar" variant="text" severity="secondary" size="small" @click="cancelarEdicion" />
-              <Button label="Agregar fila" icon="pi pi-plus" variant="text" size="small" @click="u.agregarFila" />
+              <Button
+                label="Listo"
+                icon="pi pi-check"
+                variant="text"
+                size="small"
+                @click="salirEdicion"
+              />
+              <Button
+                label="Cancelar"
+                variant="text"
+                severity="secondary"
+                size="small"
+                @click="cancelarEdicion"
+              />
+              <Button
+                label="Agregar fila"
+                icon="pi pi-plus"
+                variant="text"
+                size="small"
+                @click="u.agregarFila"
+              />
             </template>
           </div>
 
@@ -462,17 +661,16 @@ onMounted(() => u.cargar());
           >
             <div class="flex flex-col gap-1">
               <span>No se pudieron guardar las siguientes unidades:</span>
-              <span v-for="(e, i) in erroresResumen" :key="i" class="text-sm">{{ e }}</span>
+              <span v-for="(e, i) in erroresResumen" :key="i" class="text-sm">{{
+                e
+              }}</span>
             </div>
           </Message>
 
-          <Message
-            v-if="u.envelopeExcedido"
-            severity="warn"
-            :closable="false"
-            >Atención: estas unidades podrían superar el límite del plan contratado
-            ({{ u.capacidad.planUnidadLimit }} entidades en total). El backend
-            validará el cupo al guardar.</Message
+          <Message v-if="u.envelopeExcedido" severity="warn" :closable="false"
+            >Atención: estas unidades podrían superar el límite del plan
+            contratado ({{ u.capacidad.planUnidadLimit }} entidades en total).
+            El backend validará el cupo al guardar.</Message
           >
 
           <div class="planilla hidden md:block">
@@ -495,11 +693,23 @@ onMounted(() => u.cargar());
                 >
                   <td>
                     <template v-if="editando && !un.marcadoEliminar">
-                      <InputText v-model="un.numero" size="small" class="w-full" />
+                      <InputText
+                        v-model="un.numero"
+                        size="small"
+                        class="w-full"
+                      />
                     </template>
                     <template v-else>
-                      <span :class="un.marcadoEliminar ? 'line-through' : ''">{{ un.numero }}</span>
-                      <Tag v-if="un.esNuevo" value="Nuevo" severity="success" size="small" class="ml-2" />
+                      <span :class="un.marcadoEliminar ? 'line-through' : ''">{{
+                        un.numero
+                      }}</span>
+                      <Tag
+                        v-if="un.esNuevo"
+                        value="Nuevo"
+                        severity="success"
+                        size="small"
+                        class="ml-2"
+                      />
                     </template>
                   </td>
                   <td>
@@ -538,7 +748,13 @@ onMounted(() => u.cargar());
                     <span v-else>{{ pisoLabel(un) }}</span>
                   </td>
                   <td>
-                    <template v-if="editando && !un.marcadoEliminar && u.sectoresOpciones.length">
+                    <template
+                      v-if="
+                        editando &&
+                        !un.marcadoEliminar &&
+                        u.sectoresOpciones.length
+                      "
+                    >
                       <Select
                         v-model="un.sectorRef"
                         :options="opcionesSectorFila"
@@ -559,7 +775,12 @@ onMounted(() => u.cargar());
                       size="small"
                       :title="un.error"
                     />
-                    <Tag v-else-if="un.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
+                    <Tag
+                      v-else-if="un.marcadoEliminar"
+                      value="Eliminado"
+                      severity="danger"
+                      size="small"
+                    />
                     <span v-else class="text-green-500 text-sm">Listo</span>
                   </td>
                   <td v-if="editando">
@@ -587,15 +808,34 @@ onMounted(() => u.cargar());
               <div class="flex items-center justify-between gap-2">
                 <div class="min-w-0 flex-1">
                   <template v-if="editando && !un.marcadoEliminar">
-                    <InputText v-model="un.numero" size="small" class="w-full" />
+                    <InputText
+                      v-model="un.numero"
+                      size="small"
+                      class="w-full"
+                    />
                   </template>
                   <template v-else>
-                    <span class="font-medium" :class="un.marcadoEliminar ? 'line-through' : ''">{{ un.numero }}</span>
-                    <Tag v-if="un.esNuevo" value="Nuevo" severity="success" size="small" class="ml-2" />
+                    <span
+                      class="font-medium"
+                      :class="un.marcadoEliminar ? 'line-through' : ''"
+                      >{{ un.numero }}</span
+                    >
+                    <Tag
+                      v-if="un.esNuevo"
+                      value="Nuevo"
+                      severity="success"
+                      size="small"
+                      class="ml-2"
+                    />
                   </template>
                 </div>
                 <div class="flex items-center gap-1">
-                  <Tag v-if="!editando" :value="tipoLabel(un.tipo)" severity="info" size="small" />
+                  <Tag
+                    v-if="!editando"
+                    :value="tipoLabel(un.tipo)"
+                    severity="info"
+                    size="small"
+                  />
                   <Button
                     v-if="editando"
                     icon="pi pi-trash"
@@ -653,25 +893,38 @@ onMounted(() => u.cargar());
                 <span v-else class="text-sm text-surface-400">
                   Piso {{ un.piso ?? "—" }} · {{ sectorLabel(un.sectorRef) }}
                 </span>
-                <Tag v-if="un.error" :value="un.error" severity="danger" size="small" />
-                <Tag v-else-if="un.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
+                <Tag
+                  v-if="un.error"
+                  :value="un.error"
+                  severity="danger"
+                  size="small"
+                />
+                <Tag
+                  v-else-if="un.marcadoEliminar"
+                  value="Eliminado"
+                  severity="danger"
+                  size="small"
+                />
               </div>
             </div>
           </div>
 
           <p v-if="u.resultado" class="text-sm text-green-500 mt-2 m-0">
-            {{ mensajeResultado }}<template v-if="!u.tieneErrores"> Paso completado.</template>
+            {{ mensajeResultado
+            }}<template v-if="!u.tieneErrores"> Paso completado.</template>
           </p>
         </div>
 
         <!-- Navegación (oculta durante el modo edición: solo la toolbar de
              edición Listo/Cancelar/Agregar fila controla la fase 5) -->
-        <div v-if="!editando" class="mt-4 flex justify-between items-center gap-2">
+        <div
+          v-if="!editando"
+          class="mt-4 flex justify-between items-center gap-2"
+        >
           <Button
             v-if="u.estado.paso > 1 && !u.modoReedicion"
             label="Anterior"
             icon="pi pi-arrow-left"
-            variant="text"
             size="small"
             @click="u.atras"
           />
