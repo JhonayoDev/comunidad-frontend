@@ -1,7 +1,10 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { useConfirm } from "primevue/useconfirm";
-import { useSetupEntidades, PASOS_ENTIDADES } from "@/composables/useSetupEntidades";
+import {
+  useSetupEntidades,
+  PASOS_ENTIDADES,
+} from "@/composables/useSetupEntidades";
 import { MODOS_NUMERACION } from "@/utils/numeracionUnidades";
 
 import Card from "primevue/card";
@@ -49,7 +52,9 @@ watch(
 );
 
 function aplicarAsignarTodos() {
-  u.asignarTodos(asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value);
+  u.asignarTodos(
+    asignarTodosValor.value === SIN_SECTOR ? null : asignarTodosValor.value,
+  );
 }
 
 function onSectorFilaChange(item) {
@@ -83,7 +88,9 @@ const opcionesTipo = computed(() =>
 
 function onGrupoItem(item, nuevoUid) {
   const pViejo = u.prefijoDe(item.grupoUid);
-  const sufijo = item.nombre.startsWith(pViejo) ? item.nombre.slice(pViejo.length) : item.nombre;
+  const sufijo = item.nombre.startsWith(pViejo)
+    ? item.nombre.slice(pViejo.length)
+    : item.nombre;
   item.grupoUid = nuevoUid;
   item.nombre = u.prefijoDe(nuevoUid) + sufijo;
 }
@@ -134,7 +141,7 @@ const mensajeResultado = computed(() => {
 });
 
 const erroresResumen = computed(() =>
-  u.estado.items.filter((x) => x.error).map((x) => `${x.nombre}: ${x.error}`)
+  u.estado.items.filter((x) => x.error).map((x) => `${x.nombre}: ${x.error}`),
 );
 
 function sectorLabel(ref) {
@@ -162,11 +169,14 @@ onMounted(() => u.cargar());
     <template #title>
       <div class="flex items-center gap-2">
         <i :class="props.entidad === 'bodega' ? 'pi pi-box' : 'pi pi-car'"></i>
-        <span>{{ u.modoReedicion ? "Edición de" : "Creación de" }} {{ etiquetas.plural }}</span>
+        <span
+          >{{ u.modoReedicion ? "Edición de" : "Creación de" }}
+          {{ etiquetas.plural }}</span
+        >
       </div>
     </template>
     <template #content>
-      <p class="text-sm text-surface-400 m-0">
+      <p class="text-sm text-text/80 m-0">
         <template v-if="u.modoReedicion">
           Revisa y edita los {{ etiquetas.plural }} ya creados: corrige nombre,
           piso o sector, agrega más filas o elimina los que no correspondan.
@@ -184,11 +194,16 @@ onMounted(() => u.cargar());
       </p>
 
       <Skeleton v-if="u.cargando" width="100%" height="200px" class="mt-3" />
-      <Message v-else-if="u.error" severity="error" class="mt-3">{{ u.error }}</Message>
+      <Message v-else-if="u.error" severity="error" class="mt-3">{{
+        u.error
+      }}</Message>
 
       <template v-else>
         <!-- Stepper de fases -->
-        <div v-if="!u.modoReedicion" class="mt-4 flex flex-col sm:flex-row gap-2">
+        <div
+          v-if="!u.modoReedicion"
+          class="mt-4 flex flex-col sm:flex-row gap-2"
+        >
           <button
             v-for="p in PASOS_ENTIDADES"
             :key="p.numero"
@@ -196,7 +211,7 @@ onMounted(() => u.cargar());
             class="flex-1 flex items-center gap-2 p-2 border-round text-left transition-colors text-sm"
             :class="
               u.estado.paso === p.numero
-                ? 'bg-primary text-white'
+                ? 'bg-primary text-text'
                 : u.estado.paso > p.numero
                   ? 'bg-surface border border-border cursor-pointer'
                   : 'bg-surface border border-border opacity-60'
@@ -205,10 +220,14 @@ onMounted(() => u.cargar());
           >
             <span
               class="w-5 h-5 flex items-center justify-center border-round-full text-xs font-bold"
-              :class="u.estado.paso > p.numero ? 'bg-primary text-white' : 'bg-emphasis'"
+              :class="
+                u.estado.paso > p.numero
+                  ? 'bg-primary text-text'
+                  : 'bg-emphasis'
+              "
               >{{ p.numero }}</span
             >
-            <span class="hidden sm:inline font-medium">{{ p.label }}</span>
+            <span class="sm:inline font-medium">{{ p.label }}</span>
           </button>
         </div>
 
@@ -239,14 +258,24 @@ onMounted(() => u.cargar());
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Prefijo</label>
-                  <InputText :model-value="g.prefijo" disabled />
-                  <small class="text-xs text-surface-400">
-                    Fijo para mantener la integridad de los nombres.
+                  <InputText
+                    v-model="g.prefijo"
+                    :disabled="i < 2"
+                    :class="i < 2 ? 'bg-background/90 text-text-muted' : ''"
+                    placeholder="Ej: ER-"
+                  />
+                  <small class="text-xs text-text-muted">
+                    {{ i < 2 ? "Fijo para mantener la integridad de los nombres." : "Editable — usa uno distinto a E- y EV- para evitar colisión (ej: ER-)." }}
                   </small>
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Cantidad</label>
-                  <InputNumber v-model="g.cantidad" :min="1" :max="1000" class="w-full" />
+                  <InputNumber
+                    v-model="g.cantidad"
+                    :min="1"
+                    :max="1000"
+                    class="w-full"
+                  />
                 </div>
               </div>
             </div>
@@ -255,7 +284,6 @@ onMounted(() => u.cargar());
                 label="Agregar grupo"
                 icon="pi pi-plus"
                 size="small"
-                variant="text"
                 @click="u.agregarGrupo"
               />
             </div>
@@ -267,8 +295,8 @@ onMounted(() => u.cargar());
               <label class="text-sm">Prefijo del nombre</label>
               <InputText :model-value="u.estado.grupos[0].prefijo" disabled />
               <small class="text-xs text-surface-400">
-                Fijo para mantener la integridad de los nombres. Ej: "B-"
-                genera B-1, B-2, ...
+                Fijo para mantener la integridad de los nombres. Ej: "B-" genera
+                B-1, B-2, ...
               </small>
             </div>
             <div class="flex flex-col gap-1">
@@ -282,7 +310,7 @@ onMounted(() => u.cargar());
             </div>
           </template>
 
-          <small class="text-xs text-surface-400">
+          <small class="text-xs text-text-muted">
             La cantidad define el total para numeración correlativa. En "Por
             piso" el total se calcula de pisos × unidades por piso.
           </small>
@@ -298,7 +326,9 @@ onMounted(() => u.cargar());
               class="bg-surface border border-border p-3 border-round flex flex-col gap-3"
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="text-sm font-medium">{{ u.grupoLabel(g.uid) }}</span>
+                <span class="text-sm font-medium">{{
+                  u.grupoLabel(g.uid)
+                }}</span>
                 <Tag
                   :value="`${u.nombresDe(g).length} generados`"
                   :severity="u.nombresDe(g).length ? 'info' : 'secondary'"
@@ -323,18 +353,29 @@ onMounted(() => u.cargar());
                 </button>
               </div>
 
-              <div v-if="g.modo === 'correlativo'" class="flex flex-col sm:flex-row gap-3">
+              <div
+                v-if="g.modo === 'correlativo'"
+                class="flex flex-col sm:flex-row gap-3"
+              >
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Desde</label>
                   <InputText v-model="g.desde" placeholder="1" />
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Cantidad</label>
-                  <InputNumber v-model="g.cantidad" :min="1" :max="1000" class="w-full" />
+                  <InputNumber
+                    v-model="g.cantidad"
+                    :min="1"
+                    :max="1000"
+                    class="w-full"
+                  />
                 </div>
               </div>
 
-              <div v-else-if="g.modo === 'por-piso'" class="flex flex-col sm:flex-row gap-3">
+              <div
+                v-else-if="g.modo === 'por-piso'"
+                class="flex flex-col sm:flex-row gap-3"
+              >
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Pisos (separados por coma)</label>
                   <InputText v-model="g.pisos" placeholder="1,2,-1" />
@@ -345,7 +386,12 @@ onMounted(() => u.cargar());
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Unidades por piso</label>
-                  <InputNumber v-model="g.porPiso" :min="1" :max="99" class="w-full" />
+                  <InputNumber
+                    v-model="g.porPiso"
+                    :min="1"
+                    :max="99"
+                    class="w-full"
+                  />
                 </div>
               </div>
 
@@ -368,14 +414,21 @@ onMounted(() => u.cargar());
               </div>
 
               <div v-else class="flex flex-col gap-1">
-                <label class="text-sm">Lista de nombres (uno por línea o separados por coma)</label>
+                <label class="text-sm"
+                  >Lista de nombres (uno por línea o separados por coma)</label
+                >
                 <Textarea v-model="g.personalizado" rows="4" />
               </div>
             </div>
 
-            <Message v-if="u.nombresDuplicados.length" severity="warn" :closable="false">
-              Nombres repetidos entre grupos: {{ u.nombresDuplicados.join(", ") }}.
-              Usa prefijos distintos para cada grupo.
+            <Message
+              v-if="u.nombresDuplicados.length"
+              severity="warn"
+              :closable="false"
+            >
+              Nombres repetidos entre grupos:
+              {{ u.nombresDuplicados.join(", ") }}. Usa prefijos distintos para
+              cada grupo.
             </Message>
           </template>
 
@@ -424,7 +477,10 @@ onMounted(() => u.cargar());
             >
               <div class="flex flex-col gap-1 flex-1">
                 <label class="text-sm">Pisos (separados por coma)</label>
-                <InputText v-model="u.estado.grupos[0].pisos" placeholder="1,2,-1" />
+                <InputText
+                  v-model="u.estado.grupos[0].pisos"
+                  placeholder="1,2,-1"
+                />
                 <small class="text-xs text-surface-400">
                   Usa negativos para subterráneos. El piso se guarda como
                   columna, no en el nombre.
@@ -442,7 +498,10 @@ onMounted(() => u.cargar());
             </div>
 
             <div
-              v-if="u.estado.grupos[0].modo === 'por-piso' && u.pisosDisponibles.length"
+              v-if="
+                u.estado.grupos[0].modo === 'por-piso' &&
+                u.pisosDisponibles.length
+              "
               class="flex flex-wrap items-center gap-2"
             >
               <Tag
@@ -460,7 +519,9 @@ onMounted(() => u.cargar());
             </div>
 
             <div v-else class="flex flex-col gap-1">
-              <label class="text-sm">Lista de nombres (uno por línea o separados por coma)</label>
+              <label class="text-sm"
+                >Lista de nombres (uno por línea o separados por coma)</label
+              >
               <Textarea v-model="u.estado.grupos[0].personalizado" rows="6" />
             </div>
           </template>
@@ -474,7 +535,11 @@ onMounted(() => u.cargar());
 
         <!-- Fase 3: Sectores -->
         <div v-else-if="u.estado.paso === 3" class="mt-4 flex flex-col gap-3">
-          <Message v-if="!u.sectoresHabilitados" severity="warn" :closable="false">
+          <Message
+            v-if="!u.sectoresHabilitados"
+            severity="warn"
+            :closable="false"
+          >
             Tu cargo no tiene permisos para agrupar por sectores. Los
             {{ etiquetas.plural }} se guardarán sin agrupar.
           </Message>
@@ -494,11 +559,17 @@ onMounted(() => u.cargar());
               />
             </div>
 
-            <div v-if="u.estado.sectorOrigen === 'sin-sector'" class="text-sm text-surface-400">
+            <div
+              v-if="u.estado.sectorOrigen === 'sin-sector'"
+              class="text-sm text-surface-400"
+            >
               Los {{ etiquetas.plural }} se crearán sin sector asignado.
             </div>
 
-            <div v-else-if="u.estado.sectorOrigen === 'nuevo'" class="flex flex-col gap-3">
+            <div
+              v-else-if="u.estado.sectorOrigen === 'nuevo'"
+              class="flex flex-col gap-3"
+            >
               <div
                 v-for="(s, i) in u.estado.sectoresNuevos"
                 :key="s.uid"
@@ -506,7 +577,10 @@ onMounted(() => u.cargar());
               >
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Nombre del sector {{ i + 1 }}</label>
-                  <InputText v-model="s.nombre" placeholder="Ej: Estacionamiento Torre A" />
+                  <InputText
+                    v-model="s.nombre"
+                    placeholder="Ej: Estacionamiento Torre A"
+                  />
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Descripción (opcional)</label>
@@ -541,7 +615,10 @@ onMounted(() => u.cargar());
 
         <!-- Fase 4: Asignación -->
         <div v-else-if="u.estado.paso === 4" class="mt-4 flex flex-col gap-3">
-          <div v-if="u.sectoresOpciones.length" class="flex flex-col sm:flex-row gap-2 items-center">
+          <div
+            v-if="u.sectoresOpciones.length"
+            class="flex flex-col sm:flex-row gap-2 items-center"
+          >
             <label class="text-sm">Asignar todos a:</label>
             <Select
               v-model="asignarTodosValor"
@@ -598,7 +675,10 @@ onMounted(() => u.cargar());
           </div>
 
           <!-- Cards mobile -->
-          <div v-if="u.estado.items.length" class="flex flex-col gap-2 md:hidden">
+          <div
+            v-if="u.estado.items.length"
+            class="flex flex-col gap-2 md:hidden"
+          >
             <div
               v-for="item in u.estado.items"
               :key="item.id"
@@ -607,11 +687,18 @@ onMounted(() => u.cargar());
               <div class="flex items-center justify-between gap-2">
                 <div class="min-w-0">
                   <span class="font-medium">{{ item.nombre }}</span>
-                  <span v-if="u.multigrupo" class="block text-xs text-surface-400">
+                  <span
+                    v-if="u.multigrupo"
+                    class="block text-xs text-surface-400"
+                  >
                     {{ u.grupoLabel(item.grupoUid) }}
                   </span>
                 </div>
-                <Tag :value="`Piso ${item.piso ?? '—'}`" severity="secondary" size="small" />
+                <Tag
+                  :value="`Piso ${item.piso ?? '—'}`"
+                  severity="secondary"
+                  size="small"
+                />
               </div>
               <div class="mt-2 flex flex-col gap-1">
                 <Select
@@ -633,7 +720,11 @@ onMounted(() => u.cargar());
         <!-- Fase 5: Revisar y guardar -->
         <div v-else class="mt-4 flex flex-col gap-3">
           <div class="flex flex-wrap items-center gap-2">
-            <Tag :value="`${u.estado.items.length} ${etiquetas.plural}`" severity="info" size="small" />
+            <Tag
+              :value="`${u.estado.items.length} ${etiquetas.plural}`"
+              severity="info"
+              size="small"
+            />
             <Button
               v-if="!editando"
               label="Editar"
@@ -643,9 +734,27 @@ onMounted(() => u.cargar());
               @click="entrarEdicion"
             />
             <template v-else>
-              <Button label="Listo" icon="pi pi-check" variant="text" size="small" @click="salirEdicion" />
-              <Button label="Cancelar" variant="text" severity="secondary" size="small" @click="cancelarEdicion" />
-              <Button label="Agregar fila" icon="pi pi-plus" variant="text" size="small" @click="u.agregarFila" />
+              <Button
+                label="Listo"
+                icon="pi pi-check"
+                variant="text"
+                size="small"
+                @click="salirEdicion"
+              />
+              <Button
+                label="Cancelar"
+                variant="text"
+                severity="secondary"
+                size="small"
+                @click="cancelarEdicion"
+              />
+              <Button
+                label="Agregar fila"
+                icon="pi pi-plus"
+                variant="text"
+                size="small"
+                @click="u.agregarFila"
+              />
             </template>
           </div>
 
@@ -655,17 +764,19 @@ onMounted(() => u.cargar());
             :closable="false"
           >
             <div class="flex flex-col gap-1">
-              <span>No se pudieron guardar los siguientes {{ etiquetas.plural }}:</span>
-              <span v-for="(e, i) in erroresResumen" :key="i" class="text-sm">{{ e }}</span>
+              <span
+                >No se pudieron guardar los siguientes
+                {{ etiquetas.plural }}:</span
+              >
+              <span v-for="(e, i) in erroresResumen" :key="i" class="text-sm">{{
+                e
+              }}</span>
             </div>
           </Message>
 
-          <Message
-            v-if="u.envelopeExcedido"
-            severity="warn"
-            :closable="false"
-            >Atención: estos {{ etiquetas.plural }} podrían superar el límite del
-            plan contratado ({{ u.capacidad.planUnidadLimit }} entidades en
+          <Message v-if="u.envelopeExcedido" severity="warn" :closable="false"
+            >Atención: estos {{ etiquetas.plural }} podrían superar el límite
+            del plan contratado ({{ u.capacidad.planUnidadLimit }} entidades en
             total). El backend validará el cupo al guardar.</Message
           >
 
@@ -704,7 +815,10 @@ onMounted(() => u.cargar());
                   <td>
                     <template v-if="editando && !item.marcadoEliminar">
                       <div class="flex items-center gap-1">
-                        <span class="text-surface-400 font-medium whitespace-nowrap">{{ u.prefijoDe(item.grupoUid) }}</span>
+                        <span
+                          class="text-surface-400 font-medium whitespace-nowrap"
+                          >{{ u.prefijoDe(item.grupoUid) }}</span
+                        >
                         <InputText
                           :model-value="u.sufijoDe(item)"
                           size="small"
@@ -720,8 +834,17 @@ onMounted(() => u.cargar());
                       </div>
                     </template>
                     <template v-else>
-                      <span :class="item.marcadoEliminar ? 'line-through' : ''">{{ item.nombre }}</span>
-                      <Tag v-if="item.esNuevo" value="Nuevo" severity="success" size="small" class="ml-2" />
+                      <span
+                        :class="item.marcadoEliminar ? 'line-through' : ''"
+                        >{{ item.nombre }}</span
+                      >
+                      <Tag
+                        v-if="item.esNuevo"
+                        value="Nuevo"
+                        severity="success"
+                        size="small"
+                        class="ml-2"
+                      />
                     </template>
                   </td>
                   <td>
@@ -748,7 +871,13 @@ onMounted(() => u.cargar());
                     <span v-else>{{ pisoLabel(item) }}</span>
                   </td>
                   <td>
-                    <template v-if="editando && !item.marcadoEliminar && u.sectoresOpciones.length">
+                    <template
+                      v-if="
+                        editando &&
+                        !item.marcadoEliminar &&
+                        u.sectoresOpciones.length
+                      "
+                    >
                       <Select
                         v-model="item.sectorRef"
                         :options="opcionesSectorFila"
@@ -769,7 +898,12 @@ onMounted(() => u.cargar());
                       size="small"
                       :title="item.error"
                     />
-                    <Tag v-else-if="item.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
+                    <Tag
+                      v-else-if="item.marcadoEliminar"
+                      value="Eliminado"
+                      severity="danger"
+                      size="small"
+                    />
                     <span v-else class="text-green-500 text-sm">Listo</span>
                   </td>
                   <td v-if="editando">
@@ -798,7 +932,10 @@ onMounted(() => u.cargar());
                 <div class="min-w-0 flex-1">
                   <template v-if="editando && !item.marcadoEliminar">
                     <div class="flex items-center gap-1">
-                      <span class="text-surface-400 font-medium whitespace-nowrap">{{ u.prefijoDe(item.grupoUid) }}</span>
+                      <span
+                        class="text-surface-400 font-medium whitespace-nowrap"
+                        >{{ u.prefijoDe(item.grupoUid) }}</span
+                      >
                       <InputText
                         :model-value="u.sufijoDe(item)"
                         size="small"
@@ -814,15 +951,33 @@ onMounted(() => u.cargar());
                     </div>
                   </template>
                   <template v-else>
-                    <span class="font-medium" :class="item.marcadoEliminar ? 'line-through' : ''">{{ item.nombre }}</span>
-                    <Tag v-if="item.esNuevo" value="Nuevo" severity="success" size="small" class="ml-2" />
+                    <span
+                      class="font-medium"
+                      :class="item.marcadoEliminar ? 'line-through' : ''"
+                      >{{ item.nombre }}</span
+                    >
+                    <Tag
+                      v-if="item.esNuevo"
+                      value="Nuevo"
+                      severity="success"
+                      size="small"
+                      class="ml-2"
+                    />
                   </template>
-                  <span v-if="u.multigrupo && !(editando && !item.marcadoEliminar)" class="block text-xs text-surface-400">
+                  <span
+                    v-if="u.multigrupo && !(editando && !item.marcadoEliminar)"
+                    class="block text-xs text-surface-400"
+                  >
                     {{ u.grupoLabel(item.grupoUid) }}
                   </span>
                 </div>
                 <div class="flex items-center gap-1">
-                  <Tag v-if="!editando" :value="`Piso ${item.piso ?? '—'}`" severity="secondary" size="small" />
+                  <Tag
+                    v-if="!editando"
+                    :value="`Piso ${item.piso ?? '—'}`"
+                    severity="secondary"
+                    size="small"
+                  />
                   <Button
                     v-if="editando"
                     icon="pi pi-trash"
@@ -881,21 +1036,37 @@ onMounted(() => u.cargar());
                     />
                   </template>
                 </template>
-                <span v-else class="text-sm text-surface-400">{{ sectorLabel(item.sectorRef) }}</span>
-                <Tag v-if="item.error" :value="item.error" severity="danger" size="small" />
-                <Tag v-else-if="item.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
+                <span v-else class="text-sm text-surface-400">{{
+                  sectorLabel(item.sectorRef)
+                }}</span>
+                <Tag
+                  v-if="item.error"
+                  :value="item.error"
+                  severity="danger"
+                  size="small"
+                />
+                <Tag
+                  v-else-if="item.marcadoEliminar"
+                  value="Eliminado"
+                  severity="danger"
+                  size="small"
+                />
               </div>
             </div>
           </div>
 
           <p v-if="u.resultado" class="text-sm text-green-500 mt-2 m-0">
-            {{ mensajeResultado }}<template v-if="!u.tieneErrores"> Paso completado.</template>
+            {{ mensajeResultado
+            }}<template v-if="!u.tieneErrores"> Paso completado.</template>
           </p>
         </div>
 
         <!-- Navegación (oculta durante el modo edición: solo la toolbar de
              edición Listo/Cancelar/Agregar fila controla la fase 5) -->
-        <div v-if="!editando" class="mt-4 flex justify-between items-center gap-2">
+        <div
+          v-if="!editando"
+          class="mt-4 flex justify-between items-center gap-2"
+        >
           <Button
             v-if="u.estado.paso > 1 && !u.modoReedicion"
             label="Anterior"

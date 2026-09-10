@@ -213,7 +213,8 @@ export default definePreset(Aura, {
         primary: {
           color: "{primary.textPrincipal}",
           borderColor: "{primary.border}",
-          hoverBackground: "color-mix(in srgb, {primary.color} 8%, transparent)",
+          hoverBackground:
+            "color-mix(in srgb, {primary.color} 8%, transparent)",
           activeBackground:
             "color-mix(in srgb, {primary.color} 16%, transparent)",
         },
@@ -229,8 +230,7 @@ export default definePreset(Aura, {
       text: {
         primary: {
           color: "{primary.400}",
-          hoverBackground:
-            "color-mix(in srgb, {primary.400} 12%, transparent)",
+          hoverBackground: "color-mix(in srgb, {primary.400} 12%, transparent)",
           activeBackground:
             "color-mix(in srgb, {primary.400} 20%, transparent)",
         },
@@ -372,7 +372,8 @@ export default definePreset(Aura, {
         selectedFocusColor: "{primary.textResaltado}",
       },
       chip: {
-        background: "color-mix(in srgb, {primary.textSecondary} 14%, transparent)",
+        background:
+          "color-mix(in srgb, {primary.textSecondary} 14%, transparent)",
         color: "{primary.textPrincipal}",
       },
       emptyMessage: {
