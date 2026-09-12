@@ -296,10 +296,10 @@ onMounted(() => planilla.cargar());
               </ul>
             </div>
 
-            <!-- Preview fiel: misma tabla que fase 5 / unidades (todas las columnas) -->
+            <!-- Preview fiel: misma tabla que fase 5 / unidades (todas las columnas), cabecera sticky -->
             <div
               v-if="hasPreviewFiel"
-              class="planilla max-h-[420px] border border-border"
+              class="planilla max-h-[420px] overflow-auto border border-border"
             >
               <table>
                 <thead>
