@@ -152,6 +152,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   const enviando = ref(false);
   const resultado = ref(null);
   const previewData = ref(null);
+  const archivoNombre = ref(null);
   const borradorRestaurado = ref(false);
   const modoReedicion = ref(false);
 
@@ -759,6 +760,53 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     }
   }
 
+  // Fase 1b: POST /importaciones/preview multipart — csv/xlsx (backend parsea).
+  // Modelo staged Microsoft/Meta: upload → preview validado → review → commit.
+  // Reemplaza el preview anterior si existe.
+  async function previewArchivo(archivo) {
+    if (!cid) {
+      error.value = "No se pudo determinar el condominio";
+      return;
+    }
+    if (!archivo) return;
+    const nombre = archivo.name || "";
+    const ext = nombre.toLowerCase().split(".").pop();
+    if (!["csv", "xlsx"].includes(ext)) {
+      error.value = "Formato no soportado. Usa .csv o .xlsx";
+      return;
+    }
+    enviando.value = true;
+    error.value = null;
+    archivoNombre.value = nombre;
+    try {
+      const res = await importacionService.previewArchivo(cid, archivo);
+      previewData.value = res.data;
+      resultado.value = null;
+    } catch (e) {
+      console.error("Error al previsualizar archivo", e);
+      const msg =
+        e?.response?.data?.message ||
+        e?.response?.data?.error ||
+        e?.message ||
+        "No se pudo previsualizar el archivo";
+      // Mensaje específico para límite de filas / archivo vacío
+      if (e?.response?.status === 413) {
+        error.value = "El archivo es demasiado grande";
+      } else {
+        error.value = msg;
+      }
+      previewData.value = null;
+    } finally {
+      enviando.value = false;
+    }
+  }
+
+  function descartarPreviewArchivo() {
+    previewData.value = null;
+    archivoNombre.value = null;
+    error.value = null;
+  }
+
   // Fase 2: POST /importaciones/{importacionId}/ejecutar — aplica las filas OK.
   async function ejecutar() {
     if (!previewData.value?.importacionId) return;
@@ -768,7 +816,17 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const res = await importacionService.ejecutar(cid, previewData.value.importacionId);
       resultado.value = res.data;
       previewData.value = null;
+      archivoNombre.value = null;
       descartarBorrador();
+      // Tras importar desde archivo, refrescar datos existentes para reedición
+      // (reconstruir filas desde vínculos reales).
+      try {
+        await cargarExistentes();
+        filas.value = [];
+        await reconstruirFilas();
+      } catch (e) {
+        console.error("Error al recargar tras importar archivo", e);
+      }
     } catch (e) {
       console.error("Error al ejecutar importación", e);
       error.value = e?.response?.data?.message || "No se pudo ejecutar la importación";
@@ -894,6 +952,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     enviando,
     resultado,
     previewData,
+    archivoNombre,
     borradorRestaurado,
     modoReedicion,
     capacidad,
@@ -927,6 +986,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     descartarBorrador,
     buildPayload,
     preview,
+    previewArchivo,
+    descartarPreviewArchivo,
     ejecutar,
     enviar,
     descargarPlantilla,
