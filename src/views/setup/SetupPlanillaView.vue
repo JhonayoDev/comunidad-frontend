@@ -15,13 +15,19 @@ const planilla = usePlanillaDatos({ cargarExistentes: true });
 const mostrarCargaArchivo = ref(false);
 
 const puedeMostrarDropzone = computed(
-  () => !planilla.modoReedicion || mostrarCargaArchivo.value || planilla.previewData,
+  () =>
+    !planilla.modoReedicion ||
+    mostrarCargaArchivo.value ||
+    planilla.previewData,
 );
 
 const previewOmitidas = computed(() => {
   if (!planilla.previewData) return 0;
   const d = planilla.previewData;
-  return Math.max(0, (d.totalFilas ?? 0) - (d.filasOk ?? 0) - (d.filasError ?? 0));
+  return Math.max(
+    0,
+    (d.totalFilas ?? 0) - (d.filasOk ?? 0) - (d.filasError ?? 0),
+  );
 });
 
 const previewErrores = computed(() => {
@@ -90,8 +96,8 @@ onMounted(() => planilla.cargar());
         >
           La carga masiva por archivo está disponible solo en la configuración
           inicial. El condominio ya tiene integrantes registrados — usa
-          <strong>Editar</strong> en la tabla para cambios puntuales. Si necesitas
-          reimportar, habilita la carga con el botón.
+          <strong>Editar</strong> en la tabla para cambios puntuales. Si
+          necesitas reimportar, habilita la carga con el botón.
         </Message>
 
         <div
@@ -109,7 +115,6 @@ onMounted(() => planilla.cargar());
             label="Descargar plantilla"
             icon="pi pi-download"
             size="small"
-            variant="text"
             @click="descargarPlantilla"
           />
         </div>
@@ -136,7 +141,6 @@ onMounted(() => planilla.cargar());
             <Button
               label="Descargar plantilla"
               icon="pi pi-download"
-              variant="text"
               size="small"
               :disabled="planilla.enviando"
               @click="descargarPlantilla"
@@ -152,14 +156,20 @@ onMounted(() => planilla.cargar());
           </div>
           <p class="text-xs text-text-muted m-0">
             Formato esperado: columnas
-            <code>unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1..3;est1..3;bodega1..3</code>.
-            Descarga la plantilla para evitar errores de formato. Máx 1000 filas.
-            Re-subir reemplaza el preview anterior.
+            <code
+              >unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1..3;est1..3;bodega1..3</code
+            >. Descarga la plantilla para evitar errores de formato. Máx 1000
+            filas. Re-subir reemplaza el preview anterior.
           </p>
         </template>
 
-        <!-- Error de archivo -->
-        <Message v-if="planilla.error && planilla.archivoNombre" severity="error" :closable="false" class="m-0">
+        <!-- Error de archivo / plantilla -->
+        <Message
+          v-if="planilla.error"
+          severity="error"
+          :closable="false"
+          class="m-0"
+        >
           {{ planilla.error }}
         </Message>
 
@@ -179,8 +189,16 @@ onMounted(() => planilla.cargar());
           </template>
           <template #content>
             <div class="flex flex-wrap gap-2 mb-3">
-              <Tag :value="`${planilla.previewData.totalFilas} filas`" severity="secondary" size="small" />
-              <Tag :value="`${planilla.previewData.filasOk} OK`" severity="success" size="small" />
+              <Tag
+                :value="`${planilla.previewData.totalFilas} filas`"
+                severity="secondary"
+                size="small"
+              />
+              <Tag
+                :value="`${planilla.previewData.filasOk} OK`"
+                severity="success"
+                size="small"
+              />
               <Tag
                 v-if="planilla.previewData.filasError"
                 :value="`${planilla.previewData.filasError} con error`"
@@ -201,15 +219,19 @@ onMounted(() => planilla.cargar());
               :closable="false"
               class="m-0 mb-3"
             >
-              Faltan columnas requeridas: {{ planilla.previewData.encabezadosFaltantes.join(", ") }}.
+              Faltan columnas requeridas:
+              {{ planilla.previewData.encabezadosFaltantes.join(", ") }}.
               Descarga la plantilla y completa los encabezados.
             </Message>
 
             <div v-if="previewErrores.length" class="mb-3">
-              <p class="text-sm font-semibold m-0 mb-1">Filas con error (corrige el archivo y vuelve a cargarlo):</p>
+              <p class="text-sm font-semibold m-0 mb-1">
+                Filas con error (corrige el archivo y vuelve a cargarlo):
+              </p>
               <ul class="m-0 pl-4 text-sm text-danger max-h-40 overflow-auto">
                 <li v-for="(f, i) in previewErrores" :key="i">
-                  Fila {{ f.numeroFila }} ({{ f.unidad || "—" }} · {{ f.personaNombre || f.email || "—" }}):
+                  Fila {{ f.numeroFila }} ({{ f.unidad || "—" }} ·
+                  {{ f.personaNombre || f.email || "—" }}):
                   {{ (f.errores || []).join("; ") }}
                 </li>
               </ul>
@@ -249,7 +271,13 @@ onMounted(() => planilla.cargar());
                     <td class="p-2">
                       <Tag
                         :value="f.estado"
-                        :severity="f.estado === 'OK' ? 'success' : f.estado === 'ERROR' ? 'danger' : 'warn'"
+                        :severity="
+                          f.estado === 'OK'
+                            ? 'success'
+                            : f.estado === 'ERROR'
+                              ? 'danger'
+                              : 'warn'
+                        "
                         size="small"
                       />
                     </td>
@@ -282,7 +310,11 @@ onMounted(() => planilla.cargar());
       </div>
 
       <div class="mt-3 flex flex-wrap gap-2">
-        <Tag :value="`${planilla.filas.length} filas`" severity="secondary" size="small" />
+        <Tag
+          :value="`${planilla.filas.length} filas`"
+          severity="secondary"
+          size="small"
+        />
         <Tag
           :value="`${planilla.filasValidas.length} válidas`"
           severity="success"
@@ -298,10 +330,15 @@ onMounted(() => planilla.cargar());
 
       <!-- Tabla manual — oculta mientras hay preview staged para evitar confusión -->
       <div v-if="!planilla.previewData" class="mt-3">
-        <PlanillaDatos :planilla="planilla" solo-unidades-existentes @guardar="guardar" />
+        <PlanillaDatos
+          :planilla="planilla"
+          solo-unidades-existentes
+          @guardar="guardar"
+        />
       </div>
       <p v-else class="text-xs text-text-muted mt-2 m-0">
-        Revisa el preview del archivo arriba. Descártalo para volver a la edición manual.
+        Revisa el preview del archivo arriba. Descártalo para volver a la
+        edición manual.
       </p>
 
       <div v-if="!planilla.previewData" class="mt-4 flex justify-end">
@@ -315,18 +352,25 @@ onMounted(() => planilla.cargar());
       </div>
 
       <p v-if="planilla.resultado" class="text-sm text-green-500 mt-2 m-0">
-        Planilla guardada: {{ planilla.resultado.filasOk ?? planilla.resultado.creadas }} filas
+        Planilla guardada:
+        {{ planilla.resultado.filasOk ?? planilla.resultado.creadas }} filas
         nuevas · {{ planilla.resultado.actualizadas }} actualizadas ·
         {{ planilla.resultado.eliminadas }} eliminadas ·
         {{ planilla.resultado.personasCreadas ?? 0 }} personas ·
         {{ planilla.resultado.vinculosCreados ?? 0 }} vínculos ·
         {{ planilla.resultado.vehiculosCreados ?? 0 }} vehículos ·
-        {{ planilla.resultado.estacionamientosVinculados ?? 0 }} estacionamientos ·
-        {{ planilla.resultado.bodegasVinculadas ?? 0 }} bodegas. Paso completado.
+        {{ planilla.resultado.estacionamientosVinculados ?? 0 }}
+        estacionamientos ·
+        {{ planilla.resultado.bodegasVinculadas ?? 0 }} bodegas. Paso
+        completado.
       </p>
-      <p v-else-if="planilla.previewData" class="text-sm text-amber-500 mt-2 m-0">
-        La previsualización detectó {{ planilla.previewData.filasError }} fila(s) con
-        error. Corrige el archivo y vuelve a cargarlo, o descártalo para editar manualmente.
+      <p
+        v-else-if="planilla.previewData"
+        class="text-sm text-amber-500 mt-2 m-0"
+      >
+        La previsualización detectó
+        {{ planilla.previewData.filasError }} fila(s) con error. Corrige el
+        archivo y vuelve a cargarlo, o descártalo para editar manualmente.
       </p>
     </template>
   </Card>
