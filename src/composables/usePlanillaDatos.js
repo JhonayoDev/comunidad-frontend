@@ -762,7 +762,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
 
   // Fase 1b: POST /importaciones/preview multipart — csv/xlsx (backend parsea).
   // Modelo staged Microsoft/Meta: upload → preview validado → review → commit.
-  // Reemplaza el preview anterior si existe.
+  // 403 estricto: no bypass — informa falta de permiso.
   async function previewArchivo(archivo) {
     if (!cid) {
       error.value = "No se pudo determinar el condominio";
@@ -787,7 +787,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const status = e?.response?.status;
       if (status === 403) {
         error.value =
-          "No tienes permiso para importar (IMPORTACION_DATOS). Verifica tu rol/cargo (ADMINISTRADOR/PRESIDENTE/SECRETARIO) o vuelve a iniciar sesión — el backend cachea permisos 45s (V67 no dio el permiso a SUPER_ADMIN).";
+          "No tienes permiso para importar (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso en tu rol/cargo. Si eres SUPER_ADMIN, falta la migración V68 (V67 omitió el permiso para SUPER_ADMIN/SOPORTE).";
         previewData.value = null;
         return;
       }
@@ -796,7 +796,6 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         e?.response?.data?.error ||
         e?.message ||
         "No se pudo previsualizar el archivo";
-      // Mensaje específico para límite de filas / archivo vacío
       if (status === 413) {
         error.value = "El archivo es demasiado grande";
       } else {
@@ -921,8 +920,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   }
 
   // GET /importaciones/plantilla — descarga la plantilla CSV del backend.
-  // Fallback 403: genera plantilla local (mismo contrato que PlanillaParser.plantilla())
-  // para no bloquear al SUPER_ADMIN / cache 45s sin IMPORTACION_DATOS (V67).
+  // 403 estricto: no bypass — avisa que falta permiso y que contacte al SUPER_ADMIN.
   async function descargarPlantilla() {
     try {
       const blob = await importacionService.plantilla(cid);
@@ -933,37 +931,11 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
+      console.error("Error al descargar plantilla", e);
       const status = e?.response?.status;
       if (status === 403) {
-        console.error("Plantilla 403 — fallback local (IMPORTACION_DATOS)", e);
-        try {
-          // Fallback local (sin pasar por backend) — mismo encabezado que V67
-          const { COLUMNAS_DEFAULT, clavesColumnas } = await import(
-            "@/data/planillaColumnas"
-          );
-          const encabezado = clavesColumnas(COLUMNAS_DEFAULT).join(";");
-          const filas = [
-            "1;CASA;Sector A;Francisca Morales Diaz;francisca.morales@test.com;18.901.234-5;+56978901234;PROPIETARIO;SI;SI;SI;ABCD01;AUTO;Toyota;Corolla;Blanco;E-1;;;;;;;;;;",
-            "1;CASA;Sector A;Camila Reyes Vidal;camila.reyes@test.com;30.123.456-7;+56990123457;RESIDENTE_ADICIONAL;SI;SI;NO;;;;;;;;;;;;",
-          ];
-          const csv = [encabezado, ...filas].join("\n");
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "plantilla_integrantes.csv";
-          a.click();
-          URL.revokeObjectURL(url);
-          error.value = null;
-          return;
-        } catch (fe) {
-          console.error("Error en fallback plantilla local", fe);
-        }
-      }
-      console.error("Error al descargar plantilla", e);
-      if (status === 403) {
         error.value =
-          "No tienes permiso para descargar la plantilla (IMPORTACION_DATOS). Verifica tu rol/cargo o vuelve a iniciar sesión.";
+          "No tienes permiso para descargar la plantilla (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso. Si eres SUPER_ADMIN, falta la migración V68 (ver SOLICITUD_FIX_PERMISO_IMPORTACION).";
       } else {
         error.value = e?.response?.data?.message || "No se pudo descargar la plantilla";
       }

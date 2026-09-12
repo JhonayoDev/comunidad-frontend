@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useAuthStore } from "@/stores/authStore";
 import { usePlanillaDatos } from "@/composables/usePlanillaDatos";
 import PlanillaDatos from "@/components/planilla/PlanillaDatos.vue";
 
@@ -10,7 +11,13 @@ import Message from "primevue/message";
 
 const emit = defineEmits(["actualizado"]);
 
+const auth = useAuthStore();
 const planilla = usePlanillaDatos({ cargarExistentes: true });
+
+const tienePermisoImportacion = computed(() =>
+  auth.permisos?.includes("IMPORTACION_DATOS"),
+);
+const sinPermiso = computed(() => !tienePermisoImportacion.value);
 
 const mostrarCargaArchivo = ref(false);
 
@@ -85,6 +92,19 @@ onMounted(() => planilla.cargar());
         persona. Puedes cargar un archivo o completar la tabla manualmente.
       </p>
 
+      <!-- Aviso 403 estricto: no bypass, contactar SUPER_ADMIN -->
+      <Message
+        v-if="sinPermiso"
+        severity="warn"
+        :closable="false"
+        class="m-0 mt-4"
+      >
+        No tienes permiso para importar planilla (<code>IMPORTACION_DATOS</code>).
+        Tu rol es <strong>{{ auth.condominioActualRol || auth.userRole || "—" }}</strong
+        ><template v-if="auth.condominioActualCargo">, cargo <strong>{{ auth.condominioActualCargo }}</strong></template>.
+        Contacta al <strong>SUPER_ADMIN</strong> para que te asigne el permiso en tu rol/cargo. Solo ADMINISTRADOR (rol) y cargos ADMINISTRADOR/PRESIDENTE/SECRETARIO pueden importar.
+      </Message>
+
       <!-- Bloque carga desde archivo — modelo staged Microsoft/Meta -->
       <div class="mt-4 flex flex-col gap-3">
         <!-- Estado reedición: dropzone oculto por defecto -->
@@ -109,12 +129,16 @@ onMounted(() => planilla.cargar());
             icon="pi pi-upload"
             size="small"
             variant="outlined"
+            :disabled="sinPermiso"
+            :title="sinPermiso ? 'Sin permiso IMPORTACION_DATOS' : ''"
             @click="mostrarCargaArchivo = true"
           />
           <Button
             label="Descargar plantilla"
             icon="pi pi-download"
             size="small"
+            :disabled="sinPermiso"
+            :title="sinPermiso ? 'Sin permiso IMPORTACION_DATOS' : ''"
             @click="descargarPlantilla"
           />
         </div>
@@ -123,8 +147,13 @@ onMounted(() => planilla.cargar());
         <template v-if="puedeMostrarDropzone">
           <div class="flex flex-col sm:flex-row gap-2">
             <label
-              class="inline-flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-border border-round cursor-pointer bg-surface/60 hover:bg-background/95 transition-colors text-sm flex-1 sm:flex-none"
-              :class="planilla.enviando ? 'opacity-60 pointer-events-none' : ''"
+              class="inline-flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-border border-round text-sm flex-1 sm:flex-none"
+              :class="[
+                sinPermiso || planilla.enviando
+                  ? 'opacity-60 pointer-events-none bg-surface/40'
+                  : 'cursor-pointer bg-surface/60 hover:bg-background/95',
+              ]"
+              :title="sinPermiso ? 'Sin permiso IMPORTACION_DATOS' : ''"
             >
               <i class="pi pi-file-arrow-up"></i>
               <span class="truncate">{{
@@ -134,7 +163,7 @@ onMounted(() => planilla.cargar());
                 type="file"
                 accept=".csv,.xlsx"
                 class="hidden"
-                :disabled="planilla.enviando"
+                :disabled="sinPermiso || planilla.enviando"
                 @change="onArchivoSeleccionado"
               />
             </label>
@@ -142,7 +171,8 @@ onMounted(() => planilla.cargar());
               label="Descargar plantilla"
               icon="pi pi-download"
               size="small"
-              :disabled="planilla.enviando"
+              :disabled="sinPermiso || planilla.enviando"
+              :title="sinPermiso ? 'Sin permiso IMPORTACION_DATOS' : ''"
               @click="descargarPlantilla"
             />
             <Button
@@ -346,7 +376,8 @@ onMounted(() => planilla.cargar());
           label="Guardar planilla"
           icon="pi pi-save"
           :loading="planilla.enviando"
-          :disabled="!planilla.hayCambios"
+          :disabled="sinPermiso || !planilla.hayCambios"
+          :title="sinPermiso ? 'Sin permiso IMPORTACION_DATOS' : ''"
           @click="guardar"
         />
       </div>
