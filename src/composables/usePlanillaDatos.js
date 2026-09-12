@@ -12,10 +12,13 @@ import {
   TIPOS_UNIDAD,
   TIPOS_VINCULO,
   TIPOS_VEHICULO,
+  COLUMNAS_DEFAULT,
+  clavesColumnas,
   filasCrudasADinamicas,
   esFilaDinamica,
   esEstacionamientoVisita,
 } from "@/data/planillaColumnas";
+import { parsearCsv, normalizarFilas } from "@/utils/csvParser";
 import { rutValido, telefonoChileValido } from "@/utils/validadoresChile";
 
 const CLAVE_BORRADOR = (cid) => `comunidad:planilla-borrador:${cid}`;
@@ -153,6 +156,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   const resultado = ref(null);
   const previewData = ref(null);
   const archivoNombre = ref(null);
+  const previewFilasRaw = ref(null); // filas completas para preview fiel (csv parse local, meta-like)
   const borradorRestaurado = ref(false);
   const modoReedicion = ref(false);
 
@@ -763,6 +767,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   // Fase 1b: POST /importaciones/preview multipart — csv/xlsx (backend parsea).
   // Modelo staged Microsoft/Meta: upload → preview validado → review → commit.
   // 403 estricto: no bypass — informa falta de permiso.
+  // Para preview fiel (meta-like/unidades fase 5), parseamos csv local y guardamos
+  // filas completas en previewFilasRaw para renderizar todas las columnas.
   async function previewArchivo(archivo) {
     if (!cid) {
       error.value = "No se pudo determinar el condominio";
@@ -778,6 +784,24 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     enviando.value = true;
     error.value = null;
     archivoNombre.value = nombre;
+    previewFilasRaw.value = null;
+    // Parse local fiel para csv (31 cols) — permite preview completo sin esperar BE
+    if (ext === "csv") {
+      try {
+        const texto = await archivo.text();
+        const { encabezados, filas: filasCrudas } = parsearCsv(texto);
+        // Validación mínima: si encabezados vacíos, no poblar
+        if (encabezados.length) {
+          const filasNorm = normalizarFilas(encabezados, filasCrudas, COLUMNAS_DEFAULT);
+          const dinamicas = filasCrudasADinamicas(filasNorm);
+          // Reemplazo fiel: mismo orden que backend (sin filtrar vacías)
+          previewFilasRaw.value = dinamicas;
+        }
+      } catch (pe) {
+        console.error("Error parseando csv local para preview fiel", pe);
+        // No bloquea: seguirá el preview de backend con tabla limitada
+      }
+    }
     try {
       const res = await importacionService.previewArchivo(cid, archivo);
       previewData.value = res.data;
@@ -789,6 +813,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         error.value =
           "No tienes permiso para importar (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso en tu rol/cargo. Si eres SUPER_ADMIN, falta la migración V68 (V67 omitió el permiso para SUPER_ADMIN/SOPORTE).";
         previewData.value = null;
+        // Mantener previewFilasRaw para que el usuario vea su archivo aunque falle permiso
         return;
       }
       const msg =
@@ -810,6 +835,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   function descartarPreviewArchivo() {
     previewData.value = null;
     archivoNombre.value = null;
+    previewFilasRaw.value = null;
     error.value = null;
   }
 
@@ -823,6 +849,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       resultado.value = res.data;
       previewData.value = null;
       archivoNombre.value = null;
+      previewFilasRaw.value = null;
       descartarBorrador();
       // Tras importar desde archivo, refrescar datos existentes para reedición
       // (reconstruir filas desde vínculos reales).
@@ -966,6 +993,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     resultado,
     previewData,
     archivoNombre,
+    previewFilasRaw,
     borradorRestaurado,
     modoReedicion,
     capacidad,

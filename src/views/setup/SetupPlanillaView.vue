@@ -42,6 +42,35 @@ const previewErrores = computed(() => {
   return planilla.previewData.filas.filter((f) => f.estado === "ERROR");
 });
 
+const hasPreviewFiel = computed(() => {
+  const raw = planilla.previewFilasRaw;
+  const filas = planilla.previewData?.filas;
+  return Array.isArray(raw) && raw.length > 0 && Array.isArray(filas) && filas.length === raw.length;
+});
+
+const estadoPorFila = computed(() => {
+  const map = new Map();
+  (planilla.previewData?.filas || []).forEach((f) => {
+    map.set(f.numeroFila, f);
+  });
+  return map;
+});
+
+function vehiculosResumen(f) {
+  return (f.vehiculos || [])
+    .map((v) => {
+      const p = (v.patente || "").trim();
+      const est = (v.estacionamiento || "").trim();
+      return est ? `${p} · ${est}` : p;
+    })
+    .filter(Boolean)
+    .join(", ");
+}
+
+function bodegasResumen(f) {
+  return (f.bodegas || []).map((b) => (typeof b === "string" ? b : b.nombre || "").trim()).filter(Boolean).join(", ");
+}
+
 async function guardar() {
   await planilla.enviar();
   if (planilla.resultado) {
@@ -267,44 +296,71 @@ onMounted(() => planilla.cargar());
               </ul>
             </div>
 
+            <!-- Preview fiel: misma tabla que fase 5 / unidades (todas las columnas) -->
             <div
-              v-if="(planilla.previewData.filas || []).length"
-              class="max-h-64 overflow-auto border border-border border-round"
+              v-if="hasPreviewFiel"
+              class="planilla max-h-[420px] border border-border"
             >
-              <table class="w-full text-sm">
-                <thead class="sticky top-0 bg-surface">
+              <table>
+                <thead>
                   <tr>
-                    <th class="text-left p-2">#</th>
-                    <th class="text-left p-2">Casa</th>
-                    <th class="text-left p-2">Nombre</th>
-                    <th class="text-left p-2">Email</th>
-                    <th class="text-left p-2">Vínculo</th>
-                    <th class="text-left p-2">Estado</th>
+                    <th>#</th>
+                    <th>Casa</th>
+                    <th>Tipo</th>
+                    <th>Sector</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>RUT</th>
+                    <th>Teléfono</th>
+                    <th>Vínculo</th>
+                    <th class="text-center">Ocup.</th>
+                    <th class="text-center">Notif.</th>
+                    <th class="text-center">Resp.</th>
+                    <th>Vehículos</th>
+                    <th>Bodegas</th>
+                    <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr
-                    v-for="f in planilla.previewData.filas"
-                    :key="f.numeroFila"
-                    class="border-t border-border"
+                    v-for="(f, idx) in planilla.previewFilasRaw"
+                    :key="idx"
                     :class="{
-                      'preview-ok': f.estado === 'OK',
-                      'preview-error': f.estado === 'ERROR',
-                      'preview-omitida': f.estado === 'OMITIDA',
+                      'preview-ok': estadoPorFila.get(idx + 1)?.estado === 'OK',
+                      'preview-error': estadoPorFila.get(idx + 1)?.estado === 'ERROR',
+                      'preview-omitida': estadoPorFila.get(idx + 1)?.estado === 'OMITIDA',
                     }"
                   >
-                    <td class="p-2">{{ f.numeroFila }}</td>
-                    <td class="p-2">{{ f.unidad || "—" }}</td>
-                    <td class="p-2">{{ f.personaNombre || "—" }}</td>
-                    <td class="p-2 truncate max-w-32">{{ f.email || "—" }}</td>
-                    <td class="p-2">{{ f.tipoVinculo || "—" }}</td>
-                    <td class="p-2">
+                    <td>{{ idx + 1 }}</td>
+                    <td class="whitespace-nowrap">{{ f.unidad || "—" }}</td>
+                    <td><Tag :value="f.tipo_unidad || '—'" severity="secondary" size="small" /></td>
+                    <td>{{ f.sector || "—" }}</td>
+                    <td class="min-w-36">{{ f.nombre || "—" }}</td>
+                    <td class="min-w-40">{{ f.email || "—" }}</td>
+                    <td>{{ f.rut || "—" }}</td>
+                    <td>{{ f.telefono || "—" }}</td>
+                    <td><Tag v-if="f.tipo_vinculo" :value="f.tipo_vinculo" :severity="f.tipo_vinculo === 'PROPIETARIO' ? 'info' : 'secondary'" size="small" /><span v-else>—</span></td>
+                    <td class="text-center">{{ f.es_ocupante || "—" }}</td>
+                    <td class="text-center">{{ f.recibe_notificaciones || "—" }}</td>
+                    <td class="text-center">{{ f.es_responsable || "—" }}</td>
+                    <td class="min-w-48 text-sm">
+                      <span v-if="vehiculosResumen(f)">{{ vehiculosResumen(f) }}</span>
+                      <span v-else class="text-surface-400">—</span>
+                      <ul
+                        v-if="estadoPorFila.get(idx + 1)?.errores?.length"
+                        class="m-0 mt-1 pl-3 text-xs text-danger text-left"
+                      >
+                        <li v-for="(e, ei) in estadoPorFila.get(idx + 1).errores" :key="ei">{{ e }}</li>
+                      </ul>
+                    </td>
+                    <td class="min-w-32 text-sm">{{ bodegasResumen(f) || "—" }}</td>
+                    <td>
                       <Tag
-                        :value="f.estado"
+                        :value="estadoPorFila.get(idx + 1)?.estado || '—'"
                         :severity="
-                          f.estado === 'OK'
+                          estadoPorFila.get(idx + 1)?.estado === 'OK'
                             ? 'success'
-                            : f.estado === 'ERROR'
+                            : estadoPorFila.get(idx + 1)?.estado === 'ERROR'
                               ? 'danger'
                               : 'warn'
                         "
@@ -315,6 +371,66 @@ onMounted(() => planilla.cargar());
                 </tbody>
               </table>
             </div>
+
+            <!-- Fallback XLSX / sin parse local: tabla acotada -->
+            <template v-else>
+              <Message
+                v-if="planilla.archivoNombre?.toLowerCase().endsWith('.xlsx')"
+                severity="info"
+                :closable="false"
+                class="m-0 mb-2"
+              >
+                Previsualización acotada para .xlsx. Para ver todas las columnas (como en unidades), el backend V69 devolverá el detalle completo; por ahora se muestran 6 columnas fieles al contrato.
+              </Message>
+              <div
+                v-if="(planilla.previewData.filas || []).length"
+                class="max-h-64 overflow-auto border border-border border-round"
+              >
+                <table class="w-full text-sm">
+                  <thead class="sticky top-0 bg-surface">
+                    <tr>
+                      <th class="text-left p-2">#</th>
+                      <th class="text-left p-2">Casa</th>
+                      <th class="text-left p-2">Nombre</th>
+                      <th class="text-left p-2">Email</th>
+                      <th class="text-left p-2">Vínculo</th>
+                      <th class="text-left p-2">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="f in planilla.previewData.filas"
+                      :key="f.numeroFila"
+                      class="border-t border-border"
+                      :class="{
+                        'preview-ok': f.estado === 'OK',
+                        'preview-error': f.estado === 'ERROR',
+                        'preview-omitida': f.estado === 'OMITIDA',
+                      }"
+                    >
+                      <td class="p-2">{{ f.numeroFila }}</td>
+                      <td class="p-2">{{ f.unidad || "—" }}</td>
+                      <td class="p-2">{{ f.personaNombre || "—" }}</td>
+                      <td class="p-2 truncate max-w-32">{{ f.personaEmail || f.email || "—" }}</td>
+                      <td class="p-2">{{ f.tipoVinculo || "—" }}</td>
+                      <td class="p-2">
+                        <Tag
+                          :value="f.estado"
+                          :severity="
+                            f.estado === 'OK'
+                              ? 'success'
+                              : f.estado === 'ERROR'
+                                ? 'danger'
+                                : 'warn'
+                          "
+                          size="small"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </template>
 
             <div class="mt-3 flex flex-wrap gap-2 justify-end">
               <Button
