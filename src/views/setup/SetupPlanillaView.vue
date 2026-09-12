@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { usePlanillaDatos } from "@/composables/usePlanillaDatos";
 import PlanillaDatos from "@/components/planilla/PlanillaDatos.vue";
@@ -9,6 +9,8 @@ import Button from "primevue/button";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Popover from "primevue/popover";
+import Skeleton from "primevue/skeleton";
+import Paginator from "primevue/paginator";
 
 const emit = defineEmits(["actualizado"]);
 
@@ -25,6 +27,20 @@ const formatoInfoOp = ref(null);
 function toggleFormatoInfo(event) {
   formatoInfoOp.value?.toggle(event);
 }
+
+// Paginación preview fiel (Meta: 50/pág, evita render de 1000 filas)
+const paginaPreview = ref(0);
+const porPaginaPreview = 50;
+const previewPagina = computed(() => {
+  const raw = planilla.previewFilasRaw || [];
+  const start = paginaPreview.value * porPaginaPreview;
+  return raw.slice(start, start + porPaginaPreview);
+});
+const previewPaginaLimitada = computed(() => {
+  const filas = planilla.previewData?.filas || [];
+  const start = paginaPreview.value * porPaginaPreview;
+  return filas.slice(start, start + porPaginaPreview);
+});
 
 const puedeMostrarDropzone = computed(
   () =>
@@ -75,6 +91,13 @@ function vehiculosResumen(f) {
 function bodegasResumen(f) {
   return (f.bodegas || []).map((b) => (typeof b === "string" ? b : b.nombre || "").trim()).filter(Boolean).join(", ");
 }
+
+watch(
+  () => planilla.previewData,
+  () => {
+    paginaPreview.value = 0;
+  },
+);
 
 async function guardar() {
   await planilla.enviar();
@@ -240,6 +263,20 @@ onMounted(() => planilla.cargar());
           </Popover>
         </template>
 
+        <!-- Loading archivo (feedback inmediato, Meta-like) -->
+        <Message
+          v-if="planilla.enviando && planilla.archivoNombre && !planilla.previewData"
+          severity="info"
+          :closable="false"
+          class="m-0"
+        >
+          <span class="flex items-center gap-2">
+            <i class="pi pi-spin pi-spinner" />
+            Validando archivo "{{ planilla.archivoNombre }}"… Esto puede tardar unos segundos con archivos grandes.
+          </span>
+        </Message>
+        <Skeleton v-if="planilla.enviando && planilla.archivoNombre && !planilla.previewData" width="100%" height="220px" class="mt-2" />
+
         <!-- Error de archivo / plantilla -->
         <Message
           v-if="planilla.error"
@@ -341,15 +378,15 @@ onMounted(() => planilla.cargar());
                 </thead>
                 <tbody>
                   <tr
-                    v-for="(f, idx) in planilla.previewFilasRaw"
-                    :key="idx"
+                    v-for="(f, pIdx) in previewPagina"
+                    :key="paginaPreview * porPaginaPreview + pIdx"
                     :class="{
-                      'preview-ok': estadoPorFila.get(idx + 1)?.estado === 'OK',
-                      'preview-error': estadoPorFila.get(idx + 1)?.estado === 'ERROR',
-                      'preview-omitida': estadoPorFila.get(idx + 1)?.estado === 'OMITIDA',
+                      'preview-ok': estadoPorFila.get(paginaPreview * porPaginaPreview + pIdx + 1)?.estado === 'OK',
+                      'preview-error': estadoPorFila.get(paginaPreview * porPaginaPreview + pIdx + 1)?.estado === 'ERROR',
+                      'preview-omitida': estadoPorFila.get(paginaPreview * porPaginaPreview + pIdx + 1)?.estado === 'OMITIDA',
                     }"
                   >
-                    <td>{{ idx + 1 }}</td>
+                    <td>{{ paginaPreview * porPaginaPreview + pIdx + 1 }}</td>
                     <td class="whitespace-nowrap">{{ f.unidad || "—" }}</td>
                     <td><Tag :value="f.tipo_unidad || '—'" severity="secondary" size="small" /></td>
                     <td>{{ f.sector || "—" }}</td>
@@ -365,20 +402,20 @@ onMounted(() => planilla.cargar());
                       <span v-if="vehiculosResumen(f)">{{ vehiculosResumen(f) }}</span>
                       <span v-else class="text-surface-400">—</span>
                       <ul
-                        v-if="estadoPorFila.get(idx + 1)?.errores?.length"
+                        v-if="estadoPorFila.get(paginaPreview * porPaginaPreview + pIdx + 1)?.errores?.length"
                         class="m-0 mt-1 pl-3 text-xs text-danger text-left"
                       >
-                        <li v-for="(e, ei) in estadoPorFila.get(idx + 1).errores" :key="ei">{{ e }}</li>
+                        <li v-for="(e, ei) in estadoPorFila.get(paginaPreview * porPaginaPreview + pIdx + 1).errores" :key="ei">{{ e }}</li>
                       </ul>
                     </td>
                     <td class="min-w-32 text-sm">{{ bodegasResumen(f) || "—" }}</td>
                     <td>
                       <Tag
-                        :value="estadoPorFila.get(idx + 1)?.estado || '—'"
+                        :value="estadoPorFila.get(paginaPreview * porPaginaPreview + pIdx + 1)?.estado || '—'"
                         :severity="
-                          estadoPorFila.get(idx + 1)?.estado === 'OK'
+                          estadoPorFila.get(paginaPreview * porPaginaPreview + pIdx + 1)?.estado === 'OK'
                             ? 'success'
-                            : estadoPorFila.get(idx + 1)?.estado === 'ERROR'
+                            : estadoPorFila.get(paginaPreview * porPaginaPreview + pIdx + 1)?.estado === 'ERROR'
                               ? 'danger'
                               : 'warn'
                         "
@@ -388,6 +425,14 @@ onMounted(() => planilla.cargar());
                   </tr>
                 </tbody>
               </table>
+              <Paginator
+                v-if="(planilla.previewFilasRaw?.length || 0) > porPaginaPreview"
+                :rows="porPaginaPreview"
+                :totalRecords="planilla.previewFilasRaw.length"
+                :first="paginaPreview * porPaginaPreview"
+                class="mt-2"
+                @page="paginaPreview = $event.page"
+              />
             </div>
 
             <!-- Fallback XLSX / sin parse local: tabla acotada -->
@@ -417,7 +462,7 @@ onMounted(() => planilla.cargar());
                   </thead>
                   <tbody>
                     <tr
-                      v-for="f in planilla.previewData.filas"
+                      v-for="f in previewPaginaLimitada"
                       :key="f.numeroFila"
                       class="border-t border-border"
                       :class="{
@@ -448,6 +493,14 @@ onMounted(() => planilla.cargar());
                   </tbody>
                 </table>
               </div>
+              <Paginator
+                v-if="(planilla.previewData.filas?.length || 0) > porPaginaPreview"
+                :rows="porPaginaPreview"
+                :totalRecords="planilla.previewData.filas.length"
+                :first="paginaPreview * porPaginaPreview"
+                class="mt-2"
+                @page="paginaPreview = $event.page"
+              />
             </template>
 
             <div class="mt-3 flex flex-wrap gap-2 justify-end">
@@ -505,7 +558,18 @@ onMounted(() => planilla.cargar());
         edición manual.
       </p>
 
-      <div v-if="!planilla.previewData" class="mt-4 flex justify-end">
+      <div v-if="!planilla.previewData" class="mt-4 flex justify-between items-center gap-2">
+        <Button
+          v-if="planilla.filas.length"
+          label="Limpiar todo"
+          icon="pi pi-trash"
+          severity="secondary"
+          variant="text"
+          size="small"
+          :disabled="planilla.enviando"
+          @click="planilla.limpiarTodo()"
+        />
+        <span v-else></span>
         <Button
           label="Guardar planilla"
           icon="pi pi-save"

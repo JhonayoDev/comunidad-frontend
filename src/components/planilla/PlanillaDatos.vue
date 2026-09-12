@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import {
   TIPOS_UNIDAD,
   TIPOS_VINCULO,
@@ -20,6 +20,7 @@ import Checkbox from "primevue/checkbox";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
+import Paginator from "primevue/paginator";
 
 // Recibe el objeto devuelto por usePlanillaDatos (estado + acciones).
 const props = defineProps({
@@ -107,6 +108,25 @@ const filasFiltradas = computed(() => {
       .includes(q),
   );
 });
+
+// Paginación (Meta: virtualización progresiva, 50/pág evita bloqueo Firefox con 500+ filas)
+const pagina = ref(0);
+const porPagina = 50;
+const filasFiltradasPaginadas = computed(() => {
+  const start = pagina.value * porPagina;
+  return filasFiltradas.value.slice(start, start + porPagina);
+});
+watch(filasFiltradas, () => {
+  pagina.value = 0;
+});
+watch(
+  () => p.value.filas.length,
+  () => {
+    if (pagina.value * porPagina >= filasFiltradas.value.length && pagina.value > 0) {
+      pagina.value = 0;
+    }
+  },
+);
 
 const totalFilas = computed(() => p.value.filas.length);
 const filasConDatos = computed(
@@ -357,7 +377,7 @@ function guardar() {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="f in filasFiltradas" :key="f.id">
+              <tr v-for="f in filasFiltradasPaginadas" :key="f.id">
                 <td class="whitespace-nowrap align-middle">
                   <template v-if="editando">
                     <AutoComplete
@@ -729,12 +749,20 @@ function guardar() {
               </tr>
             </tbody>
           </table>
+          <Paginator
+            v-if="filasFiltradas.length > porPagina"
+            :rows="porPagina"
+            :totalRecords="filasFiltradas.length"
+            :first="pagina * porPagina"
+            class="mt-2"
+            @page="pagina = $event.page"
+          />
         </div>
 
         <!-- Mobile: cards -->
         <div class="flex flex-col gap-2 md:hidden">
           <div
-            v-for="f in filasFiltradas"
+            v-for="f in filasFiltradasPaginadas"
             :key="f.id"
             class="p-2 border-round flex flex-col gap-2"
             :class="erroresDe(f).length ? 'bg-danger/5' : ''"
@@ -1124,6 +1152,14 @@ function guardar() {
               <li v-for="(e, i) in erroresDe(f)" :key="i">{{ e }}</li>
             </ul>
           </div>
+          <Paginator
+            v-if="filasFiltradas.length > porPagina"
+            :rows="porPagina"
+            :totalRecords="filasFiltradas.length"
+            :first="pagina * porPagina"
+            class="mt-2 md:hidden"
+            @page="pagina = $event.page"
+          />
         </div>
       </template>
     </template>

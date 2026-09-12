@@ -348,8 +348,13 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     borradorRestaurado.value = false;
   }
 
-  // Autoguardado del borrador ante cualquier cambio.
-  watch(filas, guardarBorrador, { deep: true });
+  // Autoguardado del borrador ante cualquier cambio (debounced 600ms, evita bloqueo Firefox con 500+ filas)
+  let borradorTimer = null;
+  function guardarBorradorDebounced() {
+    if (borradorTimer) clearTimeout(borradorTimer);
+    borradorTimer = setTimeout(() => guardarBorrador(), 600);
+  }
+  watch(filas, guardarBorradorDebounced, { deep: true });
 
   // ─── Filas ───
   function agregarFila() {
@@ -839,6 +844,17 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     error.value = null;
   }
 
+  // Limpieza total (Meta: "Descartar todo" — evita errores fantasma del archivo anterior en etapa editable)
+  function limpiarTodo() {
+    filas.value = [];
+    previewData.value = null;
+    archivoNombre.value = null;
+    previewFilasRaw.value = null;
+    error.value = null;
+    resultado.value = null;
+    descartarBorrador();
+  }
+
   // Fase 2: POST /importaciones/{importacionId}/ejecutar — aplica las filas OK.
   async function ejecutar() {
     if (!previewData.value?.importacionId) return;
@@ -1029,6 +1045,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     preview,
     previewArchivo,
     descartarPreviewArchivo,
+    limpiarTodo,
     ejecutar,
     enviar,
     descargarPlantilla,
