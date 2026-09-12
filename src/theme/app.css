@@ -160,6 +160,31 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  /* Preview planilla — estados sutiles tipo cebra (misma base surface) */
+  .preview-ok {
+    background-color: color-mix(
+      in srgb,
+      var(--color-success) 8%,
+      var(--color-surface)
+    );
+  }
+
+  .preview-error {
+    background-color: color-mix(
+      in srgb,
+      var(--color-danger) 10%,
+      var(--color-surface)
+    );
+  }
+
+  .preview-omitida {
+    background-color: color-mix(
+      in srgb,
+      var(--color-warning) 10%,
+      var(--color-surface)
+    );
+  }
 }
 
 /* ==========================================================================

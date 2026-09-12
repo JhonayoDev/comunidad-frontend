@@ -288,9 +288,9 @@ onMounted(() => planilla.cargar());
                     :key="f.numeroFila"
                     class="border-t border-border"
                     :class="{
-                      'bg-green-50': f.estado === 'OK',
-                      'bg-red-50': f.estado === 'ERROR',
-                      'bg-amber-50': f.estado === 'OMITIDA',
+                      'preview-ok': f.estado === 'OK',
+                      'preview-error': f.estado === 'ERROR',
+                      'preview-omitida': f.estado === 'OMITIDA',
                     }"
                   >
                     <td class="p-2">{{ f.numeroFila }}</td>
