@@ -8,6 +8,7 @@ import Card from "primevue/card";
 import Button from "primevue/button";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
+import Popover from "primevue/popover";
 
 const emit = defineEmits(["actualizado"]);
 
@@ -20,6 +21,10 @@ const tienePermisoImportacion = computed(() =>
 const sinPermiso = computed(() => !tienePermisoImportacion.value);
 
 const mostrarCargaArchivo = ref(false);
+const formatoInfoOp = ref(null);
+function toggleFormatoInfo(event) {
+  formatoInfoOp.value?.toggle(event);
+}
 
 const puedeMostrarDropzone = computed(
   () =>
@@ -213,13 +218,26 @@ onMounted(() => planilla.cargar());
               @click="mostrarCargaArchivo = false"
             />
           </div>
-          <p class="text-xs text-text-muted m-0">
-            Formato esperado: columnas
-            <code
-              >unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1..3;est1..3;bodega1..3</code
-            >. Descarga la plantilla para evitar errores de formato. Máx 1000
-            filas. Re-subir reemplaza el preview anterior.
-          </p>
+          <div class="flex items-center gap-1 text-xs text-text-muted">
+            <span class="shrink-0">Máx 1000 filas. Re-subir reemplaza el preview.</span>
+            <Button
+              icon="pi pi-info-circle"
+              severity="secondary"
+              text
+              rounded
+              size="small"
+              aria-label="Ver formato esperado"
+              @click="toggleFormatoInfo"
+            />
+          </div>
+          <Popover ref="formatoInfoOp" :style="{ width: '360px', maxWidth: '92vw' }">
+            <div class="flex flex-col gap-2 p-1">
+              <span class="text-sm font-semibold">Formato esperado</span>
+              <p class="text-xs text-text-muted m-0">Columnas en orden (separador <code>;</code>). Descarga la plantilla para evitar errores.</p>
+              <code class="text-xs bg-surface border border-border p-2 border-round break-all whitespace-pre-wrap">unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1..3;est1..3;bodega1..3</code>
+              <span class="text-xs text-text-muted">Ejemplo se incluye en la plantilla. El backend valida fila a fila (31 cols).</span>
+            </div>
+          </Popover>
         </template>
 
         <!-- Error de archivo / plantilla -->
