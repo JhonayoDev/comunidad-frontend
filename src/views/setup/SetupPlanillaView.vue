@@ -132,6 +132,7 @@ onMounted(() => planilla.cargar());
           :archivo-nombre="planilla.archivoNombre"
           :enviando="planilla.enviando"
           :deshabilitado="sinPermiso"
+          :importado="!!planilla.resultado"
           @validar="validar"
           @importar="importar"
           @descartar="planilla.descartarPreviewArchivo()"

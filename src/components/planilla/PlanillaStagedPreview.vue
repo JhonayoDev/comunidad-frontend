@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { TIPOS_UNIDAD, TIPOS_VINCULO } from "@/data/planillaColumnas";
+import { TIPOS_UNIDAD, TIPOS_VINCULO, TIPOS_VEHICULO } from "@/data/planillaColumnas";
 import Card from "primevue/card";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
@@ -18,6 +18,8 @@ const props = defineProps({
   archivoNombre: { type: String, default: "" },
   enviando: { type: Boolean, default: false },
   deshabilitado: { type: Boolean, default: false },
+  // true cuando ya se ejecutó el import (paso 3 del stepper)
+  importado: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -46,6 +48,21 @@ const previewPaginaLimitada = computed(() => {
 
 const tiposUnidadOpciones = TIPOS_UNIDAD.map((t) => ({ label: t, value: t }));
 const tiposVinculoOpciones = TIPOS_VINCULO.map((t) => ({ label: t, value: t }));
+const tiposVehiculoOpciones = TIPOS_VEHICULO.map((t) => ({ label: t, value: t }));
+const siNoOpciones = [
+  { label: "—", value: "" },
+  { label: "SI", value: "SI" },
+  { label: "NO", value: "NO" },
+];
+
+// Stepper de guardado (Meta): deja explícito en qué momento se guardan los datos.
+// 1 Borrador local (navegador, nada enviado) → 2 Validado (borrador en servidor,
+// expira 30 min, nada persistido) → 3 Importado (persistido en el condominio).
+const pasoGuardado = computed(() => {
+  if (props.importado) return 3;
+  if (props.previewData) return 2;
+  return 1;
+});
 
 const previewOmitidas = computed(() => {
   if (!props.previewData) return 0;
@@ -120,8 +137,38 @@ function incompleta(f) {
       </div>
     </template>
     <template #content>
+      <!-- Stepper: ¿qué está guardado y dónde? -->
+      <div class="flex flex-col sm:flex-row gap-2 mb-3">
+        <div
+          v-for="p in [
+            { n: 1, label: 'Borrador local', desc: 'Solo en tu navegador. Nada enviado.' },
+            { n: 2, label: 'Validado', desc: 'Borrador en servidor (expira 30 min). Nada persistido.' },
+            { n: 3, label: 'Importado', desc: 'Datos guardados en el condominio.' },
+          ]"
+          :key="p.n"
+          class="flex-1 flex items-center gap-2 p-2 border-round text-left text-sm"
+          :class="
+            pasoGuardado === p.n
+              ? 'bg-primary text-white'
+              : pasoGuardado > p.n
+                ? 'bg-surface border border-border'
+                : 'bg-surface border border-border opacity-60'
+          "
+        >
+          <span
+            class="w-5 h-5 flex items-center justify-center border-round-full text-xs font-bold shrink-0"
+            :class="pasoGuardado > p.n ? 'bg-primary text-white' : 'bg-emphasis'"
+            >{{ pasoGuardado > p.n ? "✓" : p.n }}</span
+          >
+          <span>
+            <span class="font-medium block">{{ p.label }}</span>
+            <span class="text-xs opacity-80 block">{{ p.desc }}</span>
+          </span>
+        </div>
+      </div>
+
       <p class="text-xs text-text-muted m-0 mb-2">
-        Revisa y corrige en la app. Nada se ha enviado al backend.
+        Misma estructura del archivo: corrige aquí lo que falte antes de Validar.
         <span v-if="archivoPendienteNombre">El .xlsx se validará directo en el servidor (sin edición local).</span>
       </p>
 
@@ -138,7 +185,10 @@ function incompleta(f) {
               <th>RUT</th>
               <th>Teléfono</th>
               <th>Vínculo *</th>
-              <th>Vehículos (patente · est)</th>
+              <th class="text-center">Ocup.</th>
+              <th class="text-center">Notif.</th>
+              <th class="text-center">Resp.</th>
+              <th>Vehículos</th>
               <th>Bodegas</th>
               <th></th>
             </tr>
@@ -162,12 +212,31 @@ function incompleta(f) {
               <td>
                 <Select v-model="f.tipo_vinculo" :options="tiposVinculoOpciones" optionLabel="label" optionValue="value" size="small" class="w-32" />
               </td>
-              <td class="min-w-56">
+              <td>
+                <Select v-model="f.es_ocupante" :options="siNoOpciones" optionLabel="label" optionValue="value" size="small" class="w-20" />
+              </td>
+              <td>
+                <Select v-model="f.recibe_notificaciones" :options="siNoOpciones" optionLabel="label" optionValue="value" size="small" class="w-20" />
+              </td>
+              <td>
+                <Select v-model="f.es_responsable" :options="siNoOpciones" optionLabel="label" optionValue="value" size="small" class="w-20" />
+              </td>
+              <td class="min-w-72">
                 <div class="flex flex-col gap-1">
-                  <div v-for="v in f.vehiculos || []" :key="v.uid" class="flex items-center gap-1">
-                    <InputText v-model="v.patente" placeholder="Patente" size="small" class="w-24" />
-                    <InputText v-model="v.estacionamiento" placeholder="Est." size="small" class="w-24" />
-                    <Button icon="pi pi-trash" variant="text" severity="danger" size="small" @click="emit('quitarVehiculo', f.id, v.uid)" />
+                  <div v-for="v in f.vehiculos || []" :key="v.uid" class="flex flex-col gap-1 p-1 border border-border border-round">
+                    <div class="flex items-center gap-1">
+                      <InputText v-model="v.patente" placeholder="Patente *" size="small" class="w-24" />
+                      <Select v-model="v.tipo" :options="tiposVehiculoOpciones" optionLabel="label" optionValue="value" placeholder="Tipo" size="small" class="w-28" />
+                      <Button icon="pi pi-trash" variant="text" severity="danger" size="small" title="Quitar vehículo" @click="emit('quitarVehiculo', f.id, v.uid)" />
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <InputText v-model="v.marca" placeholder="Marca" size="small" class="w-full" />
+                      <InputText v-model="v.modelo" placeholder="Modelo" size="small" class="w-full" />
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <InputText v-model="v.color" placeholder="Color" size="small" class="w-full" />
+                      <InputText v-model="v.estacionamiento" placeholder="Est." size="small" class="w-full" />
+                    </div>
                   </div>
                   <Button label="Vehículo" icon="pi pi-plus" variant="text" size="small" @click="emit('agregarVehiculo', f.id)" />
                 </div>
@@ -224,6 +293,35 @@ function incompleta(f) {
       </div>
     </template>
     <template #content>
+      <div class="flex flex-col sm:flex-row gap-2 mb-3">
+        <div
+          v-for="p in [
+            { n: 1, label: 'Borrador local', desc: 'Quedó en tu navegador.' },
+            { n: 2, label: 'Validado', desc: 'Borrador en servidor (expira 30 min). Nada persistido aún.' },
+            { n: 3, label: 'Importado', desc: 'Se guarda al pulsar Importar.' },
+          ]"
+          :key="p.n"
+          class="flex-1 flex items-center gap-2 p-2 border-round text-left text-sm"
+          :class="
+            pasoGuardado === p.n
+              ? 'bg-primary text-white'
+              : pasoGuardado > p.n
+                ? 'bg-surface border border-border'
+                : 'bg-surface border border-border opacity-60'
+          "
+        >
+          <span
+            class="w-5 h-5 flex items-center justify-center border-round-full text-xs font-bold shrink-0"
+            :class="pasoGuardado > p.n ? 'bg-primary text-white' : 'bg-emphasis'"
+            >{{ pasoGuardado > p.n ? "✓" : p.n }}</span
+          >
+          <span>
+            <span class="font-medium block">{{ p.label }}</span>
+            <span class="text-xs opacity-80 block">{{ p.desc }}</span>
+          </span>
+        </div>
+      </div>
+
       <div class="flex flex-wrap gap-2 mb-3">
         <Tag :value="`${previewData.totalFilas} filas`" severity="secondary" size="small" />
         <Tag :value="`${previewData.filasOk} OK`" severity="success" size="small" />
