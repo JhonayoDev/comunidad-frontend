@@ -172,7 +172,8 @@ function incompleta(f) {
         <span v-if="archivoPendienteNombre">El .xlsx se validará directo en el servidor (sin edición local).</span>
       </p>
 
-      <div v-if="staging.length" class="planilla max-h-[420px] overflow-auto border border-border">
+      <template v-if="staging.length">
+      <div class="planilla max-h-[68vh] overflow-auto border border-border">
         <table>
           <thead>
             <tr>
@@ -256,15 +257,16 @@ function incompleta(f) {
             </tr>
           </tbody>
         </table>
-        <Paginator
-          v-if="staging.length > porPagina"
-          :rows="porPagina"
-          :totalRecords="staging.length"
-          :first="pagina * porPagina"
-          class="mt-2"
-          @page="pagina = $event.page"
-        />
       </div>
+      <Paginator
+        v-if="staging.length > porPagina"
+        :rows="porPagina"
+        :totalRecords="staging.length"
+        :first="pagina * porPagina"
+        class="mt-2"
+        @page="pagina = $event.page"
+      />
+      </template>
       <p v-else class="text-xs text-text-muted m-0">
         {{ archivoPendienteNombre || "Selecciona un archivo para ver el borrador aquí." }}
       </p>
@@ -350,7 +352,8 @@ function incompleta(f) {
       </div>
 
       <!-- Tabla fiel csv -->
-      <div v-if="hasPreviewFiel" class="planilla max-h-[420px] overflow-auto border border-border">
+      <template v-if="hasPreviewFiel">
+      <div class="planilla max-h-[68vh] overflow-auto border border-border">
         <table>
           <thead>
             <tr>
@@ -411,15 +414,16 @@ function incompleta(f) {
             </tr>
           </tbody>
         </table>
-        <Paginator
-          v-if="staging.length > porPagina"
-          :rows="porPagina"
-          :totalRecords="staging.length"
-          :first="pagina * porPagina"
-          class="mt-2"
-          @page="pagina = $event.page"
-        />
       </div>
+      <Paginator
+        v-if="staging.length > porPagina"
+        :rows="porPagina"
+        :totalRecords="staging.length"
+        :first="pagina * porPagina"
+        class="mt-2"
+        @page="pagina = $event.page"
+      />
+      </template>
 
       <!-- Fallback xlsx: tabla acotada -->
       <template v-else>
@@ -431,7 +435,7 @@ function incompleta(f) {
         >
           Previsualización acotada para .xlsx. Para ver todas las columnas, el backend V69 devolverá el detalle completo.
         </Message>
-        <div v-if="(previewData.filas || []).length" class="max-h-64 overflow-auto border border-border border-round">
+        <div v-if="(previewData.filas || []).length" class="max-h-[68vh] overflow-auto border border-border border-round">
           <table class="w-full text-sm">
             <thead class="sticky top-0 bg-surface">
               <tr>
