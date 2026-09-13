@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch } from "vue";
+import { useModoFoco } from "@/composables/useModoFoco";
 import {
   TIPOS_UNIDAD,
   TIPOS_VINCULO,
@@ -226,10 +227,13 @@ function bodegasDe(f) {
 function guardar() {
   emit("guardar");
 }
+
+const { foco, alternar, salir } = useModoFoco();
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div v-if="foco" class="modo-foco-fondo" @click="salir" />
+  <div class="flex flex-col gap-4" :class="foco ? 'modo-foco p-3' : ''">
     <!-- Filtros y acciones -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap">
       <span class="p-input-icon-left w-full sm:w-64">
@@ -245,6 +249,14 @@ function guardar() {
         Los estacionamientos EV-* son de visitas y no se asignan a casas.
       </span>
       <div class="flex gap-1 sm:ml-auto">
+        <Button
+          :icon="foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+          :label="foco ? 'Salir de foco' : 'Foco'"
+          severity="secondary"
+          text
+          size="small"
+          @click="alternar"
+        />
         <template v-if="!editando">
           <Button
             label="Editar"

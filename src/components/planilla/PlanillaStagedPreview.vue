@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
+import { useModoFoco } from "@/composables/useModoFoco";
 import { TIPOS_UNIDAD, TIPOS_VINCULO, TIPOS_VEHICULO } from "@/data/planillaColumnas";
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -45,6 +46,8 @@ const previewPaginaLimitada = computed(() => {
   const start = pagina.value * porPagina;
   return filas.slice(start, start + porPagina);
 });
+
+const { foco, alternar, salir } = useModoFoco();
 
 const tiposUnidadOpciones = TIPOS_UNIDAD.map((t) => ({ label: t, value: t }));
 const tiposVinculoOpciones = TIPOS_VINCULO.map((t) => ({ label: t, value: t }));
@@ -121,8 +124,9 @@ function incompleta(f) {
 </script>
 
 <template>
+  <div v-if="foco" class="modo-foco-fondo" @click="salir" />
   <!-- STAGED: borrador editable antes de cualquier POST -->
-  <Card v-if="!previewData" class="border border-primary/20">
+  <Card v-if="!previewData" class="border border-primary/20" :class="foco ? 'modo-foco' : ''">
     <template #title>
       <div class="flex items-center gap-2 text-sm">
         <i class="pi pi-file-edit"></i>
@@ -134,6 +138,15 @@ function incompleta(f) {
           size="small"
         />
         <Tag :value="`${staging.length} filas`" severity="info" size="small" />
+        <Button
+          :icon="foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+          :label="foco ? 'Salir de foco' : 'Foco'"
+          severity="secondary"
+          text
+          size="small"
+          class="ml-auto"
+          @click="alternar"
+        />
       </div>
     </template>
     <template #content>
@@ -286,12 +299,21 @@ function incompleta(f) {
   </Card>
 
   <!-- REVIEW: validado por el servidor -->
-  <Card v-else class="border border-primary/20">
+  <Card v-else class="border border-primary/20" :class="foco ? 'modo-foco' : ''">
     <template #title>
       <div class="flex items-center gap-2 text-sm">
         <i class="pi pi-eye"></i>
         <span>Previsualización validada</span>
         <Tag v-if="archivoNombre" :value="archivoNombre" severity="secondary" size="small" />
+        <Button
+          :icon="foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+          :label="foco ? 'Salir de foco' : 'Foco'"
+          severity="secondary"
+          text
+          size="small"
+          class="ml-auto"
+          @click="alternar"
+        />
       </div>
     </template>
     <template #content>

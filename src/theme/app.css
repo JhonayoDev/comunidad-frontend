@@ -167,6 +167,31 @@
     white-space: nowrap;
   }
 
+  /* Modo foco: Card/tabla a pantalla completa con scroll propio */
+  .modo-foco-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background-color: rgb(0 0 0 / 0.5);
+  }
+
+  .modo-foco {
+    position: fixed;
+    inset: 0.5rem;
+    z-index: 1001;
+    overflow: auto;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.35);
+  }
+
+  @media (min-width: 768px) {
+    .modo-foco {
+      inset: 1.5rem;
+    }
+  }
+
   /* Preview planilla — estados sutiles tipo cebra (misma base surface) */
   .preview-ok,
   .preview-ok td {
