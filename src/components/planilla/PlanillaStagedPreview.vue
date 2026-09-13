@@ -455,7 +455,7 @@ function incompleta(f) {
           :closable="false"
           class="m-0 mb-2"
         >
-          Previsualización acotada para .xlsx. Para ver todas las columnas, el backend V69 devolverá el detalle completo.
+          Previsualización acotada para .xlsx. Para ver todas las columnas, el backend devolverá el detalle completo (ver SOLICITUD_PREVIEW_FIEL_IMPORTACION).
         </Message>
         <div v-if="(previewData.filas || []).length" class="tabla-scroll max-h-[68vh] overflow-auto border border-border border-round">
           <table class="w-full text-sm">

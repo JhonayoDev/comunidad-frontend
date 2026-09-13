@@ -14,7 +14,7 @@
 2. `FilaImportacion`: nuevo campo `List<String> estacionamientos` (igual que `bodegas`).
 3. `ImportacionJsonRequest`: mismo campo para la vía JSON del wizard.
 4. `aplicarFila`: vincular `estacionamientos[]` como unidad↔est (reusar `resolverEstacionamiento`), con la misma regla actual (solo titulares `PROPIETARIO/ARRENDATARIO` vinculan recursos; `RESIDENTE_ADICIONAL` no).
-5. `FilaPreview`: incluir `vehiculos`/`estacionamientos`/`bodegas` (ya pedido en V69) para preview fiel.
+5. `FilaPreview`: incluir `vehiculos`/`estacionamientos`/`bodegas` (ya pedido en `SOLICITUD_PREVIEW_FIEL_IMPORTACION`) para preview fiel.
 6. Compatibilidad: `est1..3` anidados siguen funcionando cuando hay `patente` (muestran el est junto al vehículo); si la misma fila trae standalone + anidado con distinto nombre, gana el standalone (a definir por BE).
 
 ## Criterio aceptación

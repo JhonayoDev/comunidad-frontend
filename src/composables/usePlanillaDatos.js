@@ -932,7 +932,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const status = e?.response?.status;
       if (status === 403) {
         error.value =
-          "No tienes permiso para importar (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso en tu rol/cargo. Si eres SUPER_ADMIN, falta la migración V68 (V67 omitió el permiso para SUPER_ADMIN/SOPORTE).";
+          "No tienes permiso para importar (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso en tu rol/cargo. Si eres SUPER_ADMIN, falta la migración del backend que asigna el permiso a SUPER_ADMIN/SOPORTE (V67 la omitió).";
         previewData.value = null;
         return;
       }
@@ -1126,7 +1126,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const status = e?.response?.status;
       if (status === 403) {
         error.value =
-          "No tienes permiso para descargar la plantilla (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso. Si eres SUPER_ADMIN, falta la migración V68 (ver SOLICITUD_FIX_PERMISO_IMPORTACION).";
+          "No tienes permiso para descargar la plantilla (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso. Si eres SUPER_ADMIN, falta la migración del backend (ver SOLICITUD_FIX_PERMISO_IMPORTACION).";
       } else {
         error.value = e?.response?.data?.message || "No se pudo descargar la plantilla";
       }

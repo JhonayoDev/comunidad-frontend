@@ -41,7 +41,7 @@
 - Criterio: re-subir el mismo csv tras importar muestra `OMITIDA`, no bloqueo.
 
 ## No alcance
-- Parser `xlsx` en frontend (sigue server; `V69` backend para preview fiel `.xlsx`).
+- Parser `xlsx` en frontend (sigue server; ver `SOLICITUD_PREVIEW_FIEL_IMPORTACION` para preview fiel `.xlsx`).
 - Enforcement de cupo (referencial).
 - Carga global post-setup con auditoría (futuro).
 
