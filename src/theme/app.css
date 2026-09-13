@@ -192,6 +192,13 @@
     }
   }
 
+  /* En foco la tarjeta es el único scroll vertical: las tablas internas
+     crecen natural (sin max-h propio) para no duplicar scrollbars. */
+  .modo-foco .planilla,
+  .modo-foco .tabla-scroll {
+    max-height: none !important;
+  }
+
   /* Preview planilla — estados sutiles tipo cebra (misma base surface) */
   .preview-ok,
   .preview-ok td {

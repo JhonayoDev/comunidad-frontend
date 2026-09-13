@@ -457,7 +457,7 @@ function incompleta(f) {
         >
           Previsualización acotada para .xlsx. Para ver todas las columnas, el backend V69 devolverá el detalle completo.
         </Message>
-        <div v-if="(previewData.filas || []).length" class="max-h-[68vh] overflow-auto border border-border border-round">
+        <div v-if="(previewData.filas || []).length" class="tabla-scroll max-h-[68vh] overflow-auto border border-border border-round">
           <table class="w-full text-sm">
             <thead class="sticky top-0 bg-surface">
               <tr>
