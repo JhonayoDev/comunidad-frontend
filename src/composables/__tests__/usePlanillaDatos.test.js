@@ -19,6 +19,7 @@ vi.mock("@/stores/authStore", () => ({
 vi.mock("@/services/importacionService", () => ({
   importacionService: {
     previewJson: vi.fn(),
+    previewArchivo: vi.fn(),
     ejecutar: vi.fn(),
     plantilla: vi.fn(),
   },
@@ -556,6 +557,108 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(personasService.desactivarVinculo).toHaveBeenCalledWith("cid-1", "v1");
     expect(p.filas).toHaveLength(0);
     expect(p.resultado.eliminadas).toBe(1);
+  });
+
+  it("validarFila avisa estacionamiento sin patente (dinámico)", () => {
+    const errores = validarFila({
+      unidad: "1",
+      nombre: "A",
+      email: "a@a.cl",
+      tipo_vinculo: "PROPIETARIO",
+      vehiculos: [{ patente: "", estacionamiento: "E-1" }],
+      bodegas: [],
+    });
+    expect(errores.some((x) => x.includes("E-1"))).toBe(true);
+  });
+
+  it("validarFila avisa est huérfano en fila plana legacy", () => {
+    const errores = validarFila({
+      unidad: "1",
+      nombre: "A",
+      email: "a@a.cl",
+      tipo_vinculo: "PROPIETARIO",
+      patente1: "",
+      est1: "E-2",
+    });
+    expect(errores.some((x) => x.includes("E-2"))).toBe(true);
+  });
+
+  it("cargarStaging parsea csv local sin ningún POST", async () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;AA11;AUTO;M;Mo;C;E-1";
+    await p.cargarStaging({ name: "test.csv", text: async () => csv });
+    expect(p.previewFilasRaw).toHaveLength(1);
+    expect(p.previewFilasRaw[0].vehiculos[0]).toMatchObject({ patente: "AA11", estacionamiento: "E-1" });
+    expect(p.fase).toBe("STAGED");
+    expect(importacionService.previewJson).not.toHaveBeenCalled();
+    expect(importacionService.previewArchivo).not.toHaveBeenCalled();
+  });
+
+  it("cargarStaging xlsx guarda pendiente sin POST", async () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    await p.cargarStaging({ name: "test.xlsx" });
+    expect(p.archivoPendiente).not.toBe(null);
+    expect(p.previewFilasRaw).toBe(null);
+    expect(p.fase).toBe("STAGED");
+    expect(importacionService.previewArchivo).not.toHaveBeenCalled();
+  });
+
+  it("validarStaging envía lo editado (no el archivo original)", async () => {
+    importacionService.previewJson.mockResolvedValueOnce({
+      data: { importacionId: "imp-s", totalFilas: 1, filasOk: 1, filasError: 0, filas: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;AA11;AUTO;M;Mo;C;E-1";
+    await p.cargarStaging({ name: "test.csv", text: async () => csv });
+    p.previewFilasRaw[0].nombre = "Editado";
+    await p.validarStaging();
+    expect(importacionService.previewJson).toHaveBeenCalledWith(
+      "cid-1",
+      [expect.objectContaining({ persona: expect.objectContaining({ nombre: "Editado" }) })],
+    );
+    expect(p.previewData.importacionId).toBe("imp-s");
+    expect(p.fase).toBe("REVIEW");
+  });
+
+  it("fase refleja VACIO → REVIEW → limpieza total", async () => {
+    importacionService.previewJson.mockResolvedValueOnce({
+      data: { importacionId: "imp-f", totalFilas: 0, filasOk: 0, filasError: 0, filas: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    expect(p.fase).toBe("VACIO");
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;;;;;;;;";
+    await p.cargarStaging({ name: "t.csv", text: async () => csv });
+    expect(p.fase).toBe("STAGED");
+    await p.validarStaging();
+    expect(p.fase).toBe("REVIEW");
+    p.limpiarTodo();
+    expect(p.fase).toBe("VACIO");
+    expect(p.previewFilasRaw).toBe(null);
+    expect(p.archivoPendiente).toBe(null);
+  });
+
+  it("reconstruirFilas adjunta est vinculados reales de la unidad (F3)", async () => {
+    unidadesService.getUnidades.mockResolvedValueOnce({
+      data: [{ id: "u1", numero: "1", tipo: "CASA", sectorNombre: "Sector A" }],
+    });
+    unidadesService.getCapacidad.mockResolvedValueOnce({ data: {} });
+    personasService.listar.mockResolvedValueOnce({
+      data: [{ id: "p1", nombre: "Juan", email: "j@x.cl" }],
+    });
+    vehiculosService.listar.mockResolvedValueOnce({ data: [] });
+    estacionamientosService.getEstacionamientos.mockResolvedValueOnce({
+      data: [{ id: "e1", nombre: "E-1", propietario: { unidadId: "u1", unidadNumero: "1" }, arrendatarioEfectivo: null, arrendatariosFuturos: [] }],
+    });
+    bodegasService.getBodegas.mockResolvedValueOnce({ data: [] });
+    personasService.vinculosUnidad.mockResolvedValueOnce({
+      data: [{ id: "v1", personaId: "p1", personaNombre: "Juan", tipo: "PROPIETARIO", esOcupante: true, recibeNotificaciones: true, esResponsable: false, activo: true }],
+    });
+    unidadesService.getUnidad.mockResolvedValueOnce({
+      data: { id: "u1", numero: "1", bodegas: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: true });
+    await p.cargar();
+    expect(p.filas[0].estVinculados).toEqual(["E-1"]);
   });
 
   it("enviar en reedición recrea el vínculo si cambia tipo/es_responsable", async () => {

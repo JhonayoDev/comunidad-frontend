@@ -665,6 +665,9 @@ function guardar() {
                     <span v-if="!vehiculosDe(f).length" class="text-surface-400"
                       >—</span
                     >
+                    <span v-if="f.estVinculados?.length" class="text-xs text-text-muted">
+                      Vinculados en BD: {{ f.estVinculados.join(", ") }}
+                    </span>
                   </div>
                 </td>
                 <td v-if="conBodegas" class="align-middle min-w-40">
@@ -1044,6 +1047,9 @@ function guardar() {
                   <span v-if="!vehiculosDe(f).length" class="text-surface-400"
                     >—</span
                   >
+                  <span v-if="f.estVinculados?.length" class="text-xs text-text-muted">
+                    Vinculados en BD: {{ f.estVinculados.join(", ") }}
+                  </span>
                 </div>
               </template>
             </div>

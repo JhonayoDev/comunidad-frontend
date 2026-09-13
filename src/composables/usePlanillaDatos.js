@@ -137,6 +137,20 @@ export function validarFila(f, contexto = {}) {
   for (const v of vehiculos) {
     const tv = (v.tipo || "").trim().toUpperCase();
     if (tv && !TIPOS_VEHICULO.includes(tv)) errores.push(`Tipo de vehículo inválido: ${tv}`);
+    // Paridad con el backend ("patente obligatoria"): un est sin patente se
+    // perdería silencioso al importar — avisar en local antes del server.
+    const pat = (v.patente || "").trim();
+    const est = (v.estacionamiento || "").trim();
+    if (!pat && est) errores.push(`Estacionamiento sin patente: ${est}`);
+  }
+  // Filas planas legacy: filaCrudaADinamica descarta el est huérfano, así que
+  // se revisa el flat original para no perderlo silencioso.
+  if (!esFilaDinamica(f)) {
+    for (let i = 1; i <= 3; i++) {
+      const pat = (f[`patente${i}`] || "").trim();
+      const est = (f[`est${i}`] || "").trim();
+      if (!pat && est) errores.push(`Est. ${i} sin patente (${est})`);
+    }
   }
 
   if (f.esNuevo !== false && email && contexto.emailsExistentes?.has(email.toLowerCase()))
@@ -153,12 +167,31 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   const cargando = ref(true);
   const error = ref(null);
   const enviando = ref(false);
+  // 'validar' | 'ejecutar' | null — distingue VALIDANDO de EJECUTANDO en `fase`.
+  const operacion = ref(null);
   const resultado = ref(null);
   const previewData = ref(null);
   const archivoNombre = ref(null);
-  const previewFilasRaw = ref(null); // filas completas para preview fiel (csv parse local, meta-like)
+  // Staging editable (F1, modelo Meta): parse local del csv ANTES de cualquier
+  // POST. Se edita en la app y solo al pulsar [Validar] se envía al backend.
+  const previewFilasRaw = ref(null);
+  // Archivo pendiente de validar (xlsx sin parser local): se guarda el File y
+  // solo se sube al pulsar [Validar]. Nada se POSTea al seleccionar.
+  const archivoPendiente = ref(null);
   const borradorRestaurado = ref(false);
   const modoReedicion = ref(false);
+
+  // Máquina de estados explícita (F4):
+  // VACIO → STAGED → VALIDANDO → REVIEW → EJECUTANDO → REEDICION
+  // MANUAL = borrador manual sin archivo (flujo manual existente).
+  const fase = computed(() => {
+    if (enviando.value) return operacion.value === "ejecutar" ? "EJECUTANDO" : "VALIDANDO";
+    if (previewData.value) return "REVIEW";
+    if ((previewFilasRaw.value?.length || 0) > 0 || archivoPendiente.value) return "STAGED";
+    if (modoReedicion.value) return "REEDICION";
+    if ((filas.value?.length || 0) > 0) return "MANUAL";
+    return "VACIO";
+  });
 
   // Datos existentes del backend para dedupe y reconstrucción.
   const unidadesExistentes = ref(new Set());
@@ -230,6 +263,22 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   // una fila por vínculo, con metadatos para editar/eliminar después.
   async function reconstruirFilas() {
     if (!cid || borradorRestaurado.value || !unidades.value.length) return;
+    // F3: mapa unidadId → estacionamientos vinculados (el GET /estacionamientos
+    // ya trae propietario/arrendatario por unidad, sin requests extra). Así la
+    // reedición muestra los vínculos reales en vez de "" (bug 1 = UI, no BD).
+    const estPorUnidad = new Map();
+    (estacionamientos.value || []).forEach((e) => {
+      const ids = new Set();
+      if (e.propietario?.unidadId) ids.add(e.propietario.unidadId);
+      if (e.arrendatarioEfectivo?.unidadId) ids.add(e.arrendatarioEfectivo.unidadId);
+      (e.arrendatariosFuturos || []).forEach((a) => {
+        if (a?.unidadId) ids.add(a.unidadId);
+      });
+      ids.forEach((id) => {
+        if (!estPorUnidad.has(id)) estPorUnidad.set(id, []);
+        estPorUnidad.get(id).push(e.nombre);
+      });
+    });
     const reconstruidas = [];
     const residenciales = unidades.value.filter((u) => u.tipo !== "CONDOMINIO");
     const resultados = await Promise.allSettled(
@@ -289,6 +338,9 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
             __vinculoId: v.id,
             __personaId: v.personaId,
             __unidadId: u.id,
+            // F3: nombres de estacionamientos vinculados a la unidad en BD
+            // (solo informativos: el mapeo vehículo→est no es reconstruible).
+            estVinculados: esPrimaria ? [...(estPorUnidad.get(u.id) || [])] : [],
             marcadoEliminar: false,
             original: null,
           });
@@ -756,6 +808,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     const payload = buildPayload();
     if (!payload.length) return;
     enviando.value = true;
+    operacion.value = "validar";
     error.value = null;
     try {
       const res = await importacionService.previewJson(cid, payload);
@@ -766,19 +819,14 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       error.value = e?.response?.data?.message || "No se pudo previsualizar la planilla";
     } finally {
       enviando.value = false;
+      operacion.value = null;
     }
   }
 
-  // Fase 1b: POST /importaciones/preview multipart — csv/xlsx (backend parsea).
-  // Modelo staged Microsoft/Meta: upload → preview validado → review → commit.
-  // 403 estricto: no bypass — informa falta de permiso.
-  // Para preview fiel (meta-like/unidades fase 5), parseamos csv local y guardamos
-  // filas completas en previewFilasRaw para renderizar todas las columnas.
-  async function previewArchivo(archivo) {
-    if (!cid) {
-      error.value = "No se pudo determinar el condominio";
-      return;
-    }
+  // F1 — Staging (Meta): al seleccionar archivo NO se hace ningún POST.
+  // csv → parse local a staging editable; xlsx → se guarda el File pendiente.
+  // Solo [Validar] envía al backend (validarStaging).
+  async function cargarStaging(archivo) {
     if (!archivo) return;
     const nombre = archivo.name || "";
     const ext = nombre.toLowerCase().split(".").pop();
@@ -786,27 +834,95 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       error.value = "Formato no soportado. Usa .csv o .xlsx";
       return;
     }
-    enviando.value = true;
     error.value = null;
+    resultado.value = null;
+    previewData.value = null;
     archivoNombre.value = nombre;
-    previewFilasRaw.value = null;
-    // Parse local fiel para csv (31 cols) — permite preview completo sin esperar BE
-    if (ext === "csv") {
-      try {
-        const texto = await archivo.text();
-        const { encabezados, filas: filasCrudas } = parsearCsv(texto);
-        // Validación mínima: si encabezados vacíos, no poblar
-        if (encabezados.length) {
-          const filasNorm = normalizarFilas(encabezados, filasCrudas, COLUMNAS_DEFAULT);
-          const dinamicas = filasCrudasADinamicas(filasNorm);
-          // Reemplazo fiel: mismo orden que backend (sin filtrar vacías)
-          previewFilasRaw.value = dinamicas;
-        }
-      } catch (pe) {
-        console.error("Error parseando csv local para preview fiel", pe);
-        // No bloquea: seguirá el preview de backend con tabla limitada
-      }
+    if (ext === "xlsx") {
+      archivoPendiente.value = archivo;
+      previewFilasRaw.value = null;
+      return;
     }
+    archivoPendiente.value = null;
+    try {
+      const texto = await archivo.text();
+      const { encabezados, filas: filasCrudas } = parsearCsv(texto);
+      if (!encabezados.length) {
+        error.value = "El archivo no tiene encabezado legible";
+        previewFilasRaw.value = null;
+        return;
+      }
+      const filasNorm = normalizarFilas(encabezados, filasCrudas, COLUMNAS_DEFAULT);
+      // Mismo orden que el backend (sin filtrar vacías) + ids para edición.
+      previewFilasRaw.value = filasCrudasADinamicas(filasNorm).map((f) => ({
+        id: nuevoId(),
+        ...f,
+        esNuevo: true,
+        marcadoEliminar: false,
+        original: null,
+      }));
+    } catch (pe) {
+      console.error("Error parseando csv local para staging", pe);
+      error.value = "No se pudo leer el archivo csv";
+      previewFilasRaw.value = null;
+    }
+  }
+
+  // F1 — [Validar]: valida el staging editado contra el backend.
+  // csv → previewJson con el payload de lo editado (lo que ves es lo que se valida).
+  // xlsx → previewArchivo multipart (sin edición local posible).
+  async function validarStaging() {
+    if (!cid) {
+      error.value = "No se pudo determinar el condominio";
+      return;
+    }
+    if ((previewFilasRaw.value?.length || 0) > 0) {
+      const payload = previewFilasRaw.value
+        .filter((f) => !f.marcadoEliminar)
+        .map((f) => filaAPayload(f));
+      if (!payload.length) {
+        error.value = "No hay filas para validar";
+        return;
+      }
+      enviando.value = true;
+      operacion.value = "validar";
+      error.value = null;
+      try {
+        const res = await importacionService.previewJson(cid, payload);
+        previewData.value = res.data;
+        resultado.value = null;
+      } catch (e) {
+        console.error("Error al validar staging", e);
+        if (e?.response?.status === 403) {
+          error.value =
+            "No tienes permiso para importar (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso en tu rol/cargo.";
+        } else {
+          error.value = e?.response?.data?.message || "No se pudo validar el archivo";
+        }
+        previewData.value = null;
+      } finally {
+        enviando.value = false;
+        operacion.value = null;
+      }
+      return;
+    }
+    if (archivoPendiente.value) {
+      await previewArchivo(archivoPendiente.value);
+    }
+  }
+
+  // Fase 1b: POST /importaciones/preview multipart — solo xlsx (vía validarStaging).
+  // 403 estricto: no bypass — informa falta de permiso.
+  async function previewArchivo(archivo) {
+    if (!cid) {
+      error.value = "No se pudo determinar el condominio";
+      return;
+    }
+    if (!archivo) return;
+    enviando.value = true;
+    operacion.value = "validar";
+    error.value = null;
+    archivoNombre.value = archivo.name || archivoNombre.value;
     try {
       const res = await importacionService.previewArchivo(cid, archivo);
       previewData.value = res.data;
@@ -818,7 +934,6 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         error.value =
           "No tienes permiso para importar (IMPORTACION_DATOS). Contacta al SUPER_ADMIN para que te asigne el permiso en tu rol/cargo. Si eres SUPER_ADMIN, falta la migración V68 (V67 omitió el permiso para SUPER_ADMIN/SOPORTE).";
         previewData.value = null;
-        // Mantener previewFilasRaw para que el usuario vea su archivo aunque falle permiso
         return;
       }
       const msg =
@@ -834,14 +949,42 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       previewData.value = null;
     } finally {
       enviando.value = false;
+      operacion.value = null;
     }
   }
 
   function descartarPreviewArchivo() {
     previewData.value = null;
-    archivoNombre.value = null;
-    previewFilasRaw.value = null;
     error.value = null;
+  }
+
+  // ─── Staging editable (F1): edita el borrador antes de validar ──────────
+  function quitarStagingFila(id) {
+    previewFilasRaw.value = (previewFilasRaw.value || []).filter((f) => f.id !== id);
+  }
+
+  function stagingPorId(id) {
+    return (previewFilasRaw.value || []).find((f) => f.id === id) || null;
+  }
+
+  function agregarStagingVehiculo(id) {
+    const f = stagingPorId(id);
+    if (f) (f.vehiculos || (f.vehiculos = [])).push(vehiculoVacio());
+  }
+
+  function quitarStagingVehiculo(id, uid) {
+    const f = stagingPorId(id);
+    if (f) f.vehiculos = (f.vehiculos || []).filter((v) => v.uid !== uid);
+  }
+
+  function agregarStagingBodega(id) {
+    const f = stagingPorId(id);
+    if (f) (f.bodegas || (f.bodegas = [])).push(bodegaVacia());
+  }
+
+  function quitarStagingBodega(id, uid) {
+    const f = stagingPorId(id);
+    if (f) f.bodegas = (f.bodegas || []).filter((b) => b.uid !== uid);
   }
 
   // Limpieza total (Meta: "Descartar todo" — evita errores fantasma del archivo anterior en etapa editable)
@@ -850,8 +993,10 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     previewData.value = null;
     archivoNombre.value = null;
     previewFilasRaw.value = null;
+    archivoPendiente.value = null;
     error.value = null;
     resultado.value = null;
+    operacion.value = null;
     descartarBorrador();
   }
 
@@ -859,6 +1004,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   async function ejecutar() {
     if (!previewData.value?.importacionId) return;
     enviando.value = true;
+    operacion.value = "ejecutar";
     error.value = null;
     try {
       const res = await importacionService.ejecutar(cid, previewData.value.importacionId);
@@ -866,6 +1012,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       previewData.value = null;
       archivoNombre.value = null;
       previewFilasRaw.value = null;
+      archivoPendiente.value = null;
       descartarBorrador();
       // Tras importar desde archivo, refrescar datos existentes para reedición
       // (reconstruir filas desde vínculos reales).
@@ -881,6 +1028,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       error.value = e?.response?.data?.message || "No se pudo ejecutar la importación";
     } finally {
       enviando.value = false;
+      operacion.value = null;
     }
   }
 
@@ -1006,10 +1154,13 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     cargando,
     error,
     enviando,
+    operacion,
+    fase,
     resultado,
     previewData,
     archivoNombre,
     previewFilasRaw,
+    archivoPendiente,
     borradorRestaurado,
     modoReedicion,
     capacidad,
@@ -1044,6 +1195,13 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     buildPayload,
     preview,
     previewArchivo,
+    cargarStaging,
+    validarStaging,
+    quitarStagingFila,
+    agregarStagingVehiculo,
+    quitarStagingVehiculo,
+    agregarStagingBodega,
+    quitarStagingBodega,
     descartarPreviewArchivo,
     limpiarTodo,
     ejecutar,
