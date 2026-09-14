@@ -49,6 +49,9 @@ function filaVacia() {
     es_responsable: "",
     vehiculos: [],
     bodegas: [],
+    // Estacionamientos standalone (unidad ↔ est, sin vehículo — la unidad es
+    // el core). [{uid, nombre, __estacionamientoId?}]
+    estacionamientos: [],
     esNuevo: true,
     marcadoEliminar: false,
     original: null,
@@ -71,6 +74,10 @@ function bodegaVacia() {
   return { uid: nuevoId(), nombre: "" };
 }
 
+function estacionamientoVacio() {
+  return { uid: nuevoId(), nombre: "" };
+}
+
 // Snapshot de una fila para detectar cambios (vs. el estado original del backend).
 function snapshotFila(f) {
   return {
@@ -87,6 +94,7 @@ function snapshotFila(f) {
     es_responsable: f.es_responsable,
     vehiculos: (f.vehiculos || []).map((v) => ({ ...v })),
     bodegas: (f.bodegas || []).map((b) => ({ ...b })),
+    estacionamientos: (f.estacionamientos || []).map((e) => ({ ...e })),
   };
 }
 
@@ -263,9 +271,10 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   // una fila por vínculo, con metadatos para editar/eliminar después.
   async function reconstruirFilas() {
     if (!cid || borradorRestaurado.value || !unidades.value.length) return;
-    // F3: mapa unidadId → estacionamientos vinculados (el GET /estacionamientos
-    // ya trae propietario/arrendatario por unidad, sin requests extra). Así la
-    // reedición muestra los vínculos reales en vez de "" (bug 1 = UI, no BD).
+    // Vínculos reales unidad ↔ estacionamiento (el GET /estacionamientos ya
+    // trae propietario/arrendatario por unidad, sin requests extra). La unidad
+    // es el core: se reconstruyen como lista standalone editable, no como
+    // display. Mapa unidadId → [{nombre, id}].
     const estPorUnidad = new Map();
     (estacionamientos.value || []).forEach((e) => {
       const ids = new Set();
@@ -276,7 +285,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       });
       ids.forEach((id) => {
         if (!estPorUnidad.has(id)) estPorUnidad.set(id, []);
-        estPorUnidad.get(id).push(e.nombre);
+        estPorUnidad.get(id).push({ nombre: e.nombre, id: e.id });
       });
     });
     const reconstruidas = [];
@@ -338,9 +347,15 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
             __vinculoId: v.id,
             __personaId: v.personaId,
             __unidadId: u.id,
-            // F3: nombres de estacionamientos vinculados a la unidad en BD
-            // (solo informativos: el mapeo vehículo→est no es reconstruible).
-            estVinculados: esPrimaria ? [...(estPorUnidad.get(u.id) || [])] : [],
+            // Estacionamientos standalone vinculados a la unidad en BD
+            // (lista editable: vincular/desvincular en aplicarEdicion).
+            estacionamientos: esPrimaria
+              ? (estPorUnidad.get(u.id) || []).map((e) => ({
+                  uid: nuevoId(),
+                  nombre: e.nombre,
+                  __estacionamientoId: e.id,
+                }))
+              : [],
             marcadoEliminar: false,
             original: null,
           });
@@ -455,6 +470,16 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     if (f) f.bodegas = f.bodegas.filter((b) => b.uid !== uid);
   }
 
+  function agregarEstacionamiento(id) {
+    const f = filas.value.find((x) => x.id === id);
+    if (f) f.estacionamientos.push(estacionamientoVacio());
+  }
+
+  function quitarEstacionamiento(id, uid) {
+    const f = filas.value.find((x) => x.id === id);
+    if (f) f.estacionamientos = (f.estacionamientos || []).filter((e) => e.uid !== uid);
+  }
+
   // ─── Selección de casa desde unidades existentes ─────────────────────────
   // Las unidades son la base del condominio: la casa se elige de las ya
   // creadas y de ahí se derivan tipo y sector (no se escriben a mano).
@@ -561,6 +586,23 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     return false;
   }
 
+  // Standalone unidad ↔ est (sin vehículo): compara por id o uid + nombre.
+  function estacionamientosCambiados(f, o) {
+    const cur = f.estacionamientos || [];
+    const orig = o.estacionamientos || [];
+    if (cur.length !== orig.length) return true;
+    for (const e of cur) {
+      const oe = orig.find(
+        (x) =>
+          (x.__estacionamientoId && x.__estacionamientoId === e.__estacionamientoId) ||
+          x.uid === e.uid,
+      );
+      if (!oe) return true;
+      if (String(e.nombre || "") !== String(oe.nombre || "")) return true;
+    }
+    return false;
+  }
+
   function cambiado(f) {
     const o = f.original;
     if (!o) return false;
@@ -582,6 +624,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     }
     if (vehiculosCambiados(f, o)) return true;
     if (bodegasCambiadas(f, o)) return true;
+    if (estacionamientosCambiados(f, o)) return true;
     return false;
   }
 
@@ -641,6 +684,17 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const res = await estacionamientosService.vinculos(cid, id);
       const v = (res.data || []).find((x) => x.activo && x.unidadId === unidadId);
       if (v) await estacionamientosService.desvincular(cid, id, v.id);
+    } catch (e) {
+      console.error("Error al desvincular estacionamiento", e);
+      throw e;
+    }
+  }
+
+  async function desvincularEstacionamientoPorId(estacionamientoId, unidadId) {
+    try {
+      const res = await estacionamientosService.vinculos(cid, estacionamientoId);
+      const v = (res.data || []).find((x) => x.activo && x.unidadId === unidadId);
+      if (v) await estacionamientosService.desvincular(cid, estacionamientoId, v.id);
     } catch (e) {
       console.error("Error al desvincular estacionamiento", e);
       throw e;
@@ -793,6 +847,34 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         const id = resolverBodegaId(b.nombre);
         if (id) {
           await bodegasService.vincular(cid, id, {
+            tipo: (f.tipo_vinculo || "").trim(),
+            unidadId: f.__unidadId,
+            fechaInicio: hoy(),
+          });
+        }
+      }
+    }
+
+    // Estacionamientos standalone (unidad ↔ est, sin vehículo): quitar / vincular.
+    const origEst = o.estacionamientos || [];
+    const curEst = f.estacionamientos || [];
+    for (const oe of origEst) {
+      if (
+        oe.__estacionamientoId &&
+        !curEst.some((e) => e.__estacionamientoId === oe.__estacionamientoId)
+      ) {
+        await desvincularEstacionamientoPorId(oe.__estacionamientoId, f.__unidadId);
+      }
+    }
+    for (const e of curEst) {
+      const oe = origEst.find(
+        (x) => x.__estacionamientoId && x.__estacionamientoId === e.__estacionamientoId,
+      );
+      if (!oe && !esEstacionamientoVisita(e.nombre)) {
+        const id = e.__estacionamientoId || resolverEstacionamientoId(e.nombre);
+        if (id) {
+          e.__estacionamientoId = id;
+          await estacionamientosService.vincular(cid, id, {
             tipo: (f.tipo_vinculo || "").trim(),
             unidadId: f.__unidadId,
             fechaInicio: hoy(),
@@ -985,6 +1067,16 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   function quitarStagingBodega(id, uid) {
     const f = stagingPorId(id);
     if (f) f.bodegas = (f.bodegas || []).filter((b) => b.uid !== uid);
+  }
+
+  function agregarStagingEstacionamiento(id) {
+    const f = stagingPorId(id);
+    if (f) (f.estacionamientos || (f.estacionamientos = [])).push(estacionamientoVacio());
+  }
+
+  function quitarStagingEstacionamiento(id, uid) {
+    const f = stagingPorId(id);
+    if (f) f.estacionamientos = (f.estacionamientos || []).filter((e) => e.uid !== uid);
   }
 
   // Limpieza total (Meta: "Descartar todo" — evita errores fantasma del archivo anterior en etapa editable)
@@ -1185,6 +1277,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     quitarVehiculo,
     agregarBodega,
     quitarBodega,
+    agregarEstacionamiento,
+    quitarEstacionamiento,
     asignarUnidad,
     unidadPorNumero,
     marcarResponsable,
@@ -1202,6 +1296,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     quitarStagingVehiculo,
     agregarStagingBodega,
     quitarStagingBodega,
+    agregarStagingEstacionamiento,
+    quitarStagingEstacionamiento,
     descartarPreviewArchivo,
     limpiarTodo,
     ejecutar,

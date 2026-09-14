@@ -4,6 +4,8 @@ import {
   filaAPayload,
   filasCrudasADinamicas,
   esEstacionamientoVisita,
+  clavesColumnas,
+  COLUMNAS_DEFAULT,
 } from "@/data/planillaColumnas";
 import { importacionService } from "@/services/importacionService";
 import { unidadesService } from "@/services/unidadesService";
@@ -637,7 +639,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(p.archivoPendiente).toBe(null);
   });
 
-  it("reconstruirFilas adjunta est vinculados reales de la unidad (F3)", async () => {
+  it("reconstruirFilas reconstruye estacionamientos standalone editables (BE-74)", async () => {
     unidadesService.getUnidades.mockResolvedValueOnce({
       data: [{ id: "u1", numero: "1", tipo: "CASA", sectorNombre: "Sector A" }],
     });
@@ -658,7 +660,54 @@ describe("planillaDatos - usePlanillaDatos", () => {
     });
     const p = usePlanillaDatos({ cargarExistentes: true });
     await p.cargar();
-    expect(p.filas[0].estVinculados).toEqual(["E-1"]);
+    expect(p.filas[0].estacionamientos).toHaveLength(1);
+    expect(p.filas[0].estacionamientos[0]).toMatchObject({ nombre: "E-1", __estacionamientoId: "e1" });
+    expect(p.filas[0].estVinculados).toBe(undefined);
+  });
+
+  it("filaAPayload incluye estacionamientos standalone (BE-74)", () => {
+    const p = filaAPayload({
+      unidad: "2",
+      tipo_unidad: "CASA",
+      nombre: "A",
+      email: "a@a.cl",
+      tipo_vinculo: "PROPIETARIO",
+      vehiculos: [],
+      bodegas: [],
+      estacionamientos: [{ uid: "e1", nombre: "E-2" }],
+    });
+    expect(p.estacionamientos).toEqual(["E-2"]);
+    expect(p.vehiculos).toHaveLength(0);
+  });
+
+  it("fila cruda convierte estacionamiento1..3 a lista standalone", () => {
+    expect(clavesColumnas(COLUMNAS_DEFAULT)).toContain("estacionamiento1");
+    expect(clavesColumnas(COLUMNAS_DEFAULT)).toContain("estacionamiento3");
+    const [f] = filasCrudasADinamicas([{ estacionamiento1: "E-2", estacionamiento2: "", patente1: "" }]);
+    expect(f.estacionamientos.map((e) => e.nombre)).toEqual(["E-2"]);
+    expect(f.vehiculos).toHaveLength(0);
+  });
+
+  it("agregar/quitar estacionamiento standalone en filas", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.agregarFila();
+    const f = p.filas[0];
+    expect(f.estacionamientos).toEqual([]);
+    p.agregarEstacionamiento(f.id);
+    expect(f.estacionamientos).toHaveLength(1);
+    p.quitarEstacionamiento(f.id, f.estacionamientos[0].uid);
+    expect(f.estacionamientos).toHaveLength(0);
+  });
+
+  it("cambiado detecta cambios en estacionamientos standalone", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.agregarFila();
+    const f = p.filas[0];
+    Object.assign(f, { unidad: "1", esNuevo: false });
+    f.original = { unidad: "1", tipo_unidad: "", sector: "", nombre: "", email: "", rut: "", telefono: "", tipo_vinculo: "", es_ocupante: "", recibe_notificaciones: "", es_responsable: "", vehiculos: [], bodegas: [], estacionamientos: [] };
+    expect(p.cambiado(f)).toBe(false);
+    p.agregarEstacionamiento(f.id);
+    expect(p.cambiado(f)).toBe(true);
   });
 
   it("enviar en reedición recrea el vínculo si cambia tipo/es_responsable", async () => {

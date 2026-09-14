@@ -10,7 +10,7 @@ export const TIPOS_VINCULO = ["PROPIETARIO", "ARRENDATARIO", "RESIDENTE_ADICIONA
 export const TIPOS_VEHICULO = ["AUTO", "CAMIONETA", "MOTO", "FURGON", "CAMION", "OTRO"];
 
 export const MAX_VEHICULOS = 3;
-export const MAX_ESTACIONAMIENTOS = 3;
+export const MAX_ESTACIONAMIENTOS_STANDALONE = 3;
 export const MAX_BODEGAS = 3;
 
 // Columnas base (por persona).
@@ -54,6 +54,17 @@ export function columnasBodegas(n = MAX_BODEGAS) {
   return cols;
 }
 
+// Columnas de estacionamientos standalone (vínculo estacionamiento ↔ unidad,
+// sin vehículo — la unidad es el core, igual que las bodegas). Van al final
+// del CSV (tras bodega3), mismo orden que el backend (BE-74).
+export function columnasEstacionamientos(n = MAX_ESTACIONAMIENTOS_STANDALONE) {
+  const cols = [];
+  for (let i = 1; i <= n; i++) {
+    cols.push({ key: `estacionamiento${i}`, label: `Estac. ${i}`, tipo: "text", grupo: "estacionamiento", indice: i });
+  }
+  return cols;
+}
+
 // Genera las columnas completas según la capacidad del condominio.
 // `capacidad` usa los campos del backend: capacidadCasas/Departamentos/
 // Estacionamientos/Bodegas/Otro (null = sin tope).
@@ -61,6 +72,7 @@ export function generarColumnas(capacidad = {}) {
   const cols = [...COLUMNAS_BASE];
   cols.push(...columnasVehiculos(MAX_VEHICULOS));
   if (capacidad.capacidadBodegas > 0) cols.push(...columnasBodegas(MAX_BODEGAS));
+  cols.push(...columnasEstacionamientos(MAX_ESTACIONAMIENTOS_STANDALONE));
   return cols;
 }
 
@@ -100,7 +112,13 @@ export function filaCrudaADinamica(fila) {
     const b = (fila[`bodega${i}`] || "").trim();
     if (b) bodegas.push({ uid: `bod-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`, nombre: b });
   }
-  return { ...fila, vehiculos, bodegas };
+  // Estacionamientos standalone (unidad ↔ est, sin vehículo).
+  const estacionamientos = [];
+  for (let i = 1; i <= MAX_ESTACIONAMIENTOS_STANDALONE; i++) {
+    const e = (fila[`estacionamiento${i}`] || "").trim();
+    if (e) estacionamientos.push({ uid: `est-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`, nombre: e });
+  }
+  return { ...fila, vehiculos, bodegas, estacionamientos };
 }
 
 // Convierte una lista de filas planas (CSV) al shape dinámico.
@@ -108,9 +126,13 @@ export function filasCrudasADinamicas(filas) {
   return (filas || []).map(filaCrudaADinamica);
 }
 
-// True si la fila usa el shape dinámico (vehiculos[]/bodegas[]).
+// True si la fila usa el shape dinámico (vehiculos[]/bodegas[]/estacionamientos[]).
 export function esFilaDinamica(fila) {
-  return Array.isArray(fila?.vehiculos) || Array.isArray(fila?.bodegas);
+  return (
+    Array.isArray(fila?.vehiculos) ||
+    Array.isArray(fila?.bodegas) ||
+    Array.isArray(fila?.estacionamientos)
+  );
 }
 
 // Convierte una fila (dinámica o legacy plana) al payload anidado que espera
@@ -130,6 +152,9 @@ export function filaAPayload(fila) {
   const bodegas = (f.bodegas || [])
     .map((b) => (typeof b === "string" ? b : b.nombre || "").trim())
     .filter(Boolean);
+  const estacionamientos = (f.estacionamientos || [])
+    .map((e) => (typeof e === "string" ? e : e.nombre || "").trim())
+    .filter(Boolean);
   return {
     unidad: (f.unidad || "").trim(),
     tipoUnidad: (f.tipo_unidad || "").trim(),
@@ -148,6 +173,7 @@ export function filaAPayload(fila) {
     },
     vehiculos,
     bodegas,
+    estacionamientos,
   };
 }
 

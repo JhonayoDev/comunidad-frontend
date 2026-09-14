@@ -141,6 +141,8 @@ onMounted(() => planilla.cargar());
           @quitar-vehiculo="planilla.quitarStagingVehiculo"
           @agregar-bodega="planilla.agregarStagingBodega"
           @quitar-bodega="planilla.quitarStagingBodega"
+          @agregar-estacionamiento="planilla.agregarStagingEstacionamiento"
+          @quitar-estacionamiento="planilla.quitarStagingEstacionamiento"
         />
       </div>
 

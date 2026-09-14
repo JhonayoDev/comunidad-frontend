@@ -224,6 +224,12 @@ function bodegasDe(f) {
     .filter(Boolean);
 }
 
+function estacionamientosDe(f) {
+  return (f.estacionamientos || [])
+    .map((e) => (typeof e === "string" ? e : e.nombre || "").trim())
+    .filter(Boolean);
+}
+
 function guardar() {
   emit("guardar");
 }
@@ -384,6 +390,7 @@ const { foco, alternar, salir } = useModoFoco();
                 <th class="text-center">Notif.</th>
                 <th class="text-center">Resp.</th>
                 <th>Vehículos</th>
+                <th>Estacionamientos</th>
                 <th v-if="conBodegas">Bodegas</th>
                 <th></th>
               </tr>
@@ -677,10 +684,45 @@ const { foco, alternar, salir } = useModoFoco();
                     <span v-if="!vehiculosDe(f).length" class="text-surface-400"
                       >—</span
                     >
-                    <span v-if="f.estVinculados?.length" class="text-xs text-text-muted">
-                      Vinculados en BD: {{ f.estVinculados.join(", ") }}
-                    </span>
                   </div>
+                </td>
+                <td class="align-middle min-w-40">
+                  <template v-if="editando">
+                    <div class="flex flex-col gap-1">
+                      <div
+                        v-for="e in f.estacionamientos || []"
+                        :key="e.uid"
+                        class="flex items-center gap-1"
+                      >
+                        <AutoComplete
+                          :modelValue="e.nombre"
+                          :suggestions="estSugerencias"
+                          @complete="buscarEst"
+                          placeholder="Est."
+                          class="flex-1"
+                          @update:modelValue="e.nombre = $event"
+                        />
+                        <Button
+                          icon="pi pi-trash"
+                          variant="text"
+                          severity="danger"
+                          size="small"
+                          title="Quitar estacionamiento"
+                          @click="p.quitarEstacionamiento(f.id, e.uid)"
+                        />
+                      </div>
+                      <Button
+                        label="Agregar est."
+                        icon="pi pi-plus"
+                        variant="text"
+                        size="small"
+                        @click="p.agregarEstacionamiento(f.id)"
+                      />
+                    </div>
+                  </template>
+                  <span v-else class="text-sm">{{
+                    estacionamientosDe(f).join(", ") || "—"
+                  }}</span>
                 </td>
                 <td v-if="conBodegas" class="align-middle min-w-40">
                   <template v-if="editando">
@@ -1059,10 +1101,65 @@ const { foco, alternar, salir } = useModoFoco();
                   <span v-if="!vehiculosDe(f).length" class="text-surface-400"
                     >—</span
                   >
-                  <span v-if="f.estVinculados?.length" class="text-xs text-text-muted">
-                    Vinculados en BD: {{ f.estVinculados.join(", ") }}
-                  </span>
                 </div>
+              </template>
+            </div>
+
+            <div
+              class="flex flex-col gap-1 border border-border rounded-lg p-2"
+            >
+              <button
+                type="button"
+                class="flex items-center justify-between w-full text-left"
+                @click="toggleRecursos(f.id + '-est')"
+              >
+                <span class="text-xs font-semibold text-surface-400">
+                  Estacionamientos ({{ (f.estacionamientos || []).length }})
+                </span>
+                <i
+                  class="pi text-xs"
+                  :class="
+                    recursosAbiertos[f.id + '-est'] !== false
+                      ? 'pi-chevron-up'
+                      : 'pi-chevron-down'
+                  "
+                ></i>
+              </button>
+              <template v-if="recursosAbiertos[f.id + '-est'] !== false">
+                <template v-if="editando">
+                  <div
+                    v-for="e in f.estacionamientos || []"
+                    :key="e.uid"
+                    class="flex items-center gap-2"
+                  >
+                    <AutoComplete
+                      :modelValue="e.nombre"
+                      :suggestions="estSugerencias"
+                      @complete="buscarEst"
+                      placeholder="Estacionamiento"
+                      class="flex-1"
+                      @update:modelValue="e.nombre = $event"
+                    />
+                    <Button
+                      icon="pi pi-trash"
+                      variant="text"
+                      severity="danger"
+                      size="small"
+                      title="Quitar estacionamiento"
+                      @click="p.quitarEstacionamiento(f.id, e.uid)"
+                    />
+                  </div>
+                  <Button
+                    label="Agregar estacionamiento"
+                    icon="pi pi-plus"
+                    variant="text"
+                    size="small"
+                    @click="p.agregarEstacionamiento(f.id)"
+                  />
+                </template>
+                <span v-else class="text-sm">{{
+                  estacionamientosDe(f).join(", ") || "—"
+                }}</span>
               </template>
             </div>
 

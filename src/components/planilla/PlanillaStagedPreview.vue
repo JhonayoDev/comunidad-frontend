@@ -32,6 +32,8 @@ const emit = defineEmits([
   "quitarVehiculo",
   "agregarBodega",
   "quitarBodega",
+  "agregarEstacionamiento",
+  "quitarEstacionamiento",
 ]);
 
 // Paginación (Meta: 50/pág)
@@ -116,6 +118,20 @@ function bodegasResumen(f) {
     .filter(Boolean)
     .join(", ");
 }
+
+function estacionamientosResumen(f) {
+  return (f.estacionamientos || [])
+    .map((e) => (typeof e === "string" ? e : e.nombre || "").trim())
+    .filter(Boolean)
+    .join(", ");
+}
+
+// Preview fiel directo del backend (BE-74: FilaPreview trae vehiculos[],
+// estacionamientos[] y bodegas[]) — cubre .xlsx sin parse local.
+const backendFiel = computed(() => {
+  const filas = props.previewData?.filas || [];
+  return filas.length > 0 && filas.every((f) => Array.isArray(f.vehiculos));
+});
 
 // Aviso local mínimo en staging (reglas completas las da [Validar]).
 function incompleta(f) {
@@ -203,6 +219,7 @@ function incompleta(f) {
               <th class="text-center">Notif.</th>
               <th class="text-center">Resp.</th>
               <th>Vehículos</th>
+              <th>Estacionamientos</th>
               <th>Bodegas</th>
               <th></th>
             </tr>
@@ -253,6 +270,15 @@ function incompleta(f) {
                     </div>
                   </div>
                   <Button label="Vehículo" icon="pi pi-plus" variant="text" size="small" @click="emit('agregarVehiculo', f.id)" />
+                </div>
+              </td>
+              <td class="min-w-32">
+                <div class="flex flex-col gap-1">
+                  <div v-for="e in f.estacionamientos || []" :key="e.uid" class="flex items-center gap-1">
+                    <InputText v-model="e.nombre" placeholder="Est." size="small" class="w-24" />
+                    <Button icon="pi pi-trash" variant="text" severity="danger" size="small" title="Quitar" @click="emit('quitarEstacionamiento', f.id, e.uid)" />
+                  </div>
+                  <Button label="Est." icon="pi pi-plus" variant="text" size="small" @click="emit('agregarEstacionamiento', f.id)" />
                 </div>
               </td>
               <td class="min-w-32">
@@ -392,6 +418,7 @@ function incompleta(f) {
               <th class="text-center">Notif.</th>
               <th class="text-center">Resp.</th>
               <th>Vehículos</th>
+              <th>Estacionamientos</th>
               <th>Bodegas</th>
               <th>Estado</th>
             </tr>
@@ -425,6 +452,7 @@ function incompleta(f) {
                   <li v-for="(e, ei) in estadoPorFila.get(pagina * porPagina + pIdx + 1).errores" :key="ei">{{ e }}</li>
                 </ul>
               </td>
+              <td class="min-w-32 text-sm">{{ estacionamientosResumen(f) || "—" }}</td>
               <td class="min-w-32 text-sm">{{ bodegasResumen(f) || "—" }}</td>
               <td>
                 <Tag
@@ -447,15 +475,15 @@ function incompleta(f) {
       />
       </template>
 
-      <!-- Fallback xlsx: tabla acotada -->
+      <!-- Sin staging local (.xlsx o backend antiguo): datos del servidor -->
       <template v-else>
         <Message
-          v-if="archivoNombre?.toLowerCase().endsWith('.xlsx')"
+          v-if="!backendFiel && archivoNombre?.toLowerCase().endsWith('.xlsx')"
           severity="info"
           :closable="false"
           class="m-0 mb-2"
         >
-          Previsualización acotada para .xlsx. Para ver todas las columnas, el backend devolverá el detalle completo (ver SOLICITUD_PREVIEW_FIEL_IMPORTACION).
+          Previsualización acotada: actualiza el backend para ver todas las columnas (ver SOLICITUD_PREVIEW_FIEL_IMPORTACION).
         </Message>
         <div v-if="(previewData.filas || []).length" class="tabla-scroll max-h-[68vh] overflow-auto border border-border border-round">
           <table class="w-full text-sm">
@@ -466,6 +494,9 @@ function incompleta(f) {
                 <th class="text-left p-2">Nombre</th>
                 <th class="text-left p-2">Email</th>
                 <th class="text-left p-2">Vínculo</th>
+                <th v-if="backendFiel" class="text-left p-2">Vehículos</th>
+                <th v-if="backendFiel" class="text-left p-2">Estacionamientos</th>
+                <th v-if="backendFiel" class="text-left p-2">Bodegas</th>
                 <th class="text-left p-2">Estado</th>
               </tr>
             </thead>
@@ -481,6 +512,9 @@ function incompleta(f) {
                 <td class="p-2">{{ f.personaNombre || "—" }}</td>
                 <td class="p-2 truncate max-w-32">{{ f.personaEmail || f.email || "—" }}</td>
                 <td class="p-2">{{ f.tipoVinculo || "—" }}</td>
+                <td v-if="backendFiel" class="p-2">{{ vehiculosResumen({ vehiculos: f.vehiculos }) || "—" }}</td>
+                <td v-if="backendFiel" class="p-2">{{ estacionamientosResumen({ estacionamientos: f.estacionamientos }) || "—" }}</td>
+                <td v-if="backendFiel" class="p-2">{{ bodegasResumen({ bodegas: f.bodegas }) || "—" }}</td>
                 <td class="p-2">
                   <Tag :value="f.estado" :severity="f.estado === 'OK' ? 'success' : f.estado === 'ERROR' ? 'danger' : 'warn'" size="small" />
                 </td>

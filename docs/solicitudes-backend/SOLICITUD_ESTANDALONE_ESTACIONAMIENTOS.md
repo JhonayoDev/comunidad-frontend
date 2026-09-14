@@ -1,6 +1,6 @@
 # Solicitud BE: estacionamientos standalone en planilla
 
-> Estado: PENDIENTE BACKEND. Frontend bloqueado hasta el contrato (el JSON/CSV actual no puede expresar est sin vehículo).
+> Estado: BACKEND IMPLEMENTADO en `feature/BE-74-estacionamientos-standalone` (`677ca1e`, sin migración — solo código). FRONTEND IMPLEMENTADO en `feature/planilla-csv-wizard` (PR #24). Pendiente: merge + deploy del backend para verificación e2e en vivo (el backend en ejecución aún sirve el contrato de 32 cols).
 > Nota: el número de versión de migración lo define el equipo backend (aquí no se presume versión).
 
 ## Problema (evidencia real)

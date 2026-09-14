@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { parsearCsv, normalizarFilas, COLUMNAS } from "@/utils/csvParser";
 import { clavesColumnas } from "@/data/planillaColumnas";
 
-const CSV_DEMO = `unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1;patente2;tipo_vehiculo2;marca2;modelo2;color2;est2;patente3;tipo_vehiculo3;marca3;modelo3;color3;est3
+const CSV_DEMO = `unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1;patente2;tipo_vehiculo2;marca2;modelo2;color2;est2;patente3;tipo_vehiculo3;marca3;modelo3;color3;est3;estacionamiento1;estacionamiento2;estacionamiento3
 1;CASA;Sector A;Francisca Morales Díaz;francisca.morales@test.com;18.901.234-5;+56978901234;PROPIETARIO;SI;SI;SI;ABCD01;AUTO;Toyota;Corolla;Blanco;E-1;;;;;;;;
 1;CASA;Sector A;Camila Reyes Vidal;camila.reyes@test.com;30.123.456-7;+56990123457;RESIDENTE_ADICIONAL;SI;SI;NO;;;;;;;;;;;;
 3;CASA;Sector B;Hernán Vargas Soto;hernan.vargas@test.com;19.012.345-6;+56989012345;PROPIETARIO;SI;SI;SI;ABCD02;AUTO;Hyundai;Tucson;Gris;E-3;ABCD03;CAMIONETA;Chevrolet;Colorado;Plateado;E-2;`;
@@ -66,6 +66,14 @@ describe("csvParser", () => {
       "patente1", "tipo_vehiculo1", "marca1", "modelo1", "color1", "est1",
       "patente2", "tipo_vehiculo2", "marca2", "modelo2", "color2", "est2",
       "patente3", "tipo_vehiculo3", "marca3", "modelo3", "color3", "est3",
+      "estacionamiento1", "estacionamiento2", "estacionamiento3",
     ]);
+  });
+
+  it("normaliza estacionamientos standalone sin vehículo", () => {
+    const csv = `unidad;tipo_unidad;nombre;email;tipo_vinculo;estacionamiento1\n2;CASA;Sin Auto; sinauto@test.cl;PROPIETARIO;E-2\n`;
+    const { encabezados, filas } = parsearCsv(csv);
+    const norm = normalizarFilas(encabezados, filas);
+    expect(norm[0].estacionamiento1).toBe("E-2");
   });
 });
