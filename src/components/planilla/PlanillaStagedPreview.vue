@@ -21,6 +21,8 @@ const props = defineProps({
   deshabilitado: { type: Boolean, default: false },
   // true cuando ya se ejecutó el import (paso 3 del stepper)
   importado: { type: Boolean, default: false },
+  // true si el csv no trae columnas estacionamiento1..3 (formato 32 cols)
+  sinEstStandalone: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -200,6 +202,9 @@ function incompleta(f) {
         Misma estructura del archivo: corrige aquí lo que falte antes de Validar.
         <span v-if="archivoPendienteNombre">El .xlsx se validará directo en el servidor (sin edición local).</span>
       </p>
+      <Message v-if="sinEstStandalone" severity="info" :closable="false" class="m-0 mb-2">
+        Este archivo es formato 32 columnas (sin <code>estacionamiento1..3</code>): los estacionamientos solo pueden venir junto a un vehículo. Descarga la plantilla actualizada para declarar estacionamientos sin vehículo.
+      </Message>
 
       <template v-if="staging.length">
       <div class="planilla max-h-[68vh] overflow-auto border border-border">

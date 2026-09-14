@@ -133,6 +133,7 @@ onMounted(() => planilla.cargar());
           :enviando="planilla.enviando"
           :deshabilitado="sinPermiso"
           :importado="!!planilla.resultado"
+          :sin-est-standalone="planilla.sinEstStandalone"
           @validar="validar"
           @importar="importar"
           @descartar="planilla.descartarPreviewArchivo()"

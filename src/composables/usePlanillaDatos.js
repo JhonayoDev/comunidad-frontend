@@ -186,6 +186,9 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   // Archivo pendiente de validar (xlsx sin parser local): se guarda el File y
   // solo se sube al pulsar [Validar]. Nada se POSTea al seleccionar.
   const archivoPendiente = ref(null);
+  // true si el csv cargado no trae columnas estacionamiento1..3 (formato de
+  // 32 cols): los est solo pueden venir anidados al vehículo.
+  const sinEstStandalone = ref(false);
   const borradorRestaurado = ref(false);
   const modoReedicion = ref(false);
 
@@ -926,6 +929,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       return;
     }
     archivoPendiente.value = null;
+    sinEstStandalone.value = false;
     try {
       const texto = await archivo.text();
       const { encabezados, filas: filasCrudas } = parsearCsv(texto);
@@ -934,6 +938,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         previewFilasRaw.value = null;
         return;
       }
+      sinEstStandalone.value = !encabezados.includes("estacionamiento1");
       const filasNorm = normalizarFilas(encabezados, filasCrudas, COLUMNAS_DEFAULT);
       // Mismo orden que el backend (sin filtrar vacías) + ids para edición.
       previewFilasRaw.value = filasCrudasADinamicas(filasNorm).map((f) => ({
@@ -1086,6 +1091,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     archivoNombre.value = null;
     previewFilasRaw.value = null;
     archivoPendiente.value = null;
+    sinEstStandalone.value = false;
     error.value = null;
     resultado.value = null;
     operacion.value = null;
@@ -1253,6 +1259,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     archivoNombre,
     previewFilasRaw,
     archivoPendiente,
+    sinEstStandalone,
     borradorRestaurado,
     modoReedicion,
     capacidad,
