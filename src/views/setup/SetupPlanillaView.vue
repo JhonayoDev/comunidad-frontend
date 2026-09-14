@@ -144,6 +144,7 @@ onMounted(() => planilla.cargar());
           @quitar-bodega="planilla.quitarStagingBodega"
           @agregar-estacionamiento="planilla.agregarStagingEstacionamiento"
           @quitar-estacionamiento="planilla.quitarStagingEstacionamiento"
+          @limpiar="planilla.limpiarTodo()"
         />
       </div>
 
@@ -165,8 +166,9 @@ onMounted(() => planilla.cargar());
 
         <div class="mt-4 flex justify-between items-center gap-2">
           <Button
-            v-if="planilla.filas.length"
+            v-if="planilla.filas.length && !planilla.resultado"
             label="Limpiar todo"
+            title="Descarta el borrador local (no toca lo ya guardado)"
             icon="pi pi-trash"
             severity="secondary"
             variant="text"

@@ -29,6 +29,7 @@ const emit = defineEmits([
   "validar",
   "importar",
   "descartar",
+  "limpiar",
   "quitarFila",
   "agregarVehiculo",
   "quitarVehiculo",
@@ -323,7 +324,16 @@ function incompleta(f) {
         {{ archivoPendienteNombre || "Selecciona un archivo para ver el borrador aquí." }}
       </p>
 
-      <div class="mt-3 flex flex-wrap gap-2 justify-end">
+      <div class="mt-3 flex flex-wrap gap-2 justify-between items-center">
+        <Button
+          label="Limpiar todo"
+          icon="pi pi-trash"
+          severity="secondary"
+          variant="text"
+          size="small"
+          :disabled="enviando"
+          @click="emit('limpiar')"
+        />
         <Button
           label="Validar en servidor"
           icon="pi pi-check-circle"
@@ -544,9 +554,20 @@ function incompleta(f) {
         />
       </template>
 
-      <div class="mt-3 flex flex-wrap gap-2 justify-end">
-        <Button label="Volver a editar" icon="pi pi-pencil" severity="secondary" size="small" variant="outlined" :disabled="enviando" @click="emit('descartar')" />
-        <Button :label="`Importar ${previewData.filasOk} filas`" icon="pi pi-check" size="small" :loading="enviando" :disabled="!previewData.filasOk" @click="emit('importar')" />
+      <div class="mt-3 flex flex-wrap gap-2 justify-between items-center">
+        <Button
+          label="Limpiar todo"
+          icon="pi pi-trash"
+          severity="secondary"
+          variant="text"
+          size="small"
+          :disabled="enviando"
+          @click="emit('limpiar')"
+        />
+        <div class="flex flex-wrap gap-2">
+          <Button label="Volver a editar" icon="pi pi-pencil" severity="secondary" size="small" variant="outlined" :disabled="enviando" @click="emit('descartar')" />
+          <Button :label="`Importar ${previewData.filasOk} filas`" icon="pi pi-check" size="small" :loading="enviando" :disabled="!previewData.filasOk" @click="emit('importar')" />
+        </div>
       </div>
     </template>
   </Card>
