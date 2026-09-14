@@ -18,6 +18,7 @@ import {
   esFilaDinamica,
   esEstacionamientoVisita,
   migrarClavesCompatibles,
+  normalizarEstAnidados,
 } from "@/data/planillaColumnas";
 import { parsearCsv, normalizarFilas } from "@/utils/csvParser";
 import { rutValido, telefonoChileValido } from "@/utils/validadoresChile";
@@ -397,9 +398,11 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       if (Array.isArray(data.filas) && data.filas.length) {
         // Migración defensiva: borradores legacy (formato plano patente1..3)
         // se convierten al shape dinámico vehiculos[]/bodegas[] + clave vieja
-        // es_ocupante → es_residente.
+        // es_ocupante → es_residente + est anidados → standalone.
         filas.value = data.filas.map((f) =>
-          migrarClavesCompatibles(esFilaDinamica(f) ? f : filasCrudasADinamicas([f])[0]),
+          normalizarEstAnidados(
+            migrarClavesCompatibles(esFilaDinamica(f) ? f : filasCrudasADinamicas([f])[0]),
+          ),
         );
         borradorRestaurado.value = true;
         return true;

@@ -6,6 +6,7 @@ import {
   esEstacionamientoVisita,
   clavesColumnas,
   COLUMNAS_DEFAULT,
+  normalizarEstAnidados,
 } from "@/data/planillaColumnas";
 import { importacionService } from "@/services/importacionService";
 import { unidadesService } from "@/services/unidadesService";
@@ -128,6 +129,7 @@ describe("planillaColumnas - filasCrudasADinamicas / esEstacionamientoVisita", (
     ]);
     expect(f.vehiculos).toHaveLength(1);
     expect(f.vehiculos[0]).toMatchObject({ patente: "ABCD01", tipo: "AUTO", estacionamiento: "E-1" });
+    expect(f.estacionamientos.map((e) => e.nombre)).toEqual(["E-1"]);
     expect(f.bodegas).toHaveLength(1);
     expect(f.bodegas[0].nombre).toBe("B-1");
   });
@@ -697,6 +699,17 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(f.estacionamientos).toHaveLength(1);
     p.quitarEstacionamiento(f.id, f.estacionamientos[0].uid);
     expect(f.estacionamientos).toHaveLength(0);
+  });
+
+  it("normalizarEstAnidados mueve el est del vehículo a standalone con dedupe", () => {
+    const f = normalizarEstAnidados({
+      vehiculos: [{ uid: "v1", patente: "AA11", estacionamiento: "E-1" }],
+      estacionamientos: [{ uid: "e1", nombre: "E-1" }],
+      bodegas: [],
+    });
+    expect(f.estacionamientos.map((e) => e.nombre)).toEqual(["E-1"]);
+    expect(f.vehiculos[0].estacionamiento).toBe("E-1");
+    expect(f.vehiculos[0].patente).toBe("AA11");
   });
 
   it("cambiado detecta cambios en estacionamientos standalone", () => {

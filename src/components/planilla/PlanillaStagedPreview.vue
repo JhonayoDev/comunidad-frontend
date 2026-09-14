@@ -102,10 +102,19 @@ const estadoPorFila = computed(() => {
 });
 
 function vehiculosResumen(f) {
+  // Dedupe visual contra la columna standalone (el payload lo envía en ambos
+  // para compatibilidad pre/post BE-74).
+  const standalone = new Set(
+    estacionamientosResumen(f)
+      .split(",")
+      .map((e) => e.trim().toUpperCase())
+      .filter(Boolean),
+  );
   return (f.vehiculos || [])
     .map((v) => {
       const p = (v.patente || "").trim();
-      const est = (v.estacionamiento || "").trim();
+      let est = (v.estacionamiento || "").trim();
+      if (est && standalone.has(est.toUpperCase())) est = "";
       if (!p && !est) return "";
       if (!p && est) return `(sin patente) · ${est}`;
       return est ? `${p} · ${est}` : p;
@@ -280,7 +289,6 @@ function incompleta(f) {
                     </div>
                     <div class="flex items-center gap-1">
                       <InputText v-model="v.color" placeholder="Color" size="small" class="w-full" />
-                      <InputText v-model="v.estacionamiento" placeholder="Est." size="small" class="w-full" />
                     </div>
                   </div>
                   <Button label="Vehículo" icon="pi pi-plus" variant="text" size="small" @click="emit('agregarVehiculo', f.id)" />

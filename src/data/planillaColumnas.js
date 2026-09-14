@@ -121,12 +121,39 @@ export function filaCrudaADinamica(fila) {
     const e = (fila[`estacionamiento${i}`] || "").trim();
     if (e) estacionamientos.push({ uid: `est-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`, nombre: e });
   }
-  return { ...fila, vehiculos, bodegas, estacionamientos };
+  return normalizarEstAnidados({ ...fila, vehiculos, bodegas, estacionamientos });
 }
 
 // Convierte una lista de filas planas (CSV) al shape dinámico.
 export function filasCrudasADinamicas(filas) {
   return (filas || []).map(filaCrudaADinamica);
+}
+
+// Fuente única VISUAL de est: el standalone (unidad ↔ est). Si un vehículo
+// trae `est` anidado (archivos viejos), se COPIA a la lista standalone con
+// dedupe pero se conserva en el vehículo: el backend desplegado (pre-BE-74)
+// solo vincula por el anidado, y el nuevo hace unión con dedupe. Así el
+// payload funciona contra ambas versiones.
+export function normalizarEstAnidados(fila) {
+  if (!fila || !Array.isArray(fila.vehiculos)) return fila;
+  if (!Array.isArray(fila.estacionamientos)) fila.estacionamientos = [];
+  const vistos = new Set(
+    fila.estacionamientos.map((e) =>
+      (typeof e === "string" ? e : e.nombre || "").trim().toUpperCase(),
+    ),
+  );
+  for (const v of fila.vehiculos) {
+    const est = (v.estacionamiento || "").trim();
+    const pat = (v.patente || "").trim();
+    if (pat && est && !vistos.has(est.toUpperCase())) {
+      vistos.add(est.toUpperCase());
+      fila.estacionamientos.push({
+        uid: `est-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        nombre: est,
+      });
+    }
+  }
+  return fila;
 }
 
 // Compatibilidad con archivos viejos (header es_ocupante): si la fila trae

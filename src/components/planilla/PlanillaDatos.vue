@@ -205,16 +205,23 @@ function erroresDe(f) {
 }
 
 function vehiculosDe(f) {
+  // Dedupe visual: si el est ya está en la columna standalone, no se repite
+  // junto al vehículo (el payload igual lo envía en ambos para compatibilidad
+  // con el backend pre/post BE-74).
+  const standalone = new Set(estacionamientosDe(f).map((e) => e.toUpperCase()));
   return (f.vehiculos || [])
-    .map((v) => ({
-      uid: v.uid,
-      patente: (v.patente || "").trim(),
-      tipo: (v.tipo || "").trim(),
-      marca: (v.marca || "").trim(),
-      modelo: (v.modelo || "").trim(),
-      color: (v.color || "").trim(),
-      est: (v.estacionamiento || "").trim(),
-    }))
+    .map((v) => {
+      const est = (v.estacionamiento || "").trim();
+      return {
+        uid: v.uid,
+        patente: (v.patente || "").trim(),
+        tipo: (v.tipo || "").trim(),
+        marca: (v.marca || "").trim(),
+        modelo: (v.modelo || "").trim(),
+        color: (v.color || "").trim(),
+        est: est && !standalone.has(est.toUpperCase()) ? est : "",
+      };
+    })
     .filter((v) => v.patente);
 }
 
@@ -696,14 +703,6 @@ const { foco, alternar, salir } = useModoFoco();
                             @click="p.quitarVehiculo(f.id, v.uid)"
                           />
                         </div>
-                        <AutoComplete
-                          :modelValue="v.estacionamiento"
-                          :suggestions="estSugerencias"
-                          @complete="buscarEst"
-                          placeholder="Estacionamiento"
-                          class="w-full"
-                          @update:modelValue="v.estacionamiento = $event"
-                        />
                       </div>
                       <Button
                         label="Agregar vehículo"
@@ -1109,29 +1108,12 @@ const { foco, alternar, salir } = useModoFoco();
                     :key="v.uid"
                     class="flex flex-col gap-1"
                   >
-                    <InputText
-                      :modelValue="v.patente"
-                      placeholder="Patente"
-                      class="w-full"
-                      @update:modelValue="v.patente = $event"
-                    />
-                    <Select
-                      :modelValue="v.tipo"
-                      :options="tiposVehiculoOpciones"
-                      optionLabel="label"
-                      optionValue="value"
-                      placeholder="Tipo"
-                      class="w-full"
-                      @update:modelValue="v.tipo = $event"
-                    />
                     <div class="flex items-center gap-2">
-                      <AutoComplete
-                        :modelValue="v.estacionamiento"
-                        :suggestions="estSugerencias"
-                        @complete="buscarEst"
-                        placeholder="Estacionamiento"
+                      <InputText
+                        :modelValue="v.patente"
+                        placeholder="Patente"
                         class="flex-1"
-                        @update:modelValue="v.estacionamiento = $event"
+                        @update:modelValue="v.patente = $event"
                       />
                       <Button
                         icon="pi pi-trash"
@@ -1142,6 +1124,15 @@ const { foco, alternar, salir } = useModoFoco();
                         @click="p.quitarVehiculo(f.id, v.uid)"
                       />
                     </div>
+                    <Select
+                      :modelValue="v.tipo"
+                      :options="tiposVehiculoOpciones"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Tipo"
+                      class="w-full"
+                      @update:modelValue="v.tipo = $event"
+                    />
                   </div>
                   <Button
                     label="Agregar vehículo"
