@@ -23,7 +23,7 @@ export const COLUMNAS_BASE = [
   { key: "rut", label: "RUT", tipo: "text" },
   { key: "telefono", label: "Teléfono", tipo: "text" },
   { key: "tipo_vinculo", label: "Vínculo", tipo: "select", opciones: TIPOS_VINCULO, requerida: true },
-  { key: "es_ocupante", label: "Ocupante", tipo: "si_no" },
+  { key: "es_residente", label: "Residente", tipo: "si_no" },
   { key: "recibe_notificaciones", label: "Recibe notif.", tipo: "si_no" },
   { key: "es_responsable", label: "Responsable", tipo: "check" },
 ];
@@ -69,10 +69,13 @@ export function columnasEstacionamientos(n = MAX_ESTACIONAMIENTOS_STANDALONE) {
 // `capacidad` usa los campos del backend: capacidadCasas/Departamentos/
 // Estacionamientos/Bodegas/Otro (null = sin tope).
 export function generarColumnas(capacidad = {}) {
+  // Orden canónico = patrón del archivo del usuario: base, estacionamientos
+  // standalone, vehículos, bodegas. (Los est1..3 anidados se conservan en el
+  // esquema solo por compatibilidad con archivos viejos.)
   const cols = [...COLUMNAS_BASE];
+  cols.push(...columnasEstacionamientos(MAX_ESTACIONAMIENTOS_STANDALONE));
   cols.push(...columnasVehiculos(MAX_VEHICULOS));
   if (capacidad.capacidadBodegas > 0) cols.push(...columnasBodegas(MAX_BODEGAS));
-  cols.push(...columnasEstacionamientos(MAX_ESTACIONAMIENTOS_STANDALONE));
   return cols;
 }
 
@@ -126,6 +129,15 @@ export function filasCrudasADinamicas(filas) {
   return (filas || []).map(filaCrudaADinamica);
 }
 
+// Compatibilidad con archivos viejos (header es_ocupante): si la fila trae
+// la clave vieja y no la nueva, se migra. El canónico es es_residente.
+export function migrarClavesCompatibles(fila) {
+  if (fila && (fila.es_residente || "") === "" && (fila.es_ocupante || "") !== "") {
+    fila.es_residente = fila.es_ocupante;
+  }
+  return fila;
+}
+
 // True si la fila usa el shape dinámico (vehiculos[]/bodegas[]/estacionamientos[]).
 export function esFilaDinamica(fila) {
   return (
@@ -167,7 +179,7 @@ export function filaAPayload(fila) {
     },
     vinculo: {
       tipo: (f.tipo_vinculo || "").trim(),
-      esOcupante: esSi(f.es_ocupante),
+      esOcupante: esSi(f.es_residente),
       recibeNotificaciones: esSi(f.recibe_notificaciones),
       esResponsable: esSi(f.es_responsable),
     },

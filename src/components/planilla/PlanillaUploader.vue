@@ -107,7 +107,7 @@ function onChange(event) {
       <div class="flex flex-col gap-2 p-1">
         <span class="text-sm font-semibold">Formato esperado</span>
         <p class="text-xs text-text-muted m-0">Columnas en orden (separador <code>;</code>). Descarga la plantilla para evitar errores.</p>
-        <code class="text-xs bg-surface border border-border p-2 border-round break-all whitespace-pre-wrap">unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1..3;est1..3;bodega1..3</code>
+        <code class="text-xs bg-surface border border-border p-2 border-round break-all whitespace-pre-wrap">unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;estacionamiento1..3;patente1..3;bodega1..3</code>
         <span class="text-xs text-text-muted">Puedes corregir los datos en la app antes de Validar. El backend valida fila a fila (31 cols).</span>
       </div>
     </Popover>

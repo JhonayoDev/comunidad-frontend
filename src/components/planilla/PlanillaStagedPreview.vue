@@ -220,11 +220,11 @@ function incompleta(f) {
               <th>RUT</th>
               <th>Teléfono</th>
               <th>Vínculo *</th>
-              <th class="text-center">Ocup.</th>
+              <th class="text-center">Resid.</th>
               <th class="text-center">Notif.</th>
               <th class="text-center">Resp.</th>
-              <th>Vehículos</th>
               <th>Estacionamientos</th>
+              <th>Vehículos</th>
               <th>Bodegas</th>
               <th></th>
             </tr>
@@ -249,13 +249,22 @@ function incompleta(f) {
                 <Select v-model="f.tipo_vinculo" :options="tiposVinculoOpciones" optionLabel="label" optionValue="value" size="small" class="w-32" />
               </td>
               <td>
-                <Select v-model="f.es_ocupante" :options="siNoOpciones" optionLabel="label" optionValue="value" size="small" class="w-20" />
+                <Select v-model="f.es_residente" :options="siNoOpciones" optionLabel="label" optionValue="value" size="small" class="w-20" />
               </td>
               <td>
                 <Select v-model="f.recibe_notificaciones" :options="siNoOpciones" optionLabel="label" optionValue="value" size="small" class="w-20" />
               </td>
               <td>
                 <Select v-model="f.es_responsable" :options="siNoOpciones" optionLabel="label" optionValue="value" size="small" class="w-20" />
+              </td>
+              <td class="min-w-32">
+                <div class="flex flex-col gap-1">
+                  <div v-for="e in f.estacionamientos || []" :key="e.uid" class="flex items-center gap-1">
+                    <InputText v-model="e.nombre" placeholder="Est." size="small" class="w-24" />
+                    <Button icon="pi pi-trash" variant="text" severity="danger" size="small" title="Quitar" @click="emit('quitarEstacionamiento', f.id, e.uid)" />
+                  </div>
+                  <Button label="Est." icon="pi pi-plus" variant="text" size="small" @click="emit('agregarEstacionamiento', f.id)" />
+                </div>
               </td>
               <td class="min-w-72">
                 <div class="flex flex-col gap-1">
@@ -275,15 +284,6 @@ function incompleta(f) {
                     </div>
                   </div>
                   <Button label="Vehículo" icon="pi pi-plus" variant="text" size="small" @click="emit('agregarVehiculo', f.id)" />
-                </div>
-              </td>
-              <td class="min-w-32">
-                <div class="flex flex-col gap-1">
-                  <div v-for="e in f.estacionamientos || []" :key="e.uid" class="flex items-center gap-1">
-                    <InputText v-model="e.nombre" placeholder="Est." size="small" class="w-24" />
-                    <Button icon="pi pi-trash" variant="text" severity="danger" size="small" title="Quitar" @click="emit('quitarEstacionamiento', f.id, e.uid)" />
-                  </div>
-                  <Button label="Est." icon="pi pi-plus" variant="text" size="small" @click="emit('agregarEstacionamiento', f.id)" />
                 </div>
               </td>
               <td class="min-w-32">
@@ -419,11 +419,11 @@ function incompleta(f) {
               <th>RUT</th>
               <th>Teléfono</th>
               <th>Vínculo</th>
-              <th class="text-center">Ocup.</th>
+              <th class="text-center">Resid.</th>
               <th class="text-center">Notif.</th>
               <th class="text-center">Resp.</th>
-              <th>Vehículos</th>
               <th>Estacionamientos</th>
+              <th>Vehículos</th>
               <th>Bodegas</th>
               <th>Estado</th>
             </tr>
@@ -447,17 +447,16 @@ function incompleta(f) {
               <td>{{ f.rut || "—" }}</td>
               <td>{{ f.telefono || "—" }}</td>
               <td><Tag v-if="f.tipo_vinculo" :value="f.tipo_vinculo" :severity="f.tipo_vinculo === 'PROPIETARIO' ? 'info' : 'secondary'" size="small" /><span v-else>—</span></td>
-              <td class="text-center">{{ f.es_ocupante || "—" }}</td>
+              <td class="text-center">{{ f.es_residente || "—" }}</td>
               <td class="text-center">{{ f.recibe_notificaciones || "—" }}</td>
               <td class="text-center">{{ f.es_responsable || "—" }}</td>
-              <td class="min-w-48 text-sm">
+              <td class="min-w-32 text-sm">{{ estacionamientosResumen(f) || "—" }}</td><td class="min-w-48 text-sm">
                 <span v-if="vehiculosResumen(f)">{{ vehiculosResumen(f) }}</span>
                 <span v-else class="text-surface-400">—</span>
                 <ul v-if="estadoPorFila.get(pagina * porPagina + pIdx + 1)?.errores?.length" class="m-0 mt-1 pl-3 text-xs text-danger text-left">
                   <li v-for="(e, ei) in estadoPorFila.get(pagina * porPagina + pIdx + 1).errores" :key="ei">{{ e }}</li>
                 </ul>
               </td>
-              <td class="min-w-32 text-sm">{{ estacionamientosResumen(f) || "—" }}</td>
               <td class="min-w-32 text-sm">{{ bodegasResumen(f) || "—" }}</td>
               <td>
                 <Tag
@@ -499,8 +498,8 @@ function incompleta(f) {
                 <th class="text-left p-2">Nombre</th>
                 <th class="text-left p-2">Email</th>
                 <th class="text-left p-2">Vínculo</th>
-                <th v-if="backendFiel" class="text-left p-2">Vehículos</th>
                 <th v-if="backendFiel" class="text-left p-2">Estacionamientos</th>
+                <th v-if="backendFiel" class="text-left p-2">Vehículos</th>
                 <th v-if="backendFiel" class="text-left p-2">Bodegas</th>
                 <th class="text-left p-2">Estado</th>
               </tr>
@@ -517,8 +516,8 @@ function incompleta(f) {
                 <td class="p-2">{{ f.personaNombre || "—" }}</td>
                 <td class="p-2 truncate max-w-32">{{ f.personaEmail || f.email || "—" }}</td>
                 <td class="p-2">{{ f.tipoVinculo || "—" }}</td>
-                <td v-if="backendFiel" class="p-2">{{ vehiculosResumen({ vehiculos: f.vehiculos }) || "—" }}</td>
                 <td v-if="backendFiel" class="p-2">{{ estacionamientosResumen({ estacionamientos: f.estacionamientos }) || "—" }}</td>
+                <td v-if="backendFiel" class="p-2">{{ vehiculosResumen({ vehiculos: f.vehiculos }) || "—" }}</td>
                 <td v-if="backendFiel" class="p-2">{{ bodegasResumen({ bodegas: f.bodegas }) || "—" }}</td>
                 <td class="p-2">
                   <Tag :value="f.estado" :severity="f.estado === 'OK' ? 'success' : f.estado === 'ERROR' ? 'danger' : 'warn'" size="small" />

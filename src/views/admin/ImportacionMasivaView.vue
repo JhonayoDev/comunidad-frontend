@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { parsearCsv, normalizarFilas } from "@/utils/csvParser";
 import { usePlanillaDatos } from "@/composables/usePlanillaDatos";
-import { COLUMNAS_DEFAULT, clavesColumnas, filasCrudasADinamicas } from "@/data/planillaColumnas";
+import { COLUMNAS_DEFAULT, clavesColumnas, filasCrudasADinamicas, migrarClavesCompatibles } from "@/data/planillaColumnas";
 import PlanillaDatos from "@/components/planilla/PlanillaDatos.vue";
 
 import Card from "primevue/card";
@@ -13,10 +13,10 @@ import Message from "primevue/message";
 // ─── Ejemplo demo (mismo formato persona-por-fila que la planilla) ─────────
 const EJEMPLO_CSV = [
   clavesColumnas(COLUMNAS_DEFAULT).join(";"),
-  "1;CASA;Sector A;Francisca Morales Díaz;francisca.morales@test.com;18.901.234-5;+56978901234;PROPIETARIO;SI;SI;SI;ABCD01;AUTO;Toyota;Corolla;Blanco;E-1;;;;;;;",
-  "1;CASA;Sector A;Camila Reyes Vidal;camila.reyes@test.com;30.123.456-7;+56990123457;RESIDENTE_ADICIONAL;SI;SI;NO;;;;;;;;;;;",
-  "3;CASA;Sector B;Hernán Vargas Soto;hernan.vargas@test.com;19.012.345-6;+56989012345;PROPIETARIO;SI;SI;SI;ABCD02;AUTO;Hyundai;Tucson;Gris;E-3;ABCD03;CAMIONETA;Chevrolet;Colorado;Plateado;E-2;",
-  "6;CASA;Sector B;Roberto Fuentes Mora;roberto.fuentes@test.com;14.567.890-1;+56934567890;PROPIETARIO;SI;SI;SI;ABCD04;AUTO;Mazda;3;Azul;E-6;ABCD05;AUTO;Kia;Cerato;Rojo;E-6;",
+  "1;CASA;Sector A;Francisca Morales Díaz;francisca.morales@test.com;18.901.234-5;+56978901234;PROPIETARIO;SI;SI;SI;E-1;;;ABCD01;AUTO;Toyota;Corolla;Blanco;;;;;;;;;;;;;",
+  "1;CASA;Sector A;Camila Reyes Vidal;camila.reyes@test.com;30.123.456-7;+56990123457;RESIDENTE_ADICIONAL;SI;SI;NO;;;;;;;;;;;;;;;;;;;;;",
+  "3;CASA;Sector B;Hernán Vargas Soto;hernan.vargas@test.com;19.012.345-6;+56989012345;PROPIETARIO;SI;SI;SI;E-3;E-3B;;ABCD02;AUTO;Hyundai;Tucson;Gris;;ABCD03;CAMIONETA;Chevrolet;Colorado;Plateado;;;;;;;",
+  "6;CASA;Sector B;Roberto Fuentes Mora;roberto.fuentes@test.com;14.567.890-1;+56934567890;PROPIETARIO;SI;SI;SI;E-6;;;;;;;;;;;;;;;;;;;;",
 ].join("\n");
 
 const nombreArchivo = ref(null);
@@ -31,7 +31,7 @@ function procesarCsv(texto) {
   const filasNorm = normalizarFilas(encabezados, filasCrudas, COLUMNAS_DEFAULT);
   planilla.filas = filasCrudasADinamicas(filasNorm).map((f) => ({
     id: `csv-${Math.random().toString(36).slice(2)}`,
-    ...f,
+    ...migrarClavesCompatibles(f),
   }));
 }
 

@@ -84,7 +84,7 @@ describe("planillaDatos - filaAPayload", () => {
       rut: "18.901.234-5",
       telefono: "+56978901234",
       tipo_vinculo: "PROPIETARIO",
-      es_ocupante: "SI",
+      es_residente: "SI",
       recibe_notificaciones: "SI",
       es_responsable: "SI",
       vehiculos: [
@@ -512,7 +512,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
     p.agregarFila();
     const f = p.filas[0];
     Object.assign(f, { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", esNuevo: false });
-    f.original = { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_ocupante: "", recibe_notificaciones: "", es_responsable: "", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
+    f.original = { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_residente: "", recibe_notificaciones: "", es_responsable: "", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
     expect(p.cambiado(f)).toBe(false);
     f.nombre = "B";
     expect(p.cambiado(f)).toBe(true);
@@ -535,10 +535,10 @@ describe("planillaDatos - usePlanillaDatos", () => {
     const editada = p.filas[1];
     Object.assign(editada, {
       unidad: "2", tipo_unidad: "CASA", nombre: "Antiguo", email: "antiguo@x.cl", tipo_vinculo: "PROPIETARIO",
-      es_ocupante: "SI", recibe_notificaciones: "NO", es_responsable: "NO",
+      es_residente: "SI", recibe_notificaciones: "NO", es_responsable: "NO",
       esNuevo: false, __vinculoId: "v2", __personaId: "p2", __unidadId: "u2",
     });
-    editada.original = { unidad: "2", tipo_unidad: "CASA", nombre: "Antiguo", email: "antiguo@x.cl", tipo_vinculo: "PROPIETARIO", es_ocupante: "SI", recibe_notificaciones: "NO", es_responsable: "NO", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
+    editada.original = { unidad: "2", tipo_unidad: "CASA", nombre: "Antiguo", email: "antiguo@x.cl", tipo_vinculo: "PROPIETARIO", es_residente: "SI", recibe_notificaciones: "NO", es_responsable: "NO", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
     editada.recibe_notificaciones = "SI";
 
     await p.enviar();
@@ -587,7 +587,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
 
   it("cargarStaging parsea csv local sin ningún POST", async () => {
     const p = usePlanillaDatos({ cargarExistentes: false });
-    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;AA11;AUTO;M;Mo;C;E-1";
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;AA11;AUTO;M;Mo;C;E-1";
     await p.cargarStaging({ name: "test.csv", text: async () => csv });
     expect(p.previewFilasRaw).toHaveLength(1);
     expect(p.previewFilasRaw[0].vehiculos[0]).toMatchObject({ patente: "AA11", estacionamiento: "E-1" });
@@ -610,7 +610,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
       data: { importacionId: "imp-s", totalFilas: 1, filasOk: 1, filasError: 0, filas: [] },
     });
     const p = usePlanillaDatos({ cargarExistentes: false });
-    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;AA11;AUTO;M;Mo;C;E-1";
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;AA11;AUTO;M;Mo;C;E-1";
     await p.cargarStaging({ name: "test.csv", text: async () => csv });
     p.previewFilasRaw[0].nombre = "Editado";
     await p.validarStaging();
@@ -628,7 +628,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
     });
     const p = usePlanillaDatos({ cargarExistentes: false });
     expect(p.fase).toBe("VACIO");
-    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_ocupante;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;;;;;;;;";
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;;;;;;;;";
     await p.cargarStaging({ name: "t.csv", text: async () => csv });
     expect(p.fase).toBe("STAGED");
     await p.validarStaging();
@@ -704,7 +704,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
     p.agregarFila();
     const f = p.filas[0];
     Object.assign(f, { unidad: "1", esNuevo: false });
-    f.original = { unidad: "1", tipo_unidad: "", sector: "", nombre: "", email: "", rut: "", telefono: "", tipo_vinculo: "", es_ocupante: "", recibe_notificaciones: "", es_responsable: "", vehiculos: [], bodegas: [], estacionamientos: [] };
+    f.original = { unidad: "1", tipo_unidad: "", sector: "", nombre: "", email: "", rut: "", telefono: "", tipo_vinculo: "", es_residente: "", recibe_notificaciones: "", es_responsable: "", vehiculos: [], bodegas: [], estacionamientos: [] };
     expect(p.cambiado(f)).toBe(false);
     p.agregarEstacionamiento(f.id);
     expect(p.cambiado(f)).toBe(true);
@@ -717,8 +717,8 @@ describe("planillaDatos - usePlanillaDatos", () => {
     p.modoReedicion = true;
     p.agregarFila();
     const f = p.filas[0];
-    Object.assign(f, { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_ocupante: "SI", recibe_notificaciones: "SI", es_responsable: "NO", esNuevo: false, __vinculoId: "v1", __personaId: "p1", __unidadId: "u1" });
-    f.original = { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_ocupante: "SI", recibe_notificaciones: "SI", es_responsable: "SI", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
+    Object.assign(f, { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_residente: "SI", recibe_notificaciones: "SI", es_responsable: "NO", esNuevo: false, __vinculoId: "v1", __personaId: "p1", __unidadId: "u1" });
+    f.original = { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_residente: "SI", recibe_notificaciones: "SI", es_responsable: "SI", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
     f.es_responsable = "NO";
     await p.enviar();
     expect(personasService.desactivarVinculo).toHaveBeenCalledWith("cid-1", "v1");

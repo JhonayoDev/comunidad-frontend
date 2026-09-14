@@ -17,6 +17,7 @@ import {
   filasCrudasADinamicas,
   esFilaDinamica,
   esEstacionamientoVisita,
+  migrarClavesCompatibles,
 } from "@/data/planillaColumnas";
 import { parsearCsv, normalizarFilas } from "@/utils/csvParser";
 import { rutValido, telefonoChileValido } from "@/utils/validadoresChile";
@@ -44,7 +45,7 @@ function filaVacia() {
     rut: "",
     telefono: "",
     tipo_vinculo: "",
-    es_ocupante: "",
+    es_residente: "",
     recibe_notificaciones: "",
     es_responsable: "",
     vehiculos: [],
@@ -89,7 +90,7 @@ function snapshotFila(f) {
     rut: f.rut,
     telefono: f.telefono,
     tipo_vinculo: f.tipo_vinculo,
-    es_ocupante: f.es_ocupante,
+    es_residente: f.es_residente,
     recibe_notificaciones: f.recibe_notificaciones,
     es_responsable: f.es_responsable,
     vehiculos: (f.vehiculos || []).map((v) => ({ ...v })),
@@ -130,8 +131,8 @@ export function validarFila(f, contexto = {}) {
   if (!tipoVinculo || !TIPOS_VINCULO.includes(tipoVinculo))
     errores.push("Vínculo inválido (PROPIETARIO/ARRENDATARIO/RESIDENTE_ADICIONAL)");
 
-  if (f.es_ocupante && !/^(SI|NO|S|N|TRUE|FALSE|1|0)$/i.test(f.es_ocupante))
-    errores.push("Ocupante debe ser SI o NO");
+  if (f.es_residente && !/^(SI|NO|S|N|TRUE|FALSE|1|0)$/i.test(f.es_residente))
+    errores.push("Residente debe ser SI o NO");
   if (f.recibe_notificaciones && !/^(SI|NO|S|N|TRUE|FALSE|1|0)$/i.test(f.recibe_notificaciones))
     errores.push("Recibe notificaciones debe ser SI o NO");
 
@@ -322,7 +323,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
             rut: persona.rut || "",
             telefono: persona.telefono || "",
             tipo_vinculo: v.tipo,
-            es_ocupante: v.esOcupante ? "SI" : "NO",
+            es_residente: v.esOcupante ? "SI" : "NO",
             recibe_notificaciones: v.recibeNotificaciones ? "SI" : "NO",
             es_responsable: v.esResponsable ? "SI" : "NO",
             vehiculos: esPrimaria
@@ -395,9 +396,10 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const data = JSON.parse(raw);
       if (Array.isArray(data.filas) && data.filas.length) {
         // Migración defensiva: borradores legacy (formato plano patente1..3)
-        // se convierten al shape dinámico vehiculos[]/bodegas[].
+        // se convierten al shape dinámico vehiculos[]/bodegas[] + clave vieja
+        // es_ocupante → es_residente.
         filas.value = data.filas.map((f) =>
-          esFilaDinamica(f) ? f : filasCrudasADinamicas([f])[0],
+          migrarClavesCompatibles(esFilaDinamica(f) ? f : filasCrudasADinamicas([f])[0]),
         );
         borradorRestaurado.value = true;
         return true;
@@ -618,7 +620,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       "rut",
       "telefono",
       "tipo_vinculo",
-      "es_ocupante",
+      "es_residente",
       "recibe_notificaciones",
       "es_responsable",
     ];
@@ -749,10 +751,10 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     }
 
     // Vínculo: recibe_notificaciones tiene PATCH dedicado; los demás flags
-    // (tipo/es_ocupante/es_responsable) exigen desactivar + recrear.
+    // (tipo/es_residente/es_responsable) exigen desactivar + recrear.
     const vinculoCambio =
       String(f.tipo_vinculo || "") !== String(o.tipo_vinculo || "") ||
-      String(f.es_ocupante || "") !== String(o.es_ocupante || "") ||
+      String(f.es_residente || "") !== String(o.es_residente || "") ||
       String(f.es_responsable || "") !== String(o.es_responsable || "");
     const notifCambio =
       String(f.recibe_notificaciones || "") !== String(o.recibe_notificaciones || "");
@@ -763,7 +765,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         personaId: f.__personaId,
         unidadId: f.__unidadId,
         tipo: (f.tipo_vinculo || "").trim(),
-        esOcupante: esSi(f.es_ocupante),
+        esOcupante: esSi(f.es_residente),
         recibeNotificaciones: esSi(f.recibe_notificaciones),
         esResponsable: esSi(f.es_responsable),
         fechaInicio: hoy(),
@@ -941,9 +943,10 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       sinEstStandalone.value = !encabezados.includes("estacionamiento1");
       const filasNorm = normalizarFilas(encabezados, filasCrudas, COLUMNAS_DEFAULT);
       // Mismo orden que el backend (sin filtrar vacías) + ids para edición.
+      // Compat: header viejo es_ocupante → es_residente.
       previewFilasRaw.value = filasCrudasADinamicas(filasNorm).map((f) => ({
         id: nuevoId(),
-        ...f,
+        ...migrarClavesCompatibles(f),
         esNuevo: true,
         marcadoEliminar: false,
         original: null,
