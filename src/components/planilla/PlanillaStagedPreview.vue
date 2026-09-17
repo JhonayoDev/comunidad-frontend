@@ -1,6 +1,13 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useModoFoco } from "@/composables/useModoFoco";
+import { useFiltroFilas, FILTROS_FILA } from "@/composables/useFiltroFilas";
+import {
+  vehiculosResumen,
+  bodegasResumen,
+  estacionamientosResumen,
+} from "@/utils/planillaResumen";
+import PlanillaFilaDetalle from "@/components/planilla/PlanillaFilaDetalle.vue";
 import { TIPOS_UNIDAD, TIPOS_VINCULO, TIPOS_VEHICULO } from "@/data/planillaColumnas";
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -30,6 +37,7 @@ const emit = defineEmits([
   "importar",
   "descartar",
   "limpiar",
+  "corregir",
   "quitarFila",
   "agregarVehiculo",
   "quitarVehiculo",
@@ -45,11 +53,6 @@ const porPagina = 50;
 const stagingPagina = computed(() => {
   const start = pagina.value * porPagina;
   return (props.staging || []).slice(start, start + porPagina);
-});
-const previewPaginaLimitada = computed(() => {
-  const filas = props.previewData?.filas || [];
-  const start = pagina.value * porPagina;
-  return filas.slice(start, start + porPagina);
 });
 
 const { foco, alternar, salir } = useModoFoco();
@@ -102,41 +105,49 @@ const estadoPorFila = computed(() => {
   return map;
 });
 
-function vehiculosResumen(f) {
-  // Dedupe visual contra la columna standalone (el payload lo envía en ambos
-  // para compatibilidad pre/post BE-74).
-  const standalone = new Set(
-    estacionamientosResumen(f)
-      .split(",")
-      .map((e) => e.trim().toUpperCase())
-      .filter(Boolean),
-  );
-  return (f.vehiculos || [])
-    .map((v) => {
-      const p = (v.patente || "").trim();
-      let est = (v.estacionamiento || "").trim();
-      if (est && standalone.has(est.toUpperCase())) est = "";
-      if (!p && !est) return "";
-      if (!p && est) return `(sin patente) · ${est}`;
-      return est ? `${p} · ${est}` : p;
-    })
-    .filter(Boolean)
-    .join(", ");
-}
+// FE-3: vista unificada para filtrar (staging+preview o backend directo).
+// Cada ítem expone {numeroFila, estado, errores, advertencias} + origen.
+const filasRevision = computed(() => {
+  if (!props.previewData) return [];
+  if (hasPreviewFiel.value) {
+    return (props.staging || []).map((f, i) => {
+      const e = estadoPorFila.value.get(i + 1);
+      return {
+        numeroFila: i + 1,
+        estado: e?.estado || "—",
+        errores: e?.errores || [],
+        advertencias: e?.advertencias || [],
+        staging: f,
+      };
+    });
+  }
+  return props.previewData.filas || [];
+});
 
-function bodegasResumen(f) {
-  return (f.bodegas || [])
-    .map((b) => (typeof b === "string" ? b : b.nombre || "").trim())
-    .filter(Boolean)
-    .join(", ");
-}
+const { filtro, conteos, setFiltro, cumpleFiltroFila } =
+  useFiltroFilas(filasRevision);
 
-function estacionamientosResumen(f) {
-  return (f.estacionamientos || [])
-    .map((e) => (typeof e === "string" ? e : e.nombre || "").trim())
-    .filter(Boolean)
-    .join(", ");
-}
+// staging con número de fila, filtrado (la tabla fiel renderiza item.f).
+const stagingConNum = computed(() =>
+  filasRevision.value.filter((r) => r.staging && cumpleFiltroFila(r, filtro.value)),
+);
+const stagingPaginaFiltrada = computed(() => {
+  const start = pagina.value * porPagina;
+  return stagingConNum.value.slice(start, start + porPagina);
+});
+
+// backend (.xlsx) filtrado — reemplaza previewPaginaLimitada.
+const backendFiltrada = computed(() =>
+  filasRevision.value.filter((r) => !r.staging && cumpleFiltroFila(r, filtro.value)),
+);
+const previewPaginaLimitada = computed(() => {
+  const start = pagina.value * porPagina;
+  return backendFiltrada.value.slice(start, start + porPagina);
+});
+
+watch(filtro, () => {
+  pagina.value = 0;
+});
 
 // Preview fiel directo del backend (BE-74: FilaPreview trae vehiculos[],
 // estacionamientos[] y bodegas[]) — cubre .xlsx sin parse local.
@@ -148,6 +159,24 @@ const backendFiel = computed(() => {
 // Aviso local mínimo en staging (reglas completas las da [Validar]).
 function incompleta(f) {
   return !(f.unidad || "").trim() || !(f.nombre || "").trim() || !(f.email || "").trim() || !(f.tipo_vinculo || "").trim();
+}
+
+// FE-2: detalle expandible por fila (compacto por defecto, sin saturar con 500+ filas).
+// Clave = numeroFila del backend (1-based, coincide con el índice de staging).
+const filasExpandidas = ref(new Set());
+
+// Entrada del preview con errores/advertencias — tolera advertencias null (BE-4 pendiente).
+function tieneDetalle(entrada) {
+  return (
+    (entrada?.errores || []).length > 0 || (entrada?.advertencias || []).length > 0
+  );
+}
+
+function alternarDetalle(numeroFila) {
+  const s = new Set(filasExpandidas.value);
+  if (s.has(numeroFila)) s.delete(numeroFila);
+  else s.add(numeroFila);
+  filasExpandidas.value = s;
 }
 </script>
 
@@ -402,6 +431,20 @@ function incompleta(f) {
         <Tag v-if="previewOmitidas" :value="`${previewOmitidas} omitidas`" severity="warn" size="small" />
       </div>
 
+      <!-- FE-3: filtro rápido client-side (no toca el backend). -->
+      <div class="flex flex-wrap gap-2 mb-3">
+        <Button
+          v-for="o in FILTROS_FILA"
+          :key="o.valor"
+          :label="`${o.etiqueta} (${conteos[o.valor] ?? 0})`"
+          :severity="filtro === o.valor ? 'primary' : 'secondary'"
+          :variant="filtro === o.valor ? undefined : 'outlined'"
+          :disabled="o.valor !== 'todos' && !(conteos[o.valor] ?? 0)"
+          size="small"
+          @click="setFiltro(o.valor)"
+        />
+      </div>
+
       <Message
         v-if="(previewData.encabezadosFaltantes || []).length"
         severity="warn"
@@ -424,7 +467,7 @@ function incompleta(f) {
 
       <!-- Tabla fiel csv -->
       <template v-if="hasPreviewFiel">
-      <div class="planilla max-h-[68vh] overflow-auto border border-border">
+      <div v-if="stagingConNum.length" class="planilla max-h-[68vh] overflow-auto border border-border">
         <table>
           <thead>
             <tr>
@@ -444,19 +487,22 @@ function incompleta(f) {
               <th>Vehículos</th>
               <th>Bodegas</th>
               <th>Estado</th>
+              <th>Detalle</th>
             </tr>
           </thead>
           <tbody>
+            <template
+              v-for="{ staging: f, numeroFila: num } in stagingPaginaFiltrada"
+              :key="f.id || num"
+            >
             <tr
-              v-for="(f, pIdx) in staging.slice(pagina * porPagina, pagina * porPagina + porPagina)"
-              :key="f.id || `${pagina * porPagina + pIdx}`"
               :class="{
-                'preview-ok': estadoPorFila.get(pagina * porPagina + pIdx + 1)?.estado === 'OK',
-                'preview-error': estadoPorFila.get(pagina * porPagina + pIdx + 1)?.estado === 'ERROR',
-                'preview-omitida': estadoPorFila.get(pagina * porPagina + pIdx + 1)?.estado === 'OMITIDA',
+                'preview-ok': estadoPorFila.get(num)?.estado === 'OK',
+                'preview-error': estadoPorFila.get(num)?.estado === 'ERROR',
+                'preview-omitida': estadoPorFila.get(num)?.estado === 'OMITIDA',
               }"
             >
-              <td>{{ pagina * porPagina + pIdx + 1 }}</td>
+              <td>{{ num }}</td>
               <td class="whitespace-nowrap">{{ f.unidad || "—" }}</td>
               <td><Tag :value="f.tipo_unidad || '—'" severity="secondary" size="small" /></td>
               <td>{{ f.sector || "—" }}</td>
@@ -471,26 +517,58 @@ function incompleta(f) {
               <td class="min-w-32 text-sm">{{ estacionamientosResumen(f) || "—" }}</td><td class="min-w-48 text-sm">
                 <span v-if="vehiculosResumen(f)">{{ vehiculosResumen(f) }}</span>
                 <span v-else class="text-surface-400">—</span>
-                <ul v-if="estadoPorFila.get(pagina * porPagina + pIdx + 1)?.errores?.length" class="m-0 mt-1 pl-3 text-xs text-danger text-left">
-                  <li v-for="(e, ei) in estadoPorFila.get(pagina * porPagina + pIdx + 1).errores" :key="ei">{{ e }}</li>
+                <ul v-if="estadoPorFila.get(num)?.errores?.length" class="m-0 mt-1 pl-3 text-xs text-danger text-left">
+                  <li v-for="(e, ei) in estadoPorFila.get(num).errores" :key="ei">{{ e }}</li>
                 </ul>
               </td>
               <td class="min-w-32 text-sm">{{ bodegasResumen(f) || "—" }}</td>
               <td>
                 <Tag
-                  :value="estadoPorFila.get(pagina * porPagina + pIdx + 1)?.estado || '—'"
-                  :severity="estadoPorFila.get(pagina * porPagina + pIdx + 1)?.estado === 'OK' ? 'success' : estadoPorFila.get(pagina * porPagina + pIdx + 1)?.estado === 'ERROR' ? 'danger' : 'warn'"
+                  :value="estadoPorFila.get(num)?.estado || '—'"
+                  :severity="estadoPorFila.get(num)?.estado === 'OK' ? 'success' : estadoPorFila.get(num)?.estado === 'ERROR' ? 'danger' : 'warn'"
                   size="small"
                 />
               </td>
+              <td>
+                <Button
+                  v-if="tieneDetalle(estadoPorFila.get(num))"
+                  :icon="filasExpandidas.has(num) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                  variant="text"
+                  size="small"
+                  :title="filasExpandidas.has(num) ? 'Ocultar detalle' : 'Ver detalle'"
+                  @click="alternarDetalle(num)"
+                />
+                <span v-else class="text-xs text-surface-400">—</span>
+              </td>
             </tr>
+            <tr
+              v-if="filasExpandidas.has(num)"
+              :key="`${f.id || num}-detalle`"
+            >
+              <td colspan="17">
+                <PlanillaFilaDetalle
+                  :errores="estadoPorFila.get(num)?.errores || []"
+                  :advertencias="estadoPorFila.get(num)?.advertencias || []"
+                  :vehiculos-txt="vehiculosResumen(f)"
+                  :estacionamientos-txt="estacionamientosResumen(f)"
+                  :bodegas-txt="bodegasResumen(f)"
+                  :es-adicional="f.tipo_vinculo === 'RESIDENTE_ADICIONAL'"
+                  corregible
+                  @corregir="emit('corregir', { email: f.email, unidad: f.unidad })"
+                />
+              </td>
+            </tr>
+            </template>
           </tbody>
         </table>
       </div>
+      <p v-else-if="!stagingConNum.length" class="text-sm text-text-muted m-0">
+        Sin filas para este filtro.
+      </p>
       <Paginator
-        v-if="staging.length > porPagina"
+        v-if="stagingConNum.length > porPagina"
         :rows="porPagina"
-        :totalRecords="staging.length"
+        :totalRecords="stagingConNum.length"
         :first="pagina * porPagina"
         class="mt-2"
         @page="pagina = $event.page"
@@ -520,12 +598,12 @@ function incompleta(f) {
                 <th v-if="backendFiel" class="text-left p-2">Vehículos</th>
                 <th v-if="backendFiel" class="text-left p-2">Bodegas</th>
                 <th class="text-left p-2">Estado</th>
+                <th class="text-left p-2">Detalle</th>
               </tr>
             </thead>
             <tbody>
+              <template v-for="f in previewPaginaLimitada" :key="f.numeroFila">
               <tr
-                v-for="f in previewPaginaLimitada"
-                :key="f.numeroFila"
                 class="border-t border-border"
                 :class="{ 'preview-ok': f.estado === 'OK', 'preview-error': f.estado === 'ERROR', 'preview-omitida': f.estado === 'OMITIDA' }"
               >
@@ -540,14 +618,43 @@ function incompleta(f) {
                 <td class="p-2">
                   <Tag :value="f.estado" :severity="f.estado === 'OK' ? 'success' : f.estado === 'ERROR' ? 'danger' : 'warn'" size="small" />
                 </td>
+                <td class="p-2">
+                  <Button
+                    v-if="tieneDetalle(f)"
+                    :icon="filasExpandidas.has(f.numeroFila) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                    variant="text"
+                    size="small"
+                    :title="filasExpandidas.has(f.numeroFila) ? 'Ocultar detalle' : 'Ver detalle'"
+                    @click="alternarDetalle(f.numeroFila)"
+                  />
+                  <span v-else class="text-xs text-surface-400">—</span>
+                </td>
               </tr>
+              <tr v-if="filasExpandidas.has(f.numeroFila)" :key="`${f.numeroFila}-detalle`">
+                <td colspan="10">
+                  <PlanillaFilaDetalle
+                    :errores="f.errores || []"
+                    :advertencias="f.advertencias || []"
+                    :vehiculos-txt="backendFiel ? vehiculosResumen(f) : ''"
+                    :estacionamientos-txt="backendFiel ? estacionamientosResumen(f) : ''"
+                    :bodegas-txt="backendFiel ? bodegasResumen(f) : ''"
+                    :es-adicional="f.tipoVinculo === 'RESIDENTE_ADICIONAL'"
+                    corregible
+                    @corregir="emit('corregir', { email: f.personaEmail || f.email, unidad: f.unidad })"
+                  />
+                </td>
+              </tr>
+              </template>
             </tbody>
           </table>
         </div>
+        <p v-else-if="!backendFiltrada.length" class="text-sm text-text-muted m-0">
+          Sin filas para este filtro.
+        </p>
         <Paginator
-          v-if="(previewData.filas?.length || 0) > porPagina"
+          v-if="backendFiltrada.length > porPagina"
           :rows="porPagina"
-          :totalRecords="previewData.filas.length"
+          :totalRecords="backendFiltrada.length"
           :first="pagina * porPagina"
           class="mt-2"
           @page="pagina = $event.page"

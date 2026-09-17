@@ -57,6 +57,12 @@ async function importar() {
   }
 }
 
+// FE-5: desde una advertencia (preview o resultado) → reedición con la fila destacada.
+function corregirDesdeAdvertencia({ email, unidad } = {}) {
+  planilla.descartarPreviewArchivo();
+  planilla.destacarFilaPor(email, unidad);
+}
+
 onMounted(() => planilla.cargar());
 </script>
 
@@ -137,6 +143,7 @@ onMounted(() => planilla.cargar());
           @validar="validar"
           @importar="importar"
           @descartar="planilla.descartarPreviewArchivo()"
+          @corregir="corregirDesdeAdvertencia"
           @quitar-fila="planilla.quitarStagingFila"
           @agregar-vehiculo="planilla.agregarStagingVehiculo"
           @quitar-vehiculo="planilla.quitarStagingVehiculo"
@@ -194,6 +201,11 @@ onMounted(() => planilla.cargar());
       <PlanillaResultado
         :resultado="planilla.resultado"
         :preview-filas-error="planilla.previewData ? planilla.previewData.filasError : null"
+        :filas="planilla.resultadoFilas"
+        :exportando="planilla.descargandoResultado"
+        :error-exportacion="planilla.errorDescarga"
+        @exportar="planilla.descargarResultado()"
+        @corregir="corregirDesdeAdvertencia"
       />
     </template>
   </Card>

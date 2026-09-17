@@ -198,10 +198,27 @@ const previewErrores = computed(() => {
   return (p.value.previewData.filas || []).filter((f) => f.estado === "ERROR");
 });
 
+// FE-1: filas con advertencias[]. Tolerante a null (BE-4 aún no desplegado).
+const previewAdvertencias = computed(() => {
+  if (!p.value.previewData) return 0;
+  return (p.value.previewData.filas || []).filter(
+    (f) => (f.advertencias || []).length > 0,
+  ).length;
+});
+
 function erroresDe(f) {
   return (
     p.value.filasConErrores?.find((x) => x.fila.id === f.id)?.errores || []
   );
+}
+
+// FE-5: advertencias del último import (en memoria) para el badge en reedición.
+function advertenciasDe(f) {
+  try {
+    return p.value.advertenciasDeFila?.(f) || [];
+  } catch {
+    return [];
+  }
 }
 
 function vehiculosDe(f) {
@@ -331,7 +348,11 @@ const { foco, alternar, salir } = useModoFoco();
         <div class="text-sm">
           <strong>Previsualización:</strong> {{ p.previewData.filasOk }} filas
           OK · {{ p.previewData.filasError }} con error ·
-          {{ previewOmitidas }} omitidas (vínculo ya existente).
+          {{ previewOmitidas }} omitidas (vínculo ya existente)<template
+            v-if="previewAdvertencias"
+          >
+            · {{ previewAdvertencias }} con advertencia</template
+          >.
           <span v-if="previewErrores.length" class="block mt-1">
             <span v-for="(e, i) in previewErrores" :key="i" class="block">
               Fila {{ e.numeroFila }} ({{ e.unidad }} · {{ e.personaNombre }}):
@@ -403,7 +424,11 @@ const { foco, alternar, salir } = useModoFoco();
               </tr>
             </thead>
             <tbody>
-              <tr v-for="f in filasFiltradasPaginadas" :key="f.id">
+              <tr
+                v-for="f in filasFiltradasPaginadas"
+                :key="f.id"
+                :class="{ 'fila-destacada': p.filaDestacadaId === f.id }"
+              >
                 <td class="whitespace-nowrap align-middle">
                   <template v-if="editando">
                     <AutoComplete
@@ -776,6 +801,13 @@ const { foco, alternar, salir } = useModoFoco();
                       size="small"
                     />
                     <Tag
+                      v-if="advertenciasDe(f).length"
+                      value="Advertencia"
+                      severity="warn"
+                      size="small"
+                      :title="advertenciasDe(f).join('; ')"
+                    />
+                    <Tag
                       v-if="f.marcadoEliminar"
                       value="Eliminado"
                       severity="danger"
@@ -821,7 +853,10 @@ const { foco, alternar, salir } = useModoFoco();
             v-for="f in filasFiltradasPaginadas"
             :key="f.id"
             class="p-2 border-round flex flex-col gap-2"
-            :class="erroresDe(f).length ? 'bg-danger/5' : ''"
+            :class="[
+              erroresDe(f).length ? 'bg-danger/5' : '',
+              p.filaDestacadaId === f.id ? 'fila-destacada' : '',
+            ]"
           >
             <div class="grid grid-cols-2 gap-2">
               <div class="flex flex-col gap-1">
@@ -1244,6 +1279,13 @@ const { foco, alternar, salir } = useModoFoco();
                   size="small"
                 />
                 <Tag
+                  v-if="advertenciasDe(f).length"
+                  value="Advertencia"
+                  severity="warn"
+                  size="small"
+                  :title="advertenciasDe(f).join('; ')"
+                />
+                <Tag
                   v-if="f.tipo_vinculo"
                   :value="f.tipo_vinculo"
                   :severity="
@@ -1271,4 +1313,12 @@ const { foco, alternar, salir } = useModoFoco();
     </template>
   </div>
 </template>
+
+<style scoped>
+/* FE-5: fila objetivo de "Corregir ahora" (advertencia del último import). */
+.fila-destacada {
+  outline: 2px solid var(--p-amber-500, #f59e0b);
+  outline-offset: -2px;
+}
+</style>
 

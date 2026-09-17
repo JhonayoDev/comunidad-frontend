@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { parsearCsv, normalizarFilas } from "@/utils/csvParser";
 import { usePlanillaDatos } from "@/composables/usePlanillaDatos";
 import { COLUMNAS_DEFAULT, clavesColumnas, filasCrudasADinamicas, migrarClavesCompatibles } from "@/data/planillaColumnas";
@@ -23,6 +23,20 @@ const nombreArchivo = ref(null);
 const encabezadosFaltantes = ref([]);
 
 const planilla = usePlanillaDatos({ cargarExistentes: true });
+
+// FE-1: OMITIDA = total - ok - error (el backend no la cuenta en el header).
+const previewOmitidas = computed(() => {
+  const d = planilla.previewData;
+  if (!d) return 0;
+  return Math.max(0, (d.totalFilas ?? 0) - (d.filasOk ?? 0) - (d.filasError ?? 0));
+});
+
+// FE-1: filas con advertencias[]. Tolerante a null (BE-4 aún no desplegado).
+const previewAdvertencias = computed(
+  () =>
+    (planilla.previewData?.filas || []).filter((f) => (f.advertencias || []).length > 0)
+      .length,
+);
 
 function procesarCsv(texto) {
   const { encabezados, filas: filasCrudas } = parsearCsv(texto);
@@ -124,13 +138,24 @@ function importar() {
               :value="`${planilla.filasError.length} con error`"
               severity="danger"
             />
+            <Tag
+              v-if="planilla.previewData"
+              :value="`${previewOmitidas} omitidas`"
+              severity="contrast"
+            />
+            <Tag
+              v-if="previewAdvertencias"
+              :value="`${previewAdvertencias} con advertencia`"
+              severity="warn"
+            />
           </div>
           <div class="flex-1 text-sm text-surface-400">
             <template v-if="planilla.previewData">
               Previsualización: {{ planilla.previewData.filasOk }} filas OK ·
               {{ planilla.previewData.filasError }} con error ·
-              {{ planilla.previewData.totalFilas - planilla.previewData.filasOk - planilla.previewData.filasError }}
-              omitidas.
+              {{ previewOmitidas }} omitidas<template v-if="previewAdvertencias">
+                · {{ previewAdvertencias }} con advertencia</template
+              >.
             </template>
             <template v-else-if="planilla.filasError.length">
               {{ planilla.filasError.length }} fila(s) con errores no se importarán.
@@ -160,6 +185,23 @@ function importar() {
 
         <Message v-if="planilla.resultado" severity="success" :closable="false" class="mt-3">
           <template #default>
+            <div class="flex flex-wrap gap-2 mb-2">
+              <Tag :value="`${planilla.resultado.filasOk} OK`" severity="success" />
+              <Tag
+                :value="`${planilla.resultado.filasOmitidas} omitidas`"
+                severity="contrast"
+              />
+              <Tag
+                v-if="planilla.resultado.filasError"
+                :value="`${planilla.resultado.filasError} con error`"
+                severity="danger"
+              />
+              <Tag
+                v-if="planilla.resultado.filasAdvertencia"
+                :value="`${planilla.resultado.filasAdvertencia} con advertencia`"
+                severity="warn"
+              />
+            </div>
             <div class="text-sm">
               <strong>Importación completada:</strong>
               {{ planilla.resultado.filasOk }} filas OK ·

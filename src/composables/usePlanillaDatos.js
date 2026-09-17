@@ -181,6 +181,15 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   const operacion = ref(null);
   const resultado = ref(null);
   const previewData = ref(null);
+  // FE-3/FE-5: filas del preview preservadas al ejecutar (para filtrar el
+  // resultado y marcar advertencias en reedición). El backend aún no devuelve
+  // detalle por fila en el ejecutar, así que se conserva la copia en memoria.
+  const resultadoFilas = ref(null);
+  // FE-5: fila de reedición a destacar (id de filas[]) tras "Corregir ahora".
+  const filaDestacadaId = ref(null);
+  // FE-4: descarga del CSV del resultado (BE-3).
+  const descargandoResultado = ref(false);
+  const errorDescarga = ref(null);
   const archivoNombre = ref(null);
   // Staging editable (F1, modelo Meta): parse local del csv ANTES de cualquier
   // POST. Se edita en la app y solo al pulsar [Validar] se envía al backend.
@@ -643,6 +652,40 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     );
   });
 
+  // FE-5: mapa email|unidad → advertencias[] del último import (fuente del
+  // badge en reedición; en memoria, se pierde al recargar — aceptable).
+  const advertenciasPostImport = computed(() => {
+    const m = new Map();
+    (resultadoFilas.value || []).forEach((f) => {
+      const adv = f?.advertencias || [];
+      if (!adv.length) return;
+      const email = (f.personaEmail || f.email || "").toLowerCase().trim();
+      const unidad = String(f.unidad || "").trim();
+      if (email && unidad) m.set(`${email}|${unidad}`, adv);
+    });
+    return m;
+  });
+
+  function advertenciasDeFila(f) {
+    if (!f) return [];
+    const email = (f.email || "").toLowerCase().trim();
+    const unidad = String(f.unidad || "").trim();
+    return advertenciasPostImport.value.get(`${email}|${unidad}`) || [];
+  }
+
+  // FE-5: destaca una fila de reedición por email+unidad (tras "Corregir ahora").
+  function destacarFilaPor(email, unidad) {
+    const e = (email || "").toLowerCase().trim();
+    const u = String(unidad || "").trim();
+    const f = filas.value.find(
+      (x) =>
+        (x.email || "").toLowerCase().trim() === e &&
+        String(x.unidad || "").trim() === u,
+    );
+    filaDestacadaId.value = f ? f.id : null;
+    return f || null;
+  }
+
   // ─── Payload batch (solo filas nuevas) ───
   function buildPayload() {
     return filasNuevasValidas.value.map((f) => filaAPayload(f));
@@ -1094,6 +1137,9 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   function limpiarTodo() {
     filas.value = [];
     previewData.value = null;
+    resultadoFilas.value = null;
+    filaDestacadaId.value = null;
+    errorDescarga.value = null;
     archivoNombre.value = null;
     previewFilasRaw.value = null;
     archivoPendiente.value = null;
@@ -1113,6 +1159,12 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     try {
       const res = await importacionService.ejecutar(cid, previewData.value.importacionId);
       resultado.value = res.data;
+      // FE-3/FE-5: conservar las filas del preview para filtrar el resultado
+      // y marcar advertencias (el ejecutar no devuelve detalle por fila).
+      resultadoFilas.value = previewData.value?.filas
+        ? [...previewData.value.filas]
+        : null;
+      filaDestacadaId.value = null;
       previewData.value = null;
       archivoNombre.value = null;
       previewFilasRaw.value = null;
@@ -1157,6 +1209,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         const payload = nuevas.map((f) => filaAPayload(f));
         const prev = await importacionService.previewJson(cid, payload);
         previewData.value = prev.data;
+        resultadoFilas.value = prev.data?.filas ? [...prev.data.filas] : null;
+        filaDestacadaId.value = null;
         if (prev.data?.filasOk > 0) {
           const res = await importacionService.ejecutar(cid, prev.data.importacionId);
           resumen.creadas = res.data?.filasOk || 0;
@@ -1214,6 +1268,36 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     }
   }
 
+  // FE-4: GET /importaciones/{id}/resultado?formato=csv (BE-3) — descarga con
+  // auth header vía el cliente axios (no window.open directo). Requiere
+  // importacionId del resultado; el flujo manual (reedición) no lo tiene.
+  async function descargarResultado() {
+    const importacionId = resultado.value?.importacionId;
+    if (!cid || !importacionId) return;
+    descargandoResultado.value = true;
+    errorDescarga.value = null;
+    try {
+      const blob = await importacionService.resultadoCsv(cid, importacionId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `resultado_import_${importacionId}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Error al descargar resultado", e);
+      if (e?.response?.status === 404) {
+        errorDescarga.value =
+          "El resultado ya no está disponible (expiró después de 7 días)";
+      } else {
+        errorDescarga.value =
+          e?.response?.data?.message || "No se pudo descargar el resultado";
+      }
+    } finally {
+      descargandoResultado.value = false;
+    }
+  }
+
   // GET /importaciones/plantilla — descarga la plantilla CSV del backend.
   // 403 estricto: no bypass — avisa que falta permiso y que contacte al SUPER_ADMIN.
   async function descargarPlantilla() {
@@ -1262,6 +1346,14 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     fase,
     resultado,
     previewData,
+    resultadoFilas,
+    filaDestacadaId,
+    descargandoResultado,
+    errorDescarga,
+    advertenciasPostImport,
+    advertenciasDeFila,
+    destacarFilaPor,
+    descargarResultado,
     archivoNombre,
     previewFilasRaw,
     archivoPendiente,
