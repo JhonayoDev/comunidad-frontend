@@ -24,6 +24,8 @@ vi.mock("@/services/importacionService", () => ({
     previewJson: vi.fn(),
     previewArchivo: vi.fn(),
     ejecutar: vi.fn(),
+    resultado: vi.fn(),
+    resultadoCsv: vi.fn(),
     plantilla: vi.fn(),
   },
 }));
@@ -386,6 +388,95 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(importacionService.ejecutar).toHaveBeenCalledWith("cid-1", "imp-1");
     expect(p.resultado.filasOk).toBe(1);
     expect(p.previewData).toBe(null);
+  });
+
+  it("ejecutar persiste resultado y filas en sesión y se rehidrata", async () => {
+    importacionService.ejecutar.mockResolvedValueOnce({
+      data: { importacionId: "imp-9", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewData = {
+      importacionId: "imp-9",
+      filasOk: 1,
+      filasError: 0,
+      filas: [
+        {
+          numeroFila: 1,
+          estado: "OK",
+          unidad: "1",
+          personaEmail: "a@a.cl",
+          advertencias: ["nombre ignorado"],
+        },
+      ],
+    };
+    await p.ejecutar();
+    expect(p.resultadoFilas).toHaveLength(1);
+    const p2 = usePlanillaDatos({ cargarExistentes: false });
+    expect(p2.cargarResultadoSesion()).toBe(true);
+    expect(p2.resultado.importacionId).toBe("imp-9");
+    expect(p2.advertenciasDeFila({ email: "a@a.cl", unidad: "1" })).toEqual([
+      "nombre ignorado",
+    ]);
+  });
+
+  it("limpiarTodo descarta el resultado en sesión", async () => {
+    importacionService.ejecutar.mockResolvedValueOnce({
+      data: { importacionId: "imp-9", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewData = { importacionId: "imp-9", filasOk: 1, filasError: 0, filas: [] };
+    await p.ejecutar();
+    p.limpiarTodo();
+    const p2 = usePlanillaDatos({ cargarExistentes: false });
+    expect(p2.cargarResultadoSesion()).toBe(false);
+    expect(p2.resultado).toBe(null);
+  });
+
+  it("hidratarResultado trae filas del backend (BE-5) y actualiza sesión", async () => {
+    const filas = [
+      {
+        numeroFila: 1,
+        estado: "OK",
+        unidad: "1",
+        personaNombre: "A",
+        personaEmail: "a@a.cl",
+        tipoVinculo: "PROPIETARIO",
+        errores: [],
+        advertencias: ["nombre ignorado"],
+      },
+    ];
+    importacionService.resultado.mockResolvedValueOnce({
+      data: { importacionId: "imp-9", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [], filas },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.resultado = { importacionId: "imp-9", filasOk: 1 };
+    p.resultadoFilas = null;
+    expect(await p.hidratarResultado()).toBe(true);
+    expect(importacionService.resultado).toHaveBeenCalledWith("cid-1", "imp-9");
+    expect(p.resultadoFilas).toHaveLength(1);
+    expect(p.advertenciasDeFila({ email: "a@a.cl", unidad: "1" })).toEqual([
+      "nombre ignorado",
+    ]);
+  });
+
+  it("hidratarResultado con filas null preserva la copia de sesión", async () => {
+    importacionService.resultado.mockResolvedValueOnce({
+      data: { importacionId: "imp-9", filasOk: 1, filas: null },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.resultado = { importacionId: "imp-9", filasOk: 1 };
+    p.resultadoFilas = [{ numeroFila: 1, estado: "OK", unidad: "1" }];
+    expect(await p.hidratarResultado()).toBe(true);
+    expect(p.resultadoFilas).toHaveLength(1);
+  });
+
+  it("hidratarResultado con error preserva la sesión", async () => {
+    importacionService.resultado.mockRejectedValueOnce(new Error("404"));
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.resultado = { importacionId: "imp-9", filasOk: 1 };
+    p.resultadoFilas = [{ numeroFila: 1, estado: "OK", unidad: "1" }];
+    expect(await p.hidratarResultado()).toBe(false);
+    expect(p.resultadoFilas).toHaveLength(1);
   });
 
   it("enviar hace preview + ejecutar en secuencia", async () => {

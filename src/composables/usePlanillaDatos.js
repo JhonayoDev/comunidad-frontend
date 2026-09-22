@@ -24,6 +24,10 @@ import { parsearCsv, normalizarFilas } from "@/utils/csvParser";
 import { rutValido, telefonoChileValido } from "@/utils/validadoresChile";
 
 const CLAVE_BORRADOR = (cid) => `comunidad:planilla-borrador:${cid}`;
+// FE-A: último resultado del import (agregado + filas con advertencias) para
+// sobrevivir recargas en la misma pestaña. Respaldo local hasta BE-5 (briku#80),
+// que lo hidratará desde el backend (7 días); la sesión se pierde al cerrar.
+const CLAVE_RESULTADO = (cid) => `comunidad:resultado-import:${cid}`;
 
 let uid = 0;
 function nuevoId() {
@@ -430,6 +434,48 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       console.error("Error al descartar borrador", e);
     }
     borradorRestaurado.value = false;
+  }
+
+  // ─── Resultado en sesión (FE-A: sobrevive recargas, se pierde al cerrar) ──
+  function guardarResultadoSesion() {
+    if (!cid || !resultado.value) return;
+    try {
+      sessionStorage.setItem(
+        CLAVE_RESULTADO(cid),
+        JSON.stringify({
+          resultado: resultado.value,
+          filas: resultadoFilas.value,
+          guardadoEn: Date.now(),
+        }),
+      );
+    } catch (e) {
+      console.error("Error al guardar resultado en sesión", e);
+    }
+  }
+
+  function cargarResultadoSesion() {
+    if (!cid) return false;
+    try {
+      const raw = sessionStorage.getItem(CLAVE_RESULTADO(cid));
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (!data || !data.resultado) return false;
+      resultado.value = data.resultado;
+      resultadoFilas.value = Array.isArray(data.filas) ? data.filas : null;
+      return true;
+    } catch (e) {
+      console.error("Error al restaurar resultado en sesión", e);
+    }
+    return false;
+  }
+
+  function descartarResultadoSesion() {
+    if (!cid) return;
+    try {
+      sessionStorage.removeItem(CLAVE_RESULTADO(cid));
+    } catch (e) {
+      console.error("Error al descartar resultado en sesión", e);
+    }
   }
 
   // Autoguardado del borrador ante cualquier cambio (debounced 600ms, evita bloqueo Firefox con 500+ filas)
@@ -1140,6 +1186,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     resultadoFilas.value = null;
     filaDestacadaId.value = null;
     errorDescarga.value = null;
+    descartarResultadoSesion();
     archivoNombre.value = null;
     previewFilasRaw.value = null;
     archivoPendiente.value = null;
@@ -1165,6 +1212,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         ? [...previewData.value.filas]
         : null;
       filaDestacadaId.value = null;
+      guardarResultadoSesion();
       previewData.value = null;
       archivoNombre.value = null;
       previewFilasRaw.value = null;
@@ -1216,6 +1264,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
           resumen.creadas = res.data?.filasOk || 0;
         }
       }
+      resultado.value = resumen;
 
       // 2) Filas existentes editadas.
       const editadas = filas.value.filter(
@@ -1258,6 +1307,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       });
 
       resultado.value = resumen;
+      guardarResultadoSesion();
       descartarBorrador();
       if (!filas.value.length) modoReedicion.value = false;
     } catch (e) {
@@ -1298,6 +1348,30 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     }
   }
 
+  // BE-5 (briku#80): hidrata resultado + filas desde el backend (auditoría
+  // 7 días). La sesión es respaldo: si el backend no trae filas (historial
+  // viejo o BE previo a BE-5) o falla, se conserva la copia de sesión.
+  // Nota: filas = revalidadas al ejecutar (sin las ERROR del preview, que
+  // solo están en el CSV) — suficiente para badges/filtros/detalle.
+  async function hidratarResultado() {
+    const importacionId = resultado.value?.importacionId;
+    if (!cid || !importacionId) return false;
+    try {
+      const res = await importacionService.resultado(cid, importacionId);
+      if (!res.data) return false;
+      resultado.value = res.data;
+      if (Array.isArray(res.data.filas) && res.data.filas.length) {
+        resultadoFilas.value = [...res.data.filas];
+      }
+      filaDestacadaId.value = null;
+      guardarResultadoSesion();
+      return true;
+    } catch (e) {
+      console.error("Error al hidratar resultado", e);
+      return false;
+    }
+  }
+
   // GET /importaciones/plantilla — descarga la plantilla CSV del backend.
   // 403 estricto: no bypass — avisa que falta permiso y que contacte al SUPER_ADMIN.
   async function descargarPlantilla() {
@@ -1328,6 +1402,11 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       await cargarExistentes();
       const restaurado = cargarBorrador();
       if (!restaurado) await reconstruirFilas();
+      // FE-A: último resultado (badges/filtros/detalle sobreviven recargas).
+      // BE-5: si hay importacionId se refresca desde el backend (7 días).
+      if (cargarResultadoSesion() && resultado.value?.importacionId) {
+        await hidratarResultado();
+      }
     } catch (e) {
       console.error("Error al cargar planilla", e);
       error.value = "No se pudo cargar la planilla";
@@ -1391,6 +1470,9 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     guardarBorrador,
     cargarBorrador,
     descartarBorrador,
+    guardarResultadoSesion,
+    cargarResultadoSesion,
+    descartarResultadoSesion,
     buildPayload,
     preview,
     previewArchivo,
@@ -1407,6 +1489,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     limpiarTodo,
     ejecutar,
     enviar,
+    hidratarResultado,
     descargarPlantilla,
     cargar,
   });

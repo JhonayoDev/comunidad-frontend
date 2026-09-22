@@ -18,6 +18,7 @@ que afectan la auditabilidad y la experiencia del administrador:
 - [ ] JhonayoDev/briku#77 BE-2 — Persistir resultado en ejecutar (COMPLETADA, no borrar)
 - [ ] JhonayoDev/briku#78 BE-3 — Endpoint GET resultado + formato CSV
 - [ ] JhonayoDev/briku#79 BE-4 — Advertencias en validar() por divergencia de persona
+- [x] JhonayoDev/briku#80 BE-5 — Incluir filas[] en GET resultado JSON (auditoría post-recarga)
 
 ### Frontend (`JhonayoDev/comunidad-frontend`)
 - [x] #26 FE-1 — Resumen con chips OMITIDA + ADVERTENCIA separados
