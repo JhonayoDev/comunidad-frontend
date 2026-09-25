@@ -193,6 +193,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   // resultado y marcar advertencias en reedición). El backend aún no devuelve
   // detalle por fila en el ejecutar, así que se conserva la copia en memoria.
   const resultadoFilas = ref(null);
+  // D: true solo recién importado; lo restaurado de sesión/backend es histórico.
+  const resultadoFresco = ref(false);
   // FE-4: descarga del CSV del resultado (BE-3).
   const descargandoResultado = ref(false);
   const errorDescarga = ref(null);
@@ -463,6 +465,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const data = JSON.parse(raw);
       if (!data || !data.resultado) return false;
       resultado.value = data.resultado;
+      resultadoFresco.value = false;
       resultadoFilas.value = Array.isArray(data.filas) ? data.filas : null;
       return true;
     } catch (e) {
@@ -1247,6 +1250,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     sinEstStandalone.value = false;
     error.value = null;
     resultado.value = null;
+    resultadoFresco.value = false;
     operacion.value = null;
     descartarBorrador();
     descartarStagingSesion();
@@ -1261,6 +1265,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     try {
       const res = await importacionService.ejecutar(cid, previewData.value.importacionId);
       resultado.value = res.data;
+      resultadoFresco.value = true;
       // FE-3/FE-5: conservar las filas del preview para filtrar el resultado
       // y marcar advertencias (el ejecutar no devuelve detalle por fila).
       resultadoFilas.value = previewData.value?.filas
@@ -1361,6 +1366,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       });
 
       resultado.value = resumen;
+      resultadoFresco.value = true;
       guardarResultadoSesion();
       descartarBorrador();
       if (!filas.value.length) modoReedicion.value = false;
@@ -1414,6 +1420,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const res = await importacionService.resultado(cid, importacionId);
       if (!res.data) return false;
       resultado.value = res.data;
+      resultadoFresco.value = false;
       if (Array.isArray(res.data.filas) && res.data.filas.length) {
         resultadoFilas.value = [...res.data.filas];
       }
@@ -1481,6 +1488,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     resultado,
     previewData,
     resultadoFilas,
+    resultadoFresco,
     descargandoResultado,
     errorDescarga,
     advertenciasPostImport,

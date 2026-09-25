@@ -18,6 +18,8 @@ const props = defineProps({
   previewFilasError: { type: Number, default: null },
   // FE-3: filas del preview (FilaPreview[]) conservadas al ejecutar.
   filas: { type: Array, default: null },
+  // D: true solo recién importado; lo restaurado se presenta como histórico.
+  fresco: { type: Boolean, default: true },
   // FE-4: descarga del CSV (BE-3). Solo si hay importacionId.
   exportando: { type: Boolean, default: false },
   errorExportacion: { type: String, default: null },
@@ -46,8 +48,9 @@ function alternarDetalle(numeroFila) {
 </script>
 
 <template>
-  <p v-if="resultado" class="text-sm text-success mt-2 m-0">
-    Planilla guardada:
+  <p v-if="resultado" class="text-sm mt-2 m-0" :class="fresco ? 'text-success' : 'text-text-muted'">
+    <template v-if="fresco">Planilla guardada:</template>
+    <template v-else>Última importación (restaurada):</template>
     {{ resultado.filasOk ?? resultado.creadas }} filas
     nuevas · {{ resultado.actualizadas ?? 0 }} actualizadas ·
     {{ resultado.eliminadas ?? 0 }} eliminadas ·
@@ -56,7 +59,7 @@ function alternarDetalle(numeroFila) {
     {{ resultado.vehiculosCreados ?? 0 }} vehículos ·
     {{ resultado.estacionamientosVinculados ?? 0 }}
     estacionamientos ·
-    {{ resultado.bodegasVinculadas ?? 0 }} bodegas. Paso completado.
+    {{ resultado.bodegasVinculadas ?? 0 }} bodegas.<template v-if="fresco"> Paso completado.</template>
     <span v-if="resultado.errores?.length" class="block mt-1">
       <Button
         :label="

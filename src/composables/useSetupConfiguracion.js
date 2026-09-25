@@ -76,8 +76,17 @@ export const SETUP_PASOS = [
   },
 ];
 
-export function useSetupConfiguracion() {
-  const auth = useAuthStore();
+// Override de edición (module scope, compartido por las instancias): mientras
+// un paso está en edición manual se muestra pendiente aunque los datos digan
+// lo contrario. Se limpia al guardar/cambiar de ruta. No toca el dashboard
+// (su banner sigue derivado de datos reales).
+const pasoEnEdicion = ref(null);
+
+export function marcarEnEdicion(key) {
+  pasoEnEdicion.value = key || null;
+}
+
+export function useSetupConfiguracion() {  const auth = useAuthStore();
   const cargando = ref(true);
   const error = ref(null);
   const totales = ref({ unidades: 0, residentesActivos: 0, vehiculos: 0 });
@@ -129,6 +138,8 @@ export function useSetupConfiguracion() {
   }
 
   function pasoCompletado(key) {
+    // En edición manual el paso figura pendiente hasta guardar.
+    if (pasoEnEdicion.value && pasoEnEdicion.value === key) return false;
     if (key === "unidades") {
       return (totales.value.unidades ?? 0) > 0;
     }
@@ -200,5 +211,7 @@ export function useSetupConfiguracion() {
     progreso,
     cargar,
     sincronizarTotales,
+    pasoEnEdicion,
+    marcarEnEdicion,
   };
 }

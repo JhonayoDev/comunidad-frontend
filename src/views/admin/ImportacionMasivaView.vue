@@ -203,7 +203,7 @@ function importar() {
               />
             </div>
             <div class="text-sm">
-              <strong>Importación completada:</strong>
+              <strong>Importación completada<template v-if="!planilla.resultadoFresco"> (restaurada)</template>:</strong>
               {{ planilla.resultado.filasOk }} filas OK ·
               {{ planilla.resultado.filasOmitidas }} omitidas ·
               {{ planilla.resultado.filasError }} con error.

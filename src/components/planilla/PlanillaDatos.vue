@@ -32,7 +32,7 @@ const props = defineProps({
   soloUnidadesExistentes: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["guardar", "actualizado"]);
+const emit = defineEmits(["guardar", "actualizado", "edicion"]);
 
 const filtroCasa = ref("");
 
@@ -140,16 +140,27 @@ const filasConDatos = computed(
 function entrarEdicion() {
   snapshotEdicion.value = JSON.parse(JSON.stringify(p.value.filas));
   editando.value = true;
+  emit("edicion", true);
 }
 
 function salirEdicion() {
   editando.value = false;
+  emit("edicion", false);
 }
 
 function cancelarEdicion() {
   if (snapshotEdicion.value) p.value.filas = snapshotEdicion.value;
-  editando.value = false;
+  salirEdicion();
 }
+
+// Al guardar con éxito (nuevo resultado) se sale de edición: el paso vuelve
+// a completado en el wizard.
+watch(
+  () => p.value.resultado,
+  (r) => {
+    if (r && editando.value) salirEdicion();
+  },
+);
 
 const tiposUnidadOpciones = TIPOS_UNIDAD.map((t) => ({ label: t, value: t }));
 const tiposVinculoOpciones = TIPOS_VINCULO.map((t) => ({ label: t, value: t }));

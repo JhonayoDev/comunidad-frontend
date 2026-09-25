@@ -14,7 +14,7 @@ import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 
-const emit = defineEmits(["actualizado"]);
+const emit = defineEmits(["actualizado", "edicion-planilla"]);
 
 const auth = useAuthStore();
 const planilla = usePlanillaDatos({ cargarExistentes: true });
@@ -161,7 +161,12 @@ onMounted(() => planilla.cargar());
         </div>
 
         <div class="mt-3">
-          <PlanillaDatos :planilla="planilla" solo-unidades-existentes @guardar="guardar" />
+          <PlanillaDatos
+            :planilla="planilla"
+            solo-unidades-existentes
+            @guardar="guardar"
+            @edicion="(v) => emit('edicion-planilla', v)"
+          />
         </div>
 
         <div class="mt-4 flex justify-between items-center gap-2">
@@ -193,6 +198,7 @@ onMounted(() => planilla.cargar());
 
       <PlanillaResultado
         :resultado="planilla.resultado"
+        :fresco="planilla.resultadoFresco"
         :preview-filas-error="planilla.previewData ? planilla.previewData.filasError : null"
         :filas="planilla.resultadoFilas"
         :exportando="planilla.descargandoResultado"
