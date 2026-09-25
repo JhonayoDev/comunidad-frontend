@@ -26,6 +26,7 @@ que afectan la auditabilidad y la experiencia del administrador:
 - [x] #29 FE-3 — Filtros por estado (client-side)
 - [x] #30 FE-4 — Botón exportar CSV del resultado
 - [x] #31 FE-5 — Flujo de corrección post-import y reedición
+- [x] #32 FE-6 — Paso pendiente en edición + banner fresco/histórico
 
 ## Orden de implementación
 
