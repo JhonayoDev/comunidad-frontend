@@ -478,6 +478,86 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(p.resultadoFilas).toHaveLength(1);
   });
 
+  it("ejecutar asienta filas OK sin reconstrucción masiva", async () => {
+    unidadesService.getUnidades.mockResolvedValueOnce({
+      data: [{ id: "u1", numero: "2", tipo: "CASA", sectorNombre: "s1" }],
+    });
+    personasService.listar.mockResolvedValueOnce({
+      data: [{ id: "p1", email: "a@a.cl" }],
+    });
+    vehiculosService.listar.mockResolvedValueOnce({
+      data: [{ id: "v1", patente: "ABC123", unidadId: "u1" }],
+    });
+    estacionamientosService.getEstacionamientos.mockResolvedValueOnce({
+      data: [{ id: "e1", nombre: "E-2" }],
+    });
+    bodegasService.getBodegas.mockResolvedValueOnce({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValueOnce({ data: null });
+    importacionService.ejecutar.mockResolvedValueOnce({
+      data: { importacionId: "imp-1", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewFilasRaw = [
+      {
+        id: "s1",
+        unidad: "2",
+        tipo_unidad: "CASA",
+        nombre: "A",
+        email: "a@a.cl",
+        tipo_vinculo: "PROPIETARIO",
+        vehiculos: [{ uid: "vv", patente: "ABC123" }],
+        bodegas: [],
+        estacionamientos: [{ uid: "ee", nombre: "E-2" }],
+        esNuevo: true,
+        marcadoEliminar: false,
+        original: null,
+      },
+    ];
+    p.previewData = {
+      importacionId: "imp-1",
+      filasOk: 1,
+      filasError: 0,
+      filas: [{ numeroFila: 1, estado: "OK" }],
+    };
+    await p.ejecutar();
+    // Sin reconstrucción masiva: 0 GET por unidad/vínculo.
+    expect(personasService.vinculosUnidad).not.toHaveBeenCalled();
+    expect(unidadesService.getUnidad).not.toHaveBeenCalled();
+    expect(p.filas).toHaveLength(1);
+    const f = p.filas[0];
+    expect(f.esNuevo).toBe(false);
+    expect(f.__unidadId).toBe("u1");
+    expect(f.__personaId).toBe("p1");
+    expect(f.__vinculoId).toBe(null);
+    expect(f.vehiculos[0].__vehiculoId).toBe("v1");
+    expect(f.estacionamientos[0].__estacionamientoId).toBe("e1");
+    expect(p.modoReedicion).toBe(true);
+  });
+
+  it("ejecutar sin fuente local usa reconstruirFilas (fallback xlsx)", async () => {
+    unidadesService.getUnidades.mockResolvedValueOnce({
+      data: [{ id: "u1", numero: "1", tipo: "CASA" }],
+    });
+    personasService.listar.mockResolvedValueOnce({ data: [] });
+    vehiculosService.listar.mockResolvedValueOnce({ data: [] });
+    estacionamientosService.getEstacionamientos.mockResolvedValueOnce({ data: [] });
+    bodegasService.getBodegas.mockResolvedValueOnce({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValueOnce({ data: null });
+    importacionService.ejecutar.mockResolvedValueOnce({
+      data: { importacionId: "imp-1", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewFilasRaw = null;
+    p.previewData = {
+      importacionId: "imp-1",
+      filasOk: 1,
+      filasError: 0,
+      filas: [{ numeroFila: 1, estado: "OK" }],
+    };
+    await p.ejecutar();
+    expect(personasService.vinculosUnidad).toHaveBeenCalled();
+  });
+
   it("staging en sesión sobrevive a navegar y se restaura", () => {
     const p = usePlanillaDatos({ cargarExistentes: false });
     p.previewFilasRaw = [{ id: "a", unidad: "1" }];

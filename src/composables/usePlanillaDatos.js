@@ -1271,6 +1271,84 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     descartarStagingSesion();
   }
 
+  // ─── Asentar importadas (post-ejecutar eficiente) ─────────────────────────
+  // Convierte las filas OK importadas en existentes en vez de reconstruir
+  // todo (2 GET × todas las unidades). Solo refresca los 5 listados base y
+  // completa los IDs que ya vienen gratis (__unidadId por número, __personaId
+  // por email, __vehiculoId por patente+unidad, __estacionamientoId/__bodegaId
+  // por nombre). __vinculoId queda para resolución perezosa al editar
+  // (1 GET solo esa fila). Sin fuente local (xlsx sin staging): fallback a
+  // reconstruirFilas(). Las no-OK se descartan (como antes).
+  async function asentarImportadas() {
+    const prev = previewData.value;
+    const okNums = new Set(
+      (prev?.filas || []).filter((f) => f.estado === "OK").map((f) => f.numeroFila),
+    );
+    // Mismo orden del payload enviado (índice ↔ numeroFila). En staging se
+    // excluyen las marcadas para eliminar, igual que al validar.
+    const base = previewFilasRaw.value?.length
+      ? previewFilasRaw.value.filter((f) => !f.marcadoEliminar)
+      : filasNuevasValidas.value;
+    const fuente = base.filter((_, i) => okNums.has(i + 1));
+    await cargarExistentes();
+    if (!fuente.length) {
+      filas.value = [];
+      await reconstruirFilas();
+      return;
+    }
+    const unidadPorNum = new Map(
+      (unidades.value || []).map((u) => [String(u.numero), u]),
+    );
+    const personaPorEmail = new Map(
+      (personas.value || []).map((p) => [(p.email || "").toLowerCase(), p]),
+    );
+    const vehiculoPorClave = new Map(
+      (vehiculos.value || []).map((v) => [
+        `${v.unidadId}|${(v.patente || "").toUpperCase()}`,
+        v,
+      ]),
+    );
+    const estPorNombre = new Map(
+      (estacionamientos.value || []).map((e) => [String(e.nombre).trim(), e]),
+    );
+    const bodPorNombre = new Map(
+      (bodegas.value || []).map((b) => [String(b.nombre).trim(), b]),
+    );
+    filas.value = fuente.map((f) => {
+      const u = unidadPorNum.get(String(f.unidad || "").trim()) || null;
+      const p = personaPorEmail.get((f.email || "").toLowerCase().trim()) || null;
+      (f.vehiculos || []).forEach((v) => {
+        if (!v.__vehiculoId && u) {
+          const m = vehiculoPorClave.get(
+            `${u.id}|${(v.patente || "").trim().toUpperCase()}`,
+          );
+          if (m) v.__vehiculoId = m.id;
+        }
+      });
+      (f.bodegas || []).forEach((b) => {
+        if (b && typeof b !== "string" && !b.__bodegaId) {
+          const m = bodPorNombre.get(String(b.nombre || "").trim());
+          if (m) b.__bodegaId = m.id;
+        }
+      });
+      (f.estacionamientos || []).forEach((e) => {
+        if (e && typeof e !== "string" && !e.__estacionamientoId) {
+          const m = estPorNombre.get(String(e.nombre || "").trim());
+          if (m) e.__estacionamientoId = m.id;
+        }
+      });
+      f.esNuevo = false;
+      f.__unidadId = u ? u.id : f.__unidadId || null;
+      f.__personaId = p ? p.id : f.__personaId || null;
+      f.__vinculoId = f.__vinculoId || null;
+      f.marcadoEliminar = false;
+      delete f.error;
+      f.original = snapshotFila(f);
+      return f;
+    });
+    modoReedicion.value = true;
+  }
+
   // Fase 2: POST /importaciones/{importacionId}/ejecutar — aplica las filas OK.
   async function ejecutar() {
     if (!previewData.value?.importacionId) return;
@@ -1287,21 +1365,20 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         ? [...previewData.value.filas]
         : null;
       guardarResultadoSesion();
+      // Tras importar: asienta las filas OK como existentes (sin
+      // reconstrucción masiva). Va ANTES de limpiar preview/staging porque
+      // los usa como fuente.
+      try {
+        await asentarImportadas();
+      } catch (e) {
+        console.error("Error al asentar filas importadas", e);
+      }
       descartarStagingSesion();
       previewData.value = null;
       archivoNombre.value = null;
       previewFilasRaw.value = null;
       archivoPendiente.value = null;
       descartarBorrador();
-      // Tras importar desde archivo, refrescar datos existentes para reedición
-      // (reconstruir filas desde vínculos reales).
-      try {
-        await cargarExistentes();
-        filas.value = [];
-        await reconstruirFilas();
-      } catch (e) {
-        console.error("Error al recargar tras importar archivo", e);
-      }
     } catch (e) {
       console.error("Error al ejecutar importación", e);
       error.value = e?.response?.data?.message || "No se pudo ejecutar la importación";
