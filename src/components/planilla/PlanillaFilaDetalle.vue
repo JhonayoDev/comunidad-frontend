@@ -1,6 +1,4 @@
 <script setup>
-import Button from "primevue/button";
-
 // Detalle expandible de una fila del preview/resultado (FE-2).
 // Presentacional: recibe textos ya resumidos (ver src/utils/planillaResumen.js).
 // `advertencias[]` null se trata como vacío (BE-4 pendiente).
@@ -11,22 +9,26 @@ defineProps({
   estacionamientosTxt: { type: String, default: "" },
   bodegasTxt: { type: String, default: "" },
   esAdicional: { type: Boolean, default: false },
-  // FE-5: muestra el botón "Corregir ahora" (el padre aporta email+unidad).
-  corregible: { type: Boolean, default: false },
+  // F1: estado de la fila (OK/ERROR/OMITIDA). El motivo de OMITIDA se muestra
+  // como informativo (no hay nada que corregir) y "Se vinculará" solo en OK.
+  estado: { type: String, default: "OK" },
 });
-
-const emit = defineEmits(["corregir"]);
 </script>
 
 <template>
   <div class="flex flex-col gap-2 p-2 text-sm text-left">
-    <div v-if="(errores || []).length">
+    <div v-if="estado === 'ERROR' && (errores || []).length">
       <p class="m-0 mb-1 font-semibold text-danger">
         <i class="pi pi-times-circle" /> Errores (corrige antes de importar):
       </p>
       <ul class="m-0 pl-4 text-danger">
         <li v-for="(e, ei) in errores" :key="ei">{{ e }}</li>
       </ul>
+    </div>
+    <div v-else-if="(errores || []).length">
+      <p class="m-0 text-text-muted">
+        <i class="pi pi-info-circle" /> {{ errores.join("; ") }}
+      </p>
     </div>
     <div v-if="(advertencias || []).length">
       <p class="m-0 mb-1 font-semibold text-amber-500">
@@ -36,24 +38,16 @@ const emit = defineEmits(["corregir"]);
         <li v-for="(a, ai) in advertencias" :key="ai">{{ a }}</li>
       </ul>
       <p class="m-0 mt-1 text-xs text-text-muted">
-        Este campo fue ignorado — para corregirlo usa la edición manual después del import.
+        Este email ya está registrado como persona: en el import se usarán los
+        valores de la base de datos. Para modificarlos, edita a la persona en Residentes.
       </p>
-      <Button
-        v-if="corregible"
-        label="Corregir ahora"
-        icon="pi pi-pencil"
-        variant="outlined"
-        size="small"
-        class="mt-2"
-        @click="emit('corregir')"
-      />
     </div>
-    <div v-if="vehiculosTxt || estacionamientosTxt || bodegasTxt">
+    <div v-if="estado === 'OK' && (vehiculosTxt || estacionamientosTxt || bodegasTxt)">
       <p class="m-0 mb-1 font-semibold">Se vinculará:</p>
       <p class="m-0 text-xs">
-        Vehículos: {{ vehiculosTxt || "—" }} ·
-        Estacionamientos: {{ estacionamientosTxt || "—" }} ·
-        Bodegas: {{ bodegasTxt || "—" }}<span v-if="esAdicional">
+        Vehículos: {{ vehiculosTxt || "—" }} · Estacionamientos:
+        {{ estacionamientosTxt || "—" }} · Bodegas: {{ bodegasTxt || "—"
+        }}<span v-if="esAdicional">
           (se ignoran: el vínculo es RESIDENTE_ADICIONAL)</span
         >.
       </p>

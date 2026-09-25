@@ -1,0 +1,5 @@
+unidad,tipo_unidad,sector,nombre,email,rut,telefono,tipo_vinculo,es_residente,recibe_notificaciones,es_responsable,estacionamiento1,estacionamiento2,estacionamiento3,patente1,tipo_vehiculo1,marca1,modelo1,color1,patente2,tipo_vehiculo2,marca2,modelo2,color2,est2,patente3,tipo_vehiculo3,marca3,modelo3,color3,est3,bodega1,bodega2,bodega3
+2,CASA,sector 1,juan ignacio ramirez,juan.ramirez@gmail.com,17.532.930-7,569414573333,PROPIETARIO,NO,SI,NO,E-2
+1,CASA,sector 1,juan ramirez,juan.ramirez@gmail.com,17.532.930-7,56944993888,PROPIETARIO,SI,SI,NO
+3,CASA,sector 1,prueba error,mal-email,,,PROPIETARIO,SI,SI,NO
+9,CASA,sector 1,persona nueva test,persona.nueva.test@gmail.com,,,PROPIETARIO,SI,SI,NO

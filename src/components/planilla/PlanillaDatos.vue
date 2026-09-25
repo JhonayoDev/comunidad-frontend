@@ -424,11 +424,7 @@ const { foco, alternar, salir } = useModoFoco();
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="f in filasFiltradasPaginadas"
-                :key="f.id"
-                :class="{ 'fila-destacada': p.filaDestacadaId === f.id }"
-              >
+              <tr v-for="f in filasFiltradasPaginadas" :key="f.id">
                 <td class="whitespace-nowrap align-middle">
                   <template v-if="editando">
                     <AutoComplete
@@ -853,10 +849,7 @@ const { foco, alternar, salir } = useModoFoco();
             v-for="f in filasFiltradasPaginadas"
             :key="f.id"
             class="p-2 border-round flex flex-col gap-2"
-            :class="[
-              erroresDe(f).length ? 'bg-danger/5' : '',
-              p.filaDestacadaId === f.id ? 'fila-destacada' : '',
-            ]"
+            :class="erroresDe(f).length ? 'bg-danger/5' : ''"
           >
             <div class="grid grid-cols-2 gap-2">
               <div class="flex flex-col gap-1">
@@ -1313,12 +1306,4 @@ const { foco, alternar, salir } = useModoFoco();
     </template>
   </div>
 </template>
-
-<style scoped>
-/* FE-5: fila objetivo de "Corregir ahora" (advertencia del último import). */
-.fila-destacada {
-  outline: 2px solid var(--p-amber-500, #f59e0b);
-  outline-offset: -2px;
-}
-</style>
 

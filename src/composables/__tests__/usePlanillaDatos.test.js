@@ -479,6 +479,28 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(p.resultadoFilas).toHaveLength(1);
   });
 
+  it("staging en sesión sobrevive a navegar y se restaura", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewFilasRaw = [{ id: "a", unidad: "1" }];
+    p.archivoNombre = "qa.csv";
+    p.previewData = { importacionId: "imp-9", filasOk: 1, filasError: 0, filas: [] };
+    p.guardarStagingSesion();
+    const p2 = usePlanillaDatos({ cargarExistentes: false });
+    expect(p2.cargarStagingSesion()).toBe(true);
+    expect(p2.archivoNombre).toBe("qa.csv");
+    expect(p2.previewFilasRaw).toHaveLength(1);
+    expect(p2.previewData.importacionId).toBe("imp-9");
+  });
+
+  it("limpiarTodo descarta el staging en sesión", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewFilasRaw = [{ id: "a", unidad: "1" }];
+    p.guardarStagingSesion();
+    p.limpiarTodo();
+    const p2 = usePlanillaDatos({ cargarExistentes: false });
+    expect(p2.cargarStagingSesion()).toBe(false);
+  });
+
   it("enviar hace preview + ejecutar en secuencia", async () => {
     importacionService.previewJson.mockResolvedValueOnce({
       data: { importacionId: "imp-2", totalFilas: 1, filasOk: 1, filasError: 0, filas: [] },

@@ -28,6 +28,10 @@ const CLAVE_BORRADOR = (cid) => `comunidad:planilla-borrador:${cid}`;
 // sobrevivir recargas en la misma pestaña. Respaldo local hasta BE-5 (briku#80),
 // que lo hidratará desde el backend (7 días); la sesión se pierde al cerrar.
 const CLAVE_RESULTADO = (cid) => `comunidad:resultado-import:${cid}`;
+// Staging + preview en sesión: volver a la vista tras navegar no pierde el
+// borrador del archivo ni la validación (el File .xlsx no se puede persistir;
+// su preview sí, válido 30 min por TTL del backend).
+const CLAVE_STAGING = (cid) => `comunidad:staging-import:${cid}`;
 
 let uid = 0;
 function nuevoId() {
@@ -189,8 +193,6 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   // resultado y marcar advertencias en reedición). El backend aún no devuelve
   // detalle por fila en el ejecutar, así que se conserva la copia en memoria.
   const resultadoFilas = ref(null);
-  // FE-5: fila de reedición a destacar (id de filas[]) tras "Corregir ahora".
-  const filaDestacadaId = ref(null);
   // FE-4: descarga del CSV del resultado (BE-3).
   const descargandoResultado = ref(false);
   const errorDescarga = ref(null);
@@ -478,13 +480,70 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     }
   }
 
+  // ─── Staging + preview en sesión (no se pierde al navegar) ───────────────
+  function guardarStagingSesion() {
+    if (!cid) return;
+    try {
+      sessionStorage.setItem(
+        CLAVE_STAGING(cid),
+        JSON.stringify({
+          staging: previewFilasRaw.value,
+          archivoNombre: archivoNombre.value,
+          archivoPendienteNombre: archivoPendiente.value?.name || null,
+          sinEstStandalone: sinEstStandalone.value,
+          preview: previewData.value,
+          guardadoEn: Date.now(),
+        }),
+      );
+    } catch (e) {
+      console.error("Error al guardar staging en sesión", e);
+    }
+  }
+
+  function cargarStagingSesion() {
+    if (!cid) return false;
+    try {
+      const raw = sessionStorage.getItem(CLAVE_STAGING(cid));
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (!data || (!data.staging?.length && !data.preview)) return false;
+      previewFilasRaw.value = Array.isArray(data.staging) ? data.staging : null;
+      archivoNombre.value = data.archivoNombre || null;
+      sinEstStandalone.value = !!data.sinEstStandalone;
+      previewData.value = data.preview || null;
+      // El File .xlsx no sobrevive a la sesión: queda el nombre como referencia
+      // y el preview validado (Importar sigue válido dentro del TTL).
+      archivoPendiente.value = null;
+      return true;
+    } catch (e) {
+      console.error("Error al restaurar staging en sesión", e);
+    }
+    return false;
+  }
+
+  function descartarStagingSesion() {
+    if (!cid) return;
+    try {
+      sessionStorage.removeItem(CLAVE_STAGING(cid));
+    } catch (e) {
+      console.error("Error al descartar staging en sesión", e);
+    }
+  }
+
   // Autoguardado del borrador ante cualquier cambio (debounced 600ms, evita bloqueo Firefox con 500+ filas)
   let borradorTimer = null;
   function guardarBorradorDebounced() {
     if (borradorTimer) clearTimeout(borradorTimer);
     borradorTimer = setTimeout(() => guardarBorrador(), 600);
   }
+  let stagingTimer = null;
+  function guardarBorradorDebouncedStaging() {
+    if (stagingTimer) clearTimeout(stagingTimer);
+    stagingTimer = setTimeout(() => guardarStagingSesion(), 600);
+  }
   watch(filas, guardarBorradorDebounced, { deep: true });
+  // Staging editable: persiste ediciones (misma ventana de sesión).
+  watch(previewFilasRaw, guardarBorradorDebouncedStaging, { deep: true });
 
   // ─── Filas ───
   function agregarFila() {
@@ -717,19 +776,6 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     const email = (f.email || "").toLowerCase().trim();
     const unidad = String(f.unidad || "").trim();
     return advertenciasPostImport.value.get(`${email}|${unidad}`) || [];
-  }
-
-  // FE-5: destaca una fila de reedición por email+unidad (tras "Corregir ahora").
-  function destacarFilaPor(email, unidad) {
-    const e = (email || "").toLowerCase().trim();
-    const u = String(unidad || "").trim();
-    const f = filas.value.find(
-      (x) =>
-        (x.email || "").toLowerCase().trim() === e &&
-        String(x.unidad || "").trim() === u,
-    );
-    filaDestacadaId.value = f ? f.id : null;
-    return f || null;
   }
 
   // ─── Payload batch (solo filas nuevas) ───
@@ -993,6 +1039,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const res = await importacionService.previewJson(cid, payload);
       previewData.value = res.data;
       resultado.value = null;
+      guardarStagingSesion();
     } catch (e) {
       console.error("Error al previsualizar planilla", e);
       error.value = e?.response?.data?.message || "No se pudo previsualizar la planilla";
@@ -1011,6 +1058,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     const ext = nombre.toLowerCase().split(".").pop();
     if (!["csv", "xlsx"].includes(ext)) {
       error.value = "Formato no soportado. Usa .csv o .xlsx";
+      descartarStagingSesion();
       return;
     }
     error.value = null;
@@ -1020,6 +1068,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     if (ext === "xlsx") {
       archivoPendiente.value = archivo;
       previewFilasRaw.value = null;
+      guardarStagingSesion();
       return;
     }
     archivoPendiente.value = null;
@@ -1030,6 +1079,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       if (!encabezados.length) {
         error.value = "El archivo no tiene encabezado legible";
         previewFilasRaw.value = null;
+        descartarStagingSesion();
         return;
       }
       sinEstStandalone.value = !encabezados.includes("estacionamiento1");
@@ -1047,7 +1097,9 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       console.error("Error parseando csv local para staging", pe);
       error.value = "No se pudo leer el archivo csv";
       previewFilasRaw.value = null;
+      descartarStagingSesion();
     }
+    guardarStagingSesion();
   }
 
   // F1 — [Validar]: valida el staging editado contra el backend.
@@ -1073,6 +1125,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         const res = await importacionService.previewJson(cid, payload);
         previewData.value = res.data;
         resultado.value = null;
+        guardarStagingSesion();
       } catch (e) {
         console.error("Error al validar staging", e);
         if (e?.response?.status === 403) {
@@ -1109,6 +1162,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       const res = await importacionService.previewArchivo(cid, archivo);
       previewData.value = res.data;
       resultado.value = null;
+      guardarStagingSesion();
     } catch (e) {
       console.error("Error al previsualizar archivo", e);
       const status = e?.response?.status;
@@ -1138,6 +1192,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   function descartarPreviewArchivo() {
     previewData.value = null;
     error.value = null;
+    guardarStagingSesion();
   }
 
   // ─── Staging editable (F1): edita el borrador antes de validar ──────────
@@ -1184,7 +1239,6 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     filas.value = [];
     previewData.value = null;
     resultadoFilas.value = null;
-    filaDestacadaId.value = null;
     errorDescarga.value = null;
     descartarResultadoSesion();
     archivoNombre.value = null;
@@ -1195,6 +1249,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     resultado.value = null;
     operacion.value = null;
     descartarBorrador();
+    descartarStagingSesion();
   }
 
   // Fase 2: POST /importaciones/{importacionId}/ejecutar — aplica las filas OK.
@@ -1211,8 +1266,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       resultadoFilas.value = previewData.value?.filas
         ? [...previewData.value.filas]
         : null;
-      filaDestacadaId.value = null;
       guardarResultadoSesion();
+      descartarStagingSesion();
       previewData.value = null;
       archivoNombre.value = null;
       previewFilasRaw.value = null;
@@ -1258,7 +1313,6 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         const prev = await importacionService.previewJson(cid, payload);
         previewData.value = prev.data;
         resultadoFilas.value = prev.data?.filas ? [...prev.data.filas] : null;
-        filaDestacadaId.value = null;
         if (prev.data?.filasOk > 0) {
           const res = await importacionService.ejecutar(cid, prev.data.importacionId);
           resumen.creadas = res.data?.filasOk || 0;
@@ -1363,7 +1417,6 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       if (Array.isArray(res.data.filas) && res.data.filas.length) {
         resultadoFilas.value = [...res.data.filas];
       }
-      filaDestacadaId.value = null;
       guardarResultadoSesion();
       return true;
     } catch (e) {
@@ -1407,6 +1460,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       if (cargarResultadoSesion() && resultado.value?.importacionId) {
         await hidratarResultado();
       }
+      // Staging/review: volver tras navegar restaura borrador y validación.
+      cargarStagingSesion();
     } catch (e) {
       console.error("Error al cargar planilla", e);
       error.value = "No se pudo cargar la planilla";
@@ -1426,12 +1481,10 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     resultado,
     previewData,
     resultadoFilas,
-    filaDestacadaId,
     descargandoResultado,
     errorDescarga,
     advertenciasPostImport,
     advertenciasDeFila,
-    destacarFilaPor,
     descargarResultado,
     archivoNombre,
     previewFilasRaw,
@@ -1473,6 +1526,9 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     guardarResultadoSesion,
     cargarResultadoSesion,
     descartarResultadoSesion,
+    guardarStagingSesion,
+    cargarStagingSesion,
+    descartarStagingSesion,
     buildPayload,
     preview,
     previewArchivo,

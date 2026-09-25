@@ -23,7 +23,7 @@ const props = defineProps({
   errorExportacion: { type: String, default: null },
 });
 
-const emit = defineEmits(["exportar", "corregir"]);
+const emit = defineEmits(["exportar"]);
 
 // FE-3: mismo filtro client-side del preview (estado independiente).
 const { filtro, conteos, filasFiltradas, setFiltro } = useFiltroFilas(
@@ -46,18 +46,17 @@ function alternarDetalle(numeroFila) {
 </script>
 
 <template>
-  <p v-if="resultado" class="text-sm text-green-500 mt-2 m-0">
+  <p v-if="resultado" class="text-sm text-success mt-2 m-0">
     Planilla guardada:
     {{ resultado.filasOk ?? resultado.creadas }} filas
-    nuevas · {{ resultado.actualizadas }} actualizadas ·
-    {{ resultado.eliminadas }} eliminadas ·
+    nuevas · {{ resultado.actualizadas ?? 0 }} actualizadas ·
+    {{ resultado.eliminadas ?? 0 }} eliminadas ·
     {{ resultado.personasCreadas ?? 0 }} personas ·
     {{ resultado.vinculosCreados ?? 0 }} vínculos ·
     {{ resultado.vehiculosCreados ?? 0 }} vehículos ·
     {{ resultado.estacionamientosVinculados ?? 0 }}
     estacionamientos ·
-    {{ resultado.bodegasVinculadas ?? 0 }} bodegas. Paso
-    completado.
+    {{ resultado.bodegasVinculadas ?? 0 }} bodegas. Paso completado.
     <span v-if="resultado.errores?.length" class="block mt-1">
       <Button
         :label="
@@ -65,7 +64,9 @@ function alternarDetalle(numeroFila) {
             ? `Ocultar ${resultado.errores.length} errores`
             : `Ver ${resultado.errores.length} errores`
         "
-        :icon="filasExpandidas.has('__errores') ? 'pi pi-eye-slash' : 'pi pi-eye'"
+        :icon="
+          filasExpandidas.has('__errores') ? 'pi pi-eye-slash' : 'pi pi-eye'
+        "
         variant="text"
         severity="danger"
         size="small"
@@ -87,12 +88,18 @@ function alternarDetalle(numeroFila) {
       label="Exportar resultado CSV"
       icon="pi pi-download"
       variant="outlined"
+      class="bg-surface text-text-muted hover:bg-primary"
       size="small"
       :loading="exportando"
       :disabled="exportando"
       @click="emit('exportar')"
     />
-    <Message v-if="errorExportacion" severity="error" :closable="false" class="mt-2">
+    <Message
+      v-if="errorExportacion"
+      severity="error"
+      :closable="false"
+      class="mt-2"
+    >
       {{ errorExportacion }}
     </Message>
   </div>
@@ -109,7 +116,10 @@ function alternarDetalle(numeroFila) {
         @click="setFiltro(o.valor)"
       />
     </div>
-    <div v-if="filasFiltradas.length" class="flex flex-col gap-1 max-h-80 overflow-auto">
+    <div
+      v-if="filasFiltradas.length"
+      class="flex flex-col gap-1 max-h-80 overflow-auto"
+    >
       <div
         v-for="f in filasFiltradas"
         :key="f.numeroFila"
@@ -121,36 +131,51 @@ function alternarDetalle(numeroFila) {
           @click="tieneDetalle(f) && alternarDetalle(f.numeroFila)"
         >
           <span class="font-semibold">#{{ f.numeroFila }}</span>
-          <span>{{ f.unidad || "—" }} · {{ f.personaNombre || f.personaEmail || "—" }}</span>
+          <span
+            >{{ f.unidad || "—" }} ·
+            {{ f.personaNombre || f.personaEmail || "—" }}</span
+          >
           <Tag
             :value="f.estado"
-            :severity="f.estado === 'OK' ? 'success' : f.estado === 'ERROR' ? 'danger' : 'warn'"
+            :severity="
+              f.estado === 'OK'
+                ? 'success'
+                : f.estado === 'ERROR'
+                  ? 'danger'
+                  : 'warn'
+            "
             size="small"
             class="ml-auto"
           />
           <i
             v-if="tieneDetalle(f)"
             class="pi text-xs"
-            :class="filasExpandidas.has(f.numeroFila) ? 'pi-eye-slash' : 'pi-eye'"
+            :class="
+              filasExpandidas.has(f.numeroFila) ? 'pi-eye-slash' : 'pi-eye'
+            "
           />
         </button>
         <PlanillaFilaDetalle
           v-if="filasExpandidas.has(f.numeroFila)"
           :errores="f.errores || []"
           :advertencias="f.advertencias || []"
+          :estado="f.estado || 'OK'"
           :vehiculos-txt="vehiculosResumen(f)"
           :estacionamientos-txt="estacionamientosResumen(f)"
           :bodegas-txt="bodegasResumen(f)"
           :es-adicional="f.tipoVinculo === 'RESIDENTE_ADICIONAL'"
-          corregible
-          @corregir="emit('corregir', { email: f.personaEmail || f.email, unidad: f.unidad })"
         />
       </div>
     </div>
-    <p v-else class="text-sm text-text-muted m-0">Sin filas para este filtro.</p>
+    <p v-else class="text-sm text-text-muted m-0">
+      Sin filas para este filtro.
+    </p>
   </div>
-  <p v-else-if="previewFilasError !== null" class="text-sm text-amber-500 mt-2 m-0">
-    La previsualización detectó {{ previewFilasError }} fila(s) con
-    error. Vuelve a editar o corrige el archivo.
+  <p
+    v-else-if="(previewFilasError ?? 0) > 0"
+    class="text-sm text-amber-500 mt-2 m-0"
+  >
+    La previsualización detectó {{ previewFilasError }} fila(s) con error.
+    Vuelve a editar o corrige el archivo.
   </p>
 </template>

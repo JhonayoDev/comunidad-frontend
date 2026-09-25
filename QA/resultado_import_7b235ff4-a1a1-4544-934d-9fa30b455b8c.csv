@@ -1,0 +1,5 @@
+﻿fila,nombre,email,unidad,tipo_vinculo,estado,advertencias,errores
+1,juan ignacio ramirez,juan.ramirez@gmail.com,2,PROPIETARIO,OK,"nombre ignorado (BD: ""juan ramirez p"") | teléfono ignorado (BD: +56944993888)",
+2,juan ramirez,juan.ramirez@gmail.com,1,PROPIETARIO,OMITIDA,,El vínculo ya existe y se omitirá.
+3,prueba error,mal-email,3,PROPIETARIO,ERROR,,El email no es válido: mal-email
+4,persona nueva test,persona.nueva.test@gmail.com,9,PROPIETARIO,OK,,

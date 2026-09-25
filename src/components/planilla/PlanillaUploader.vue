@@ -37,6 +37,7 @@ function onChange(event) {
       icon="pi pi-upload"
       size="small"
       variant="outlined"
+      class="bg-surface text-text-muted hover:bg-primary"
       :disabled="deshabilitado"
       title="Sin permiso IMPORTACION_DATOS"
       @click="emit('mostrar')"
@@ -106,9 +107,18 @@ function onChange(event) {
     <Popover ref="formatoInfoOp" :style="{ width: '360px', maxWidth: '92vw' }">
       <div class="flex flex-col gap-2 p-1">
         <span class="text-sm font-semibold">Formato esperado</span>
-        <p class="text-xs text-text-muted m-0">Columnas en orden (separador <code>;</code>). Descarga la plantilla para evitar errores.</p>
-        <code class="text-xs bg-surface border border-border p-2 border-round break-all whitespace-pre-wrap">unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;estacionamiento1..3;patente1..3;bodega1..3</code>
-        <span class="text-xs text-text-muted">Puedes corregir los datos en la app antes de Validar. El backend valida fila a fila (31 cols).</span>
+        <p class="text-xs text-text-muted m-0">
+          Columnas en orden (separador <code>;</code>). Descarga la plantilla
+          para evitar errores.
+        </p>
+        <code
+          class="text-xs bg-surface border border-border p-2 border-round break-all whitespace-pre-wrap"
+          >unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;estacionamiento1..3;patente1..3;bodega1..3</code
+        >
+        <span class="text-xs text-text-muted"
+          >Puedes corregir los datos en la app antes de Validar. El backend
+          valida fila a fila (31 cols).</span
+        >
       </div>
     </Popover>
   </template>
