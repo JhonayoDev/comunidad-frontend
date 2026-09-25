@@ -1,12 +1,11 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useConfirm } from "primevue/useconfirm";
-import { useSetupPisos } from "@/composables/useSetupPisos";
+import { useSetupAccesos, NOMBRE_ACCESO_MAX } from "@/composables/useSetupAccesos";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
-import InputNumber from "primevue/inputnumber";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
@@ -14,7 +13,7 @@ import ConfirmDialog from "primevue/confirmdialog";
 
 const emit = defineEmits(["actualizado", "edicion-planilla"]); // edicion-planilla solo la emite Planilla (los demás la declaran para el listener del layout)
 
-const u = useSetupPisos();
+const u = useSetupAccesos();
 const confirm = useConfirm();
 
 const editando = ref(false);
@@ -23,6 +22,8 @@ const snapshotEdicion = ref(null);
 function entrarEdicion() {
   // Los errores de un guardado anterior no deben persistir al reintentar.
   u.estado.items.forEach((x) => (x.error = null));
+  // El resultado anterior ya cumplió su función (no confundir con lo nuevo).
+  u.resultado = null;
   snapshotEdicion.value = JSON.parse(JSON.stringify(u.estado.items));
   editando.value = true;
 }
@@ -34,13 +35,13 @@ function cancelarEdicion() {
 
 function salirEdicion() {
   editando.value = false;
-  u.ordenarPisos();
+  u.ordenarAccesos();
 }
 
 function confirmarEliminar(item) {
   confirm.require({
-    message: `¿Desactivar el piso ${item.numero}? No se podrá si tiene unidades, bodegas, estacionamientos o espacios comunes activos en ese piso.`,
-    header: "Desactivar piso",
+    message: `¿Desactivar el acceso "${item.nombre}"? Podrás recrearlo después con el mismo nombre.`,
+    header: "Desactivar acceso",
     icon: "pi pi-exclamation-triangle",
     acceptLabel: "Desactivar",
     rejectLabel: "Cancelar",
@@ -52,19 +53,15 @@ const mensajeResultado = computed(() => {
   const r = u.resultado;
   if (!r) return "";
   const partes = [];
-  if (r.creados) partes.push(`${r.creados} pisos creados`);
+  if (r.creados) partes.push(`${r.creados} accesos creados`);
   if (r.actualizados) partes.push(`${r.actualizados} actualizados`);
   if (r.eliminados) partes.push(`${r.eliminados} eliminados`);
   return partes.length ? partes.join(", ") + "." : "Sin cambios.";
 });
 
 const erroresResumen = computed(() =>
-  u.estado.items.filter((x) => x.error).map((x) => `${x.numero}: ${x.error}`)
+  u.estado.items.filter((x) => x.error).map((x) => `${x.nombre}: ${x.error}`)
 );
-
-function numeroLabel(x) {
-  return x.numero ?? "—";
-}
 
 async function guardar() {
   const ok = await u.guardar();
@@ -81,20 +78,25 @@ onMounted(() => u.cargar());
   <Card>
     <template #title>
       <div class="flex items-center gap-2">
-        <i class="pi pi-th-large"></i>
-        <span>Pisos</span>
+        <i class="pi pi-inbox"></i>
+        <span>Accesos de encomiendas</span>
       </div>
     </template>
     <template #content>
-      <Skeleton v-if="u.cargando" width="100%" height="120px" />
-      <Message v-else-if="!u.pisosHabilitados" severity="warn" :closable="false">
-        Tu cargo no tiene permisos para gestionar pisos (PISO_*). Contacta al
-        administrador del condominio.
+      <p class="text-sm text-text-muted m-0">
+        Puntos de recepción del condominio (Conserjería, Portón…). Se usan al
+        registrar encomiendas.
+      </p>
+
+      <Skeleton v-if="u.cargando" width="100%" height="120px" class="mt-3" />
+      <Message v-else-if="!u.accesosHabilitados" severity="warn" :closable="false" class="mt-3">
+        Tu cargo no tiene permisos para gestionar accesos (ENCOMIENDA_CONFIGURAR).
+        Contacta al administrador del condominio.
       </Message>
-      <Message v-else-if="u.error" severity="error">{{ u.error }}</Message>
+      <Message v-else-if="u.error" severity="error" class="mt-3">{{ u.error }}</Message>
       <template v-else>
-        <div class="flex flex-wrap items-center gap-2">
-          <Tag :value="`${u.estado.items.length} pisos`" severity="info" size="small" />
+        <div class="flex flex-wrap items-center gap-2 mt-3">
+          <Tag :value="`${u.estado.items.length} accesos`" severity="info" size="small" />
           <Button
             v-if="!editando"
             label="Editar"
@@ -117,7 +119,7 @@ onMounted(() => u.cargar());
           class="mt-3"
         >
           <div class="flex flex-col gap-1">
-            <span>No se pudieron guardar los siguientes pisos:</span>
+            <span>No se pudieron guardar los siguientes accesos:</span>
             <span v-for="(e, i) in erroresResumen" :key="i" class="text-sm">{{ e }}</span>
           </div>
         </Message>
@@ -126,9 +128,7 @@ onMounted(() => u.cargar());
           <table>
             <thead>
               <tr>
-                <th>Número</th>
                 <th>Nombre</th>
-                <th>Descripción</th>
                 <th>Estado</th>
                 <th v-if="editando"></th>
               </tr>
@@ -141,30 +141,17 @@ onMounted(() => u.cargar());
               >
                 <td>
                   <template v-if="editando && !item.marcadoEliminar">
-                    <InputNumber
-                      v-model="item.numero"
+                    <InputText
+                      v-model="item.nombre"
                       size="small"
                       class="w-full"
-                      :min-fraction-digits="0"
-                      :max-fraction-digits="0"
+                      :maxlength="NOMBRE_ACCESO_MAX"
                     />
                   </template>
                   <template v-else>
-                    <span :class="item.marcadoEliminar ? 'line-through' : ''">{{ numeroLabel(item) }}</span>
+                    <span :class="item.marcadoEliminar ? 'line-through' : ''">{{ item.nombre }}</span>
                     <Tag v-if="item.esNuevo" value="Nuevo" severity="success" size="small" class="ml-2" />
                   </template>
-                </td>
-                <td>
-                  <template v-if="editando && !item.marcadoEliminar">
-                    <InputText v-model="item.nombre" size="small" class="w-full" />
-                  </template>
-                  <span v-else>{{ item.nombre || "—" }}</span>
-                </td>
-                <td>
-                  <template v-if="editando && !item.marcadoEliminar">
-                    <InputText v-model="item.descripcion" size="small" class="w-full" />
-                  </template>
-                  <span v-else>{{ item.descripcion || "—" }}</span>
                 </td>
                 <td>
                   <Tag
@@ -202,16 +189,15 @@ onMounted(() => u.cargar());
             <div class="flex items-center justify-between gap-2">
               <div class="min-w-0 flex-1">
                 <template v-if="editando && !item.marcadoEliminar">
-                  <InputNumber
-                    v-model="item.numero"
+                  <InputText
+                    v-model="item.nombre"
                     size="small"
                     class="w-full"
-                    :min-fraction-digits="0"
-                    :max-fraction-digits="0"
+                    :maxlength="NOMBRE_ACCESO_MAX"
                   />
                 </template>
                 <template v-else>
-                  <span class="font-medium" :class="item.marcadoEliminar ? 'line-through' : ''">{{ numeroLabel(item) }}</span>
+                  <span class="font-medium" :class="item.marcadoEliminar ? 'line-through' : ''">{{ item.nombre }}</span>
                   <Tag v-if="item.esNuevo" value="Nuevo" severity="success" size="small" class="ml-2" />
                 </template>
               </div>
@@ -225,29 +211,28 @@ onMounted(() => u.cargar());
               />
             </div>
             <div class="mt-2 flex flex-col gap-1">
-              <template v-if="editando && !item.marcadoEliminar">
-                <label class="text-xs text-surface-400">Nombre</label>
-                <InputText v-model="item.nombre" size="small" class="w-full" />
-                <label class="text-xs text-surface-400">Descripción</label>
-                <InputText v-model="item.descripcion" size="small" class="w-full" />
-              </template>
-              <span v-else class="text-sm text-surface-400">{{ item.nombre || "Sin nombre" }}</span>
               <Tag v-if="item.error" :value="item.error" severity="danger" size="small" />
               <Tag v-else-if="item.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
             </div>
           </div>
         </div>
 
-        <p v-if="u.resultado" class="text-sm text-green-500 mt-2 m-0">
+        <Message
+          v-if="u.resultado"
+          severity="success"
+          :closable="false"
+          class="mt-2"
+        >
           {{ mensajeResultado }}<template v-if="!u.tieneErrores"> Paso completado.</template>
-        </p>
+        </Message>
 
         <div v-if="!editando" class="mt-4 flex justify-end">
           <Button
-            label="Guardar pisos"
+            :label="u.hayCambios ? `Guardar accesos (${u.pendientes.total})` : 'Guardar accesos'"
             icon="pi pi-save"
             :loading="u.enviando"
-            :disabled="!u.itemsValidos"
+            :disabled="!u.itemsValidos || !u.hayCambios"
+            :title="!u.hayCambios ? 'Sin cambios pendientes' : ''"
             @click="guardar"
           />
         </div>

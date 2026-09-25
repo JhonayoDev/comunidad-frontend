@@ -22,7 +22,7 @@ import Paginator from "primevue/paginator";
 const props = defineProps({
   entidad: { type: String, default: "estacionamiento" },
 });
-const emit = defineEmits(["actualizado"]);
+const emit = defineEmits(["actualizado", "edicion-planilla"]); // edicion-planilla solo la emite Planilla (los demás la declaran para el listener del layout)
 
 const u = useSetupEntidades({ entidad: props.entidad });
 const confirm = useConfirm();

@@ -11,7 +11,7 @@ import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import ConfirmDialog from "primevue/confirmdialog";
 
-const emit = defineEmits(["actualizado"]);
+const emit = defineEmits(["actualizado", "edicion-planilla"]); // edicion-planilla solo la emite Planilla (los demás la declaran para el listener del layout)
 
 const u = useSetupSectores();
 const confirm = useConfirm();
