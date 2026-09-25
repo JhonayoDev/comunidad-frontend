@@ -24,13 +24,15 @@ const tienePermisoImportacion = computed(() =>
 );
 const sinPermiso = computed(() => !tienePermisoImportacion.value);
 
-const mostrarCargaArchivo = ref(false);
+// La tabla avisa cuando entra/sale de edición (PlanillaDatos emite edicion).
+const editandoTabla = ref(false);
 
-// F4: el dropzone se muestra en setup inicial o al habilitarlo / staged / review.
+// El dropzone se muestra en setup inicial, al editar la tabla en reedición,
+// o en staged/review. En reedición completada y sin editar: solo plantilla.
 const puedeMostrarDropzone = computed(
   () =>
     !planilla.modoReedicion ||
-    mostrarCargaArchivo.value ||
+    editandoTabla.value ||
     planilla.fase === "STAGED" ||
     planilla.fase === "REVIEW",
 );
@@ -45,16 +47,32 @@ async function guardar() {
   if (planilla.resultado) emit("actualizado");
 }
 
+function onEdicionTabla(v) {
+  editandoTabla.value = !!v;
+  emit("edicion-planilla", v);
+}
+
 async function validar() {
   await planilla.validarStaging();
+  editandoTabla.value = false;
 }
 
 async function importar() {
   await planilla.ejecutar();
   if (planilla.resultado) {
     emit("actualizado");
-    mostrarCargaArchivo.value = false;
+    editandoTabla.value = false;
   }
+}
+
+function descartarStaging() {
+  planilla.descartarPreviewArchivo();
+  editandoTabla.value = false;
+}
+
+function limpiar() {
+  planilla.limpiarTodo();
+  editandoTabla.value = false;
 }
 
 onMounted(() => planilla.cargar());
@@ -86,13 +104,13 @@ onMounted(() => planilla.cargar());
         <Message
           v-if="planilla.modoReedicion && !puedeMostrarDropzone"
           severity="info"
-          :closable="false"
+          closable="true"
           class="m-0"
         >
-          La carga masiva por archivo está disponible solo en la configuración
+          La carga masiva por archivo está disponible en la configuración
           inicial. El condominio ya tiene integrantes registrados — usa
-          <strong>Editar</strong> en la tabla para cambios puntuales. Si
-          necesitas reimportar, habilita la carga con el botón.
+          <strong>Editar</strong> en la tabla para cambios puntuales; al editar
+          también puedes cargar un archivo para completar lo que falte.
         </Message>
 
         <PlanillaUploader
@@ -103,24 +121,41 @@ onMounted(() => planilla.cargar());
           :visible="puedeMostrarDropzone"
           @seleccionar="planilla.cargarStaging"
           @descargar="planilla.descargarPlantilla()"
-          @mostrar="mostrarCargaArchivo = true"
-          @ocultar="mostrarCargaArchivo = false"
         />
 
         <Message
-          v-if="planilla.enviando && planilla.fase === 'VALIDANDO' && planilla.archivoNombre"
+          v-if="
+            planilla.enviando &&
+            planilla.fase === 'VALIDANDO' &&
+            planilla.archivoNombre
+          "
           severity="info"
           :closable="false"
           class="m-0"
         >
           <span class="flex items-center gap-2">
             <i class="pi pi-spin pi-spinner" />
-            Validando archivo "{{ planilla.archivoNombre }}"… Esto puede tardar unos segundos con archivos grandes.
+            Validando archivo "{{ planilla.archivoNombre }}"… Esto puede tardar
+            unos segundos con archivos grandes.
           </span>
         </Message>
-        <Skeleton v-if="planilla.enviando && planilla.fase === 'VALIDANDO' && planilla.archivoNombre" width="100%" height="220px" class="mt-2" />
+        <Skeleton
+          v-if="
+            planilla.enviando &&
+            planilla.fase === 'VALIDANDO' &&
+            planilla.archivoNombre
+          "
+          width="100%"
+          height="220px"
+          class="mt-2"
+        />
 
-        <Message v-if="planilla.error" severity="error" :closable="false" class="m-0">
+        <Message
+          v-if="planilla.error"
+          severity="error"
+          :closable="false"
+          class="m-0"
+        >
           {{ planilla.error }}
         </Message>
 
@@ -136,7 +171,7 @@ onMounted(() => planilla.cargar());
           :sin-est-standalone="planilla.sinEstStandalone"
           @validar="validar"
           @importar="importar"
-          @descartar="planilla.descartarPreviewArchivo()"
+          @descartar="descartarStaging"
           @quitar-fila="planilla.quitarStagingFila"
           @agregar-vehiculo="planilla.agregarStagingVehiculo"
           @quitar-vehiculo="planilla.quitarStagingVehiculo"
@@ -144,14 +179,22 @@ onMounted(() => planilla.cargar());
           @quitar-bodega="planilla.quitarStagingBodega"
           @agregar-estacionamiento="planilla.agregarStagingEstacionamiento"
           @quitar-estacionamiento="planilla.quitarStagingEstacionamiento"
-          @limpiar="planilla.limpiarTodo()"
+          @limpiar="limpiar"
         />
       </div>
 
       <template v-if="!mostrarStaging">
         <div class="mt-3 flex flex-wrap gap-2">
-          <Tag :value="`${planilla.filas.length} filas`" severity="secondary" size="small" />
-          <Tag :value="`${planilla.filasValidas.length} válidas`" severity="success" size="small" />
+          <Tag
+            :value="`${planilla.filas.length} filas`"
+            severity="secondary"
+            size="small"
+          />
+          <Tag
+            :value="`${planilla.filasValidas.length} válidas`"
+            severity="success"
+            size="small"
+          />
           <Tag
             v-if="planilla.filasError.length"
             :value="`${planilla.filasError.length} con error`"
@@ -165,7 +208,7 @@ onMounted(() => planilla.cargar());
             :planilla="planilla"
             solo-unidades-existentes
             @guardar="guardar"
-            @edicion="(v) => emit('edicion-planilla', v)"
+            @edicion="onEdicionTabla"
           />
         </div>
 
@@ -193,13 +236,16 @@ onMounted(() => planilla.cargar());
         </div>
       </template>
       <p v-else class="text-xs text-text-muted mt-2 m-0">
-        Revisa el borrador o el preview arriba. Descártalo para volver a la edición manual.
+        Revisa el borrador o el preview arriba. Descártalo para volver a la
+        edición manual.
       </p>
 
       <PlanillaResultado
         :resultado="planilla.resultado"
         :fresco="planilla.resultadoFresco"
-        :preview-filas-error="planilla.previewData ? planilla.previewData.filasError : null"
+        :preview-filas-error="
+          planilla.previewData ? planilla.previewData.filasError : null
+        "
         :filas="planilla.resultadoFilas"
         :exportando="planilla.descargandoResultado"
         :error-exportacion="planilla.errorDescarga"

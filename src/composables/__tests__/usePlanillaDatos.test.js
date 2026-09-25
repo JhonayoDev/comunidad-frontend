@@ -419,8 +419,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
     ]);
   });
 
-  it("limpiarTodo descarta el resultado en sesión", async () => {
-    importacionService.ejecutar.mockResolvedValueOnce({
+  it("limpiarTodo descarta el resultado en sesión", async () => {    importacionService.ejecutar.mockResolvedValueOnce({
       data: { importacionId: "imp-9", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
     });
     const p = usePlanillaDatos({ cargarExistentes: false });
@@ -499,6 +498,58 @@ describe("planillaDatos - usePlanillaDatos", () => {
     p.limpiarTodo();
     const p2 = usePlanillaDatos({ cargarExistentes: false });
     expect(p2.cargarStagingSesion()).toBe(false);
+  });
+
+  it("guardarBorrador omite reconstruidas sin cambios (no contamina sesión)", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.filas = [{ id: "a", esNuevo: false, unidad: "1", original: { unidad: "1" } }];
+    p.modoReedicion = true;
+    p.guardarBorrador();
+    expect(sessionStorage.getItem("comunidad:planilla-borrador:cid-1")).toBe(null);
+  });
+
+  it("guardarBorrador sí guarda ediciones en reedición", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.agregarFila();
+    Object.assign(p.filas[0], {
+      unidad: "1",
+      tipo_unidad: "CASA",
+      nombre: "A",
+      email: "a@a.cl",
+      tipo_vinculo: "PROPIETARIO",
+    });
+    p.modoReedicion = true;
+    p.guardarBorrador();
+    expect(sessionStorage.getItem("comunidad:planilla-borrador:cid-1")).not.toBe(null);
+  });
+
+  it("cargarBorrador con solo reconstruidas se descarta y deja reconstruir", () => {
+    sessionStorage.setItem(
+      "comunidad:planilla-borrador:cid-1",
+      JSON.stringify({ filas: [{ id: "a", esNuevo: false, unidad: "1" }], guardadoEn: 1 }),
+    );
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    expect(p.cargarBorrador()).toBe(false);
+    expect(p.filas).toHaveLength(0);
+    expect(p.modoReedicion).toBe(false);
+    expect(sessionStorage.getItem("comunidad:planilla-borrador:cid-1")).toBe(null);
+  });
+
+  it("cargarBorrador mixto restaura y marca reedición", () => {
+    sessionStorage.setItem(
+      "comunidad:planilla-borrador:cid-1",
+      JSON.stringify({
+        filas: [
+          { id: "a", esNuevo: false, unidad: "1", vehiculos: [], bodegas: [], estacionamientos: [] },
+          { id: "b", unidad: "2", vehiculos: [], bodegas: [], estacionamientos: [] },
+        ],
+        guardadoEn: 1,
+      }),
+    );
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    expect(p.cargarBorrador()).toBe(true);
+    expect(p.modoReedicion).toBe(true);
+    expect(p.borradorRestaurado).toBe(true);
   });
 
   it("enviar hace preview + ejecutar en secuencia", async () => {

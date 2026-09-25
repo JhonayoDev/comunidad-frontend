@@ -394,8 +394,12 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   }
 
   // ─── Borrador (sessionStorage: sobrevive recargas y pérdida de señal) ───
+  // Solo trabajo manual o ediciones en reedición: las filas reconstruidas del
+  // backend sin cambios NO se guardan (si no, contaminan la sesión y al volver
+  // se salta reconstruirFilas() dejando modoReedicion=false con paso completado).
   function guardarBorrador() {
     if (!cid) return;
+    if (modoReedicion.value && !hayCambios.value) return;
     try {
       sessionStorage.setItem(
         CLAVE_BORRADOR(cid),
@@ -421,6 +425,17 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
             migrarClavesCompatibles(esFilaDinamica(f) ? f : filasCrudasADinamicas([f])[0]),
           ),
         );
+        // Sesión contaminada (solo reconstruidas guardadas por el watch viejo):
+        // se descarta y se reconstruye fresco con modoReedicion correcto.
+        if (filas.value.length && filas.value.every((f) => f.esNuevo === false)) {
+          descartarBorrador();
+          filas.value = [];
+          return false;
+        }
+        // Mezcla con trabajo manual: hay existentes reales → reedición.
+        if (filas.value.some((f) => f.esNuevo === false)) {
+          modoReedicion.value = true;
+        }
         borradorRestaurado.value = true;
         return true;
       }

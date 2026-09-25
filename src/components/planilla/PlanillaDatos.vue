@@ -123,7 +123,10 @@ watch(filasFiltradas, () => {
 watch(
   () => p.value.filas.length,
   () => {
-    if (pagina.value * porPagina >= filasFiltradas.value.length && pagina.value > 0) {
+    if (
+      pagina.value * porPagina >= filasFiltradas.value.length &&
+      pagina.value > 0
+    ) {
       pagina.value = 0;
     }
   },
@@ -339,12 +342,7 @@ const { foco, alternar, salir } = useModoFoco();
       Puedes continuar donde quedaste.
     </Message>
 
-    <Message
-      v-if="p.modoReedicion"
-      severity="info"
-      :closable="false"
-      class="m-0"
-    >
+    <Message v-if="p.modoReedicion" severity="info" closable="true" class="m-0">
       Mostrando {{ totalFilas }} integrante(s) ya registrados en el condominio.
       Pulsa <strong>Editar</strong> para modificar, desvincular o agregar filas.
     </Message>
@@ -352,7 +350,7 @@ const { foco, alternar, salir } = useModoFoco();
     <Message
       v-if="p.previewData"
       :severity="previewErrores.length ? 'warn' : 'info'"
-      :closable="false"
+      :closable="true"
       class="m-0"
     >
       <template #default>
@@ -622,7 +620,11 @@ const { foco, alternar, salir } = useModoFoco();
                       :disabled="!editando"
                       @update:modelValue="
                         (v) =>
-                          p.actualizarFila(f.id, 'es_residente', v ? 'SI' : 'NO')
+                          p.actualizarFila(
+                            f.id,
+                            'es_residente',
+                            v ? 'SI' : 'NO',
+                          )
                       "
                     />
                   </div>
@@ -1317,4 +1319,3 @@ const { foco, alternar, salir } = useModoFoco();
     </template>
   </div>
 </template>
-

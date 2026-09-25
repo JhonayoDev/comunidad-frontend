@@ -4,17 +4,18 @@ import Button from "primevue/button";
 import Popover from "primevue/popover";
 
 // Solo presenta: dropzone + plantilla + ayuda (i). Sin api directa.
-// Emite: seleccionar(File), descargar, mostrar, ocultar.
+// Emite: seleccionar(File), descargar.
 defineProps({
   deshabilitado: { type: Boolean, default: false },
   enviando: { type: Boolean, default: false },
   archivoNombre: { type: String, default: "" },
   modoReedicion: { type: Boolean, default: false },
-  // false en reedición hasta que el usuario pulse "Cargar desde archivo"
+  // En reedición el dropzone solo aparece al editar la tabla o en
+  // staged/review; colapsado solo queda Descargar plantilla.
   visible: { type: Boolean, default: true },
 });
 
-const emit = defineEmits(["seleccionar", "descargar", "mostrar", "ocultar"]);
+const emit = defineEmits(["seleccionar", "descargar"]);
 
 const formatoInfoOp = ref(null);
 function toggleFormatoInfo(event) {
@@ -30,18 +31,8 @@ function onChange(event) {
 </script>
 
 <template>
-  <!-- Reedición: carga oculta por defecto -->
+  <!-- Reedición completada sin editar: solo plantilla -->
   <div v-if="modoReedicion && !visible" class="flex flex-wrap gap-2">
-    <Button
-      label="Cargar desde archivo"
-      icon="pi pi-upload"
-      size="small"
-      variant="outlined"
-      class="bg-surface text-text-muted hover:bg-primary"
-      :disabled="deshabilitado"
-      title="Sin permiso IMPORTACION_DATOS"
-      @click="emit('mostrar')"
-    />
     <Button
       label="Descargar plantilla"
       icon="pi pi-download"
@@ -82,14 +73,6 @@ function onChange(event) {
         :disabled="deshabilitado || enviando"
         :title="deshabilitado ? 'Sin permiso IMPORTACION_DATOS' : ''"
         @click="emit('descargar')"
-      />
-      <Button
-        v-if="modoReedicion"
-        label="Ocultar"
-        severity="secondary"
-        variant="text"
-        size="small"
-        @click="emit('ocultar')"
       />
     </div>
     <div class="flex items-center gap-1 text-xs text-text-muted">
