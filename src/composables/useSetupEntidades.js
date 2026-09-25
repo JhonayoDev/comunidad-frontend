@@ -328,6 +328,19 @@ export function useSetupEntidades({ entidad } = {}) {
 
   const tieneErrores = computed(() => estado.items.some((x) => x.error));
 
+  // Cambios pendientes (el botón Guardar refleja estado, no solo validez).
+  // En creación inicial las filas nuevas siempre están pendientes.
+  const pendientes = computed(() => {
+    const nuevas = estado.items.filter((x) => x.esNuevo && !x.marcadoEliminar).length;
+    const editadas = estado.items.filter(
+      (x) => !x.esNuevo && !x.marcadoEliminar && cambiado(x),
+    ).length;
+    const eliminadas = estado.items.filter((x) => x.marcadoEliminar && x.entidadId).length;
+    return { nuevas, editadas, eliminadas, total: nuevas + editadas + eliminadas };
+  });
+
+  const hayCambios = computed(() => pendientes.value.total > 0);
+
   // ─── Validación por fase ───
   function validoPaso(paso) {
     switch (paso) {
@@ -684,6 +697,8 @@ export function useSetupEntidades({ entidad } = {}) {
     envelopeExcedido,
     itemsValidos,
     tieneErrores,
+    pendientes,
+    hayCambios,
     validoPaso,
     siguiente,
     atras,

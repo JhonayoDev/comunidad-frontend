@@ -144,6 +144,19 @@ export function useSetupUnidades() {
 
   const tieneErrores = computed(() => estado.unidades.some((x) => x.error));
 
+  // Cambios pendientes (el botón Guardar refleja estado, no solo validez).
+  // En creación inicial las filas nuevas siempre están pendientes.
+  const pendientes = computed(() => {
+    const nuevas = estado.unidades.filter((x) => x.esNuevo && !x.marcadoEliminar).length;
+    const editadas = estado.unidades.filter(
+      (x) => !x.esNuevo && !x.marcadoEliminar && cambiado(x),
+    ).length;
+    const eliminadas = estado.unidades.filter((x) => x.marcadoEliminar && x.unidadId).length;
+    return { nuevas, editadas, eliminadas, total: nuevas + editadas + eliminadas };
+  });
+
+  const hayCambios = computed(() => pendientes.value.total > 0);
+
   // ─── Sectores (fases 3-4) ───
   const sectoresOpciones = computed(() => {
     if (!sectoresHabilitados.value || estado.sectorOrigen === "sin-sector") return [];
@@ -591,6 +604,8 @@ export function useSetupUnidades() {
     envelopeExcedido,
     itemsValidos,
     tieneErrores,
+    pendientes,
+    hayCambios,
     validoPaso,
     siguiente,
     atras,

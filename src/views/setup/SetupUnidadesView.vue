@@ -195,6 +195,8 @@ const snapshotEdicion = ref(null);
 function entrarEdicion() {
   // Los errores de un guardado anterior no deben persistir al reintentar.
   u.estado.unidades.forEach((x) => (x.error = null));
+  // El resultado anterior ya cumplió su función (no confundir con lo nuevo).
+  u.resultado = null;
   snapshotEdicion.value = JSON.parse(JSON.stringify(u.estado.unidades));
   editando.value = true;
 }
@@ -1079,10 +1081,11 @@ onMounted(() => u.cargar());
           </template>
           <Button
             v-else
-            label="Guardar unidades"
+            :label="u.hayCambios ? `Guardar unidades (${u.pendientes.total})` : 'Guardar unidades'"
             icon="pi pi-save"
             :loading="u.enviando"
-            :disabled="!u.itemsValidos"
+            :disabled="!u.itemsValidos || (u.modoReedicion && !u.hayCambios)"
+            :title="u.modoReedicion && !u.hayCambios ? 'Sin cambios pendientes' : ''"
             @click="guardar"
           />
         </div>
