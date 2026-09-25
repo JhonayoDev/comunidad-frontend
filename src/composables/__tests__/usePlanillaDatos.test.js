@@ -9,6 +9,7 @@ import {
   normalizarEstAnidados,
 } from "@/data/planillaColumnas";
 import { importacionService } from "@/services/importacionService";
+import { planillaService } from "@/services/planillaService";
 import { unidadesService } from "@/services/unidadesService";
 import { personasService } from "@/services/personasService";
 import { vehiculosService } from "@/services/vehiculosService";
@@ -27,6 +28,12 @@ vi.mock("@/services/importacionService", () => ({
     resultado: vi.fn(),
     resultadoCsv: vi.fn(),
     plantilla: vi.fn(),
+  },
+}));
+
+vi.mock("@/services/planillaService", () => ({
+  planillaService: {
+    reedicion: vi.fn(),
   },
 }));
 
@@ -534,8 +541,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(p.modoReedicion).toBe(true);
   });
 
-  it("ejecutar sin fuente local usa reconstruirFilas (fallback xlsx)", async () => {
-    unidadesService.getUnidades.mockResolvedValueOnce({
+  it("ejecutar sin fuente local usa reconstruirFilas (fallback xlsx)", async () => {    unidadesService.getUnidades.mockResolvedValueOnce({
       data: [{ id: "u1", numero: "1", tipo: "CASA" }],
     });
     personasService.listar.mockResolvedValueOnce({ data: [] });
@@ -556,6 +562,69 @@ describe("planillaDatos - usePlanillaDatos", () => {
     };
     await p.ejecutar();
     expect(personasService.vinculosUnidad).toHaveBeenCalled();
+  });
+
+  it("reconstruirFilas usa snapshot batch BE-6 sin GET por unidad", async () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.unidades = [{ id: "u1", numero: "1", tipo: "CASA" }];
+    planillaService.reedicion.mockResolvedValueOnce({
+      data: [
+        {
+          vinculoId: "w1",
+          persona: { id: "p1", nombre: "A", email: "a@a.cl", rut: "1-9", telefono: "+569" },
+          unidad: { id: "u1", numero: "1", tipo: "CASA", sectorNombre: "s1" },
+          tipo: "PROPIETARIO",
+          esOcupante: true,
+          recibeNotificaciones: true,
+          esResponsable: true,
+          vehiculos: [
+            { vinculoId: "wv", vehiculoId: "v1", patente: "ABC123", tipo: "AUTO" },
+          ],
+          estacionamientos: [{ vinculoId: "we", estacionamientoId: "e1", nombre: "E-1" }],
+          bodegas: [{ vinculoId: "wb", bodegaId: "b1", nombre: "B-1" }],
+        },
+        {
+          vinculoId: "w2",
+          persona: { id: "p2", nombre: "B", email: "b@b.cl" },
+          unidad: { id: "u1", numero: "1", tipo: "CASA", sectorNombre: "s1" },
+          tipo: "RESIDENTE_ADICIONAL",
+          esOcupante: true,
+          recibeNotificaciones: false,
+          esResponsable: false,
+          vehiculos: [],
+          estacionamientos: [],
+          bodegas: [],
+        },
+      ],
+    });
+    await p.cargar();
+    expect(planillaService.reedicion).toHaveBeenCalledWith("cid-1");
+    expect(personasService.vinculosUnidad).not.toHaveBeenCalled();
+    expect(unidadesService.getUnidad).not.toHaveBeenCalled();
+    expect(p.filas).toHaveLength(2);
+    expect(p.modoReedicion).toBe(true);
+    const primaria = p.filas.find((f) => f.email === "a@a.cl");
+    expect(primaria.__vinculoId).toBe("w1");
+    expect(primaria.__personaId).toBe("p1");
+    expect(primaria.__unidadId).toBe("u1");
+    expect(primaria.es_responsable).toBe("SI");
+    expect(primaria.vehiculos[0].__vehiculoId).toBe("v1");
+    expect(primaria.estacionamientos[0].__vinculoEstacionamientoId).toBe("we");
+    expect(primaria.bodegas[0].__vinculoBodegaId).toBe("wb");
+    const adicional = p.filas.find((f) => f.email === "b@b.cl");
+    expect(adicional.vehiculos).toHaveLength(0);
+  });
+
+  it("reconstruirFilas cae a vía por unidad si el snapshot da 404", async () => {
+    // Sin mock de getUnidades: cargarExistentes falla suave y conserva p.unidades.
+    planillaService.reedicion.mockRejectedValueOnce({ response: { status: 404 } });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.unidades = [{ id: "u1", numero: "1", tipo: "CASA" }];
+    personasService.vinculosUnidad.mockResolvedValueOnce({ data: [] });
+    unidadesService.getUnidad.mockResolvedValueOnce({ data: { id: "u1", bodegas: [] } });
+    await p.cargar();
+    expect(personasService.vinculosUnidad).toHaveBeenCalledWith("cid-1", "u1");
+    expect(p.filas).toHaveLength(0);
   });
 
   it("staging en sesión sobrevive a navegar y se restaura", () => {

@@ -6,6 +6,7 @@ import { vehiculosService } from "@/services/vehiculosService";
 import { estacionamientosService } from "@/services/estacionamientosService";
 import { bodegasService } from "@/services/bodegasService";
 import { importacionService } from "@/services/importacionService";
+import { planillaService } from "@/services/planillaService";
 import {
   filaAPayload,
   esSi,
@@ -293,6 +294,16 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
   // una fila por vínculo, con metadatos para editar/eliminar después.
   async function reconstruirFilas() {
     if (!cid || borradorRestaurado.value || !unidades.value.length) return;
+    // BE-6 (briku#81): snapshot batch en 1 llamada. Fallback a la vía por
+    // unidad (2 GET × N) si el backend no lo tiene (404) o falta VINCULO_VER.
+    try {
+      const res = await planillaService.reedicion(cid);
+      if (reconstruirDesdeSnapshot(res.data)) return;
+    } catch (e) {
+      if (e?.response?.status !== 404 && e?.response?.status !== 403) {
+        console.error("Error en snapshot de reedición, usando vía por unidad", e);
+      }
+    }
     // Vínculos reales unidad ↔ estacionamiento (el GET /estacionamientos ya
     // trae propietario/arrendatario por unidad, sin requests extra). La unidad
     // es el core: se reconstruyen como lista standalone editable, no como
@@ -391,6 +402,89 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       });
       modoReedicion.value = true;
     }
+  }
+
+  // Reconstrucción desde el snapshot batch (BE-6): misma forma que la vía por
+  // unidad (1 fila por vínculo activo, recursos en la fila primaria), pero con
+  // los ids de vínculo incluidos (sin GET previo al desvincular). Retorna
+  // false si no hay filas (el llamador usa el fallback).
+  function reconstruirDesdeSnapshot(items) {
+    if (!Array.isArray(items) || !items.length) return false;
+    const reconstruidas = [];
+    const porUnidad = new Map();
+    (items || []).forEach((r) => {
+      if (!r || !r.unidad || r.unidad.tipo === "CONDOMINIO") return;
+      if (!porUnidad.has(r.unidad.id)) porUnidad.set(r.unidad.id, []);
+      porUnidad.get(r.unidad.id).push(r);
+    });
+    porUnidad.forEach((vinculos) => {
+      const primaria =
+        vinculos.find((v) => v.tipo === "PROPIETARIO" || v.tipo === "ARRENDATARIO") ||
+        vinculos[0];
+      vinculos.forEach((v) => {
+        const esPrimaria = v === primaria;
+        reconstruidas.push({
+          id: nuevoId(),
+          unidad: String(v.unidad.numero),
+          tipo_unidad: v.unidad.tipo,
+          sector: v.unidad.sectorNombre || "",
+          nombre: v.persona?.nombre || "",
+          email: v.persona?.email || "",
+          rut: v.persona?.rut || "",
+          telefono: v.persona?.telefono || "",
+          tipo_vinculo: v.tipo,
+          es_residente: v.esOcupante ? "SI" : "NO",
+          recibe_notificaciones: v.recibeNotificaciones ? "SI" : "NO",
+          es_responsable: v.esResponsable ? "SI" : "NO",
+          vehiculos: esPrimaria
+            ? (v.vehiculos || []).map((vh) => ({
+                uid: nuevoId(),
+                patente: vh.patente || "",
+                tipo: vh.tipo || "",
+                marca: vh.marca || "",
+                modelo: vh.modelo || "",
+                color: vh.color || "",
+                // El mapeo vehículo→estacionamiento no es reconstruible (el
+                // vínculo es a nivel unidad): queda en blanco.
+                estacionamiento: "",
+                __vehiculoId: vh.vehiculoId,
+                __vinculoVehiculoId: vh.vinculoId,
+              }))
+            : [],
+          bodegas: esPrimaria
+            ? (v.bodegas || []).map((b) => ({
+                uid: nuevoId(),
+                nombre: b.nombre || "",
+                __bodegaId: b.bodegaId,
+                __vinculoBodegaId: b.vinculoId,
+              }))
+            : [],
+          esNuevo: false,
+          __vinculoId: v.vinculoId,
+          __personaId: v.persona?.id,
+          __unidadId: v.unidad.id,
+          // Estacionamientos standalone vinculados a la unidad en BD
+          // (lista editable: vincular/desvincular en aplicarEdicion).
+          estacionamientos: esPrimaria
+            ? (v.estacionamientos || []).map((e) => ({
+                uid: nuevoId(),
+                nombre: e.nombre,
+                __estacionamientoId: e.estacionamientoId,
+                __vinculoEstacionamientoId: e.vinculoId,
+              }))
+            : [],
+          marcadoEliminar: false,
+          original: null,
+        });
+      });
+    });
+    if (!reconstruidas.length) return false;
+    filas.value = reconstruidas;
+    filas.value.forEach((f) => {
+      f.original = snapshotFila(f);
+    });
+    modoReedicion.value = true;
+    return true;
   }
 
   // ─── Borrador (sessionStorage: sobrevive recargas y pérdida de señal) ───
@@ -851,22 +945,32 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     }
   }
 
-  async function desvincularEstacionamientoPorId(estacionamientoId, unidadId) {
+  async function desvincularEstacionamientoPorId(estacionamientoId, unidadId, vinculoId) {
     try {
-      const res = await estacionamientosService.vinculos(cid, estacionamientoId);
-      const v = (res.data || []).find((x) => x.activo && x.unidadId === unidadId);
-      if (v) await estacionamientosService.desvincular(cid, estacionamientoId, v.id);
+      if (!vinculoId) {
+        const res = await estacionamientosService.vinculos(cid, estacionamientoId);
+        const v = (res.data || []).find((x) => x.activo && x.unidadId === unidadId);
+        if (v) vinculoId = v.id;
+      }
+      if (vinculoId) {
+        await estacionamientosService.desvincular(cid, estacionamientoId, vinculoId);
+      }
     } catch (e) {
       console.error("Error al desvincular estacionamiento", e);
       throw e;
     }
   }
 
-  async function desvincularBodega(bodegaId, unidadId) {
+  async function desvincularBodega(bodegaId, unidadId, vinculoId) {
     try {
-      const res = await bodegasService.vinculos(cid, bodegaId);
-      const v = (res.data || []).find((x) => x.activo && x.unidadId === unidadId);
-      if (v) await bodegasService.desvincular(cid, bodegaId, v.id);
+      if (!vinculoId) {
+        const res = await bodegasService.vinculos(cid, bodegaId);
+        const v = (res.data || []).find((x) => x.activo && x.unidadId === unidadId);
+        if (v) vinculoId = v.id;
+      }
+      if (vinculoId) {
+        await bodegasService.desvincular(cid, bodegaId, vinculoId);
+      }
     } catch (e) {
       console.error("Error al desvincular bodega", e);
       throw e;
@@ -997,7 +1101,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     const curBodegas = f.bodegas || [];
     for (const ob of origBodegas) {
       if (ob.__bodegaId && !curBodegas.some((b) => b.__bodegaId === ob.__bodegaId)) {
-        await desvincularBodega(ob.__bodegaId, f.__unidadId);
+        await desvincularBodega(ob.__bodegaId, f.__unidadId, ob.__vinculoBodegaId);
       }
     }
     for (const b of curBodegas) {
@@ -1024,7 +1128,11 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
         oe.__estacionamientoId &&
         !curEst.some((e) => e.__estacionamientoId === oe.__estacionamientoId)
       ) {
-        await desvincularEstacionamientoPorId(oe.__estacionamientoId, f.__unidadId);
+        await desvincularEstacionamientoPorId(
+          oe.__estacionamientoId,
+          f.__unidadId,
+          oe.__vinculoEstacionamientoId,
+        );
       }
     }
     for (const e of curEst) {
