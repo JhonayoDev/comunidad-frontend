@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
-import { useSetupConfiguracion } from "@/composables/useSetupConfiguracion";
+import { useSetupConfiguracion, marcarEnEdicion } from "@/composables/useSetupConfiguracion";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -21,6 +21,12 @@ const pasosVisibles = computed(() => pasos.value.filter((p) => !p.oculto));
 
 onMounted(cargar);
 
+// Al salir del paso se limpia el override de edición (evita checks colgados).
+watch(
+  () => route.name,
+  () => marcarEnEdicion(null),
+);
+
 function pasoActivo(p) {
   return route.path.endsWith(`/${p.key}`);
 }
@@ -37,6 +43,12 @@ function irSiguiente() {
 
 function irDashboard() {
   router.push({ name: "Dashboard" });
+}
+
+// La planilla avisa cuando entra/sale de edición manual: el paso figura
+// pendiente hasta guardar (el override vive en el composable).
+function onEdicionPlanilla(enEdicion) {
+  marcarEnEdicion(enEdicion ? "planilla" : null);
 }
 </script>
 
@@ -111,7 +123,12 @@ function irDashboard() {
       </div>
 
       <router-view v-slot="{ Component }">
-        <component :is="Component" :key="route.name" @actualizado="cargar" />
+        <component
+          :is="Component"
+          :key="route.name"
+          @actualizado="cargar"
+          @edicion-planilla="onEdicionPlanilla"
+        />
       </router-view>
 
       <div class="flex justify-between items-center gap-2">

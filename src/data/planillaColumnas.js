@@ -10,7 +10,7 @@ export const TIPOS_VINCULO = ["PROPIETARIO", "ARRENDATARIO", "RESIDENTE_ADICIONA
 export const TIPOS_VEHICULO = ["AUTO", "CAMIONETA", "MOTO", "FURGON", "CAMION", "OTRO"];
 
 export const MAX_VEHICULOS = 3;
-export const MAX_ESTACIONAMIENTOS = 3;
+export const MAX_ESTACIONAMIENTOS_STANDALONE = 3;
 export const MAX_BODEGAS = 3;
 
 // Columnas base (por persona).
@@ -23,7 +23,7 @@ export const COLUMNAS_BASE = [
   { key: "rut", label: "RUT", tipo: "text" },
   { key: "telefono", label: "Teléfono", tipo: "text" },
   { key: "tipo_vinculo", label: "Vínculo", tipo: "select", opciones: TIPOS_VINCULO, requerida: true },
-  { key: "es_ocupante", label: "Ocupante", tipo: "si_no" },
+  { key: "es_residente", label: "Residente", tipo: "si_no" },
   { key: "recibe_notificaciones", label: "Recibe notif.", tipo: "si_no" },
   { key: "es_responsable", label: "Responsable", tipo: "check" },
 ];
@@ -54,11 +54,26 @@ export function columnasBodegas(n = MAX_BODEGAS) {
   return cols;
 }
 
+// Columnas de estacionamientos standalone (vínculo estacionamiento ↔ unidad,
+// sin vehículo — la unidad es el core, igual que las bodegas). Van al final
+// del CSV (tras bodega3), mismo orden que el backend (BE-74).
+export function columnasEstacionamientos(n = MAX_ESTACIONAMIENTOS_STANDALONE) {
+  const cols = [];
+  for (let i = 1; i <= n; i++) {
+    cols.push({ key: `estacionamiento${i}`, label: `Estac. ${i}`, tipo: "text", grupo: "estacionamiento", indice: i });
+  }
+  return cols;
+}
+
 // Genera las columnas completas según la capacidad del condominio.
 // `capacidad` usa los campos del backend: capacidadCasas/Departamentos/
 // Estacionamientos/Bodegas/Otro (null = sin tope).
 export function generarColumnas(capacidad = {}) {
+  // Orden canónico = patrón del archivo del usuario: base, estacionamientos
+  // standalone, vehículos, bodegas. (Los est1..3 anidados se conservan en el
+  // esquema solo por compatibilidad con archivos viejos.)
   const cols = [...COLUMNAS_BASE];
+  cols.push(...columnasEstacionamientos(MAX_ESTACIONAMIENTOS_STANDALONE));
   cols.push(...columnasVehiculos(MAX_VEHICULOS));
   if (capacidad.capacidadBodegas > 0) cols.push(...columnasBodegas(MAX_BODEGAS));
   return cols;
@@ -100,7 +115,13 @@ export function filaCrudaADinamica(fila) {
     const b = (fila[`bodega${i}`] || "").trim();
     if (b) bodegas.push({ uid: `bod-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`, nombre: b });
   }
-  return { ...fila, vehiculos, bodegas };
+  // Estacionamientos standalone (unidad ↔ est, sin vehículo).
+  const estacionamientos = [];
+  for (let i = 1; i <= MAX_ESTACIONAMIENTOS_STANDALONE; i++) {
+    const e = (fila[`estacionamiento${i}`] || "").trim();
+    if (e) estacionamientos.push({ uid: `est-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`, nombre: e });
+  }
+  return normalizarEstAnidados({ ...fila, vehiculos, bodegas, estacionamientos });
 }
 
 // Convierte una lista de filas planas (CSV) al shape dinámico.
@@ -108,9 +129,49 @@ export function filasCrudasADinamicas(filas) {
   return (filas || []).map(filaCrudaADinamica);
 }
 
-// True si la fila usa el shape dinámico (vehiculos[]/bodegas[]).
+// Fuente única VISUAL de est: el standalone (unidad ↔ est). Si un vehículo
+// trae `est` anidado (archivos viejos), se COPIA a la lista standalone con
+// dedupe pero se conserva en el vehículo: el backend desplegado (pre-BE-74)
+// solo vincula por el anidado, y el nuevo hace unión con dedupe. Así el
+// payload funciona contra ambas versiones.
+export function normalizarEstAnidados(fila) {
+  if (!fila || !Array.isArray(fila.vehiculos)) return fila;
+  if (!Array.isArray(fila.estacionamientos)) fila.estacionamientos = [];
+  const vistos = new Set(
+    fila.estacionamientos.map((e) =>
+      (typeof e === "string" ? e : e.nombre || "").trim().toUpperCase(),
+    ),
+  );
+  for (const v of fila.vehiculos) {
+    const est = (v.estacionamiento || "").trim();
+    const pat = (v.patente || "").trim();
+    if (pat && est && !vistos.has(est.toUpperCase())) {
+      vistos.add(est.toUpperCase());
+      fila.estacionamientos.push({
+        uid: `est-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        nombre: est,
+      });
+    }
+  }
+  return fila;
+}
+
+// Compatibilidad con archivos viejos (header es_ocupante): si la fila trae
+// la clave vieja y no la nueva, se migra. El canónico es es_residente.
+export function migrarClavesCompatibles(fila) {
+  if (fila && (fila.es_residente || "") === "" && (fila.es_ocupante || "") !== "") {
+    fila.es_residente = fila.es_ocupante;
+  }
+  return fila;
+}
+
+// True si la fila usa el shape dinámico (vehiculos[]/bodegas[]/estacionamientos[]).
 export function esFilaDinamica(fila) {
-  return Array.isArray(fila?.vehiculos) || Array.isArray(fila?.bodegas);
+  return (
+    Array.isArray(fila?.vehiculos) ||
+    Array.isArray(fila?.bodegas) ||
+    Array.isArray(fila?.estacionamientos)
+  );
 }
 
 // Convierte una fila (dinámica o legacy plana) al payload anidado que espera
@@ -130,6 +191,9 @@ export function filaAPayload(fila) {
   const bodegas = (f.bodegas || [])
     .map((b) => (typeof b === "string" ? b : b.nombre || "").trim())
     .filter(Boolean);
+  const estacionamientos = (f.estacionamientos || [])
+    .map((e) => (typeof e === "string" ? e : e.nombre || "").trim())
+    .filter(Boolean);
   return {
     unidad: (f.unidad || "").trim(),
     tipoUnidad: (f.tipo_unidad || "").trim(),
@@ -142,12 +206,13 @@ export function filaAPayload(fila) {
     },
     vinculo: {
       tipo: (f.tipo_vinculo || "").trim(),
-      esOcupante: esSi(f.es_ocupante),
+      esOcupante: esSi(f.es_residente),
       recibeNotificaciones: esSi(f.recibe_notificaciones),
       esResponsable: esSi(f.es_responsable),
     },
     vehiculos,
     bodegas,
+    estacionamientos,
   };
 }
 

@@ -20,6 +20,24 @@ export const importacionService = {
     return api.post(`/condominios/${condominioId}/importaciones/${importacionId}/ejecutar`);
   },
 
+  // GET /importaciones/{importacionId}/resultado (BE-3/BE-5) — mismo objeto
+  // del POST ejecutar; desde BE-5 incluye filas[] (FilaPreview, nullable).
+  resultado(condominioId, importacionId) {
+    return api.get(
+      `/condominios/${condominioId}/importaciones/${importacionId}/resultado`,
+    );
+  },
+
+  // GET /importaciones/{importacionId}/resultado?formato=csv (BE-3) — blob con
+  // auth header del interceptor (no window.open directo).
+  async resultadoCsv(condominioId, importacionId) {
+    const res = await api.get(
+      `/condominios/${condominioId}/importaciones/${importacionId}/resultado`,
+      { params: { formato: "csv" }, responseType: "blob" },
+    );
+    return res.data;
+  },
+
   // GET /importaciones/plantilla — descarga plantilla_integrantes.csv
   async plantilla(condominioId) {
     const res = await api.get(`/condominios/${condominioId}/importaciones/plantilla`, {

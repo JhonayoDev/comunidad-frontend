@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { defineComponent } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
-import { useSetupConfiguracion, SETUP_PASOS } from "@/composables/useSetupConfiguracion";
+import { useSetupConfiguracion, SETUP_PASOS, marcarEnEdicion } from "@/composables/useSetupConfiguracion";
 
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: () => ({
@@ -39,6 +39,7 @@ function montar() {
 describe("useSetupConfiguracion", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    marcarEnEdicion(null);
   });
 
   it("define unidades como paso 1, sectores como paso 2, pisos como paso 3 y 10 pasos en total", () => {
@@ -206,5 +207,26 @@ describe("useSetupConfiguracion", () => {
     expect(wrapper.vm.pasos[5].completado).toBe(false);
     expect(wrapper.vm.primerPasoPendiente.key).toBe("planilla");
     expect(dashboardService.admin).not.toHaveBeenCalled();
+  });
+
+  it("marcarEnEdicion pone el paso pendiente aunque tenga datos, y null lo restaura", () => {
+    const wrapper = montar();
+    wrapper.vm.sincronizarTotales({ unidades: 3, residentesActivos: 2, vehiculos: 0 });
+    expect(wrapper.vm.pasos[5].completado).toBe(true);
+
+    marcarEnEdicion("planilla");
+    expect(wrapper.vm.pasos[5].completado).toBe(false);
+    expect(wrapper.vm.primerPasoPendiente.key).toBe("planilla");
+
+    marcarEnEdicion(null);
+    expect(wrapper.vm.pasos[5].completado).toBe(true);
+  });
+
+  it("marcarEnEdicion de otro paso no afecta a planilla", () => {
+    const wrapper = montar();
+    wrapper.vm.sincronizarTotales({ unidades: 3, residentesActivos: 2, vehiculos: 0 });
+    marcarEnEdicion("unidades");
+    expect(wrapper.vm.pasos[5].completado).toBe(true);
+    expect(wrapper.vm.pasos[0].completado).toBe(false);
   });
 });

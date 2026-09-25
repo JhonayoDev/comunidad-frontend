@@ -4,8 +4,12 @@ import {
   filaAPayload,
   filasCrudasADinamicas,
   esEstacionamientoVisita,
+  clavesColumnas,
+  COLUMNAS_DEFAULT,
+  normalizarEstAnidados,
 } from "@/data/planillaColumnas";
 import { importacionService } from "@/services/importacionService";
+import { planillaService } from "@/services/planillaService";
 import { unidadesService } from "@/services/unidadesService";
 import { personasService } from "@/services/personasService";
 import { vehiculosService } from "@/services/vehiculosService";
@@ -19,8 +23,17 @@ vi.mock("@/stores/authStore", () => ({
 vi.mock("@/services/importacionService", () => ({
   importacionService: {
     previewJson: vi.fn(),
+    previewArchivo: vi.fn(),
     ejecutar: vi.fn(),
+    resultado: vi.fn(),
+    resultadoCsv: vi.fn(),
     plantilla: vi.fn(),
+  },
+}));
+
+vi.mock("@/services/planillaService", () => ({
+  planillaService: {
+    reedicion: vi.fn(),
   },
 }));
 
@@ -81,7 +94,7 @@ describe("planillaDatos - filaAPayload", () => {
       rut: "18.901.234-5",
       telefono: "+56978901234",
       tipo_vinculo: "PROPIETARIO",
-      es_ocupante: "SI",
+      es_residente: "SI",
       recibe_notificaciones: "SI",
       es_responsable: "SI",
       vehiculos: [
@@ -125,6 +138,7 @@ describe("planillaColumnas - filasCrudasADinamicas / esEstacionamientoVisita", (
     ]);
     expect(f.vehiculos).toHaveLength(1);
     expect(f.vehiculos[0]).toMatchObject({ patente: "ABCD01", tipo: "AUTO", estacionamiento: "E-1" });
+    expect(f.estacionamientos.map((e) => e.nombre)).toEqual(["E-1"]);
     expect(f.bodegas).toHaveLength(1);
     expect(f.bodegas[0].nombre).toBe("B-1");
   });
@@ -383,6 +397,331 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(p.previewData).toBe(null);
   });
 
+  it("ejecutar persiste resultado y filas en sesión y se rehidrata", async () => {
+    importacionService.ejecutar.mockResolvedValueOnce({
+      data: { importacionId: "imp-9", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewData = {
+      importacionId: "imp-9",
+      filasOk: 1,
+      filasError: 0,
+      filas: [
+        {
+          numeroFila: 1,
+          estado: "OK",
+          unidad: "1",
+          personaEmail: "a@a.cl",
+          advertencias: ["nombre ignorado"],
+        },
+      ],
+    };
+    await p.ejecutar();
+    expect(p.resultadoFilas).toHaveLength(1);
+    const p2 = usePlanillaDatos({ cargarExistentes: false });
+    expect(p2.cargarResultadoSesion()).toBe(true);
+    expect(p2.resultado.importacionId).toBe("imp-9");
+    expect(p2.advertenciasDeFila({ email: "a@a.cl", unidad: "1" })).toEqual([
+      "nombre ignorado",
+    ]);
+  });
+
+  it("limpiarTodo descarta el resultado en sesión", async () => {    importacionService.ejecutar.mockResolvedValueOnce({
+      data: { importacionId: "imp-9", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewData = { importacionId: "imp-9", filasOk: 1, filasError: 0, filas: [] };
+    await p.ejecutar();
+    p.limpiarTodo();
+    const p2 = usePlanillaDatos({ cargarExistentes: false });
+    expect(p2.cargarResultadoSesion()).toBe(false);
+    expect(p2.resultado).toBe(null);
+  });
+
+  it("hidratarResultado trae filas del backend (BE-5) y actualiza sesión", async () => {
+    const filas = [
+      {
+        numeroFila: 1,
+        estado: "OK",
+        unidad: "1",
+        personaNombre: "A",
+        personaEmail: "a@a.cl",
+        tipoVinculo: "PROPIETARIO",
+        errores: [],
+        advertencias: ["nombre ignorado"],
+      },
+    ];
+    importacionService.resultado.mockResolvedValueOnce({
+      data: { importacionId: "imp-9", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [], filas },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.resultado = { importacionId: "imp-9", filasOk: 1 };
+    p.resultadoFilas = null;
+    expect(await p.hidratarResultado()).toBe(true);
+    expect(importacionService.resultado).toHaveBeenCalledWith("cid-1", "imp-9");
+    expect(p.resultadoFilas).toHaveLength(1);
+    expect(p.advertenciasDeFila({ email: "a@a.cl", unidad: "1" })).toEqual([
+      "nombre ignorado",
+    ]);
+  });
+
+  it("hidratarResultado con filas null preserva la copia de sesión", async () => {
+    importacionService.resultado.mockResolvedValueOnce({
+      data: { importacionId: "imp-9", filasOk: 1, filas: null },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.resultado = { importacionId: "imp-9", filasOk: 1 };
+    p.resultadoFilas = [{ numeroFila: 1, estado: "OK", unidad: "1" }];
+    expect(await p.hidratarResultado()).toBe(true);
+    expect(p.resultadoFilas).toHaveLength(1);
+  });
+
+  it("hidratarResultado con error preserva la sesión", async () => {
+    importacionService.resultado.mockRejectedValueOnce(new Error("404"));
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.resultado = { importacionId: "imp-9", filasOk: 1 };
+    p.resultadoFilas = [{ numeroFila: 1, estado: "OK", unidad: "1" }];
+    expect(await p.hidratarResultado()).toBe(false);
+    expect(p.resultadoFilas).toHaveLength(1);
+  });
+
+  it("ejecutar asienta filas OK sin reconstrucción masiva", async () => {
+    unidadesService.getUnidades.mockResolvedValueOnce({
+      data: [{ id: "u1", numero: "2", tipo: "CASA", sectorNombre: "s1" }],
+    });
+    personasService.listar.mockResolvedValueOnce({
+      data: [{ id: "p1", email: "a@a.cl" }],
+    });
+    vehiculosService.listar.mockResolvedValueOnce({
+      data: [{ id: "v1", patente: "ABC123", unidadId: "u1" }],
+    });
+    estacionamientosService.getEstacionamientos.mockResolvedValueOnce({
+      data: [{ id: "e1", nombre: "E-2" }],
+    });
+    bodegasService.getBodegas.mockResolvedValueOnce({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValueOnce({ data: null });
+    importacionService.ejecutar.mockResolvedValueOnce({
+      data: { importacionId: "imp-1", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewFilasRaw = [
+      {
+        id: "s1",
+        unidad: "2",
+        tipo_unidad: "CASA",
+        nombre: "A",
+        email: "a@a.cl",
+        tipo_vinculo: "PROPIETARIO",
+        vehiculos: [{ uid: "vv", patente: "ABC123" }],
+        bodegas: [],
+        estacionamientos: [{ uid: "ee", nombre: "E-2" }],
+        esNuevo: true,
+        marcadoEliminar: false,
+        original: null,
+      },
+    ];
+    p.previewData = {
+      importacionId: "imp-1",
+      filasOk: 1,
+      filasError: 0,
+      filas: [{ numeroFila: 1, estado: "OK" }],
+    };
+    await p.ejecutar();
+    // Sin reconstrucción masiva: 0 GET por unidad/vínculo.
+    expect(personasService.vinculosUnidad).not.toHaveBeenCalled();
+    expect(unidadesService.getUnidad).not.toHaveBeenCalled();
+    expect(p.filas).toHaveLength(1);
+    const f = p.filas[0];
+    expect(f.esNuevo).toBe(false);
+    expect(f.__unidadId).toBe("u1");
+    expect(f.__personaId).toBe("p1");
+    expect(f.__vinculoId).toBe(null);
+    expect(f.vehiculos[0].__vehiculoId).toBe("v1");
+    expect(f.estacionamientos[0].__estacionamientoId).toBe("e1");
+    expect(p.modoReedicion).toBe(true);
+  });
+
+  it("ejecutar sin fuente local usa reconstruirFilas (fallback xlsx)", async () => {    unidadesService.getUnidades.mockResolvedValueOnce({
+      data: [{ id: "u1", numero: "1", tipo: "CASA" }],
+    });
+    personasService.listar.mockResolvedValueOnce({ data: [] });
+    vehiculosService.listar.mockResolvedValueOnce({ data: [] });
+    estacionamientosService.getEstacionamientos.mockResolvedValueOnce({ data: [] });
+    bodegasService.getBodegas.mockResolvedValueOnce({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValueOnce({ data: null });
+    importacionService.ejecutar.mockResolvedValueOnce({
+      data: { importacionId: "imp-1", filasOk: 1, filasOmitidas: 0, filasError: 0, errores: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewFilasRaw = null;
+    p.previewData = {
+      importacionId: "imp-1",
+      filasOk: 1,
+      filasError: 0,
+      filas: [{ numeroFila: 1, estado: "OK" }],
+    };
+    await p.ejecutar();
+    expect(personasService.vinculosUnidad).toHaveBeenCalled();
+  });
+
+  it("reconstruirFilas usa snapshot batch BE-6 sin GET por unidad", async () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.unidades = [{ id: "u1", numero: "1", tipo: "CASA" }];
+    planillaService.reedicion.mockResolvedValueOnce({
+      data: [
+        {
+          vinculoId: "w1",
+          persona: { id: "p1", nombre: "A", email: "a@a.cl", rut: "1-9", telefono: "+569" },
+          unidad: { id: "u1", numero: "1", tipo: "CASA", sectorNombre: "s1" },
+          tipo: "PROPIETARIO",
+          esOcupante: true,
+          recibeNotificaciones: true,
+          esResponsable: true,
+          vehiculos: [
+            { vinculoId: "wv", vehiculoId: "v1", patente: "ABC123", tipo: "AUTO" },
+          ],
+          estacionamientos: [{ vinculoId: "we", estacionamientoId: "e1", nombre: "E-1" }],
+          bodegas: [{ vinculoId: "wb", bodegaId: "b1", nombre: "B-1" }],
+        },
+        {
+          vinculoId: "w2",
+          persona: { id: "p2", nombre: "B", email: "b@b.cl" },
+          unidad: { id: "u1", numero: "1", tipo: "CASA", sectorNombre: "s1" },
+          tipo: "RESIDENTE_ADICIONAL",
+          esOcupante: true,
+          recibeNotificaciones: false,
+          esResponsable: false,
+          vehiculos: [],
+          estacionamientos: [],
+          bodegas: [],
+        },
+      ],
+    });
+    await p.cargar();
+    expect(planillaService.reedicion).toHaveBeenCalledWith("cid-1");
+    expect(personasService.vinculosUnidad).not.toHaveBeenCalled();
+    expect(unidadesService.getUnidad).not.toHaveBeenCalled();
+    expect(p.filas).toHaveLength(2);
+    expect(p.modoReedicion).toBe(true);
+    const primaria = p.filas.find((f) => f.email === "a@a.cl");
+    expect(primaria.__vinculoId).toBe("w1");
+    expect(primaria.__personaId).toBe("p1");
+    expect(primaria.__unidadId).toBe("u1");
+    expect(primaria.es_responsable).toBe("SI");
+    expect(primaria.vehiculos[0].__vehiculoId).toBe("v1");
+    expect(primaria.estacionamientos[0].__vinculoEstacionamientoId).toBe("we");
+    expect(primaria.bodegas[0].__vinculoBodegaId).toBe("wb");
+    const adicional = p.filas.find((f) => f.email === "b@b.cl");
+    expect(adicional.vehiculos).toHaveLength(0);
+  });
+
+  it("reconstruirFilas ordena casas en orden natural (1, 2, 10)", async () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.unidades = [{ id: "u1", numero: "1", tipo: "CASA" }];
+    const item = (num, email) => ({
+      vinculoId: `w${num}`,
+      persona: { id: `p${num}`, nombre: email, email },
+      unidad: { id: `u${num}`, numero: num, tipo: "CASA", sectorNombre: "" },
+      tipo: "PROPIETARIO",
+      esOcupante: true,
+      recibeNotificaciones: true,
+      esResponsable: false,
+      vehiculos: [],
+      estacionamientos: [],
+      bodegas: [],
+    });
+    planillaService.reedicion.mockResolvedValueOnce({
+      data: [item("10", "d@d.cl"), item("2", "b@b.cl"), item("1", "a@a.cl")],
+    });
+    await p.cargar();
+    expect(p.filas.map((f) => f.unidad)).toEqual(["1", "2", "10"]);
+  });
+
+  it("reconstruirFilas cae a vía por unidad si el snapshot da 404", async () => {    // Sin mock de getUnidades: cargarExistentes falla suave y conserva p.unidades.
+    planillaService.reedicion.mockRejectedValueOnce({ response: { status: 404 } });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.unidades = [{ id: "u1", numero: "1", tipo: "CASA" }];
+    personasService.vinculosUnidad.mockResolvedValueOnce({ data: [] });
+    unidadesService.getUnidad.mockResolvedValueOnce({ data: { id: "u1", bodegas: [] } });
+    await p.cargar();
+    expect(personasService.vinculosUnidad).toHaveBeenCalledWith("cid-1", "u1");
+    expect(p.filas).toHaveLength(0);
+  });
+
+  it("staging en sesión sobrevive a navegar y se restaura", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewFilasRaw = [{ id: "a", unidad: "1" }];
+    p.archivoNombre = "qa.csv";
+    p.previewData = { importacionId: "imp-9", filasOk: 1, filasError: 0, filas: [] };
+    p.guardarStagingSesion();
+    const p2 = usePlanillaDatos({ cargarExistentes: false });
+    expect(p2.cargarStagingSesion()).toBe(true);
+    expect(p2.archivoNombre).toBe("qa.csv");
+    expect(p2.previewFilasRaw).toHaveLength(1);
+    expect(p2.previewData.importacionId).toBe("imp-9");
+  });
+
+  it("limpiarTodo descarta el staging en sesión", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.previewFilasRaw = [{ id: "a", unidad: "1" }];
+    p.guardarStagingSesion();
+    p.limpiarTodo();
+    const p2 = usePlanillaDatos({ cargarExistentes: false });
+    expect(p2.cargarStagingSesion()).toBe(false);
+  });
+
+  it("guardarBorrador omite reconstruidas sin cambios (no contamina sesión)", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.filas = [{ id: "a", esNuevo: false, unidad: "1", original: { unidad: "1" } }];
+    p.modoReedicion = true;
+    p.guardarBorrador();
+    expect(sessionStorage.getItem("comunidad:planilla-borrador:cid-1")).toBe(null);
+  });
+
+  it("guardarBorrador sí guarda ediciones en reedición", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.agregarFila();
+    Object.assign(p.filas[0], {
+      unidad: "1",
+      tipo_unidad: "CASA",
+      nombre: "A",
+      email: "a@a.cl",
+      tipo_vinculo: "PROPIETARIO",
+    });
+    p.modoReedicion = true;
+    p.guardarBorrador();
+    expect(sessionStorage.getItem("comunidad:planilla-borrador:cid-1")).not.toBe(null);
+  });
+
+  it("cargarBorrador con solo reconstruidas se descarta y deja reconstruir", () => {
+    sessionStorage.setItem(
+      "comunidad:planilla-borrador:cid-1",
+      JSON.stringify({ filas: [{ id: "a", esNuevo: false, unidad: "1" }], guardadoEn: 1 }),
+    );
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    expect(p.cargarBorrador()).toBe(false);
+    expect(p.filas).toHaveLength(0);
+    expect(p.modoReedicion).toBe(false);
+    expect(sessionStorage.getItem("comunidad:planilla-borrador:cid-1")).toBe(null);
+  });
+
+  it("cargarBorrador mixto restaura y marca reedición", () => {
+    sessionStorage.setItem(
+      "comunidad:planilla-borrador:cid-1",
+      JSON.stringify({
+        filas: [
+          { id: "a", esNuevo: false, unidad: "1", vehiculos: [], bodegas: [], estacionamientos: [] },
+          { id: "b", unidad: "2", vehiculos: [], bodegas: [], estacionamientos: [] },
+        ],
+        guardadoEn: 1,
+      }),
+    );
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    expect(p.cargarBorrador()).toBe(true);
+    expect(p.modoReedicion).toBe(true);
+    expect(p.borradorRestaurado).toBe(true);
+  });
+
   it("enviar hace preview + ejecutar en secuencia", async () => {
     importacionService.previewJson.mockResolvedValueOnce({
       data: { importacionId: "imp-2", totalFilas: 1, filasOk: 1, filasError: 0, filas: [] },
@@ -509,7 +848,7 @@ describe("planillaDatos - usePlanillaDatos", () => {
     p.agregarFila();
     const f = p.filas[0];
     Object.assign(f, { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", esNuevo: false });
-    f.original = { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_ocupante: "", recibe_notificaciones: "", es_responsable: "", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
+    f.original = { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_residente: "", recibe_notificaciones: "", es_responsable: "", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
     expect(p.cambiado(f)).toBe(false);
     f.nombre = "B";
     expect(p.cambiado(f)).toBe(true);
@@ -532,10 +871,10 @@ describe("planillaDatos - usePlanillaDatos", () => {
     const editada = p.filas[1];
     Object.assign(editada, {
       unidad: "2", tipo_unidad: "CASA", nombre: "Antiguo", email: "antiguo@x.cl", tipo_vinculo: "PROPIETARIO",
-      es_ocupante: "SI", recibe_notificaciones: "NO", es_responsable: "NO",
+      es_residente: "SI", recibe_notificaciones: "NO", es_responsable: "NO",
       esNuevo: false, __vinculoId: "v2", __personaId: "p2", __unidadId: "u2",
     });
-    editada.original = { unidad: "2", tipo_unidad: "CASA", nombre: "Antiguo", email: "antiguo@x.cl", tipo_vinculo: "PROPIETARIO", es_ocupante: "SI", recibe_notificaciones: "NO", es_responsable: "NO", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
+    editada.original = { unidad: "2", tipo_unidad: "CASA", nombre: "Antiguo", email: "antiguo@x.cl", tipo_vinculo: "PROPIETARIO", es_residente: "SI", recibe_notificaciones: "NO", es_responsable: "NO", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
     editada.recibe_notificaciones = "SI";
 
     await p.enviar();
@@ -558,6 +897,166 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(p.resultado.eliminadas).toBe(1);
   });
 
+  it("validarFila avisa estacionamiento sin patente (dinámico)", () => {
+    const errores = validarFila({
+      unidad: "1",
+      nombre: "A",
+      email: "a@a.cl",
+      tipo_vinculo: "PROPIETARIO",
+      vehiculos: [{ patente: "", estacionamiento: "E-1" }],
+      bodegas: [],
+    });
+    expect(errores.some((x) => x.includes("E-1"))).toBe(true);
+  });
+
+  it("validarFila avisa est huérfano en fila plana legacy", () => {
+    const errores = validarFila({
+      unidad: "1",
+      nombre: "A",
+      email: "a@a.cl",
+      tipo_vinculo: "PROPIETARIO",
+      patente1: "",
+      est1: "E-2",
+    });
+    expect(errores.some((x) => x.includes("E-2"))).toBe(true);
+  });
+
+  it("cargarStaging parsea csv local sin ningún POST", async () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;AA11;AUTO;M;Mo;C;E-1";
+    await p.cargarStaging({ name: "test.csv", text: async () => csv });
+    expect(p.previewFilasRaw).toHaveLength(1);
+    expect(p.previewFilasRaw[0].vehiculos[0]).toMatchObject({ patente: "AA11", estacionamiento: "E-1" });
+    expect(p.fase).toBe("STAGED");
+    expect(importacionService.previewJson).not.toHaveBeenCalled();
+    expect(importacionService.previewArchivo).not.toHaveBeenCalled();
+  });
+
+  it("cargarStaging xlsx guarda pendiente sin POST", async () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    await p.cargarStaging({ name: "test.xlsx" });
+    expect(p.archivoPendiente).not.toBe(null);
+    expect(p.previewFilasRaw).toBe(null);
+    expect(p.fase).toBe("STAGED");
+    expect(importacionService.previewArchivo).not.toHaveBeenCalled();
+  });
+
+  it("validarStaging envía lo editado (no el archivo original)", async () => {
+    importacionService.previewJson.mockResolvedValueOnce({
+      data: { importacionId: "imp-s", totalFilas: 1, filasOk: 1, filasError: 0, filas: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;AA11;AUTO;M;Mo;C;E-1";
+    await p.cargarStaging({ name: "test.csv", text: async () => csv });
+    p.previewFilasRaw[0].nombre = "Editado";
+    await p.validarStaging();
+    expect(importacionService.previewJson).toHaveBeenCalledWith(
+      "cid-1",
+      [expect.objectContaining({ persona: expect.objectContaining({ nombre: "Editado" }) })],
+    );
+    expect(p.previewData.importacionId).toBe("imp-s");
+    expect(p.fase).toBe("REVIEW");
+  });
+
+  it("fase refleja VACIO → REVIEW → limpieza total", async () => {
+    importacionService.previewJson.mockResolvedValueOnce({
+      data: { importacionId: "imp-f", totalFilas: 0, filasOk: 0, filasError: 0, filas: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    expect(p.fase).toBe("VACIO");
+    const csv = "unidad;tipo_unidad;sector;nombre;email;rut;telefono;tipo_vinculo;es_residente;recibe_notificaciones;es_responsable;patente1;tipo_vehiculo1;marca1;modelo1;color1;est1\n1;CASA;S1;A;a@a.cl;;;PROPIETARIO;SI;SI;SI;;;;;;;;";
+    await p.cargarStaging({ name: "t.csv", text: async () => csv });
+    expect(p.fase).toBe("STAGED");
+    await p.validarStaging();
+    expect(p.fase).toBe("REVIEW");
+    p.limpiarTodo();
+    expect(p.fase).toBe("VACIO");
+    expect(p.previewFilasRaw).toBe(null);
+    expect(p.archivoPendiente).toBe(null);
+  });
+
+  it("reconstruirFilas reconstruye estacionamientos standalone editables (BE-74)", async () => {
+    unidadesService.getUnidades.mockResolvedValueOnce({
+      data: [{ id: "u1", numero: "1", tipo: "CASA", sectorNombre: "Sector A" }],
+    });
+    unidadesService.getCapacidad.mockResolvedValueOnce({ data: {} });
+    personasService.listar.mockResolvedValueOnce({
+      data: [{ id: "p1", nombre: "Juan", email: "j@x.cl" }],
+    });
+    vehiculosService.listar.mockResolvedValueOnce({ data: [] });
+    estacionamientosService.getEstacionamientos.mockResolvedValueOnce({
+      data: [{ id: "e1", nombre: "E-1", propietario: { unidadId: "u1", unidadNumero: "1" }, arrendatarioEfectivo: null, arrendatariosFuturos: [] }],
+    });
+    bodegasService.getBodegas.mockResolvedValueOnce({ data: [] });
+    personasService.vinculosUnidad.mockResolvedValueOnce({
+      data: [{ id: "v1", personaId: "p1", personaNombre: "Juan", tipo: "PROPIETARIO", esOcupante: true, recibeNotificaciones: true, esResponsable: false, activo: true }],
+    });
+    unidadesService.getUnidad.mockResolvedValueOnce({
+      data: { id: "u1", numero: "1", bodegas: [] },
+    });
+    const p = usePlanillaDatos({ cargarExistentes: true });
+    await p.cargar();
+    expect(p.filas[0].estacionamientos).toHaveLength(1);
+    expect(p.filas[0].estacionamientos[0]).toMatchObject({ nombre: "E-1", __estacionamientoId: "e1" });
+    expect(p.filas[0].estVinculados).toBe(undefined);
+  });
+
+  it("filaAPayload incluye estacionamientos standalone (BE-74)", () => {
+    const p = filaAPayload({
+      unidad: "2",
+      tipo_unidad: "CASA",
+      nombre: "A",
+      email: "a@a.cl",
+      tipo_vinculo: "PROPIETARIO",
+      vehiculos: [],
+      bodegas: [],
+      estacionamientos: [{ uid: "e1", nombre: "E-2" }],
+    });
+    expect(p.estacionamientos).toEqual(["E-2"]);
+    expect(p.vehiculos).toHaveLength(0);
+  });
+
+  it("fila cruda convierte estacionamiento1..3 a lista standalone", () => {
+    expect(clavesColumnas(COLUMNAS_DEFAULT)).toContain("estacionamiento1");
+    expect(clavesColumnas(COLUMNAS_DEFAULT)).toContain("estacionamiento3");
+    const [f] = filasCrudasADinamicas([{ estacionamiento1: "E-2", estacionamiento2: "", patente1: "" }]);
+    expect(f.estacionamientos.map((e) => e.nombre)).toEqual(["E-2"]);
+    expect(f.vehiculos).toHaveLength(0);
+  });
+
+  it("agregar/quitar estacionamiento standalone en filas", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.agregarFila();
+    const f = p.filas[0];
+    expect(f.estacionamientos).toEqual([]);
+    p.agregarEstacionamiento(f.id);
+    expect(f.estacionamientos).toHaveLength(1);
+    p.quitarEstacionamiento(f.id, f.estacionamientos[0].uid);
+    expect(f.estacionamientos).toHaveLength(0);
+  });
+
+  it("normalizarEstAnidados mueve el est del vehículo a standalone con dedupe", () => {
+    const f = normalizarEstAnidados({
+      vehiculos: [{ uid: "v1", patente: "AA11", estacionamiento: "E-1" }],
+      estacionamientos: [{ uid: "e1", nombre: "E-1" }],
+      bodegas: [],
+    });
+    expect(f.estacionamientos.map((e) => e.nombre)).toEqual(["E-1"]);
+    expect(f.vehiculos[0].estacionamiento).toBe("E-1");
+    expect(f.vehiculos[0].patente).toBe("AA11");
+  });
+
+  it("cambiado detecta cambios en estacionamientos standalone", () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.agregarFila();
+    const f = p.filas[0];
+    Object.assign(f, { unidad: "1", esNuevo: false });
+    f.original = { unidad: "1", tipo_unidad: "", sector: "", nombre: "", email: "", rut: "", telefono: "", tipo_vinculo: "", es_residente: "", recibe_notificaciones: "", es_responsable: "", vehiculos: [], bodegas: [], estacionamientos: [] };
+    expect(p.cambiado(f)).toBe(false);
+    p.agregarEstacionamiento(f.id);
+    expect(p.cambiado(f)).toBe(true);
+  });
+
   it("enviar en reedición recrea el vínculo si cambia tipo/es_responsable", async () => {
     personasService.desactivarVinculo.mockResolvedValueOnce({ data: {} });
     personasService.crearVinculo.mockResolvedValueOnce({ data: { id: "v2" } });
@@ -565,8 +1064,8 @@ describe("planillaDatos - usePlanillaDatos", () => {
     p.modoReedicion = true;
     p.agregarFila();
     const f = p.filas[0];
-    Object.assign(f, { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_ocupante: "SI", recibe_notificaciones: "SI", es_responsable: "NO", esNuevo: false, __vinculoId: "v1", __personaId: "p1", __unidadId: "u1" });
-    f.original = { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_ocupante: "SI", recibe_notificaciones: "SI", es_responsable: "SI", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
+    Object.assign(f, { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_residente: "SI", recibe_notificaciones: "SI", es_responsable: "NO", esNuevo: false, __vinculoId: "v1", __personaId: "p1", __unidadId: "u1" });
+    f.original = { unidad: "1", tipo_unidad: "CASA", nombre: "A", email: "a@a.cl", tipo_vinculo: "PROPIETARIO", es_residente: "SI", recibe_notificaciones: "SI", es_responsable: "SI", sector: "", rut: "", telefono: "", vehiculos: [], bodegas: [] };
     f.es_responsable = "NO";
     await p.enviar();
     expect(personasService.desactivarVinculo).toHaveBeenCalledWith("cid-1", "v1");

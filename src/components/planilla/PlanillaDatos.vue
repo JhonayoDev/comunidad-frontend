@@ -1,6 +1,12 @@
 <script setup>
-import { ref, computed } from "vue";
-import { TIPOS_UNIDAD, TIPOS_VINCULO, TIPOS_VEHICULO, esEstacionamientoVisita } from "@/data/planillaColumnas";
+import { ref, computed, watch } from "vue";
+import { useModoFoco } from "@/composables/useModoFoco";
+import {
+  TIPOS_UNIDAD,
+  TIPOS_VINCULO,
+  TIPOS_VEHICULO,
+  esEstacionamientoVisita,
+} from "@/data/planillaColumnas";
 import {
   formatearRut,
   formatearRutCompleto,
@@ -15,6 +21,7 @@ import Checkbox from "primevue/checkbox";
 import Tag from "primevue/tag";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
+import Paginator from "primevue/paginator";
 
 // Recibe el objeto devuelto por usePlanillaDatos (estado + acciones).
 const props = defineProps({
@@ -25,7 +32,7 @@ const props = defineProps({
   soloUnidadesExistentes: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["guardar", "actualizado"]);
+const emit = defineEmits(["guardar", "actualizado", "edicion"]);
 
 const filtroCasa = ref("");
 
@@ -38,28 +45,38 @@ const snapshotEdicion = ref(null);
 // Colapso de las secciones de recursos (vehículos/bodegas) en mobile.
 const recursosAbiertos = ref({});
 function toggleRecursos(id) {
-  recursosAbiertos.value[id] = recursosAbiertos.value[id] === false ? true : false;
+  recursosAbiertos.value[id] =
+    recursosAbiertos.value[id] === false ? true : false;
 }
 
 const p = computed(() => props.planilla);
 
 const hayVisitas = computed(() =>
-  (p.value.estacionamientos || []).some((x) => esEstacionamientoVisita(x.nombre)),
+  (p.value.estacionamientos || []).some((x) =>
+    esEstacionamientoVisita(x.nombre),
+  ),
 );
 
-const conBodegas = computed(() =>
-  (p.value.capacidad?.data || p.value.capacidad || {}).capacidadBodegas > 0,
+const conBodegas = computed(
+  () =>
+    (p.value.capacidad?.data || p.value.capacidad || {}).capacidadBodegas > 0,
 );
 
 const capacidadConfig = [
   { tipo: "CASA", label: "Casas", suffix: "Casas" },
   { tipo: "DEPARTAMENTO", label: "Departamentos", suffix: "Departamentos" },
-  { tipo: "ESTACIONAMIENTO", label: "Estacionamientos", suffix: "Estacionamientos" },
+  {
+    tipo: "ESTACIONAMIENTO",
+    label: "Estacionamientos",
+    suffix: "Estacionamientos",
+  },
   { tipo: "BODEGA", label: "Bodegas", suffix: "Bodegas" },
   { tipo: "OTRO", label: "Otro", suffix: "Otro" },
 ];
 
-const capacidadData = computed(() => p.value.capacidad?.data || p.value.capacidad || {});
+const capacidadData = computed(
+  () => p.value.capacidad?.data || p.value.capacidad || {},
+);
 
 const usoPorTipo = computed(() => {
   const map = {};
@@ -86,31 +103,74 @@ const capacidadVisible = computed(() =>
 const filasFiltradas = computed(() => {
   const q = filtroCasa.value.trim().toLowerCase();
   if (!q) return p.value.filas;
-  return p.value.filas.filter((f) => String(f.unidad || "").toLowerCase().includes(q));
+  return p.value.filas.filter((f) =>
+    String(f.unidad || "")
+      .toLowerCase()
+      .includes(q),
+  );
 });
 
+// Paginación (Meta: virtualización progresiva, 50/pág evita bloqueo Firefox con 500+ filas)
+const pagina = ref(0);
+const porPagina = 50;
+const filasFiltradasPaginadas = computed(() => {
+  const start = pagina.value * porPagina;
+  return filasFiltradas.value.slice(start, start + porPagina);
+});
+watch(filasFiltradas, () => {
+  pagina.value = 0;
+});
+watch(
+  () => p.value.filas.length,
+  () => {
+    if (
+      pagina.value * porPagina >= filasFiltradas.value.length &&
+      pagina.value > 0
+    ) {
+      pagina.value = 0;
+    }
+  },
+);
+
 const totalFilas = computed(() => p.value.filas.length);
-const filasConDatos = computed(() =>
-  p.value.filas.filter((f) => (f.nombre || "").trim() || (f.email || "").trim()).length,
+const filasConDatos = computed(
+  () =>
+    p.value.filas.filter(
+      (f) => (f.nombre || "").trim() || (f.email || "").trim(),
+    ).length,
 );
 
 function entrarEdicion() {
   snapshotEdicion.value = JSON.parse(JSON.stringify(p.value.filas));
   editando.value = true;
+  emit("edicion", true);
 }
 
 function salirEdicion() {
   editando.value = false;
+  emit("edicion", false);
 }
 
 function cancelarEdicion() {
   if (snapshotEdicion.value) p.value.filas = snapshotEdicion.value;
-  editando.value = false;
+  salirEdicion();
 }
+
+// Al guardar con éxito (nuevo resultado) se sale de edición: el paso vuelve
+// a completado en el wizard.
+watch(
+  () => p.value.resultado,
+  (r) => {
+    if (r && editando.value) salirEdicion();
+  },
+);
 
 const tiposUnidadOpciones = TIPOS_UNIDAD.map((t) => ({ label: t, value: t }));
 const tiposVinculoOpciones = TIPOS_VINCULO.map((t) => ({ label: t, value: t }));
-const tiposVehiculoOpciones = TIPOS_VEHICULO.map((t) => ({ label: t, value: t }));
+const tiposVehiculoOpciones = TIPOS_VEHICULO.map((t) => ({
+  label: t,
+  value: t,
+}));
 
 // ─── Sugerencias AutoComplete (casas/estacionamientos/bodegas declarados) ───
 const casasSugerencias = ref([]);
@@ -152,21 +212,47 @@ const previewErrores = computed(() => {
   return (p.value.previewData.filas || []).filter((f) => f.estado === "ERROR");
 });
 
+// FE-1: filas con advertencias[]. Tolerante a null (BE-4 aún no desplegado).
+const previewAdvertencias = computed(() => {
+  if (!p.value.previewData) return 0;
+  return (p.value.previewData.filas || []).filter(
+    (f) => (f.advertencias || []).length > 0,
+  ).length;
+});
+
 function erroresDe(f) {
-  return p.value.filasConErrores?.find((x) => x.fila.id === f.id)?.errores || [];
+  return (
+    p.value.filasConErrores?.find((x) => x.fila.id === f.id)?.errores || []
+  );
+}
+
+// FE-5: advertencias del último import (en memoria) para el badge en reedición.
+function advertenciasDe(f) {
+  try {
+    return p.value.advertenciasDeFila?.(f) || [];
+  } catch {
+    return [];
+  }
 }
 
 function vehiculosDe(f) {
+  // Dedupe visual: si el est ya está en la columna standalone, no se repite
+  // junto al vehículo (el payload igual lo envía en ambos para compatibilidad
+  // con el backend pre/post BE-74).
+  const standalone = new Set(estacionamientosDe(f).map((e) => e.toUpperCase()));
   return (f.vehiculos || [])
-    .map((v) => ({
-      uid: v.uid,
-      patente: (v.patente || "").trim(),
-      tipo: (v.tipo || "").trim(),
-      marca: (v.marca || "").trim(),
-      modelo: (v.modelo || "").trim(),
-      color: (v.color || "").trim(),
-      est: (v.estacionamiento || "").trim(),
-    }))
+    .map((v) => {
+      const est = (v.estacionamiento || "").trim();
+      return {
+        uid: v.uid,
+        patente: (v.patente || "").trim(),
+        tipo: (v.tipo || "").trim(),
+        marca: (v.marca || "").trim(),
+        modelo: (v.modelo || "").trim(),
+        color: (v.color || "").trim(),
+        est: est && !standalone.has(est.toUpperCase()) ? est : "",
+      };
+    })
     .filter((v) => v.patente);
 }
 
@@ -176,13 +262,22 @@ function bodegasDe(f) {
     .filter(Boolean);
 }
 
+function estacionamientosDe(f) {
+  return (f.estacionamientos || [])
+    .map((e) => (typeof e === "string" ? e : e.nombre || "").trim())
+    .filter(Boolean);
+}
+
 function guardar() {
   emit("guardar");
 }
+
+const { foco, alternar, salir } = useModoFoco();
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div v-if="foco" class="modo-foco-fondo" @click="salir" />
+  <div class="flex flex-col gap-4" :class="foco ? 'modo-foco p-3' : ''">
     <!-- Filtros y acciones -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap">
       <span class="p-input-icon-left w-full sm:w-64">
@@ -193,30 +288,61 @@ function guardar() {
           class="w-full"
         />
       </span>
-      <span class="text-sm text-surface-400">
-        {{ totalFilas }} fila(s)
-      </span>
-      <span v-if="hayVisitas" class="text-xs text-surface-400 w-full sm:w-auto">
+      <span class="text-sm text-text-muted"> {{ totalFilas }} fila(s) </span>
+      <span v-if="hayVisitas" class="text-xs text-text-muted w-full sm:w-auto">
         Los estacionamientos EV-* son de visitas y no se asignan a casas.
       </span>
       <div class="flex gap-1 sm:ml-auto">
+        <Button
+          :icon="foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+          :label="foco ? 'Salir de foco' : 'Foco'"
+          severity="secondary"
+          text
+          size="small"
+          @click="alternar"
+        />
         <template v-if="!editando">
-          <Button label="Editar" icon="pi pi-pencil" variant="text" size="small" @click="entrarEdicion" />
+          <Button
+            label="Editar"
+            icon="pi pi-pencil"
+            size="small"
+            @click="entrarEdicion"
+          />
         </template>
         <template v-else>
-          <Button label="Listo" icon="pi pi-check" variant="text" size="small" @click="salirEdicion" />
-          <Button label="Cancelar" variant="text" severity="secondary" size="small" @click="cancelarEdicion" />
-          <Button label="Agregar fila" icon="pi pi-plus" variant="text" size="small" @click="p.agregarFila()" />
+          <Button
+            label="Listo"
+            icon="pi pi-check"
+            size="small"
+            @click="salirEdicion"
+          />
+          <Button
+            label="Cancelar"
+            severity="secondary"
+            size="small"
+            @click="cancelarEdicion"
+          />
+          <Button
+            label="Agregar fila"
+            icon="pi pi-plus"
+            size="small"
+            @click="p.agregarFila()"
+          />
         </template>
       </div>
     </div>
 
-    <Message v-if="p.borradorRestaurado" severity="warn" :closable="false" class="m-0">
-      Se restauró un borrador de esta sesión con {{ totalFilas }} fila(s). Puedes
-      continuar donde quedaste.
+    <Message
+      v-if="p.borradorRestaurado"
+      severity="warn"
+      :closable="false"
+      class="m-0"
+    >
+      Se restauró un borrador de esta sesión con {{ totalFilas }} fila(s).
+      Puedes continuar donde quedaste.
     </Message>
 
-    <Message v-if="p.modoReedicion" severity="info" :closable="false" class="m-0">
+    <Message v-if="p.modoReedicion" severity="info" closable="true" class="m-0">
       Mostrando {{ totalFilas }} integrante(s) ya registrados en el condominio.
       Pulsa <strong>Editar</strong> para modificar, desvincular o agregar filas.
     </Message>
@@ -224,14 +350,18 @@ function guardar() {
     <Message
       v-if="p.previewData"
       :severity="previewErrores.length ? 'warn' : 'info'"
-      :closable="false"
+      :closable="true"
       class="m-0"
     >
       <template #default>
         <div class="text-sm">
-          <strong>Previsualización:</strong> {{ p.previewData.filasOk }} filas OK ·
-          {{ p.previewData.filasError }} con error ·
-          {{ previewOmitidas }} omitidas (vínculo ya existente).
+          <strong>Previsualización:</strong> {{ p.previewData.filasOk }} filas
+          OK · {{ p.previewData.filasError }} con error ·
+          {{ previewOmitidas }} omitidas (vínculo ya existente)<template
+            v-if="previewAdvertencias"
+          >
+            · {{ previewAdvertencias }} con advertencia</template
+          >.
           <span v-if="previewErrores.length" class="block mt-1">
             <span v-for="(e, i) in previewErrores" :key="i" class="block">
               Fila {{ e.numeroFila }} ({{ e.unidad }} · {{ e.personaNombre }}):
@@ -243,7 +373,9 @@ function guardar() {
     </Message>
 
     <Skeleton v-if="p.cargando" width="100%" height="240px" />
-    <Message v-else-if="p.error" severity="error" class="m-0">{{ p.error }}</Message>
+    <Message v-else-if="p.error" severity="error" class="m-0">{{
+      p.error
+    }}</Message>
 
     <template v-else>
       <div v-if="capacidadVisible.length" class="flex flex-wrap gap-2">
@@ -253,7 +385,9 @@ function guardar() {
           class="flex-1 min-w-32 px-3 py-2 flex items-center justify-between gap-2 border border-border rounded-lg"
           style="background-color: var(--color-surface)"
         >
-          <span class="text-xs text-text-muted whitespace-nowrap">{{ c.label }}</span>
+          <span class="text-xs text-text-muted whitespace-nowrap">{{
+            c.label
+          }}</span>
           <span
             class="text-sm font-semibold"
             :class="usoDe(c.tipo) >= capacidadDe(c.tipo) ? 'text-danger' : ''"
@@ -263,11 +397,14 @@ function guardar() {
         </div>
       </div>
 
-      <div v-if="!totalFilas" class="text-center text-surface-400 py-10">
+      <div v-if="!totalFilas" class="text-center text-text-muted py-10">
         <i class="pi pi-inbox text-3xl block mb-2"></i>
         Aún no hay filas. Pulsa <strong>Editar</strong> para agregar la primera.
       </div>
-      <div v-else-if="!filasFiltradas.length" class="text-center text-surface-400 py-10">
+      <div
+        v-else-if="!filasFiltradas.length"
+        class="text-center text-surface-400 py-10"
+      >
         <i class="pi pi-search text-3xl block mb-2"></i>
         Sin filas para ese filtro.
       </div>
@@ -286,16 +423,17 @@ function guardar() {
                 <th>RUT</th>
                 <th>Teléfono</th>
                 <th>Vínculo</th>
-                <th class="text-center">Ocup.</th>
+                <th class="text-center">Resid.</th>
                 <th class="text-center">Notif.</th>
                 <th class="text-center">Resp.</th>
+                <th>Estacionamientos</th>
                 <th>Vehículos</th>
                 <th v-if="conBodegas">Bodegas</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="f in filasFiltradas" :key="f.id">
+              <tr v-for="f in filasFiltradasPaginadas" :key="f.id">
                 <td class="whitespace-nowrap align-middle">
                   <template v-if="editando">
                     <AutoComplete
@@ -315,7 +453,9 @@ function guardar() {
                       @complete="buscarCasas"
                       placeholder="N°"
                       class="w-24"
-                      @update:modelValue="p.actualizarFila(f.id, 'unidad', $event)"
+                      @update:modelValue="
+                        p.actualizarFila(f.id, 'unidad', $event)
+                      "
                     />
                   </template>
                   <span v-else>{{ f.unidad || "—" }}</span>
@@ -336,10 +476,17 @@ function guardar() {
                       optionValue="value"
                       placeholder="Tipo"
                       class="w-32"
-                      @update:modelValue="p.actualizarFila(f.id, 'tipo_unidad', $event)"
+                      @update:modelValue="
+                        p.actualizarFila(f.id, 'tipo_unidad', $event)
+                      "
                     />
                   </template>
-                  <Tag v-else :value="f.tipo_unidad || '—'" severity="secondary" size="small" />
+                  <Tag
+                    v-else
+                    :value="f.tipo_unidad || '—'"
+                    severity="secondary"
+                    size="small"
+                  />
                 </td>
                 <td class="align-middle">
                   <template v-if="editando">
@@ -355,10 +502,16 @@ function guardar() {
                       :modelValue="f.sector"
                       placeholder="Sector"
                       class="w-full min-w-24"
-                      @update:modelValue="p.actualizarFila(f.id, 'sector', $event)"
+                      @update:modelValue="
+                        p.actualizarFila(f.id, 'sector', $event)
+                      "
                     />
                   </template>
-                  <span v-else class="text-sm" :class="f.sector ? '' : 'text-surface-400'">
+                  <span
+                    v-else
+                    class="text-sm"
+                    :class="f.sector ? '' : 'text-surface-400'"
+                  >
                     {{ f.sector || "—" }}
                   </span>
                 </td>
@@ -368,7 +521,9 @@ function guardar() {
                       :modelValue="f.nombre"
                       placeholder="Nombre"
                       class="w-full min-w-36"
-                      @update:modelValue="p.actualizarFila(f.id, 'nombre', $event)"
+                      @update:modelValue="
+                        p.actualizarFila(f.id, 'nombre', $event)
+                      "
                     />
                   </template>
                   <span v-else>{{ f.nombre || "—" }}</span>
@@ -379,10 +534,19 @@ function guardar() {
                       :modelValue="f.email"
                       placeholder="Email"
                       class="w-full min-w-40"
-                      @update:modelValue="p.actualizarFila(f.id, 'email', $event)"
+                      @update:modelValue="
+                        p.actualizarFila(f.id, 'email', $event)
+                      "
                     />
                   </template>
-                  <span v-else :title="f.esNuevo === false ? 'El email de una persona existente no es editable' : ''">
+                  <span
+                    v-else
+                    :title="
+                      f.esNuevo === false
+                        ? 'El email de una persona existente no es editable'
+                        : ''
+                    "
+                  >
                     {{ f.email || "—" }}
                   </span>
                 </td>
@@ -397,7 +561,14 @@ function guardar() {
                       @blur="f.rut = formatearRutCompleto(f.rut)"
                     />
                   </template>
-                  <span v-else :title="f.esNuevo === false ? 'El RUT de una persona existente no es editable' : ''">
+                  <span
+                    v-else
+                    :title="
+                      f.esNuevo === false
+                        ? 'El RUT de una persona existente no es editable'
+                        : ''
+                    "
+                  >
                     {{ f.rut || "—" }}
                   </span>
                 </td>
@@ -423,46 +594,115 @@ function guardar() {
                       optionValue="value"
                       placeholder="Vínculo"
                       class="w-32"
-                      @update:modelValue="p.actualizarFila(f.id, 'tipo_vinculo', $event)"
+                      @update:modelValue="
+                        p.actualizarFila(f.id, 'tipo_vinculo', $event)
+                      "
                     />
                   </template>
                   <Tag
                     v-else-if="f.tipo_vinculo"
                     :value="f.tipo_vinculo"
-                    :severity="f.tipo_vinculo === 'PROPIETARIO' ? 'info' : 'secondary'"
+                    :severity="
+                      f.tipo_vinculo === 'PROPIETARIO' ? 'info' : 'secondary'
+                    "
                     size="small"
                   />
                   <span v-else>—</span>
                 </td>
                 <td class="align-middle text-center">
-                  <div class="flex items-center justify-center gap-1" title="Es ocupante">
+                  <div
+                    class="flex items-center justify-center gap-1"
+                    title="Es residente"
+                  >
                     <Checkbox
                       :binary="true"
-                      :modelValue="f.es_ocupante === 'SI'"
+                      :modelValue="f.es_residente === 'SI'"
                       :disabled="!editando"
-                      @update:modelValue="(v) => p.actualizarFila(f.id, 'es_ocupante', v ? 'SI' : 'NO')"
+                      @update:modelValue="
+                        (v) =>
+                          p.actualizarFila(
+                            f.id,
+                            'es_residente',
+                            v ? 'SI' : 'NO',
+                          )
+                      "
                     />
                   </div>
                 </td>
                 <td class="align-middle text-center">
-                  <div class="flex items-center justify-center gap-1" title="Recibe notificaciones">
+                  <div
+                    class="flex items-center justify-center gap-1"
+                    title="Recibe notificaciones"
+                  >
                     <Checkbox
                       :binary="true"
                       :modelValue="f.recibe_notificaciones === 'SI'"
                       :disabled="!editando"
-                      @update:modelValue="(v) => p.actualizarFila(f.id, 'recibe_notificaciones', v ? 'SI' : 'NO')"
+                      @update:modelValue="
+                        (v) =>
+                          p.actualizarFila(
+                            f.id,
+                            'recibe_notificaciones',
+                            v ? 'SI' : 'NO',
+                          )
+                      "
                     />
                   </div>
                 </td>
                 <td class="align-middle text-center">
-                  <div class="flex items-center justify-center gap-1" title="Responsable de la casa">
+                  <div
+                    class="flex items-center justify-center gap-1"
+                    title="Responsable de la casa"
+                  >
                     <Checkbox
                       :binary="true"
                       :modelValue="f.es_responsable === 'SI'"
                       :disabled="!editando"
-                      @update:modelValue="(v) => { if (v) p.marcarResponsable(f.id) }"
+                      @update:modelValue="
+                        (v) => {
+                          if (v) p.marcarResponsable(f.id);
+                        }
+                      "
                     />
                   </div>
+                </td>
+                <td class="align-middle min-w-40">
+                  <template v-if="editando">
+                    <div class="flex flex-col gap-1">
+                      <div
+                        v-for="e in f.estacionamientos || []"
+                        :key="e.uid"
+                        class="flex items-center gap-1"
+                      >
+                        <AutoComplete
+                          :modelValue="e.nombre"
+                          :suggestions="estSugerencias"
+                          @complete="buscarEst"
+                          placeholder="Est."
+                          class="flex-1"
+                          @update:modelValue="e.nombre = $event"
+                        />
+                        <Button
+                          icon="pi pi-trash"
+                          variant="text"
+                          severity="danger"
+                          size="small"
+                          title="Quitar estacionamiento"
+                          @click="p.quitarEstacionamiento(f.id, e.uid)"
+                        />
+                      </div>
+                      <Button
+                        label="Agregar est."
+                        icon="pi pi-plus"
+                        variant="text"
+                        size="small"
+                        @click="p.agregarEstacionamiento(f.id)"
+                      />
+                    </div>
+                  </template>
+                  <span v-else class="text-sm">{{
+                    estacionamientosDe(f).join(", ") || "—"
+                  }}</span>
                 </td>
                 <td class="align-middle min-w-64">
                   <template v-if="editando">
@@ -497,14 +737,6 @@ function guardar() {
                             @click="p.quitarVehiculo(f.id, v.uid)"
                           />
                         </div>
-                        <AutoComplete
-                          :modelValue="v.estacionamiento"
-                          :suggestions="estSugerencias"
-                          @complete="buscarEst"
-                          placeholder="Estacionamiento"
-                          class="w-full"
-                          @update:modelValue="v.estacionamiento = $event"
-                        />
                       </div>
                       <Button
                         label="Agregar vehículo"
@@ -517,9 +749,12 @@ function guardar() {
                   </template>
                   <div v-else class="flex flex-col gap-1 text-sm">
                     <span v-for="v in vehiculosDe(f)" :key="v.uid">
-                      {{ v.patente }}<template v-if="v.est"> · {{ v.est }}</template>
+                      {{ v.patente
+                      }}<template v-if="v.est"> · {{ v.est }}</template>
                     </span>
-                    <span v-if="!vehiculosDe(f).length" class="text-surface-400">—</span>
+                    <span v-if="!vehiculosDe(f).length" class="text-surface-400"
+                      >—</span
+                    >
                   </div>
                 </td>
                 <td v-if="conBodegas" class="align-middle min-w-40">
@@ -556,7 +791,9 @@ function guardar() {
                       />
                     </div>
                   </template>
-                  <span v-else class="text-sm">{{ bodegasDe(f).join(", ") || "—" }}</span>
+                  <span v-else class="text-sm">{{
+                    bodegasDe(f).join(", ") || "—"
+                  }}</span>
                 </td>
                 <td class="align-middle text-center">
                   <div class="flex items-center justify-center gap-1">
@@ -573,6 +810,13 @@ function guardar() {
                       size="small"
                     />
                     <Tag
+                      v-if="advertenciasDe(f).length"
+                      value="Advertencia"
+                      severity="warn"
+                      size="small"
+                      :title="advertenciasDe(f).join('; ')"
+                    />
+                    <Tag
                       v-if="f.marcadoEliminar"
                       value="Eliminado"
                       severity="danger"
@@ -584,7 +828,11 @@ function guardar() {
                       variant="text"
                       severity="danger"
                       size="small"
-                      :title="f.esNuevo === false ? 'Desvincular integrante' : 'Quitar fila'"
+                      :title="
+                        f.esNuevo === false
+                          ? 'Desvincular integrante'
+                          : 'Quitar fila'
+                      "
                       @click="p.marcarEliminar(f.id)"
                     />
                   </div>
@@ -598,12 +846,20 @@ function guardar() {
               </tr>
             </tbody>
           </table>
+          <Paginator
+            v-if="filasFiltradas.length > porPagina"
+            :rows="porPagina"
+            :totalRecords="filasFiltradas.length"
+            :first="pagina * porPagina"
+            class="mt-2"
+            @page="pagina = $event.page"
+          />
         </div>
 
         <!-- Mobile: cards -->
         <div class="flex flex-col gap-2 md:hidden">
           <div
-            v-for="f in filasFiltradas"
+            v-for="f in filasFiltradasPaginadas"
             :key="f.id"
             class="p-2 border-round flex flex-col gap-2"
             :class="erroresDe(f).length ? 'bg-danger/5' : ''"
@@ -651,7 +907,13 @@ function guardar() {
                     optionValue="value"
                   />
                 </template>
-                <Tag v-else :value="f.tipo_unidad || '—'" severity="secondary" size="small" class="w-fit" />
+                <Tag
+                  v-else
+                  :value="f.tipo_unidad || '—'"
+                  severity="secondary"
+                  size="small"
+                  class="w-fit"
+                />
               </div>
               <div class="flex flex-col gap-1 col-span-2">
                 <label class="text-xs text-surface-400">Nombre *</label>
@@ -668,7 +930,11 @@ function guardar() {
                 <span
                   v-else
                   class="text-sm"
-                  :title="f.esNuevo === false ? 'El email de una persona existente no es editable' : ''"
+                  :title="
+                    f.esNuevo === false
+                      ? 'El email de una persona existente no es editable'
+                      : ''
+                  "
                 >
                   {{ f.email || "—" }}
                 </span>
@@ -687,7 +953,11 @@ function guardar() {
                 <span
                   v-else
                   class="text-sm"
-                  :title="f.esNuevo === false ? 'El RUT de una persona existente no es editable' : ''"
+                  :title="
+                    f.esNuevo === false
+                      ? 'El RUT de una persona existente no es editable'
+                      : ''
+                  "
                 >
                   {{ f.rut || "—" }}
                 </span>
@@ -717,19 +987,30 @@ function guardar() {
                   </span>
                   <InputText v-else v-model="f.sector" placeholder="Sector A" />
                 </template>
-                <span v-else class="text-sm" :class="f.sector ? '' : 'text-surface-400'">
+                <span
+                  v-else
+                  class="text-sm"
+                  :class="f.sector ? '' : 'text-surface-400'"
+                >
                   {{ f.sector || "—" }}
                 </span>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="text-xs text-surface-400">Vínculo</label>
                 <template v-if="editando">
-                  <Select v-model="f.tipo_vinculo" :options="tiposVinculoOpciones" optionLabel="label" optionValue="value" />
+                  <Select
+                    v-model="f.tipo_vinculo"
+                    :options="tiposVinculoOpciones"
+                    optionLabel="label"
+                    optionValue="value"
+                  />
                 </template>
                 <Tag
                   v-else-if="f.tipo_vinculo"
                   :value="f.tipo_vinculo"
-                  :severity="f.tipo_vinculo === 'PROPIETARIO' ? 'info' : 'secondary'"
+                  :severity="
+                    f.tipo_vinculo === 'PROPIETARIO' ? 'info' : 'secondary'
+                  "
                   size="small"
                   class="w-fit"
                 />
@@ -738,13 +1019,16 @@ function guardar() {
               <div class="flex items-end gap-2 col-span-2">
                 <div class="flex items-center gap-2">
                   <Checkbox
-                    inputId="ocup"
+                    inputId="resid"
                     :binary="true"
-                    :modelValue="f.es_ocupante === 'SI'"
+                    :modelValue="f.es_residente === 'SI'"
                     :disabled="!editando"
-                    @update:modelValue="(v) => p.actualizarFila(f.id, 'es_ocupante', v ? 'SI' : 'NO')"
+                    @update:modelValue="
+                      (v) =>
+                        p.actualizarFila(f.id, 'es_residente', v ? 'SI' : 'NO')
+                    "
                   />
-                  <label for="ocup" class="text-sm">Ocupante</label>
+                  <label for="resid" class="text-sm">Residente</label>
                 </div>
                 <div class="flex items-center gap-2">
                   <Checkbox
@@ -752,7 +1036,14 @@ function guardar() {
                     :binary="true"
                     :modelValue="f.recibe_notificaciones === 'SI'"
                     :disabled="!editando"
-                    @update:modelValue="(v) => p.actualizarFila(f.id, 'recibe_notificaciones', v ? 'SI' : 'NO')"
+                    @update:modelValue="
+                      (v) =>
+                        p.actualizarFila(
+                          f.id,
+                          'recibe_notificaciones',
+                          v ? 'SI' : 'NO',
+                        )
+                    "
                   />
                   <label for="notif" class="text-sm">Notif.</label>
                 </div>
@@ -762,14 +1053,78 @@ function guardar() {
                     :binary="true"
                     :modelValue="f.es_responsable === 'SI'"
                     :disabled="!editando"
-                    @update:modelValue="(v) => { if (v) p.marcarResponsable(f.id) }"
+                    @update:modelValue="
+                      (v) => {
+                        if (v) p.marcarResponsable(f.id);
+                      }
+                    "
                   />
                   <label for="resp" class="text-sm">Responsable</label>
                 </div>
               </div>
             </div>
 
-            <div class="flex flex-col gap-1 border border-border rounded-lg p-2">
+            <div
+              class="flex flex-col gap-1 border border-border rounded-lg p-2"
+            >
+              <button
+                type="button"
+                class="flex items-center justify-between w-full text-left"
+                @click="toggleRecursos(f.id + '-est')"
+              >
+                <span class="text-xs font-semibold text-surface-400">
+                  Estacionamientos ({{ (f.estacionamientos || []).length }})
+                </span>
+                <i
+                  class="pi text-xs"
+                  :class="
+                    recursosAbiertos[f.id + '-est'] !== false
+                      ? 'pi-chevron-up'
+                      : 'pi-chevron-down'
+                  "
+                ></i>
+              </button>
+              <template v-if="recursosAbiertos[f.id + '-est'] !== false">
+                <template v-if="editando">
+                  <div
+                    v-for="e in f.estacionamientos || []"
+                    :key="e.uid"
+                    class="flex items-center gap-2"
+                  >
+                    <AutoComplete
+                      :modelValue="e.nombre"
+                      :suggestions="estSugerencias"
+                      @complete="buscarEst"
+                      placeholder="Estacionamiento"
+                      class="flex-1"
+                      @update:modelValue="e.nombre = $event"
+                    />
+                    <Button
+                      icon="pi pi-trash"
+                      variant="text"
+                      severity="danger"
+                      size="small"
+                      title="Quitar estacionamiento"
+                      @click="p.quitarEstacionamiento(f.id, e.uid)"
+                    />
+                  </div>
+                  <Button
+                    label="Agregar estacionamiento"
+                    icon="pi pi-plus"
+                    variant="text"
+                    size="small"
+                    @click="p.agregarEstacionamiento(f.id)"
+                  />
+                </template>
+                <span v-else class="text-sm">{{
+                  estacionamientosDe(f).join(", ") || "—"
+                }}</span>
+              </template>
+            </div>
+
+            <div
+              class="flex flex-col gap-1 border border-border rounded-lg p-2"
+            >
               <button
                 type="button"
                 class="flex items-center justify-between w-full text-left"
@@ -780,7 +1135,11 @@ function guardar() {
                 </span>
                 <i
                   class="pi text-xs"
-                  :class="recursosAbiertos[f.id] !== false ? 'pi-chevron-up' : 'pi-chevron-down'"
+                  :class="
+                    recursosAbiertos[f.id] !== false
+                      ? 'pi-chevron-up'
+                      : 'pi-chevron-down'
+                  "
                 ></i>
               </button>
               <template v-if="recursosAbiertos[f.id] !== false">
@@ -790,29 +1149,12 @@ function guardar() {
                     :key="v.uid"
                     class="flex flex-col gap-1"
                   >
-                    <InputText
-                      :modelValue="v.patente"
-                      placeholder="Patente"
-                      class="w-full"
-                      @update:modelValue="v.patente = $event"
-                    />
-                    <Select
-                      :modelValue="v.tipo"
-                      :options="tiposVehiculoOpciones"
-                      optionLabel="label"
-                      optionValue="value"
-                      placeholder="Tipo"
-                      class="w-full"
-                      @update:modelValue="v.tipo = $event"
-                    />
                     <div class="flex items-center gap-2">
-                      <AutoComplete
-                        :modelValue="v.estacionamiento"
-                        :suggestions="estSugerencias"
-                        @complete="buscarEst"
-                        placeholder="Estacionamiento"
+                      <InputText
+                        :modelValue="v.patente"
+                        placeholder="Patente"
                         class="flex-1"
-                        @update:modelValue="v.estacionamiento = $event"
+                        @update:modelValue="v.patente = $event"
                       />
                       <Button
                         icon="pi pi-trash"
@@ -823,6 +1165,15 @@ function guardar() {
                         @click="p.quitarVehiculo(f.id, v.uid)"
                       />
                     </div>
+                    <Select
+                      :modelValue="v.tipo"
+                      :options="tiposVehiculoOpciones"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Tipo"
+                      class="w-full"
+                      @update:modelValue="v.tipo = $event"
+                    />
                   </div>
                   <Button
                     label="Agregar vehículo"
@@ -834,9 +1185,12 @@ function guardar() {
                 </template>
                 <div v-else class="flex flex-col gap-1 text-sm">
                   <span v-for="v in vehiculosDe(f)" :key="v.uid">
-                    {{ v.patente }}<template v-if="v.est"> · {{ v.est }}</template>
+                    {{ v.patente
+                    }}<template v-if="v.est"> · {{ v.est }}</template>
                   </span>
-                  <span v-if="!vehiculosDe(f).length" class="text-surface-400">—</span>
+                  <span v-if="!vehiculosDe(f).length" class="text-surface-400"
+                    >—</span
+                  >
                 </div>
               </template>
             </div>
@@ -855,7 +1209,11 @@ function guardar() {
                 </span>
                 <i
                   class="pi text-xs"
-                  :class="recursosAbiertos[f.id] !== false ? 'pi-chevron-up' : 'pi-chevron-down'"
+                  :class="
+                    recursosAbiertos[f.id] !== false
+                      ? 'pi-chevron-up'
+                      : 'pi-chevron-down'
+                  "
                 ></i>
               </button>
               <template v-if="recursosAbiertos[f.id] !== false">
@@ -890,7 +1248,9 @@ function guardar() {
                     @click="p.agregarBodega(f.id)"
                   />
                 </template>
-                <span v-else class="text-sm">{{ bodegasDe(f).join(", ") || "—" }}</span>
+                <span v-else class="text-sm">{{
+                  bodegasDe(f).join(", ") || "—"
+                }}</span>
               </template>
             </div>
 
@@ -925,9 +1285,18 @@ function guardar() {
                   size="small"
                 />
                 <Tag
+                  v-if="advertenciasDe(f).length"
+                  value="Advertencia"
+                  severity="warn"
+                  size="small"
+                  :title="advertenciasDe(f).join('; ')"
+                />
+                <Tag
                   v-if="f.tipo_vinculo"
                   :value="f.tipo_vinculo"
-                  :severity="f.tipo_vinculo === 'PROPIETARIO' ? 'info' : 'secondary'"
+                  :severity="
+                    f.tipo_vinculo === 'PROPIETARIO' ? 'info' : 'secondary'
+                  "
                   size="small"
                 />
               </div>
@@ -937,6 +1306,14 @@ function guardar() {
               <li v-for="(e, i) in erroresDe(f)" :key="i">{{ e }}</li>
             </ul>
           </div>
+          <Paginator
+            v-if="filasFiltradas.length > porPagina"
+            :rows="porPagina"
+            :totalRecords="filasFiltradas.length"
+            :first="pagina * porPagina"
+            class="mt-2 md:hidden"
+            @page="pagina = $event.page"
+          />
         </div>
       </template>
     </template>
