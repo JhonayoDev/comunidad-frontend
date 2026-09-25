@@ -22,6 +22,7 @@ import {
   normalizarEstAnidados,
 } from "@/data/planillaColumnas";
 import { parsearCsv, normalizarFilas } from "@/utils/csvParser";
+import { compararUnidades } from "@/utils/ordenamientoNatural";
 import { rutValido, telefonoChileValido } from "@/utils/validadoresChile";
 
 const CLAVE_BORRADOR = (cid) => `comunidad:planilla-borrador:${cid}`;
@@ -396,6 +397,8 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       }),
     );
     if (reconstruidas.length) {
+      // Mismo orden natural que la vía snapshot.
+      reconstruidas.sort((a, b) => compararUnidades(a.unidad, b.unidad));
       filas.value = reconstruidas;
       filas.value.forEach((f) => {
         f.original = snapshotFila(f);
@@ -479,6 +482,9 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
       });
     });
     if (!reconstruidas.length) return false;
+    // Orden natural por casa (1, 2, ..., 10, 11 — no lexicográfico).
+    // Estable: conserva el orden dentro de cada unidad (primaria primero).
+    reconstruidas.sort((a, b) => compararUnidades(a.unidad, b.unidad));
     filas.value = reconstruidas;
     filas.value.forEach((f) => {
       f.original = snapshotFila(f);

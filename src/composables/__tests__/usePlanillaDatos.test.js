@@ -615,8 +615,29 @@ describe("planillaDatos - usePlanillaDatos", () => {
     expect(adicional.vehiculos).toHaveLength(0);
   });
 
-  it("reconstruirFilas cae a vía por unidad si el snapshot da 404", async () => {
-    // Sin mock de getUnidades: cargarExistentes falla suave y conserva p.unidades.
+  it("reconstruirFilas ordena casas en orden natural (1, 2, 10)", async () => {
+    const p = usePlanillaDatos({ cargarExistentes: false });
+    p.unidades = [{ id: "u1", numero: "1", tipo: "CASA" }];
+    const item = (num, email) => ({
+      vinculoId: `w${num}`,
+      persona: { id: `p${num}`, nombre: email, email },
+      unidad: { id: `u${num}`, numero: num, tipo: "CASA", sectorNombre: "" },
+      tipo: "PROPIETARIO",
+      esOcupante: true,
+      recibeNotificaciones: true,
+      esResponsable: false,
+      vehiculos: [],
+      estacionamientos: [],
+      bodegas: [],
+    });
+    planillaService.reedicion.mockResolvedValueOnce({
+      data: [item("10", "d@d.cl"), item("2", "b@b.cl"), item("1", "a@a.cl")],
+    });
+    await p.cargar();
+    expect(p.filas.map((f) => f.unidad)).toEqual(["1", "2", "10"]);
+  });
+
+  it("reconstruirFilas cae a vía por unidad si el snapshot da 404", async () => {    // Sin mock de getUnidades: cargarExistentes falla suave y conserva p.unidades.
     planillaService.reedicion.mockRejectedValueOnce({ response: { status: 404 } });
     const p = usePlanillaDatos({ cargarExistentes: false });
     p.unidades = [{ id: "u1", numero: "1", tipo: "CASA" }];
