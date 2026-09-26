@@ -453,4 +453,16 @@ describe("useSetupUnidades", () => {
     expect(u.pisosDisponibles).toEqual([]);
     expect(u.pisosOpciones).toEqual([]);
   });
+
+  it("hayCambios cuenta nuevas, editadas y marcadas", () => {
+    const u = useSetupUnidades();
+    expect(u.hayCambios).toBe(false);
+    u.estado.unidades = [
+      { id: "a", numero: "1", esNuevo: true, marcadoEliminar: false, original: null },
+      { id: "b", numero: "2", esNuevo: false, marcadoEliminar: false, original: { numero: "3", tipo: "CASA", piso: null, sectorRef: null } },
+      { id: "c", numero: "4", esNuevo: false, marcadoEliminar: true, unidadId: "u3", original: { numero: "4", tipo: "CASA", piso: null, sectorRef: null } },
+    ];
+    expect(u.hayCambios).toBe(true);
+    expect(u.pendientes).toMatchObject({ nuevas: 1, editadas: 1, eliminadas: 1, total: 3 });
+  });
 });

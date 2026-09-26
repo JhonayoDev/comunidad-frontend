@@ -22,8 +22,15 @@ vi.mock("@/services/unidadesService", () => ({
   },
 }));
 
+vi.mock("@/services/encomiendasService", () => ({
+  encomiendasService: {
+    getAccesosEncomiendas: vi.fn(),
+  },
+}));
+
 import { dashboardService } from "@/services/dashboardService";
 import { unidadesService } from "@/services/unidadesService";
+import { encomiendasService } from "@/services/encomiendasService";
 
 const Host = defineComponent({
   setup() {
@@ -40,6 +47,7 @@ describe("useSetupConfiguracion", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     marcarEnEdicion(null);
+    encomiendasService.getAccesosEncomiendas.mockResolvedValue({ data: [] });
   });
 
   it("define unidades como paso 1, sectores como paso 2, pisos como paso 3 y 10 pasos en total", () => {
@@ -113,7 +121,7 @@ describe("useSetupConfiguracion", () => {
     expect(bod.oculto).toBe(true);
     expect(bod.completado).toBe(true);
     expect(wrapper.vm.primerPasoPendiente.key).toBe("planilla");
-    expect(wrapper.vm.progreso).toBe(38); // 3 de 8 visibles (estac/bodegas ocultos)
+    expect(wrapper.vm.progreso).toBe(38); // 3 de 8 visibles (estac/bodegas ocultos, accesos pendiente)
   });
 
   it("con estacionamientos declarados y sin crear, el paso queda pendiente", async () => {
@@ -142,7 +150,7 @@ describe("useSetupConfiguracion", () => {
     expect(wrapper.vm.pasos[5].completado).toBe(true); // planilla (residentes > 0)
     expect(wrapper.vm.primerPasoPendiente.key).toBe("estacionamientos");
     expect(wrapper.vm.configuraciónCompleta).toBe(false);
-    expect(wrapper.vm.progreso).toBe(44); // 4 de 9 visibles
+    expect(wrapper.vm.progreso).toBe(44); // 4 de 9 visibles (accesos pendiente)
   });
 
   it("con solo bodegas declaradas, solo el paso de bodegas queda visible y pendiente", async () => {
@@ -169,7 +177,36 @@ describe("useSetupConfiguracion", () => {
     expect(wrapper.vm.primerPasoPendiente.key).toBe("bodegas");
   });
 
+  it("accesos queda pendiente sin accesos y completa con al menos uno", async () => {
+    dashboardService.admin.mockResolvedValue({
+      data: { totales: { unidades: 5, residentesActivos: 3, vehiculos: 0 } },
+    });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    const wrapper = montar();
+    await wrapper.vm.cargar();
+    await flushPromises();
+    const acc = wrapper.vm.pasos.find((p) => p.key === "accesos");
+    expect(acc.completado).toBe(false);
+    expect(wrapper.vm.primerPasoPendiente.key).toBe("accesos");
+  });
+
+  it("accesos sin datos (403) no bloquea: cae a unidades > 0", async () => {
+    dashboardService.admin.mockResolvedValue({
+      data: { totales: { unidades: 5, residentesActivos: 0, vehiculos: 0 } },
+    });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    encomiendasService.getAccesosEncomiendas.mockRejectedValue({ response: { status: 403 } });
+    const wrapper = montar();
+    await wrapper.vm.cargar();
+    await flushPromises();
+    const acc = wrapper.vm.pasos.find((p) => p.key === "accesos");
+    expect(acc.completado).toBe(true); // fallback no bloqueante
+  });
+
   it("con estacionamientos y bodegas creados, ambos pasos quedan completados", async () => {
+    encomiendasService.getAccesosEncomiendas.mockResolvedValue({
+      data: [{ id: "a1", nombre: "Conserjería", activo: true }],
+    });
     dashboardService.admin.mockResolvedValue({
       data: { totales: { unidades: 5, residentesActivos: 3, vehiculos: 2 } },
     });
@@ -188,7 +225,8 @@ describe("useSetupConfiguracion", () => {
     expect(wrapper.vm.pasos[1].completado).toBe(true);
     const est = wrapper.vm.pasos.find((p) => p.key === "estacionamientos");
     expect(est.completado).toBe(true);
-    expect(wrapper.vm.primerPasoPendiente.key).toBe("accesos");
+    expect(wrapper.vm.pasos[6].completado).toBe(true); // accesos (≥1 creado)
+    expect(wrapper.vm.primerPasoPendiente.key).toBe("areas-comunes");
   });
 
   it("sincronizarTotales deriva el estado sin refetch (capacidad desconocida → pasos ocultos)", () => {

@@ -253,4 +253,16 @@ describe("useSetupPisos", () => {
     expect(unidadesService.actualizarPiso).toHaveBeenCalled();
     expect(u.resultado).toEqual({ creados: 0, actualizados: 1, eliminados: 0 });
   });
+
+  it("hayCambios cuenta nuevas, editadas y marcadas", () => {
+    const u = useSetupPisos();
+    expect(u.hayCambios).toBe(false);
+    u.estado.items = [
+      { id: "a", numero: 1, esNuevo: true, marcadoEliminar: false, original: null },
+      { id: "b", numero: 2, esNuevo: false, marcadoEliminar: false, original: { numero: 3, nombre: "", descripcion: "" } },
+      { id: "c", numero: 4, esNuevo: false, marcadoEliminar: true, pisoId: "p3", original: { numero: 4, nombre: "", descripcion: "" } },
+    ];
+    expect(u.hayCambios).toBe(true);
+    expect(u.pendientes).toMatchObject({ nuevas: 1, editadas: 1, eliminadas: 1, total: 3 });
+  });
 });

@@ -78,6 +78,18 @@ export function useSetupPisos() {
 
   const tieneErrores = computed(() => estado.items.some((x) => x.error));
 
+  // Cambios pendientes (el botón Guardar refleja estado, no solo validez).
+  const pendientes = computed(() => {
+    const nuevas = estado.items.filter((x) => x.esNuevo && !x.marcadoEliminar).length;
+    const editadas = estado.items.filter(
+      (x) => !x.esNuevo && !x.marcadoEliminar && cambiado(x),
+    ).length;
+    const eliminadas = estado.items.filter((x) => x.marcadoEliminar && x.pisoId).length;
+    return { nuevas, editadas, eliminadas, total: nuevas + editadas + eliminadas };
+  });
+
+  const hayCambios = computed(() => pendientes.value.total > 0);
+
   async function cargar() {
     cargando.value = true;
     error.value = null;
@@ -205,6 +217,8 @@ export function useSetupPisos() {
     estado,
     itemsValidos,
     tieneErrores,
+    pendientes,
+    hayCambios,
     ordenarPisos,
     agregarFila,
     eliminarFila,

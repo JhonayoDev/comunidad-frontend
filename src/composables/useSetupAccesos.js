@@ -1,6 +1,6 @@
 import { ref, reactive, computed } from "vue";
 import { useAuthStore } from "@/stores/authStore";
-import { unidadesService } from "@/services/unidadesService";
+import { encomiendasService } from "@/services/encomiendasService";
 import { compararUnidades } from "@/utils/ordenamientoNatural";
 
 let contador = 0;
@@ -9,14 +9,15 @@ function uid(prefijo) {
   return `${prefijo}-${Date.now()}-${contador}`;
 }
 
-// Vista de gestión de sectores (etapa 2 del wizard de configuración).
-// Lista los sectores activos y permite crear, editar (nombre/descripción) y
-// desactivar. Salvaguardas del backend (V65):
-//  - Desactivar un sector en uso (unidades/bodegas/estacionamientos/espacios
-//    comunes activos) → 409 con mensaje de conteo (mapeado a la fila).
-//  - Desactivar libera el nombre → se puede recrear (dedupe AndActivoTrue).
-//  - Reactivar (PUT activo=true) con nombre ocupado por un activo → 409.
-export function useSetupSectores() {
+export const NOMBRE_ACCESO_MAX = 25;
+
+// Gestión de puntos de recepción de encomiendas (etapa del wizard).
+// Espejo de useSetupSectores: catálogo simple (nombre + activo), sin batch en
+// el backend. Salvaguardas del backend (V36):
+//  - Nombre duplicado (ignore-case, solo activos) → 400 con mensaje.
+//  - Desactivar libera el nombre → se puede recrear.
+//  - DELETE desactiva (soft); sin 409 de uso (a diferencia de sectores/pisos).
+export function useSetupAccesos() {
   const auth = useAuthStore();
   const cid = auth.condominioActualId;
 
@@ -24,24 +25,23 @@ export function useSetupSectores() {
   const enviando = ref(false);
   const error = ref(null);
   const resultado = ref(null);
-  const sectoresHabilitados = ref(true);
+  const accesosHabilitados = ref(true);
 
   const estado = reactive({
-    // [{ id, nombre, descripcion, error, sectorId, esNuevo, marcadoEliminar, original }]
+    // [{ id, nombre, error, accesoId, esNuevo, marcadoEliminar, original }]
     items: [],
   });
 
-  function ordenarSectores() {
+  function ordenarAccesos() {
     estado.items.sort((a, b) => compararUnidades(a.nombre, b.nombre));
   }
 
   function agregarFila() {
     estado.items.push({
-      id: uid("sector"),
+      id: uid("acceso"),
       nombre: "",
-      descripcion: "",
       error: null,
-      sectorId: null,
+      accesoId: null,
       esNuevo: true,
       marcadoEliminar: false,
       original: null,
@@ -49,7 +49,7 @@ export function useSetupSectores() {
   }
 
   function eliminarFila(item) {
-    if (item.sectorId) {
+    if (item.accesoId) {
       // Existente en backend → se marca para desactivar al guardar.
       item.marcadoEliminar = true;
       item.error = null;
@@ -62,7 +62,7 @@ export function useSetupSectores() {
   function cambiado(x) {
     const o = x.original;
     if (!o) return false;
-    return o.nombre !== x.nombre || o.descripcion !== x.descripcion;
+    return o.nombre !== x.nombre;
   }
 
   const itemsValidos = computed(() => {
@@ -71,18 +71,20 @@ export function useSetupSectores() {
     if (!activos.length) return estado.items.some((x) => x.marcadoEliminar);
     const nombres = activos.map((x) => (x.nombre || "").trim());
     if (nombres.some((n) => !n)) return false;
-    return new Set(nombres).size === nombres.length;
+    if (nombres.some((n) => n.length > NOMBRE_ACCESO_MAX)) return false;
+    return new Set(nombres.map((n) => n.toLowerCase())).size === nombres.length;
   });
 
   const tieneErrores = computed(() => estado.items.some((x) => x.error));
 
-  // Cambios pendientes (el botón Guardar refleja estado, no solo validez).
+  // Cambios pendientes (el botón Guardar refleja estado, no solo validez):
+  // nuevas + editadas + marcadas para eliminar.
   const pendientes = computed(() => {
     const nuevas = estado.items.filter((x) => x.esNuevo && !x.marcadoEliminar).length;
     const editadas = estado.items.filter(
       (x) => !x.esNuevo && !x.marcadoEliminar && cambiado(x),
     ).length;
-    const eliminadas = estado.items.filter((x) => x.marcadoEliminar && x.sectorId).length;
+    const eliminadas = estado.items.filter((x) => x.marcadoEliminar && x.accesoId).length;
     return { nuevas, editadas, eliminadas, total: nuevas + editadas + eliminadas };
   });
 
@@ -94,29 +96,28 @@ export function useSetupSectores() {
     try {
       if (cid) {
         try {
-          const { data } = await unidadesService.getSectores(cid);
-          const sectores = Array.isArray(data) ? data.filter((s) => s.activo !== false) : [];
-          estado.items = sectores.map((s) => ({
-            id: uid("sector"),
-            nombre: s.nombre ?? "",
-            descripcion: s.descripcion ?? "",
+          const { data } = await encomiendasService.getAccesosEncomiendas(cid);
+          const accesos = Array.isArray(data) ? data.filter((a) => a.activo !== false) : [];
+          estado.items = accesos.map((a) => ({
+            id: uid("acceso"),
+            nombre: a.nombre ?? "",
             error: null,
-            sectorId: s.id,
+            accesoId: a.id,
             esNuevo: false,
             marcadoEliminar: false,
-            original: { nombre: s.nombre ?? "", descripcion: s.descripcion ?? "" },
+            original: { nombre: a.nombre ?? "" },
           }));
-          sectoresHabilitados.value = true;
-          ordenarSectores();
+          accesosHabilitados.value = true;
+          ordenarAccesos();
         } catch (e) {
           if (e?.response?.status === 403) {
-            // El cargo ADMINISTRADOR (residente) no tiene SECTOR_* (V62 solo
-            // los da al rol ADMINISTRADOR y a PRESIDENTE/SECRETARIO/CONSERJE/GUARDIA).
-            sectoresHabilitados.value = false;
+            // Sin ENCOMIENDA_VER (p.ej. cargo ADMINISTRADOR residente, que no
+            // tiene ENCOMIENDA_CONFIGURAR por diseño V36): aviso y vista vacía.
+            accesosHabilitados.value = false;
             estado.items = [];
           } else {
-            console.error("Error al cargar los sectores", e);
-            error.value = "No se pudieron cargar los sectores";
+            console.error("Error al cargar los accesos", e);
+            error.value = "No se pudieron cargar los accesos";
           }
         }
       }
@@ -139,60 +140,56 @@ export function useSetupSectores() {
       // 1) Filas nuevas → POST individual (una falla no aborta el resto)
       for (const x of activos.filter((i) => i.esNuevo)) {
         try {
-          const { data } = await unidadesService.crearSector(cid, {
+          const { data } = await encomiendasService.crearAccesoEncomiendas(cid, {
             nombre: x.nombre.trim(),
-            descripcion: (x.descripcion || "").trim(),
           });
-          x.sectorId = data.id;
+          x.accesoId = data.id;
           x.esNuevo = false;
-          x.original = { nombre: x.nombre, descripcion: x.descripcion };
+          x.original = { nombre: x.nombre };
           creados += 1;
         } catch (e) {
-          x.error = e?.response?.data?.message || `No se pudo crear el sector ${x.nombre}`;
+          x.error = e?.response?.data?.message || `No se pudo crear el acceso ${x.nombre}`;
           hayErrores = true;
         }
       }
 
-      // 2) Existentes con cambios → PUT (activo: true; el backend valida el
-      //    dedupe solo entre activos y la reactivación con nombre ocupado)
+      // 2) Existentes con cambios → PUT (el backend valida dedupe entre activos)
       for (const x of activos.filter((i) => !i.esNuevo && cambiado(i))) {
         try {
-          await unidadesService.actualizarSector(cid, x.sectorId, {
+          await encomiendasService.actualizarAccesoEncomiendas(cid, x.accesoId, {
             nombre: x.nombre.trim(),
-            descripcion: (x.descripcion || "").trim(),
-            activo: true,
           });
-          x.original = { nombre: x.nombre, descripcion: x.descripcion };
+          x.original = { nombre: x.nombre };
           actualizados += 1;
         } catch (e) {
-          x.error = e?.response?.data?.message || `No se pudo actualizar el sector ${x.nombre}`;
+          x.error = e?.response?.data?.message || `No se pudo actualizar el acceso ${x.nombre}`;
           hayErrores = true;
         }
       }
 
-      // 3) Marcados para eliminar → desactivar (409 si está en uso)
-      const aEliminar = estado.items.filter((x) => x.marcadoEliminar && x.sectorId);
+      // 3) Marcados para eliminar → DELETE (soft adentro, sin 409 de uso)
+      const aEliminar = estado.items.filter((x) => x.marcadoEliminar && x.accesoId);
       for (const x of aEliminar) {
         try {
-          await unidadesService.desactivarSector(cid, x.sectorId);
+          await encomiendasService.eliminarAccesoEncomiendas(cid, x.accesoId);
           eliminados += 1;
           const idx = estado.items.findIndex((i) => i.id === x.id);
           if (idx !== -1) estado.items.splice(idx, 1);
         } catch (e) {
-          // La desactivación falló (p.ej. 409: sector en uso) → la fila vuelve
-          // a su estado normal (NO quedó eliminada) y se muestra el error.
+          // La desactivación falló → la fila vuelve a su estado normal
+          // (NO quedó eliminada) y se muestra el error.
           x.marcadoEliminar = false;
-          x.error = e?.response?.data?.message || `No se pudo eliminar el sector ${x.nombre}`;
+          x.error = e?.response?.data?.message || `No se pudo eliminar el acceso ${x.nombre}`;
           hayErrores = true;
         }
       }
 
       resultado.value = { creados, actualizados, eliminados };
-      ordenarSectores();
+      ordenarAccesos();
       return !hayErrores;
     } catch (e) {
-      console.error("Error al guardar los sectores", e);
-      error.value = e?.response?.data?.message || "No se pudieron guardar los sectores";
+      console.error("Error al guardar los accesos", e);
+      error.value = e?.response?.data?.message || "No se pudieron guardar los accesos";
       return false;
     } finally {
       enviando.value = false;
@@ -205,13 +202,13 @@ export function useSetupSectores() {
     enviando,
     error,
     resultado,
-    sectoresHabilitados,
+    accesosHabilitados,
     estado,
     itemsValidos,
     tieneErrores,
     pendientes,
     hayCambios,
-    ordenarSectores,
+    ordenarAccesos,
     agregarFila,
     eliminarFila,
     cambiado,

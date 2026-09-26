@@ -246,8 +246,7 @@ const routes = [
           {
             path: "accesos",
             name: "SetupAccesos",
-            component: () => import("../views/common/EnConstruccionView.vue"),
-            props: { modulo: "Accesos del condominio" },
+            component: () => import("../views/setup/SetupAccesosView.vue"),
           },
           {
             path: "areas-comunes",

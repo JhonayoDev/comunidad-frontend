@@ -90,6 +90,18 @@ describe("useSetupSectores", () => {
     expect(u.itemsValidos).toBe(true);
   });
 
+  it("hayCambios cuenta nuevas, editadas y marcadas", () => {
+    const u = useSetupSectores();
+    expect(u.hayCambios).toBe(false);
+    u.estado.items = [
+      { id: "a", nombre: "A", esNuevo: true, marcadoEliminar: false, original: null },
+      { id: "b", nombre: "B", esNuevo: false, marcadoEliminar: false, original: { nombre: "B2", descripcion: "" } },
+      { id: "c", nombre: "C", esNuevo: false, marcadoEliminar: true, sectorId: "s3", original: { nombre: "C", descripcion: "" } },
+    ];
+    expect(u.hayCambios).toBe(true);
+    expect(u.pendientes).toMatchObject({ nuevas: 1, editadas: 1, eliminadas: 1, total: 3 });
+  });
+
   it("cambiado detecta cambios de nombre o descripción vs original", () => {
     const u = useSetupSectores();
     const x = { nombre: "A", descripcion: "d", original: { nombre: "A", descripcion: "d" } };

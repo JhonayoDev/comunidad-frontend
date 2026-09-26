@@ -11,7 +11,7 @@ import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import ConfirmDialog from "primevue/confirmdialog";
 
-const emit = defineEmits(["actualizado"]);
+const emit = defineEmits(["actualizado", "edicion-planilla"]); // edicion-planilla solo la emite Planilla (los demás la declaran para el listener del layout)
 
 const u = useSetupSectores();
 const confirm = useConfirm();
@@ -22,6 +22,8 @@ const snapshotEdicion = ref(null);
 function entrarEdicion() {
   // Los errores de un guardado anterior no deben persistir al reintentar.
   u.estado.items.forEach((x) => (x.error = null));
+  // El resultado anterior ya cumplió su función (no confundir con lo nuevo).
+  u.resultado = null;
   snapshotEdicion.value = JSON.parse(JSON.stringify(u.estado.items));
   editando.value = true;
 }
@@ -212,16 +214,22 @@ onMounted(() => u.cargar());
           </div>
         </div>
 
-        <p v-if="u.resultado" class="text-sm text-green-500 mt-2 m-0">
+        <Message
+          v-if="u.resultado"
+          severity="success"
+          :closable="false"
+          class="mt-2"
+        >
           {{ mensajeResultado }}<template v-if="!u.tieneErrores"> Paso completado.</template>
-        </p>
+        </Message>
 
         <div v-if="!editando" class="mt-4 flex justify-end">
           <Button
-            label="Guardar sectores"
+            :label="u.hayCambios ? `Guardar sectores (${u.pendientes.total})` : 'Guardar sectores'"
             icon="pi pi-save"
             :loading="u.enviando"
-            :disabled="!u.itemsValidos"
+            :disabled="!u.itemsValidos || !u.hayCambios"
+            :title="!u.hayCambios ? 'Sin cambios pendientes' : ''"
             @click="guardar"
           />
         </div>

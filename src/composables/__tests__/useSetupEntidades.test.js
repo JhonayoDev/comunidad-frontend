@@ -729,4 +729,16 @@ describe("useSetupEntidades", () => {
     expect(u.pisosDisponibles).toEqual([]);
     expect(u.pisosOpciones).toEqual([]);
   });
+
+  it("hayCambios cuenta nuevas, editadas y marcadas", () => {
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    expect(u.hayCambios).toBe(false);
+    u.estado.items = [
+      { id: "a", nombre: "E-1", esNuevo: true, marcadoEliminar: false, original: null },
+      { id: "b", nombre: "E-2", esNuevo: false, marcadoEliminar: false, original: { nombre: "E-3", piso: null, sectorRef: null } },
+      { id: "c", nombre: "E-4", esNuevo: false, marcadoEliminar: true, entidadId: "e3", original: { nombre: "E-4", piso: null, sectorRef: null } },
+    ];
+    expect(u.hayCambios).toBe(true);
+    expect(u.pendientes).toMatchObject({ nuevas: 1, editadas: 1, eliminadas: 1, total: 3 });
+  });
 });

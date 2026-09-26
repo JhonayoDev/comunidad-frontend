@@ -2,6 +2,7 @@ import { ref, computed } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
 import { unidadesService } from "@/services/unidadesService";
+import { encomiendasService } from "@/services/encomiendasService";
 
 export const SETUP_PASOS = [
   {
@@ -91,6 +92,8 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
   const error = ref(null);
   const totales = ref({ unidades: 0, residentesActivos: 0, vehiculos: 0 });
   const capacidad = ref(null);
+  // null = sin datos (403 sin permiso o error): no bloquea el wizard.
+  const totalAccesos = ref(null);
 
   async function cargar() {
     const cid = auth.condominioActualId;
@@ -115,6 +118,17 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
         console.error("Error al cargar la capacidad del condominio", e);
       }
       capacidad.value = null;
+    }
+    try {
+      const accRes = await encomiendasService.getAccesosEncomiendas(cid);
+      const lista = Array.isArray(accRes.data) ? accRes.data : [];
+      totalAccesos.value = lista.filter((a) => a.activo !== false).length;
+    } catch (e) {
+      // 403 sin ENCOMIENDA_VER o error: sin datos, el paso no bloquea.
+      if (e?.response?.status !== 403 && e?.response?.status !== 404) {
+        console.error("Error al cargar los accesos del condominio", e);
+      }
+      totalAccesos.value = null;
     } finally {
       cargando.value = false;
     }
@@ -163,7 +177,13 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
       const t = tipo === "estacionamiento" ? capacidad.value.totalEstacionamientos : capacidad.value.totalBodegas;
       return (t ?? 0) > 0;
     }
-    // Pasos 2-5 (accesos, áreas comunes, cargos, personal) aún no tienen
+    if (key === "accesos") {
+      // Completado solo con ≥1 acceso creado. Sin datos (403/error) no
+      // bloquea: cae a unidades > 0 y la vista muestra el aviso.
+      if (totalAccesos.value == null) return (totales.value.unidades ?? 0) > 0;
+      return totalAccesos.value > 0;
+    }
+    // Pasos 2-5 (áreas comunes, cargos, personal) aún no tienen
     // lógica real — se marcan como pendientes hasta implementarse.
     return false;
   }
@@ -205,6 +225,7 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
     error,
     totales,
     capacidad,
+    totalAccesos,
     pasos,
     primerPasoPendiente,
     configuraciónCompleta,
