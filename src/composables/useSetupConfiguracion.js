@@ -9,6 +9,7 @@ export const SETUP_PASOS = [
   {
     key: "unidades",
     label: "Unidades",
+    corto: "Unidades",
     descripcion: "Crea las unidades del condominio",
     icon: "pi pi-home",
     routeName: "SetupUnidades",
@@ -16,6 +17,7 @@ export const SETUP_PASOS = [
   {
     key: "sectores",
     label: "Sectores",
+    corto: "Sectores",
     descripcion: "Gestiona los sectores del condominio",
     icon: "pi pi-sitemap",
     routeName: "SetupSectores",
@@ -23,6 +25,7 @@ export const SETUP_PASOS = [
   {
     key: "pisos",
     label: "Pisos",
+    corto: "Pisos",
     descripcion: "Declara los pisos del condominio",
     icon: "pi pi-th-large",
     routeName: "SetupPisos",
@@ -30,6 +33,7 @@ export const SETUP_PASOS = [
   {
     key: "estacionamientos",
     label: "Estacionamientos",
+    corto: "Estac.",
     descripcion: "Crea los estacionamientos del condominio",
     icon: "pi pi-car",
     routeName: "SetupEstacionamientos",
@@ -37,6 +41,7 @@ export const SETUP_PASOS = [
   {
     key: "bodegas",
     label: "Bodegas",
+    corto: "Bodegas",
     descripcion: "Crea las bodegas del condominio (si aplican)",
     icon: "pi pi-box",
     routeName: "SetupBodegas",
@@ -44,6 +49,7 @@ export const SETUP_PASOS = [
   {
     key: "planilla",
     label: "Planilla",
+    corto: "Planilla",
     descripcion: "Registra integrantes, vehículos y estacionamientos",
     icon: "pi pi-users",
     routeName: "SetupPlanilla",
@@ -51,6 +57,7 @@ export const SETUP_PASOS = [
   {
     key: "accesos",
     label: "Accesos",
+    corto: "Accesos",
     descripcion: "Configura los accesos del condominio",
     icon: "pi pi-shield",
     routeName: "SetupAccesos",
@@ -58,23 +65,10 @@ export const SETUP_PASOS = [
   {
     key: "areas-comunes",
     label: "Áreas comunes",
+    corto: "Áreas",
     descripcion: "Define las áreas comunes del condominio",
     icon: "pi pi-building",
     routeName: "SetupAreasComunes",
-  },
-  {
-    key: "cargos",
-    label: "Cargos",
-    descripcion: "Asigna la directiva de gestión",
-    icon: "pi pi-briefcase",
-    routeName: "SetupCargos",
-  },
-  {
-    key: "personal",
-    label: "Personal",
-    descripcion: "Registra el personal de trabajo",
-    icon: "pi pi-id-card",
-    routeName: "SetupPersonal",
   },
 ];
 
@@ -240,7 +234,8 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
       if (totalEspacios.value == null) return false;
       return totalEspacios.value > 0;
     }
-    // Pasos restantes (cargos, personal) aún no tienen lógica real.
+    // Cargos y personal se gestionan en sus vistas (Miembros/Personal),
+    // fuera del wizard. Sin rama conocida → pendiente (defensivo).
     return false;
   }
 
