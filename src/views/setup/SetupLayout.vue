@@ -92,33 +92,39 @@ function onEdicionPlanilla(enEdicion) {
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div class="flex flex-col sm:flex-row gap-2">
+      <!-- Stepper compacto: el estado va en ícono + estilo (sin Tag de texto).
+           Grid que envuelve (sin scroll lateral): 5 cols en móvil/desktop
+           medio, 10 en xl. En móvil, etiqueta corta bajo el ícono. -->
+      <div class="grid grid-cols-5 xl:grid-cols-10 gap-2">
         <button
           v-for="p in pasosVisibles"
           :key="p.key"
           type="button"
-          class="flex-1 flex items-center gap-2 p-3 border-round text-left transition-colors"
+          class="flex flex-col sm:flex-row items-center sm:justify-start justify-center gap-1 px-1 py-2 border-round text-center sm:text-left transition-colors min-w-0"
           :class="[
             pasoActivo(p)
               ? 'bg-primary text-white'
               : p.completado
-                ? 'bg-surface border border-border hover:bg-emphasis cursor-pointer'
-                : 'bg-surface border border-border cursor-pointer',
+                ? 'bg-surface border border-primary/40 hover:bg-emphasis cursor-pointer'
+                : 'bg-surface border border-border cursor-pointer opacity-70',
           ]"
+          :title="`${p.label}: ${p.completado ? 'completado' : pasoActivo(p) ? 'en curso' : 'pendiente'}`"
+          :aria-label="`${p.label}: ${p.completado ? 'completado' : pasoActivo(p) ? 'en curso' : 'pendiente'}`"
           @click="irAPaso(p)"
         >
           <i
-            class="pi"
-            :class="[p.completado ? 'pi-check-circle' : p.icon]"
+            class="pi text-base shrink-0"
+            :class="[
+              p.completado
+                ? 'pi-check-circle text-primary'
+                : pasoActivo(p)
+                  ? p.icon
+                  : `${p.icon} text-surface-400`,
+            ]"
           ></i>
-          <span class="text-sm font-medium">{{ p.label }}</span>
-          <Tag
-            v-if="p.completado"
-            value="Completado"
-            severity="success"
-            size="small"
-            :style="{ 'background-color': 'color-mix(in srgb, var(--p-primary-400) 20%, transparent)', color: 'var(--p-primary-400)' }"
-          />
+          <span class="sm:hidden text-[10px] leading-tight truncate max-w-full">{{ p.corto }}</span>
+          <span class="hidden sm:inline xl:hidden text-sm font-medium truncate max-w-full">{{ p.label }}</span>
+          <span class="hidden xl:inline text-sm font-medium truncate max-w-full">{{ p.corto }}</span>
         </button>
       </div>
 
