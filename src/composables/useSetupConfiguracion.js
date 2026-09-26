@@ -3,6 +3,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { dashboardService } from "@/services/dashboardService";
 import { unidadesService } from "@/services/unidadesService";
 import { encomiendasService } from "@/services/encomiendasService";
+import { espaciosService } from "@/services/espaciosService";
 
 export const SETUP_PASOS = [
   {
@@ -87,6 +88,42 @@ export function marcarEnEdicion(key) {
   pasoEnEdicion.value = key || null;
 }
 
+// Pasos guardados por el usuario (module scope, compartido + persistido).
+// Un paso se marca completado tras el primer Guardar persistido, aunque los
+// datos vengan de antes: sobrevive recargas vía localStorage.
+export const pasosGuardados = ref(new Set());
+
+function claveGuardado(cid, key) {
+  return `${cid}:${key}`;
+}
+
+export function marcarPasoGuardado(cid, key) {
+  if (!cid || !key) return;
+  pasosGuardados.value.add(claveGuardado(cid, key));
+  try {
+    localStorage.setItem(`comunidad:setup-guardado:${cid}:${key}`, "1");
+  } catch (e) {
+    console.error("Error al persistir paso guardado", e);
+  }
+}
+
+export function reiniciarGuardados() {
+  pasosGuardados.value.clear();
+}
+
+function cargarGuardados(cid) {
+  if (!cid) return;
+  try {
+    for (const p of SETUP_PASOS) {
+      if (localStorage.getItem(`comunidad:setup-guardado:${cid}:${p.key}`)) {
+        pasosGuardados.value.add(claveGuardado(cid, p.key));
+      }
+    }
+  } catch (e) {
+    console.error("Error al leer pasos guardados", e);
+  }
+}
+
 export function useSetupConfiguracion() {  const auth = useAuthStore();
   const cargando = ref(true);
   const error = ref(null);
@@ -94,6 +131,8 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
   const capacidad = ref(null);
   // null = sin datos (403 sin permiso o error): no bloquea el wizard.
   const totalAccesos = ref(null);
+  // null = sin datos (403 sin permiso o error): paso pendiente con aviso.
+  const totalEspacios = ref(null);
 
   async function cargar() {
     const cid = auth.condominioActualId;
@@ -121,17 +160,27 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
     }
     try {
       const accRes = await encomiendasService.getAccesosEncomiendas(cid);
-      const lista = Array.isArray(accRes.data) ? accRes.data : [];
-      totalAccesos.value = lista.filter((a) => a.activo !== false).length;
+      const listaAcc = Array.isArray(accRes.data) ? accRes.data : [];
+      totalAccesos.value = listaAcc.filter((a) => a.activo !== false).length;
     } catch (e) {
       // 403 sin ENCOMIENDA_VER o error: sin datos, el paso no bloquea.
       if (e?.response?.status !== 403 && e?.response?.status !== 404) {
         console.error("Error al cargar los accesos del condominio", e);
       }
       totalAccesos.value = null;
-    } finally {
-      cargando.value = false;
     }
+    try {
+      const espRes = await espaciosService.getEspacios(cid);
+      const listaEsp = Array.isArray(espRes.data) ? espRes.data : [];
+      totalEspacios.value = listaEsp.filter((e) => e.activo !== false).length;
+    } catch (e) {
+      if (e?.response?.status !== 403 && e?.response?.status !== 404) {
+        console.error("Error al cargar los espacios comunes", e);
+      }
+      totalEspacios.value = null;
+    }
+    cargarGuardados(cid);
+    cargando.value = false;
   }
 
   // "Aplica" si hay capacidad declarada o ya existen creados.
@@ -183,8 +232,15 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
       if (totalAccesos.value == null) return (totales.value.unidades ?? 0) > 0;
       return totalAccesos.value > 0;
     }
-    // Pasos 2-5 (áreas comunes, cargos, personal) aún no tienen
-    // lógica real — se marcan como pendientes hasta implementarse.
+    if (key === "areas-comunes") {
+      // Completado tras el primer Guardar persistido (flag) o con espacios
+      // ya creados. Sin datos (403/error) queda pendiente con aviso en vista.
+      const cid = auth.condominioActualId;
+      if (pasosGuardados.value.has(claveGuardado(cid, key))) return true;
+      if (totalEspacios.value == null) return false;
+      return totalEspacios.value > 0;
+    }
+    // Pasos restantes (cargos, personal) aún no tienen lógica real.
     return false;
   }
 
@@ -226,6 +282,9 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
     totales,
     capacidad,
     totalAccesos,
+    totalEspacios,
+    pasosGuardados,
+    pasosGuardados,
     pasos,
     primerPasoPendiente,
     configuraciónCompleta,
