@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
 import { useModoFoco } from "@/composables/useModoFoco";
 import {
   TIPOS_UNIDAD,
@@ -117,7 +117,7 @@ const filasFiltradasPaginadas = computed(() => {
   const start = pagina.value * porPagina;
   return filasFiltradas.value.slice(start, start + porPagina);
 });
-watch(filasFiltradas, () => {
+watch(filtroCasa, () => {
   pagina.value = 0;
 });
 watch(
@@ -153,7 +153,16 @@ function salirEdicion() {
 
 function cancelarEdicion() {
   if (snapshotEdicion.value) p.value.filas = snapshotEdicion.value;
-  salirEdicion();
+  editando.value = false;
+}
+
+async function agregarFilaYSaltar() {
+  p.agregarFila();
+  // La fila nace al final: limpiar filtro e ir a su página (si no, parece
+  // que no pasa nada). Tras nextTick para que el reset del watcher no pise.
+  filtroCasa.value = "";
+  await nextTick();
+  pagina.value = Math.max(0, Math.ceil(p.value.filas.length / porPagina) - 1);
 }
 
 // Al guardar con éxito (nuevo resultado) se sale de edición: el paso vuelve
@@ -326,7 +335,7 @@ const { foco, alternar, salir } = useModoFoco();
             label="Agregar fila"
             icon="pi pi-plus"
             size="small"
-            @click="p.agregarFila()"
+            @click="agregarFilaYSaltar"
           />
         </template>
       </div>

@@ -23,6 +23,10 @@ export const TIPOS_ESPACIO = [
 
 export const NOMBRE_ESPACIO_MAX = 60;
 
+function hoy() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 // Gestión de áreas comunes y visitas (etapa del wizard).
 // Card 1: espacios comunes (CRUD espejo Pisos/Accesos; el vínculo
 // PROPIETARIO→CONDOMINIO lo crea el backend automáticamente).
@@ -51,6 +55,8 @@ export function useSetupAreasComunes() {
   const sectoresExistentes = ref([]);
   const pisosDisponibles = ref([]);
   const pisosHabilitados = ref(true);
+  // Id y número de la unidad CONDOMINIO: los EV- se vinculan a ella.
+  const condominioUnidad = ref({ id: null, numero: null });
 
   const pisosOpciones = computed(() =>
     (pisosDisponibles.value || []).map((p) => ({
@@ -117,8 +123,8 @@ export function useSetupAreasComunes() {
       if (new Set(nombres.map((n) => n.toLowerCase())).size !== nombres.length) return false;
       if (activos.some((x) => (x.piso ?? null) !== null && !Number.isInteger(x.piso))) return false;
     } else if (!estado.items.some((x) => x.marcadoEliminar)) {
-      // Sin filas y sin eliminaciones: solo válido si hay visitas que guardar.
-      if (!estado.visitas.some((x) => cambiadoVisita(x))) return false;
+      // Sin filas y sin eliminaciones: válido si hay visitas que ubicar o vincular.
+      if (!estado.visitas.some((x) => cambiadoVisita(x) || !x.vinculadoA)) return false;
     }
     if (estado.visitas.some((x) => (x.piso ?? null) !== null && !Number.isInteger(x.piso))) return false;
     return true;
@@ -174,7 +180,8 @@ export function useSetupAreasComunes() {
       (x) => !x.esNuevo && !x.marcadoEliminar && cambiadoEspacio(x),
     ).length;
     const eliminadas = estado.items.filter((x) => x.marcadoEliminar && x.espacioId).length;
-    const visitas = estado.visitas.filter((x) => cambiadoVisita(x)).length;
+    // Visitas por ubicar o por vincular (huérfanas): ambas habilitan Guardar.
+    const visitas = estado.visitas.filter((x) => cambiadoVisita(x) || !x.vinculadoA).length;
     return {
       nuevas,
       editadas,
@@ -229,17 +236,36 @@ export function useSetupAreasComunes() {
         const { data } = await estacionamientosService.getEstacionamientos(cid);
         estado.visitas = (Array.isArray(data) ? data : [])
           .filter((e) => esEstacionamientoVisita(e.nombre))
-          .map((e) => ({
-            id: uid("visita"),
-            estId: e.id,
-            nombre: e.nombre,
-            piso: e.piso ?? null,
-            sectorId: e.sectorId ?? e.sector?.id ?? null,
-            error: null,
-            original: { piso: e.piso ?? null, sectorId: e.sectorId ?? e.sector?.id ?? null },
-          }));
+          .map((e) => {
+            // El vínculo viene en la lista (sin GET extra): null = huérfano.
+            const dueno = e.propietario || e.arrendatarioEfectivo || null;
+            return {
+              id: uid("visita"),
+              estId: e.id,
+              nombre: e.nombre,
+              piso: e.piso ?? null,
+              sectorId: e.sectorId ?? e.sector?.id ?? null,
+              error: null,
+              vinculadoA: dueno
+                ? {
+                    unidadId: dueno.unidadId,
+                    unidadNumero: dueno.unidadNumero,
+                    tipoUnidad: dueno.tipoUnidad,
+                  }
+                : null,
+              original: { piso: e.piso ?? null, sectorId: e.sectorId ?? e.sector?.id ?? null },
+            };
+          });
       } catch (e) {
         console.error("Error al cargar estacionamientos de visita", e);
+      }
+      try {
+        const { data } = await unidadesService.getUnidades(cid);
+        const cond = (Array.isArray(data) ? data : []).find((u) => u.tipo === "CONDOMINIO");
+        condominioUnidad.value = { id: cond?.id || null, numero: cond?.numero ?? null };
+      } catch (e) {
+        console.error("Error al cargar unidad condominio", e);
+        condominioUnidad.value = { id: null, numero: null };
       }
       try {
         const { data } = await unidadesService.getSectores(cid);
@@ -289,6 +315,7 @@ export function useSetupAreasComunes() {
     let actualizados = 0;
     let eliminados = 0;
     let visitas = 0;
+    let vinculadas = 0;
     let hayErrores = false;
     try {
       const activos = estado.items.filter((x) => !x.marcadoEliminar);
@@ -361,7 +388,35 @@ export function useSetupAreasComunes() {
         }
       }
 
-      resultado.value = { creados, actualizados, eliminados, visitas };
+      // 5) Visitas EV-: vincular al condominio si no lo están (PROPIETARIO).
+      // Sin esto quedan huérfanas (verificado en BD: vínculos []).
+      for (const x of estado.visitas) {
+        try {
+          if (!condominioUnidad.value.id) break;
+          const { data } = await estacionamientosService.vinculos(cid, x.estId);
+          const vinculado = (data || []).some(
+            (v) => v.activo && v.unidadId === condominioUnidad.value.id,
+          );
+          if (!vinculado) {
+            await estacionamientosService.vincular(cid, x.estId, {
+              tipo: "PROPIETARIO",
+              unidadId: condominioUnidad.value.id,
+              fechaInicio: hoy(),
+            });
+            x.vinculadoA = {
+              unidadId: condominioUnidad.value.id,
+              unidadNumero: condominioUnidad.value.numero,
+              tipoUnidad: "CONDOMINIO",
+            };
+            vinculadas += 1;
+          }
+        } catch (e) {
+          x.error = e?.response?.data?.message || `No se pudo vincular ${x.nombre}`;
+          hayErrores = true;
+        }
+      }
+
+      resultado.value = { creados, actualizados, eliminados, visitas, vinculadas };
       ordenarEspacios();
       return !hayErrores;
     } catch (e) {
@@ -389,6 +444,7 @@ export function useSetupAreasComunes() {
     pisosDisponibles,
     pisosOpciones,
     pisosHabilitados,
+    condominioUnidad,
     itemsValidos,
     tieneErrores,
     pendientes,

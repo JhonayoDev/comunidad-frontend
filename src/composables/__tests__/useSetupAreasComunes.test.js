@@ -21,6 +21,8 @@ vi.mock("@/services/estacionamientosService", () => ({
   estacionamientosService: {
     getEstacionamientos: vi.fn(),
     actualizarEstacionamiento: vi.fn(),
+    vinculos: vi.fn(),
+    vincular: vi.fn(),
   },
 }));
 
@@ -164,7 +166,7 @@ describe("useSetupAreasComunes", () => {
       piso: -1,
       sectorId: null,
     });
-    expect(u.resultado).toEqual({ creados: 1, actualizados: 0, eliminados: 0, visitas: 1 });
+    expect(u.resultado).toEqual({ creados: 1, actualizados: 0, eliminados: 0, visitas: 1, vinculadas: 0 });
     expect(u.estado.items[0].esNuevo).toBe(false);
   });
 
@@ -195,7 +197,74 @@ describe("useSetupAreasComunes", () => {
     expect(ok).toBe(false);
     expect(u.estado.items[0].error).toContain("Ya existe");
     expect(estacionamientosService.actualizarEstacionamiento).toHaveBeenCalled();
-    expect(u.resultado).toEqual({ creados: 0, actualizados: 0, eliminados: 0, visitas: 1 });
+    expect(u.resultado).toEqual({ creados: 0, actualizados: 0, eliminados: 0, visitas: 1, vinculadas: 0 });
+  });
+
+  it("vincula EV- huérfanas al condominio y omite las vinculadas", async () => {
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [{ id: "uc", numero: "0", tipo: "CONDOMINIO" }],
+    });
+    estacionamientosService.vinculos
+      .mockResolvedValueOnce({ data: [] })
+      .mockResolvedValueOnce({ data: [{ id: "w", activo: true, unidadId: "uc" }] });
+    estacionamientosService.vincular.mockResolvedValue({ data: { id: "wn" } });
+    const u = useSetupAreasComunes();
+    await u.cargar();
+    expect(u.condominioUnidad.id).toBe("uc");
+    u.estado.visitas = [
+      { id: "v1", estId: "s1", nombre: "EV-1", piso: null, sectorId: null, error: null, vinculadoA: null, original: { piso: null, sectorId: null } },
+      { id: "v2", estId: "s2", nombre: "EV-2", piso: null, sectorId: null, error: null, vinculadoA: { unidadId: "uc", unidadNumero: "0", tipoUnidad: "CONDOMINIO" }, original: { piso: null, sectorId: null } },
+    ];
+    const ok = await u.guardar();
+    expect(ok).toBe(true);
+    expect(estacionamientosService.vincular).toHaveBeenCalledTimes(1);
+    expect(estacionamientosService.vincular).toHaveBeenCalledWith(
+      "cid-1",
+      "s1",
+      expect.objectContaining({ tipo: "PROPIETARIO", unidadId: "uc" }),
+    );
+    expect(u.resultado.vinculadas).toBe(1);
+    expect(u.estado.visitas[0].vinculadoA.unidadId).toBe("uc");
+  });
+
+  it("EV sin vincular habilita Guardar aunque no haya espacios", async () => {
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [{ id: "uc", numero: "0", tipo: "CONDOMINIO" }],
+    });
+    estacionamientosService.vinculos.mockResolvedValue({ data: [] });
+    estacionamientosService.vincular.mockResolvedValue({ data: { id: "wn" } });
+    const u = useSetupAreasComunes();
+    u.condominioUnidad = { id: "uc", numero: "0" };
+    u.estado.visitas = [
+      { id: "v1", estId: "s1", nombre: "EV-9", piso: null, sectorId: null, error: null, vinculadoA: null, original: { piso: null, sectorId: null } },
+    ];
+    expect(u.itemsValidos).toBe(true);
+    expect(u.hayCambios).toBe(true);
+    expect(u.pendientes.visitas).toBe(1);
+    const ok = await u.guardar();
+    expect(ok).toBe(true);
+    expect(estacionamientosService.vincular).toHaveBeenCalledWith(
+      "cid-1",
+      "s1",
+      expect.objectContaining({ unidadId: "uc" }),
+    );
+    expect(u.estado.visitas[0].vinculadoA.unidadId).toBe("uc");
+    expect(u.resultado.vinculadas).toBe(1);
+  });
+
+  it("cargar deriva vinculadoA desde la lista (sin GET extra)", async () => {
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [
+        { id: "s1", nombre: "EV-1", piso: null, activo: true, propietario: null },
+        { id: "s2", nombre: "EV-2", piso: null, activo: true, propietario: { vinculoId: "w", unidadId: "uc", unidadNumero: "0", tipoUnidad: "CONDOMINIO" } },
+      ],
+    });
+    const u = useSetupAreasComunes();
+    await u.cargar();
+    expect(u.estado.visitas[0].vinculadoA).toBe(null);
+    expect(u.estado.visitas[1].vinculadoA).toMatchObject({ unidadId: "uc", unidadNumero: "0" });
+    // Sin GET extra por estacionamiento: viene en la lista.
+    expect(estacionamientosService.vinculos).not.toHaveBeenCalled();
   });
 
   it("editar nombre actualiza sin tocar vínculos (backend automático)", async () => {

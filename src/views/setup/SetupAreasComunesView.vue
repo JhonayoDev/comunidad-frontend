@@ -126,6 +126,7 @@ const mensajeResultado = computed(() => {
   if (r.actualizados) partes.push(`${r.actualizados} actualizados`);
   if (r.eliminados) partes.push(`${r.eliminados} eliminados`);
   if (r.visitas) partes.push(`${r.visitas} visitas ubicadas`);
+  if (r.vinculadas) partes.push(`${r.vinculadas} visitas vinculadas al condominio`);
   return partes.length ? partes.join(", ") + "." : "Sin cambios.";
 });
 
@@ -515,6 +516,10 @@ onMounted(() => u.cargar());
         <h3 class="text-sm font-semibold mt-4 mb-2">
           Estacionamientos de visita (EV-)
         </h3>
+        <p v-if="editando && u.estado.visitas.length" class="text-xs text-text-muted mt-0 mb-2">
+          Aquí solo se ubican (piso/sector). Para agregar nuevos
+          estacionamientos de visita hazlo en el paso Estacionamientos.
+        </p>
         <p v-if="!u.estado.visitas.length" class="text-sm text-text-muted m-0">
           Sin estacionamientos de visita. Se crean con prefijo EV- en el paso
           Estacionamientos.
@@ -526,6 +531,7 @@ onMounted(() => u.cargar());
                 <th>Nombre</th>
                 <th>Piso</th>
                 <th>Sector</th>
+                <th>Vínculo</th>
                 <th>Estado</th>
               </tr>
             </thead>
@@ -579,6 +585,22 @@ onMounted(() => u.cargar());
                 </td>
                 <td>
                   <Tag
+                    v-if="item.vinculadoA"
+                    :value="item.vinculadoA.tipoUnidad === 'CONDOMINIO' ? 'Condominio' : `Casa ${item.vinculadoA.unidadNumero ?? '—'}`"
+                    severity="success"
+                    size="small"
+                    :title="`Vinculado (${item.vinculadoA.tipoUnidad || ''})`"
+                  />
+                  <Tag
+                    v-else
+                    value="Sin vincular"
+                    severity="warn"
+                    size="small"
+                    title="Se vinculará al condominio al guardar"
+                  />
+                </td>
+                <td>
+                  <Tag
                     v-if="item.error"
                     value="No guardado"
                     severity="danger"
@@ -604,12 +626,21 @@ onMounted(() => u.cargar());
           >
             <div class="flex items-center justify-between gap-2">
               <span class="font-medium">{{ item.nombre }}</span>
-              <Tag
-                v-if="item.error"
-                :value="item.error"
-                severity="danger"
-                size="small"
-              />
+              <div class="flex items-center gap-1">
+                <Tag
+                  v-if="item.vinculadoA"
+                  :value="item.vinculadoA.tipoUnidad === 'CONDOMINIO' ? 'Condominio' : `Casa ${item.vinculadoA.unidadNumero ?? '—'}`"
+                  severity="success"
+                  size="small"
+                />
+                <Tag v-else value="Sin vincular" severity="warn" size="small" />
+                <Tag
+                  v-if="item.error"
+                  :value="item.error"
+                  severity="danger"
+                  size="small"
+                />
+              </div>
             </div>
             <div class="mt-2 flex flex-col gap-2">
               <template v-if="editando">
