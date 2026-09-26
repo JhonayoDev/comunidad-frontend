@@ -70,22 +70,6 @@ export const SETUP_PASOS = [
     icon: "pi pi-building",
     routeName: "SetupAreasComunes",
   },
-  {
-    key: "cargos",
-    label: "Cargos",
-    corto: "Cargos",
-    descripcion: "Asigna la directiva de gestión",
-    icon: "pi pi-briefcase",
-    routeName: "SetupCargos",
-  },
-  {
-    key: "personal",
-    label: "Personal",
-    corto: "Personal",
-    descripcion: "Registra el personal de trabajo",
-    icon: "pi pi-id-card",
-    routeName: "SetupPersonal",
-  },
 ];
 
 // Override de edición (module scope, compartido por las instancias): mientras
@@ -250,7 +234,8 @@ export function useSetupConfiguracion() {  const auth = useAuthStore();
       if (totalEspacios.value == null) return false;
       return totalEspacios.value > 0;
     }
-    // Pasos restantes (cargos, personal) aún no tienen lógica real.
+    // Cargos y personal se gestionan en sus vistas (Miembros/Personal),
+    // fuera del wizard. Sin rama conocida → pendiente (defensivo).
     return false;
   }
 

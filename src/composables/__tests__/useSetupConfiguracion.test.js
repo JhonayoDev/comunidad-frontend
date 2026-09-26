@@ -60,8 +60,8 @@ describe("useSetupConfiguracion", () => {
     espaciosService.getEspacios.mockResolvedValue({ data: [] });
   });
 
-  it("define unidades como paso 1, sectores como paso 2, pisos como paso 3 y 10 pasos en total", () => {
-    expect(SETUP_PASOS).toHaveLength(10);
+  it("define unidades como paso 1, sectores como paso 2, pisos como paso 3 y 8 pasos en total", () => {
+    expect(SETUP_PASOS).toHaveLength(8);
     expect(SETUP_PASOS[0].key).toBe("unidades");
     expect(SETUP_PASOS[0].routeName).toBe("SetupUnidades");
     expect(SETUP_PASOS[1].key).toBe("sectores");
@@ -81,8 +81,6 @@ describe("useSetupConfiguracion", () => {
       "planilla",
       "accesos",
       "areas-comunes",
-      "cargos",
-      "personal",
     ]);
   });
 
@@ -131,7 +129,7 @@ describe("useSetupConfiguracion", () => {
     expect(bod.oculto).toBe(true);
     expect(bod.completado).toBe(true);
     expect(wrapper.vm.primerPasoPendiente.key).toBe("planilla");
-    expect(wrapper.vm.progreso).toBe(38); // 3 de 8 visibles (accesos y áreas pendientes)
+    expect(wrapper.vm.progreso).toBe(50); // 3 de 6 visibles (accesos y áreas pendientes)
   });
 
   it("con estacionamientos declarados y sin crear, el paso queda pendiente", async () => {
@@ -160,7 +158,7 @@ describe("useSetupConfiguracion", () => {
     expect(wrapper.vm.pasos[5].completado).toBe(true); // planilla (residentes > 0)
     expect(wrapper.vm.primerPasoPendiente.key).toBe("estacionamientos");
     expect(wrapper.vm.configuraciónCompleta).toBe(false);
-    expect(wrapper.vm.progreso).toBe(44); // 4 de 9 visibles (accesos y áreas pendientes)
+    expect(wrapper.vm.progreso).toBe(57); // 4 de 7 visibles (accesos y áreas pendientes)
   });
 
   it("con solo bodegas declaradas, solo el paso de bodegas queda visible y pendiente", async () => {

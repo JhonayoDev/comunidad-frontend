@@ -253,18 +253,6 @@ const routes = [
             name: "SetupAreasComunes",
             component: () => import("../views/setup/SetupAreasComunesView.vue"),
           },
-          {
-            path: "cargos",
-            name: "SetupCargos",
-            component: () => import("../views/common/EnConstruccionView.vue"),
-            props: { modulo: "Cargos de gestión" },
-          },
-          {
-            path: "personal",
-            name: "SetupPersonal",
-            component: () => import("../views/common/EnConstruccionView.vue"),
-            props: { modulo: "Personal de trabajo" },
-          },
         ],
       },
       // ── Finanzas (cargos) ─────────────────────────
