@@ -288,6 +288,10 @@ export function useSetupEntidades({ entidad } = {}) {
       esNuevo: true,
       marcadoEliminar: false,
       original: null,
+      // Solo bodegas: vínculo al condominio (oficina). Default desmarcado
+      // para no robar las de casas (se vinculan en planilla).
+      delCondominio: false,
+      vinculadoA: null,
     });
   }
 
@@ -300,6 +304,17 @@ export function useSetupEntidades({ entidad } = {}) {
       const idx = estado.items.findIndex((x) => x.id === item.id);
       if (idx !== -1) estado.items.splice(idx, 1);
     }
+  }
+
+  // Solo bodegas: vínculo al condominio (oficina). Las de casas se vinculan
+  // en planilla; aquí solo se muestra el estado y se gestiona el checkbox.
+  const condominioUnidad = ref({ id: null, numero: null });
+
+  function vinculadoACondominio(x) {
+    return !!(
+      condominioUnidad.value.id &&
+      x?.vinculadoA?.unidadId === condominioUnidad.value.id
+    );
   }
 
   // Reordena los ítems con orden natural (E-1, E-2, ..., E-10, EV-1...). Se
@@ -330,13 +345,26 @@ export function useSetupEntidades({ entidad } = {}) {
 
   // Cambios pendientes (el botón Guardar refleja estado, no solo validez).
   // En creación inicial las filas nuevas siempre están pendientes.
+  // Solo bodegas: cambios de vínculo al condominio también son pendientes.
   const pendientes = computed(() => {
     const nuevas = estado.items.filter((x) => x.esNuevo && !x.marcadoEliminar).length;
     const editadas = estado.items.filter(
       (x) => !x.esNuevo && !x.marcadoEliminar && cambiado(x),
     ).length;
     const eliminadas = estado.items.filter((x) => x.marcadoEliminar && x.entidadId).length;
-    return { nuevas, editadas, eliminadas, total: nuevas + editadas + eliminadas };
+    const vinculos =
+      entidad === "bodega"
+        ? estado.items.filter(
+            (x) => !x.marcadoEliminar && x.delCondominio !== vinculadoACondominio(x),
+          ).length
+        : 0;
+    return {
+      nuevas,
+      editadas,
+      eliminadas,
+      vinculos,
+      total: nuevas + editadas + eliminadas + vinculos,
+    };
   });
 
   const hayCambios = computed(() => pendientes.value.total > 0);
@@ -426,6 +454,8 @@ export function useSetupEntidades({ entidad } = {}) {
           marcadoEliminar: x.marcadoEliminar ?? false,
           original: x.original ?? null,
           tieneVinculos: x.tieneVinculos ?? false,
+          vinculadoA: x.vinculadoA ?? null,
+          delCondominio: x.delCondominio ?? false,
         }));
         Object.assign(estado, data.estado);
         if (Array.isArray(data.sectoresExistentes)) {
@@ -456,6 +486,39 @@ export function useSetupEntidades({ entidad } = {}) {
   watch(estado, guardarBorrador, { deep: true });
 
   // ─── Envío (fase 5): sectores primero, entidades después ───
+  // Los flags tieneVinculos NO se confían al borrador ni al estado previo:
+  // se re-derivan de la lista fresca (un vínculo creado en otra vista, como
+  // EV- vinculados desde Áreas, debe mostrar candado sin recargar).
+  function extraerTieneVinculos(e) {
+    return !!(
+      e.propietario ||
+      e.arrendatarioEfectivo ||
+      (e.arrendatariosFuturos && e.arrendatariosFuturos.length)
+    );
+  }
+
+  async function refrescarVinculos() {
+    if (!cid) return false;
+    try {
+      const { data } = await cfg.listar(cid);
+      const mapa = new Map();
+      (Array.isArray(data) ? data : [])
+        .filter((e) => e.activo !== false)
+        .forEach((e) => mapa.set(e.id, extraerTieneVinculos(e)));
+      let cambio = false;
+      estado.items.forEach((x) => {
+        if (x.entidadId && mapa.has(x.entidadId) && x.tieneVinculos !== mapa.get(x.entidadId)) {
+          x.tieneVinculos = mapa.get(x.entidadId);
+          cambio = true;
+        }
+      });
+      return cambio;
+    } catch (e) {
+      console.error("Error al refrescar vínculos", e);
+      return false;
+    }
+  }
+
   async function enviar() {
     if (!cid || !estado.items.length) return;
     enviando.value = true;
@@ -558,7 +621,80 @@ export function useSetupEntidades({ entidad } = {}) {
         return true;
       }
 
-      resultado.value = { creadas, actualizadas, eliminadas };
+      // Solo bodegas: vínculos al condominio (oficina). Las de casas se
+      // vinculan en planilla. Sin GET masivo: se resuelve por fila al guardar.
+      let vinculadas = 0;
+      let desvinculadas = 0;
+      if (entidad === "bodega") {
+        let objetivos = activos.filter(
+          (x) => !x.marcadoEliminar && x.delCondominio !== vinculadoACondominio(x),
+        );
+        // Recién creadas en batch (sin entidadId): resolver por nombre con
+        // 1 sola recarga en vez de N GETs.
+        if (objetivos.some((x) => !x.entidadId)) {
+          try {
+            const { data } = await cfg.listar(cid);
+            const porNombre = new Map(
+              (Array.isArray(data) ? data : [])
+                .filter((e) => e.activo !== false)
+                .map((e) => [e.nombre, e]),
+            );
+            objetivos.forEach((x) => {
+              if (!x.entidadId) {
+                const m = porNombre.get(x.nombre);
+                if (m) {
+                  x.entidadId = m.id;
+                  x.vinculadoA = m.propietario
+                    ? {
+                        unidadId: m.propietario.unidadId,
+                        unidadNumero: m.propietario.unidadNumero,
+                        tipoUnidad: m.propietario.tipoUnidad,
+                      }
+                    : null;
+                }
+              }
+            });
+          } catch (e) {
+            console.error("Error al resolver bodegas creadas", e);
+          }
+        }
+        objetivos = objetivos.filter(
+          (x) => x.entidadId && x.delCondominio !== vinculadoACondominio(x),
+        );
+        for (const x of objetivos) {
+          try {
+            if (x.delCondominio) {
+              if (!condominioUnidad.value.id) throw new Error("Sin unidad CONDOMINIO");
+              await bodegasService.vincular(cid, x.entidadId, {
+                tipo: "PROPIETARIO",
+                unidadId: condominioUnidad.value.id,
+                fechaInicio: hoy(),
+              });
+              x.vinculadoA = {
+                unidadId: condominioUnidad.value.id,
+                unidadNumero: condominioUnidad.value.numero,
+                tipoUnidad: "CONDOMINIO",
+              };
+              vinculadas += 1;
+            } else {
+              const { data } = await bodegasService.vinculos(cid, x.entidadId);
+              const v = (data || []).find(
+                (l) => l.activo && l.unidadId === condominioUnidad.value.id,
+              );
+              if (v) {
+                await bodegasService.desvincular(cid, x.entidadId, v.id);
+                desvinculadas += 1;
+              }
+              x.vinculadoA = null;
+            }
+          } catch (e) {
+            x.error = e?.response?.data?.message || e.message || `No se pudo vincular ${x.nombre}`;
+            hayErrores = true;
+          }
+        }
+      }
+
+      resultado.value = { creadas, actualizadas, eliminadas, vinculadas, desvinculadas };
       if (!hayErrores) descartarBorrador();
       return !hayErrores;
     } catch (e) {
@@ -583,10 +719,17 @@ export function useSetupEntidades({ entidad } = {}) {
       return false;
     } finally {
       enviando.value = false;
+      // Auto-repara candados: si un vínculo nació en otra vista, la fila lo
+      // refleja sin recargar (1 GET, solo reescribe flags cambiados).
+      await refrescarVinculos();
     }
   }
 
-  // ─── Carga inicial ───
+  function hoy() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// ─── Carga inicial ───
   async function cargar() {
     cargando.value = true;
     error.value = null;
@@ -615,8 +758,24 @@ export function useSetupEntidades({ entidad } = {}) {
           capacidad.value = null;
         }
         await cargarPisos();
+        if (entidad === "bodega") {
+          // Solo bodegas: id de la unidad CONDOMINIO para vincular la oficina.
+          try {
+            const { data } = await unidadesService.getUnidades(cid);
+            const cond = (Array.isArray(data) ? data : []).find((u) => u.tipo === "CONDOMINIO");
+            condominioUnidad.value = { id: cond?.id || null, numero: cond?.numero ?? null };
+          } catch (e) {
+            console.error("Error al cargar unidad condominio", e);
+            condominioUnidad.value = { id: null, numero: null };
+          }
+        }
       }
       cargarBorrador();
+      if (borradorRestaurado.value) {
+        // El borrador puede traer tieneVinculos rancios (vínculo creado en
+        // otra vista): se re-derivan de la lista fresca.
+        await refrescarVinculos();
+      }
       // Si el cargo perdió/omite permisos SECTOR_*, descartar cualquier
       // agrupación que haya quedado en el borrador.
       if (!sectoresHabilitados.value) {
@@ -638,25 +797,38 @@ export function useSetupEntidades({ entidad } = {}) {
             if (cfg.multigrupo && !estado.grupos.some((g) => g.prefijo === "EV-")) {
               agregarGrupo();
             }
-            estado.items = existentes.map((e) => ({
-              id: uid("item"),
-              grupoUid: grupoPorNombre(e.nombre),
-              nombre: e.nombre,
-              piso: e.piso,
-              sectorRef: e.sectorId ?? null,
-              error: null,
-              entidadId: e.id,
-              esNuevo: false,
-              marcadoEliminar: false,
-              original: { nombre: e.nombre, piso: e.piso, sectorRef: e.sectorId ?? null },
-              // Con vínculos activos el nombre/tipo son inmutables (backend 409):
-              // solo sector y piso son editables. Se deriva de la respuesta.
-              tieneVinculos: !!(
-                e.propietario ||
-                e.arrendatarioEfectivo ||
-                (e.arrendatariosFuturos && e.arrendatariosFuturos.length)
-              ),
-            }));
+            estado.items = existentes.map((e) => {
+              const vinculadoA = e.propietario
+                ? {
+                    unidadId: e.propietario.unidadId,
+                    unidadNumero: e.propietario.unidadNumero,
+                    tipoUnidad: e.propietario.tipoUnidad,
+                  }
+                : null;
+              return {
+                id: uid("item"),
+                grupoUid: grupoPorNombre(e.nombre),
+                nombre: e.nombre,
+                piso: e.piso,
+                sectorRef: e.sectorId ?? null,
+                error: null,
+                entidadId: e.id,
+                esNuevo: false,
+                marcadoEliminar: false,
+                original: { nombre: e.nombre, piso: e.piso, sectorRef: e.sectorId ?? null },
+                // Con vínculos activos el nombre/tipo son inmutables (backend 409):
+                // solo sector y piso son editables. Se deriva de la respuesta.
+                tieneVinculos: !!(
+                  e.propietario ||
+                  e.arrendatarioEfectivo ||
+                  (e.arrendatariosFuturos && e.arrendatariosFuturos.length)
+                ),
+                // Solo bodegas: vinculadoA/delCondominio gestionan la oficina.
+                vinculadoA,
+                delCondominio:
+                  !!vinculadoA && vinculadoA.unidadId === condominioUnidad.value.id,
+              };
+            });
             estado.paso = 5;
           }
         } catch (e) {
@@ -720,6 +892,9 @@ export function useSetupEntidades({ entidad } = {}) {
     guardarBorrador,
     cargarBorrador,
     descartarBorrador,
+    refrescarVinculos,
+    condominioUnidad,
+    vinculadoACondominio,
     enviar,
     cargar,
   });

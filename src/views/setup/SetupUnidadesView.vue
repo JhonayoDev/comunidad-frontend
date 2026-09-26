@@ -134,8 +134,9 @@ const unidadesPaginadas = computed(() => {
 });
 watch(
   () => u.estado.unidades.length,
-  () => {
-    pagina.value = 0;
+  (nuevo, viejo) => {
+    // Solo al encoger (eliminaciones): al agregar, el salto lo maneja agregarFilaYSaltar.
+    if (nuevo < viejo) pagina.value = 0;
   },
 );
 watch(
@@ -209,6 +210,12 @@ function cancelarEdicion() {
 function salirEdicion() {
   editando.value = false;
   u.ordenarUnidades();
+}
+
+function agregarFilaYSaltar() {
+  u.agregarFila();
+  // La fila nace al final: llevar a su página (si no, parece que no pasa nada).
+  pagina.value = Math.max(0, Math.ceil(u.estado.unidades.length / porPagina) - 1);
 }
 
 function confirmarEliminar(un) {
@@ -763,7 +770,7 @@ onMounted(() => u.cargar());
                 label="Agregar fila"
                 icon="pi pi-plus"
                 size="small"
-                @click="u.agregarFila"
+                @click="agregarFilaYSaltar"
               />
             </template>
           </div>
@@ -894,6 +901,12 @@ onMounted(() => u.cargar());
                       v-else-if="un.marcadoEliminar"
                       value="Eliminado"
                       severity="danger"
+                      size="small"
+                    />
+                    <Tag
+                      v-else-if="un.esNuevo"
+                      value="Nuevo"
+                      severity="success"
                       size="small"
                     />
                     <span v-else class="text-green-500 text-sm">Listo</span>

@@ -11,6 +11,7 @@ vi.mock("@/services/unidadesService", () => ({
     getPisos: vi.fn(),
     getCapacidad: vi.fn(),
     crearSectoresBatch: vi.fn(),
+    getUnidades: vi.fn(),
   },
 }));
 
@@ -29,6 +30,9 @@ vi.mock("@/services/bodegasService", () => ({
     actualizarBodega: vi.fn(),
     desactivarBodega: vi.fn(),
     crearBodegasBatch: vi.fn(),
+    vinculos: vi.fn(),
+    vincular: vi.fn(),
+    desvincular: vi.fn(),
   },
 }));
 
@@ -537,7 +541,7 @@ describe("useSetupEntidades", () => {
       sectorId: null,
     });
     expect(estacionamientosService.desactivarEstacionamiento).toHaveBeenCalledWith("cid-1", "e2");
-    expect(u.resultado).toEqual({ creadas: 1, actualizadas: 1, eliminadas: 1 });
+    expect(u.resultado).toEqual({ creadas: 1, actualizadas: 1, eliminadas: 1, vinculadas: 0, desvinculadas: 0 });
     expect(u.estado.items.some((x) => x.entidadId === "e2")).toBe(false);
   });
 
@@ -552,7 +556,7 @@ describe("useSetupEntidades", () => {
     const ok = await u.enviar();
     expect(ok).toBe(true);
     expect(estacionamientosService.crearEstacionamientosBatch).not.toHaveBeenCalled();
-    expect(u.resultado).toEqual({ creadas: 0, actualizadas: 0, eliminadas: 0 });
+    expect(u.resultado).toEqual({ creadas: 0, actualizadas: 0, eliminadas: 0, vinculadas: 0, desvinculadas: 0 });
   });
 
   it("envelopeExcedido en reedición cuenta solo las filas nuevas", async () => {
@@ -653,7 +657,7 @@ describe("useSetupEntidades", () => {
     });
     expect(u.modoReedicion).toBe(true);
     expect(u.estado.items).toHaveLength(1);
-    expect(u.resultado).toEqual({ creadas: 1, actualizadas: 0, eliminadas: 1 });
+    expect(u.resultado).toEqual({ creadas: 1, actualizadas: 0, eliminadas: 1, vinculadas: 0, desvinculadas: 0 });
   });
 
   it("enviar en reedición: un 409 al desactivar revierte la fila y no aborta el resto", async () => {
@@ -692,7 +696,7 @@ describe("useSetupEntidades", () => {
     expect(e2.error).toContain("vínculo(s) activo(s)");
     // La que sí se pudo desactivar se eliminó de la lista.
     expect(u.estado.items.some((x) => x.entidadId === "e1")).toBe(false);
-    expect(u.resultado).toEqual({ creadas: 0, actualizadas: 0, eliminadas: 1 });
+    expect(u.resultado).toEqual({ creadas: 0, actualizadas: 0, eliminadas: 1, vinculadas: 0, desvinculadas: 0 });
   });
 
   // ─── Catálogo de pisos (V66) ───
@@ -740,5 +744,120 @@ describe("useSetupEntidades", () => {
     ];
     expect(u.hayCambios).toBe(true);
     expect(u.pendientes).toMatchObject({ nuevas: 1, editadas: 1, eliminadas: 1, total: 3 });
+  });
+
+  it("refrescarVinculos corrige flags rancios desde la lista fresca", async () => {
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [
+        { id: "e1", nombre: "EV-1", activo: true, propietario: { unidadId: "uc" } },
+        { id: "e2", nombre: "E-1", activo: true, propietario: null, arrendatarioEfectivo: null, arrendatariosFuturos: [] },
+      ],
+    });
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    u.estado.items = [
+      { id: "a", entidadId: "e1", nombre: "EV-1", tieneVinculos: false },
+      { id: "b", entidadId: "e2", nombre: "E-1", tieneVinculos: true },
+      { id: "c", entidadId: null, nombre: "E-9", tieneVinculos: false },
+    ];
+    expect(await u.refrescarVinculos()).toBe(true);
+    expect(u.estado.items[0].tieneVinculos).toBe(true);
+    expect(u.estado.items[1].tieneVinculos).toBe(false);
+    expect(u.estado.items[2].tieneVinculos).toBe(false);
+  });
+
+  it("cargar() repara tieneVinculos del borrador restaurado", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    estacionamientosService.getEstacionamientos.mockResolvedValue({
+      data: [{ id: "e1", nombre: "EV-1", activo: true, propietario: { unidadId: "uc" } }],
+    });
+    sessionStorage.setItem(
+      "comunidad:setup-estacionamientos:cid-1",
+      JSON.stringify({
+        estado: {
+          grupos: [],
+          sectorOrigen: "existente",
+          sectoresNuevos: [],
+          items: [
+            { id: "a", grupoUid: null, nombre: "EV-1", piso: null, sectorRef: null, error: null, entidadId: "e1", esNuevo: false, marcadoEliminar: false, original: { nombre: "EV-1", piso: null, sectorRef: null }, tieneVinculos: false },
+          ],
+        },
+        sectoresExistentes: [],
+        guardadoEn: Date.now(),
+      }),
+    );
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    await u.cargar();
+    expect(u.borradorRestaurado).toBe(true);
+    expect(u.estado.items[0].tieneVinculos).toBe(true);
+  });
+
+  it("bodegas en reedición mapean vinculadoA y delCondominio", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [{ id: "uc", numero: "0", tipo: "CONDOMINIO" }],
+    });
+    bodegasService.getBodegas.mockResolvedValue({
+      data: [
+        { id: "b1", nombre: "B-1", piso: null, sectorId: null, activo: true, propietario: { unidadId: "uc", unidadNumero: "0", tipoUnidad: "CONDOMINIO" } },
+        { id: "b2", nombre: "B-2", piso: null, sectorId: null, activo: true, propietario: { unidadId: "u9", unidadNumero: "9", tipoUnidad: "CASA" } },
+        { id: "b3", nombre: "B-3", piso: null, sectorId: null, activo: true, propietario: null },
+      ],
+    });
+    const u = useSetupEntidades({ entidad: "bodega" });
+    await u.cargar();
+    expect(u.modoReedicion).toBe(true);
+    expect(u.condominioUnidad.id).toBe("uc");
+    const porNombre = Object.fromEntries(u.estado.items.map((x) => [x.nombre, x]));
+    expect(porNombre["B-1"].delCondominio).toBe(true);
+    expect(porNombre["B-2"].delCondominio).toBe(false);
+    expect(porNombre["B-2"].vinculadoA.unidadNumero).toBe("9");
+    expect(porNombre["B-3"].delCondominio).toBe(false);
+    expect(porNombre["B-3"].vinculadoA).toBe(null);
+  });
+
+  it("enviar vincula marcadas y desvincula desmarcadas (solo bodegas)", async () => {
+    unidadesService.getSectores.mockResolvedValue({ data: [] });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    unidadesService.getUnidades.mockResolvedValue({
+      data: [{ id: "uc", numero: "0", tipo: "CONDOMINIO" }],
+    });
+    bodegasService.getBodegas.mockResolvedValue({
+      data: [
+        { id: "b1", nombre: "B-1", piso: null, sectorId: null, activo: true, propietario: null },
+        { id: "b2", nombre: "B-2", piso: null, sectorId: null, activo: true, propietario: { unidadId: "uc", unidadNumero: "0", tipoUnidad: "CONDOMINIO" } },
+      ],
+    });
+    bodegasService.vincular.mockResolvedValue({ data: { id: "wn" } });
+    bodegasService.vinculos.mockResolvedValue({ data: [{ id: "w2", activo: true, unidadId: "uc" }] });
+    bodegasService.desvincular.mockResolvedValue({});
+    const u = useSetupEntidades({ entidad: "bodega" });
+    await u.cargar();
+    const porNombre = Object.fromEntries(u.estado.items.map((x) => [x.nombre, x]));
+    porNombre["B-1"].delCondominio = true;
+    porNombre["B-2"].delCondominio = false;
+    expect(u.pendientes.vinculos).toBe(2);
+    const ok = await u.enviar();
+    expect(ok).toBe(true);
+    expect(bodegasService.vincular).toHaveBeenCalledWith(
+      "cid-1",
+      "b1",
+      expect.objectContaining({ tipo: "PROPIETARIO", unidadId: "uc" }),
+    );
+    expect(bodegasService.desvincular).toHaveBeenCalledWith("cid-1", "b2", "w2");
+    expect(u.resultado.vinculadas).toBe(1);
+    expect(u.resultado.desvinculadas).toBe(1);
+    expect(porNombre["B-1"].vinculadoA.unidadId).toBe("uc");
+    expect(porNombre["B-2"].vinculadoA).toBe(null);
+  });
+
+  it("estacionamientos no gestionan vínculo al condominio", async () => {
+    const u = useSetupEntidades({ entidad: "estacionamiento" });
+    u.estado.items = [
+      { id: "a", nombre: "E-1", piso: null, sectorRef: null, esNuevo: false, marcadoEliminar: false, original: { nombre: "E-1", piso: null, sectorRef: null }, delCondominio: true, vinculadoA: null, entidadId: "e1" },
+    ];
+    expect(u.pendientes.vinculos).toBe(0);
+    expect(u.pendientes.total).toBe(0);
   });
 });

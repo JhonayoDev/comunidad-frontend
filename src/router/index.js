@@ -251,8 +251,7 @@ const routes = [
           {
             path: "areas-comunes",
             name: "SetupAreasComunes",
-            component: () => import("../views/common/EnConstruccionView.vue"),
-            props: { modulo: "Áreas comunes" },
+            component: () => import("../views/setup/SetupAreasComunesView.vue"),
           },
           {
             path: "cargos",

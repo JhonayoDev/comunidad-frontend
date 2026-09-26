@@ -14,6 +14,7 @@ import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
+import Checkbox from "primevue/checkbox";
 import Message from "primevue/message";
 import Skeleton from "primevue/skeleton";
 import ConfirmDialog from "primevue/confirmdialog";
@@ -31,6 +32,10 @@ const etiquetas = computed(() => ({
   singular: props.entidad === "bodega" ? "bodega" : "estacionamiento",
   plural: props.entidad === "bodega" ? "bodegas" : "estacionamientos",
 }));
+
+// Solo bodegas: vínculo al condominio (oficina). Las de casas se vinculan
+// en planilla.
+const esBodega = computed(() => props.entidad === "bodega");
 
 const asignarTodosValor = ref(null);
 const SIN_SECTOR = "__sin_sector__";
@@ -140,6 +145,8 @@ const mensajeResultado = computed(() => {
   if (r.creadas) partes.push(`${r.creadas} ${etiquetas.plural} creados`);
   if (r.actualizadas) partes.push(`${r.actualizadas} actualizados`);
   if (r.eliminadas) partes.push(`${r.eliminadas} eliminados`);
+  if (r.vinculadas) partes.push(`${r.vinculadas} vinculadas al condominio`);
+  if (r.desvinculadas) partes.push(`${r.desvinculadas} desvinculadas`);
   return partes.length ? partes.join(", ") + "." : "Sin cambios.";
 });
 
@@ -152,10 +159,17 @@ const itemsPaginados = computed(() => {
 });
 watch(
   () => u.estado.items.length,
-  () => {
-    pagina.value = 0;
+  (nuevo, viejo) => {
+    // Solo al encoger (eliminaciones): al agregar, el salto lo maneja agregarFilaYSaltar.
+    if (nuevo < viejo) pagina.value = 0;
   },
 );
+
+function agregarFilaYSaltar() {
+  u.agregarFila();
+  // La fila nace al final: llevar a su página (si no, parece que no pasa nada).
+  pagina.value = Math.max(0, Math.ceil(u.estado.items.length / porPagina) - 1);
+}
 
 const erroresResumen = computed(() =>
   u.estado.items.filter((x) => x.error).map((x) => `${x.nombre}: ${x.error}`),
@@ -786,7 +800,7 @@ onMounted(() => u.cargar());
                 label="Agregar fila"
                 icon="pi pi-plus"
                 size="small"
-                @click="u.agregarFila"
+                @click="agregarFilaYSaltar"
               />
             </template>
           </div>
@@ -821,6 +835,7 @@ onMounted(() => u.cargar());
                   <th>Nombre</th>
                   <th>Piso</th>
                   <th>Sector</th>
+                  <th v-if="esBodega">Vínculo</th>
                   <th>Estado</th>
                   <th v-if="editando"></th>
                 </tr>
@@ -937,7 +952,31 @@ onMounted(() => u.cargar());
                       severity="danger"
                       size="small"
                     />
+                    <Tag
+                      v-else-if="item.esNuevo"
+                      value="Nuevo"
+                      severity="success"
+                      size="small"
+                    />
                     <span v-else class="text-green-500 text-sm">Listo</span>
+                  </td>
+                  <td v-if="esBodega">
+                    <div class="flex items-center gap-2">
+                      <Tag
+                        v-if="item.vinculadoA"
+                        :value="item.vinculadoA.tipoUnidad === 'CONDOMINIO' ? 'Condominio' : `Casa ${item.vinculadoA.unidadNumero ?? '—'}`"
+                        severity="success"
+                        size="small"
+                      />
+                      <Tag v-else value="Sin vincular" severity="warn" size="small" />
+                      <Checkbox
+                        v-if="editando && !item.marcadoEliminar"
+                        v-model="item.delCondominio"
+                        binary
+                        title="Del condominio (oficina)"
+                      />
+                    </div>
+                    <span v-if="editando && !item.marcadoEliminar" class="text-xs text-text-muted">Del condominio</span>
                   </td>
                   <td v-if="editando">
                     <Button
@@ -1014,6 +1053,18 @@ onMounted(() => u.cargar());
                 </div>
                 <div class="flex items-center gap-1">
                   <Tag
+                    v-if="esBodega && item.vinculadoA"
+                    :value="item.vinculadoA.tipoUnidad === 'CONDOMINIO' ? 'Condominio' : `Casa ${item.vinculadoA.unidadNumero ?? '—'}`"
+                    severity="success"
+                    size="small"
+                  />
+                  <Tag
+                    v-else-if="esBodega && !item.vinculadoA"
+                    value="Sin vincular"
+                    severity="warn"
+                    size="small"
+                  />
+                  <Tag
                     v-if="!editando"
                     :value="`Piso ${item.piso ?? '—'}`"
                     severity="secondary"
@@ -1076,6 +1127,10 @@ onMounted(() => u.cargar());
                       @change="onSectorFilaChange(item)"
                     />
                   </template>
+                  <div v-if="esBodega" class="flex items-center gap-2">
+                    <Checkbox v-model="item.delCondominio" binary inputId="delcond-m" />
+                    <label for="delcond-m" class="text-sm">Del condominio</label>
+                  </div>
                 </template>
                 <span v-else class="text-sm text-surface-400">{{
                   sectorLabel(item.sectorRef)

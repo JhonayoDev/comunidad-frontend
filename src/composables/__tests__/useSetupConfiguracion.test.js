@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { defineComponent } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
-import { useSetupConfiguracion, SETUP_PASOS, marcarEnEdicion } from "@/composables/useSetupConfiguracion";
+import { useSetupConfiguracion, SETUP_PASOS, marcarEnEdicion, marcarPasoGuardado, reiniciarGuardados } from "@/composables/useSetupConfiguracion";
 
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: () => ({
@@ -28,9 +28,16 @@ vi.mock("@/services/encomiendasService", () => ({
   },
 }));
 
+vi.mock("@/services/espaciosService", () => ({
+  espaciosService: {
+    getEspacios: vi.fn(),
+  },
+}));
+
 import { dashboardService } from "@/services/dashboardService";
 import { unidadesService } from "@/services/unidadesService";
 import { encomiendasService } from "@/services/encomiendasService";
+import { espaciosService } from "@/services/espaciosService";
 
 const Host = defineComponent({
   setup() {
@@ -47,7 +54,10 @@ describe("useSetupConfiguracion", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     marcarEnEdicion(null);
+    reiniciarGuardados();
+    localStorage.clear();
     encomiendasService.getAccesosEncomiendas.mockResolvedValue({ data: [] });
+    espaciosService.getEspacios.mockResolvedValue({ data: [] });
   });
 
   it("define unidades como paso 1, sectores como paso 2, pisos como paso 3 y 10 pasos en total", () => {
@@ -121,7 +131,7 @@ describe("useSetupConfiguracion", () => {
     expect(bod.oculto).toBe(true);
     expect(bod.completado).toBe(true);
     expect(wrapper.vm.primerPasoPendiente.key).toBe("planilla");
-    expect(wrapper.vm.progreso).toBe(38); // 3 de 8 visibles (estac/bodegas ocultos, accesos pendiente)
+    expect(wrapper.vm.progreso).toBe(38); // 3 de 8 visibles (accesos y áreas pendientes)
   });
 
   it("con estacionamientos declarados y sin crear, el paso queda pendiente", async () => {
@@ -150,7 +160,7 @@ describe("useSetupConfiguracion", () => {
     expect(wrapper.vm.pasos[5].completado).toBe(true); // planilla (residentes > 0)
     expect(wrapper.vm.primerPasoPendiente.key).toBe("estacionamientos");
     expect(wrapper.vm.configuraciónCompleta).toBe(false);
-    expect(wrapper.vm.progreso).toBe(44); // 4 de 9 visibles (accesos pendiente)
+    expect(wrapper.vm.progreso).toBe(44); // 4 de 9 visibles (accesos y áreas pendientes)
   });
 
   it("con solo bodegas declaradas, solo el paso de bodegas queda visible y pendiente", async () => {
@@ -266,5 +276,50 @@ describe("useSetupConfiguracion", () => {
     marcarEnEdicion("unidades");
     expect(wrapper.vm.pasos[5].completado).toBe(true);
     expect(wrapper.vm.pasos[0].completado).toBe(false);
+  });
+
+  it("areas-comunes pendiente sin espacios ni guardado; completa con conteo o flag", async () => {
+    dashboardService.admin.mockResolvedValue({
+      data: { totales: { unidades: 5, residentesActivos: 3, vehiculos: 0 } },
+    });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    const wrapper = montar();
+    await wrapper.vm.cargar();
+    await flushPromises();
+    const acc = wrapper.vm.pasos.find((p) => p.key === "areas-comunes");
+    expect(acc.completado).toBe(false);
+
+    espaciosService.getEspacios.mockResolvedValue({
+      data: [{ id: "e1", nombre: "Quincho", activo: true }],
+    });
+    await wrapper.vm.cargar();
+    await flushPromises();
+    expect(wrapper.vm.pasos.find((p) => p.key === "areas-comunes").completado).toBe(true);
+  });
+
+  it("areas-comunes completa con flag guardado aunque no haya conteo", async () => {
+    dashboardService.admin.mockResolvedValue({
+      data: { totales: { unidades: 5, residentesActivos: 3, vehiculos: 0 } },
+    });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    marcarPasoGuardado("cid-1", "areas-comunes");
+    const wrapper = montar();
+    await wrapper.vm.cargar();
+    await flushPromises();
+    expect(wrapper.vm.pasos.find((p) => p.key === "areas-comunes").completado).toBe(true);
+    // El flag sobrevive recargas vía localStorage.
+    expect(localStorage.getItem("comunidad:setup-guardado:cid-1:areas-comunes")).toBe("1");
+  });
+
+  it("areas-comunes sin datos (403) queda pendiente con aviso", async () => {
+    dashboardService.admin.mockResolvedValue({
+      data: { totales: { unidades: 5, residentesActivos: 3, vehiculos: 0 } },
+    });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    espaciosService.getEspacios.mockRejectedValue({ response: { status: 403 } });
+    const wrapper = montar();
+    await wrapper.vm.cargar();
+    await flushPromises();
+    expect(wrapper.vm.pasos.find((p) => p.key === "areas-comunes").completado).toBe(false);
   });
 });
