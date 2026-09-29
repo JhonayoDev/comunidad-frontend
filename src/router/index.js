@@ -159,12 +159,6 @@ const routes = [
         },
       },
       {
-        path: "vehiculos",
-        name: "Vehiculos",
-        component: () => import("../views/admin/VehiculosView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["PRESIDENTE", "ADMINISTRADOR"] },
-      },
-      {
         path: "solicitudes-admin",
         name: "SolicitudesAdmin",
         component: () => import("../views/admin/SolicitudesAdminView.vue"),
@@ -174,9 +168,9 @@ const routes = [
         },
       },
       {
-        path: "residentes",
-        name: "Residentes",
-        component: () => import("../views/admin/ResidentesView.vue"),
+        path: "personas",
+        name: "Personas",
+        component: () => import("../views/admin/PersonasView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
           cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
@@ -186,15 +180,6 @@ const routes = [
         path: "unidades",
         name: "Unidades",
         component: () => import("../views/admin/UnidadesView.vue"),
-        meta: {
-          roles: ["ADMINISTRADOR"],
-          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
-        },
-      },
-      {
-        path: "importacion",
-        name: "Importacion",
-        component: () => import("../views/admin/ImportacionMasivaView.vue"),
         meta: {
           roles: ["ADMINISTRADOR"],
           cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
@@ -351,12 +336,6 @@ const routes = [
         path: "notificaciones/reglas",
         name: "ReglasNotificacion",
         component: () => import("../views/gestion/ReglasNotificacionView.vue"),
-        meta: { roles: ["ADMINISTRADOR"], cargos: ["ADMINISTRADOR"] },
-      },
-      {
-        path: "notificaciones/unidades-personas",
-        name: "UnidadesPersonas",
-        component: () => import("../views/gestion/UnidadesPersonasView.vue"),
         meta: { roles: ["ADMINISTRADOR"], cargos: ["ADMINISTRADOR"] },
       },
       // ── Almacenamiento (Admin Config) ──────────────

@@ -223,7 +223,7 @@ onMounted(cargar);
 <template>
   <div class="p-4 flex flex-col gap-4">
     <div class="flex justify-between items-center">
-      <h1 class="text-xl font-bold m-0">Residentes</h1>
+      <h1 class="text-xl font-bold m-0">Personas</h1>
       <Button label="Nueva persona" icon="pi pi-plus" size="small" @click="abrirCrear" />
     </div>
 

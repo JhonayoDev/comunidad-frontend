@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { unidadesService } from "@/services/unidadesService";
+import { personasService } from "@/services/personasService";
 import { mensajeError } from "@/utils/errores";
 
 import Card from "primevue/card";
@@ -12,6 +13,7 @@ import Select from "primevue/select";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
+import InputSwitch from "primevue/inputswitch";
 import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
 
@@ -187,6 +189,60 @@ function sectorLabel(id) {
   return s ? (s.nombre || "Sector") : "—";
 }
 
+// ─── Consolidado por casa (fusionado desde UnidadesPersonasView) ───
+const unidadExpandida = ref(null);
+const vinculos = ref({});
+const cargandoVinculos = ref({});
+const guardandoNotif = ref({});
+
+const tipoLabels = {
+  PROPIETARIO: "Propietario",
+  ARRENDATARIO: "Arrendatario",
+  RESIDENTE_ADICIONAL: "Adicional",
+};
+
+const tipoSeverity = {
+  PROPIETARIO: "info",
+  ARRENDATARIO: "warn",
+  RESIDENTE_ADICIONAL: "secondary",
+};
+
+async function toggleExpandir(u) {
+  if (unidadExpandida.value === u.id) {
+    unidadExpandida.value = null;
+    return;
+  }
+  unidadExpandida.value = u.id;
+  if (vinculos.value[u.id]) return;
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  cargandoVinculos.value = { ...cargandoVinculos.value, [u.id]: true };
+  try {
+    const { data } = await personasService.vinculosUnidad(cid, u.id);
+    vinculos.value = { ...vinculos.value, [u.id]: data || [] };
+  } catch (e) {
+    console.error("Error al cargar vínculos de la unidad", e);
+    vinculos.value = { ...vinculos.value, [u.id]: [] };
+  } finally {
+    cargandoVinculos.value = { ...cargandoVinculos.value, [u.id]: false };
+  }
+}
+
+async function toggleRecibeNotificaciones(v) {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  const nuevo = !v.recibeNotificaciones;
+  guardandoNotif.value = { ...guardandoNotif.value, [v.id]: true };
+  try {
+    await personasService.actualizarRecibeNotificaciones(cid, v.id, nuevo);
+    v.recibeNotificaciones = nuevo;
+  } catch (e) {
+    console.error("Error al actualizar recibe-notificaciones", e);
+  } finally {
+    guardandoNotif.value = { ...guardandoNotif.value, [v.id]: false };
+  }
+}
+
 onMounted(cargar);
 </script>
 
@@ -220,18 +276,69 @@ onMounted(cargar);
       </small>
       <div v-if="!unidades.length" class="text-center text-surface-400 py-8">No hay unidades</div>
       <div v-else class="flex flex-col gap-2">
-        <div v-for="u in unidades" :key="u.id" class="surface-card p-3 border-round shadow-1 flex items-center justify-between">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-medium">{{ u.numero }}</span>
-              <Tag :value="u.tipo" severity="info" size="small" />
-              <Tag v-if="!u.activo" value="Inactiva" severity="secondary" size="small" />
+        <div v-for="u in unidades" :key="u.id" class="surface-card p-3 border-round shadow-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium">{{ u.numero }}</span>
+                <Tag :value="u.tipo" severity="info" size="small" />
+                <Tag v-if="!u.activo" value="Inactiva" severity="secondary" size="small" />
+                <Tag
+                  v-if="vinculos[u.id]?.length"
+                  :value="`${vinculos[u.id].length}`"
+                  severity="warn"
+                  size="small"
+                  :title="`${vinculos[u.id].length} persona(s) vinculada(s)`"
+                />
+              </div>
+              <span class="text-sm text-surface-400">{{ sectorLabel(u.sectorId) }}</span>
             </div>
-            <span class="text-sm text-surface-400">{{ sectorLabel(u.sectorId) }}</span>
+            <div class="flex items-center gap-1">
+              <Button
+                :icon="unidadExpandida === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                variant="text"
+                size="small"
+                severity="secondary"
+                :title="unidadExpandida === u.id ? 'Ocultar quiénes viven aquí' : 'Ver quiénes viven aquí'"
+                @click="toggleExpandir(u)"
+              />
+              <Button icon="pi pi-pencil" variant="text" size="small" severity="secondary" @click="abrirEditar(u)" />
+              <Button v-if="u.activo !== false" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="confirmarDesactivar(u)" />
+            </div>
           </div>
-          <div class="flex items-center gap-1">
-            <Button icon="pi pi-pencil" variant="text" size="small" severity="secondary" @click="abrirEditar(u)" />
-            <Button v-if="u.activo !== false" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="confirmarDesactivar(u)" />
+          <div v-if="unidadExpandida === u.id" class="mt-2 pt-2 border-t border-surface-200">
+            <Skeleton v-if="cargandoVinculos[u.id]" width="100%" height="3rem" />
+            <div v-else-if="!(vinculos[u.id] || []).length" class="text-sm text-surface-400 py-1">
+              Sin personas vinculadas a esta unidad.
+            </div>
+            <div v-else class="flex flex-col gap-1">
+              <div
+                v-for="v in vinculos[u.id]"
+                :key="v.id"
+                class="flex items-center justify-between p-2 border-round bg-surface-100"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <i class="pi pi-user text-primary"></i>
+                  <span class="text-sm font-medium truncate">{{ v.personaNombre }}</span>
+                  <Tag
+                    :value="tipoLabels[v.tipo] || v.tipo"
+                    :severity="tipoSeverity[v.tipo] || 'info'"
+                    size="small"
+                  />
+                  <Tag v-if="v.esOcupante" value="Ocupante" severity="success" size="small" />
+                  <Tag v-if="!v.activo" value="Inactivo" severity="secondary" size="small" />
+                </div>
+                <div class="flex items-center gap-1 text-xs text-surface-500 shrink-0">
+                  <span>Notif.</span>
+                  <InputSwitch
+                    :modelValue="v.recibeNotificaciones"
+                    :disabled="guardandoNotif[v.id] || !v.activo"
+                    @update:modelValue="toggleRecibeNotificaciones(v)"
+                  />
+                </div>
+              </div>
+              <span class="text-xs text-surface-400">Ocupante = vive físicamente aquí · Notif. en OFF no recibe avisos de esta unidad</span>
+            </div>
           </div>
         </div>
       </div>

@@ -25,10 +25,8 @@ const NAV_ITEMS_BY_ROLE = {
   ADMINISTRADOR: [
     { label: "Inicio", icon: "pi pi-home", routeName: "Dashboard" },
     { label: "Configurar", icon: "pi pi-cog", routeName: "Setup" },
-    { label: "Importar datos", icon: "pi pi-file-arrow-up", routeName: "Importacion" },
-    { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Personas", icon: "pi pi-users", routeName: "Personas" },
     { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
-    { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
     { label: "Visitas", icon: "pi pi-eye", routeName: "Visitas" },
@@ -39,7 +37,6 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Personal", icon: "pi pi-users", routeName: "Personal" },
     { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "ConfiguracionAlmacenamiento" },
     { label: "Reglas Notif.", icon: "pi pi-sliders-h", routeName: "ReglasNotificacion" },
-    { label: "Unid. y Personas", icon: "pi pi-building", routeName: "UnidadesPersonas" },
     { label: "Plantillas Notif.", icon: "pi pi-envelope", routeName: "PlantillasNotificacion" },
     { label: "Anuncios", icon: "pi pi-megaphone", routeName: "Anuncios" },
     { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
@@ -83,9 +80,8 @@ const CARGO_NAV_ITEMS = {
     { label: "Personal", icon: "pi pi-users", routeName: "Personal" },
     { label: "Anuncios", icon: "pi pi-megaphone", routeName: "Anuncios" },
     { label: "Casos", icon: "pi pi-folder", routeName: "CasosAdmin" },
-    { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Personas", icon: "pi pi-users", routeName: "Personas" },
     { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
-    { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
     { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "ConfiguracionAlmacenamiento" },
@@ -116,7 +112,7 @@ const CARGO_NAV_ITEMS = {
     { label: "Personal", icon: "pi pi-users", routeName: "Personal" },
     { label: "Anuncios", icon: "pi pi-megaphone", routeName: "Anuncios" },
     { label: "Casos", icon: "pi pi-folder", routeName: "CasosAdmin" },
-    { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Personas", icon: "pi pi-users", routeName: "Personas" },
     { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Autoriz.", icon: "pi pi-verified", routeName: "Autorizaciones" },
@@ -132,10 +128,8 @@ const CARGO_NAV_ITEMS = {
   ADMINISTRADOR: [
     { label: "Dashboard", icon: "pi pi-th-large", routeName: "Dashboard" },
     { label: "Configurar", icon: "pi pi-cog", routeName: "Setup" },
-    { label: "Importar datos", icon: "pi pi-file-arrow-up", routeName: "Importacion" },
-    { label: "Residentes", icon: "pi pi-users", routeName: "Residentes" },
+    { label: "Personas", icon: "pi pi-users", routeName: "Personas" },
     { label: "Unidades", icon: "pi pi-building", routeName: "Unidades" },
-    { label: "Vehículos", icon: "pi pi-car", routeName: "Vehiculos" },
     { label: "Encomiendas", icon: "pi pi-box", routeName: "Encomiendas" },
     { label: "Archivos", icon: "pi pi-folder", routeName: "Archivos" },
     { label: "Visitas", icon: "pi pi-eye", routeName: "Visitas" },
@@ -146,7 +140,6 @@ const CARGO_NAV_ITEMS = {
     { label: "Personal", icon: "pi pi-users", routeName: "Personal" },
     { label: "Almacenamiento", icon: "pi pi-cloud-upload", routeName: "ConfiguracionAlmacenamiento" },
     { label: "Reglas Notif.", icon: "pi pi-sliders-h", routeName: "ReglasNotificacion" },
-    { label: "Unid. y Personas", icon: "pi pi-building", routeName: "UnidadesPersonas" },
     { label: "Plantillas Notif.", icon: "pi pi-envelope", routeName: "PlantillasNotificacion" },
     { label: "Anuncios", icon: "pi pi-megaphone", routeName: "Anuncios" },
     { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
@@ -161,7 +154,14 @@ export function useNavigation() {
   const currentRoute = computed(() => route.name);
 
   function puedeAcceder(routeName) {
-    const resolved = router.resolve({ name: routeName });
+    let resolved;
+    try {
+      resolved = router.resolve({ name: routeName });
+    } catch (e) {
+      // Ruta inexistente (p.ej. ítem de menú zombie): sin acceso, sin romper el menú.
+      console.error(`Ruta desconocida en navegación: ${routeName}`, e);
+      return false;
+    }
     const rRoles = resolved.meta?.roles;
     const rCargos = resolved.meta?.cargos;
     const necesitaRol = rRoles?.length > 0;
