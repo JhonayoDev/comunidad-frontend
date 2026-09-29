@@ -14,17 +14,15 @@
   --color-surface: var(--p-primary-surface);
   --color-background-inverse: var(--p-primary-background-inverse);
 
-  /* Si prefieres usar la escala surface que armaste con 'colors.js':
-     --color-background: var(--p-surface-100); 
-     --color-surface: var(--p-surface-50); 
-  */
-
   /* =========================================
      COLORES PRINCIPALES Y ACENTOS
      ========================================= */
   --color-primary: var(--p-primary-color);
   --color-primary-hover: var(--p-primary-hover-color);
   --color-primary-active: var(--p-primary-active-color);
+  /* Texto que va SOBRE un fondo bg-primary (blanco en claro, oscuro en dark).
+     Usar text-primary-contrast en vez de text-white sobre bg-primary. */
+  --color-primary-contrast: var(--p-primary-contrast-color);
   --color-boton-accion: var(--p-primary-boton-accion);
   /* =========================================
      TEXTOS
@@ -237,7 +235,9 @@
 /* Evita que Chrome/Safari pinte los inputs autocompletados de verde/amarillo.
    - text-fill-color: color del texto escrito (usa el mismo que PrimeVue)
    - box-shadow con inset gigante: pinta el fondo sin perder el borde del input
-   - transition infinita: evita que Chrome revierta el estilo al hacer hover/focus */
+   - transition infinita: evita que Chrome revierta el estilo al hacer hover/focus
+   CORREGIDO: la variable correcta es --p-primary-auto-fill-box
+   (antes decía --color-primary-autoFillBox, que no existe). */
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -245,6 +245,6 @@ input:-webkit-autofill:focus,
 textarea:-webkit-autofill,
 select:-webkit-autofill {
   -webkit-text-fill-color: var(--p-text-color);
-  -webkit-box-shadow: 0 0 0 1000px var(--color-primary-autoFillBox) inset;
+  -webkit-box-shadow: 0 0 0 1000px var(--p-primary-auto-fill-box) inset;
   transition: background-color 9999s ease-in-out 0s;
 }

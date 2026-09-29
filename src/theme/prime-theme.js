@@ -1,7 +1,259 @@
 import { definePreset } from "@primeuix/themes";
 import Aura from "@primeuix/themes/aura";
 
-import colors from "./colors";
+/**
+ * =====================================================================
+ * BRIKU THEME — ÚNICA FUENTE DE VERDAD DE LOS COLORES
+ * =====================================================================
+ * Ya NO depende de colors.js. Todo se ajusta en este archivo.
+ *
+ * Reglas para no volver a romper el tema:
+ *  1) Todo lo que Aura define dentro de `colorScheme.light|dark`
+ *     (botones, togglebutton, list.option, overlay, content, text…)
+ *     se sobrescribe TAMBIÉN dentro de `colorScheme`. Si lo pones en la
+ *     raíz, en modo oscuro Aura lo pisa.
+ *  2) La escala `surface` es ESTÁNDAR: 0 = más claro … 950 = más oscuro,
+ *     siempre creciente, igual en claro y oscuro. Aura depende de eso.
+ *  3) Los nombres propios (primary.textPrincipal, primary.surface, …) se
+ *     mantienen igual para no romper app.css ni otros archivos.
+ * =====================================================================
+ */
+
+/** Mezcla un color con transparente (para hover/active sutiles). */
+const mix = (color, percent) =>
+  `color-mix(in srgb, ${color} ${percent}%, transparent)`;
+
+/* ---------------------------------------------------------------------
+ * ESCALAS DE SUPERFICIE (estándar: 0 claro → 950 oscuro)
+ * ------------------------------------------------------------------- */
+const surfaceLight = {
+  0: "#ffffff",
+  50: "#f4f4f7", // fondo de página
+  100: "#ececf0",
+  200: "#dedee3",
+  300: "#bfbfbf", // borde de campos
+  400: "#a8a8ae",
+  500: "#8a8a90",
+  600: "#5a5c61", // texto secundario
+  700: "#404248",
+  800: "#2d2d31",
+  900: "#1a1a1a", // texto principal
+  950: "#0d0d0d",
+};
+
+const surfaceDark = {
+  0: "#ffffff",
+  50: "#f4f4f7",
+  100: "#ececef",
+  200: "#d6d6da",
+  300: "#b3b3b7", // texto secundario
+  400: "#8f8f96",
+  500: "#6b6b73",
+  600: "#4a4a50", // borde de campos
+  700: "#323238", // borde de contenido
+  800: "#2a2a2f", // hover de contenido
+  900: "#222226", // superficie (cards, overlays)
+  950: "#121212", // fondo de página / campos
+};
+
+/* ---------------------------------------------------------------------
+ * OPCIONES DE LISTA (Select, AutoComplete, MultiSelect, Listbox…)
+ * Look actual: foco/selección en azul sólido con texto blanco.
+ * `{primary.500}` #265e95 + blanco = 6.7:1 en ambos modos.
+ * ------------------------------------------------------------------- */
+const listOption = {
+  color: "{primary.textSecondary}",
+  focusBackground: "{primary.500}",
+  focusColor: "#ffffff",
+  selectedBackground: "{primary.500}",
+  selectedColor: "#ffffff",
+  selectedFocusBackground: "{primary.500}",
+  selectedFocusColor: "#ffffff",
+};
+
+/* Overlays (dialog, popover, select, password…) */
+const overlayBase = {
+  background: mix("{primary.surface}", 98),
+  borderColor: mix("{primary.textSecondary}", 20),
+  color: "{primary.textPrincipal}",
+};
+
+/* ---------------------------------------------------------------------
+ * BOTONES POR SEVERIDAD (usan TUS paletas, no red/green/orange/sky)
+ *   solid = fondo sólido, on = color del texto sobre el sólido
+ *   fg = color de texto/borde para variantes text y outlined
+ * ------------------------------------------------------------------- */
+const severityTokens = (scale, l, d) => {
+  const build = (c) => ({
+    root: {
+      background: `{${scale}.${c.solid}}`,
+      hoverBackground: `{${scale}.${c.hover}}`,
+      activeBackground: `{${scale}.${c.active}}`,
+      borderColor: `{${scale}.${c.solid}}`,
+      hoverBorderColor: `{${scale}.${c.hover}}`,
+      activeBorderColor: `{${scale}.${c.active}}`,
+      color: c.on,
+      hoverColor: c.on,
+      activeColor: c.on,
+      focusRing: { color: `{${scale}.${c.solid}}`, shadow: "none" },
+    },
+    outlined: {
+      hoverBackground: mix(`{${scale}.${c.fg}}`, 8),
+      activeBackground: mix(`{${scale}.${c.fg}}`, 16),
+      borderColor: `{${scale}.${c.border}}`,
+      color: `{${scale}.${c.fg}}`,
+    },
+    text: {
+      hoverBackground: mix(`{${scale}.${c.fg}}`, 8),
+      activeBackground: mix(`{${scale}.${c.fg}}`, 16),
+      color: `{${scale}.${c.fg}}`,
+    },
+  });
+  return { light: build(l), dark: build(d) };
+};
+
+const danger = severityTokens(
+  "danger",
+  { solid: 500, hover: 600, active: 700, on: "#ffffff", fg: 500, border: 200 },
+  {
+    solid: 400,
+    hover: 300,
+    active: 200,
+    on: "{danger.950}",
+    fg: 400,
+    border: 700,
+  },
+);
+const success = severityTokens(
+  "success",
+  { solid: 600, hover: 700, active: 800, on: "#ffffff", fg: 600, border: 200 },
+  {
+    solid: 400,
+    hover: 300,
+    active: 200,
+    on: "{success.950}",
+    fg: 400,
+    border: 700,
+  },
+);
+const warn = severityTokens(
+  "warning",
+  {
+    solid: 500,
+    hover: 600,
+    active: 700,
+    on: "{warning.950}",
+    fg: 800,
+    border: 300,
+  },
+  {
+    solid: 400,
+    hover: 300,
+    active: 200,
+    on: "{warning.950}",
+    fg: 400,
+    border: 700,
+  },
+);
+const info = severityTokens(
+  "info",
+  { solid: 500, hover: 600, active: 700, on: "#ffffff", fg: 500, border: 200 },
+  {
+    solid: 400,
+    hover: 300,
+    active: 200,
+    on: "{info.950}",
+    fg: 400,
+    border: 700,
+  },
+);
+
+/* Botón: variantes primary/secondary propias + severidades */
+const buttonScheme = (mode) => {
+  const dark = mode === "dark";
+  return {
+    root: {
+      danger: danger[mode].root,
+      success: success[mode].root,
+      warn: warn[mode].root,
+      info: info[mode].root,
+    },
+    outlined: {
+      primary: {
+        color: "{primary.textPrincipal}",
+        borderColor: dark ? "{primary.400}" : "{primary.border}",
+        hoverBackground: mix("{primary.color}", 8),
+        activeBackground: mix("{primary.color}", 16),
+      },
+      secondary: {
+        color: "{primary.textSecondary}",
+        borderColor: "{primary.borderSecondary}",
+        hoverBackground: mix("{primary.textSecondary}", 8),
+        activeBackground: mix("{primary.textSecondary}", 16),
+      },
+      danger: danger[mode].outlined,
+      success: success[mode].outlined,
+      warn: warn[mode].outlined,
+      info: info[mode].outlined,
+    },
+    text: {
+      primary: {
+        color: "{primary.color}",
+        hoverBackground: mix("{primary.color}", 12),
+        activeBackground: mix("{primary.color}", 20),
+      },
+      secondary: {
+        color: "{primary.textSecondary}",
+        hoverBackground: mix("{primary.textSecondary}", 8),
+        activeBackground: mix("{primary.textSecondary}", 16),
+      },
+      danger: danger[mode].text,
+      success: success[mode].text,
+      warn: warn[mode].text,
+      info: info[mode].text,
+    },
+  };
+};
+
+/* ToggleButton / SelectButton: checked = azul sólido con texto de contraste */
+const toggleScheme = () => ({
+  root: {
+    background: mix("{primary.surface}", 75),
+    color: "{primary.textPrincipal}",
+    borderColor: "{primary.borderSecondary}",
+    hoverBackground: mix("{primary.textSecondary}", 8),
+    hoverColor: "{primary.textPrincipal}",
+    checkedBackground: "{primary.color}",
+    checkedBorderColor: "{primary.color}",
+    checkedColor: "{primary.contrastColor}",
+  },
+  content: {
+    // Aura pinta una "píldora" interior al estar checked; aquí el fondo
+    // checked ya lo pone root, así que la píldora queda transparente.
+    checkedBackground: "transparent",
+  },
+  icon: {
+    color: "{primary.textSecondary}",
+    hoverColor: "{primary.textPrincipal}",
+    checkedColor: "{primary.contrastColor}",
+  },
+});
+
+/* AutoComplete: dropdown y chips (Aura los define dentro de colorScheme) */
+const autocompleteScheme = () => ({
+  dropdown: {
+    background: mix("{primary.surface}", 98),
+    color: "{primary.textPrincipal}",
+    hoverBackground: "{primary.500}",
+    hoverColor: "#ffffff",
+    activeBackground: "{primary.600}",
+    activeColor: "#ffffff",
+  },
+  chip: {
+    focusBackground: "{primary.500}",
+    focusColor: "#ffffff",
+  },
+});
 
 export default definePreset(Aura, {
   semantic: {
@@ -10,7 +262,6 @@ export default definePreset(Aura, {
      * PALETAS
      * ===============================================================
      */
-
     primary: {
       50: "#edf5fc",
       100: "#d7e7f8",
@@ -85,201 +336,148 @@ export default definePreset(Aura, {
      * ===============================================================
      * COLOR SCHEME
      * ===============================================================
-     *
-     * Aquí le decimos a PrimeVue qué colores utilizar
-     * en Light y Dark.
      */
-
     colorScheme: {
       light: {
-        /**
-         * Colores principales utilizados,
-         * focus, checkbox, links, etc.
-         */
+        surface: surfaceLight,
+
         primary: {
+          // --- tokens estándar de PrimeVue ---
+          color: "#003366",
+          contrastColor: "#ffffff",
+          hoverColor: "{primary.500}",
+          activeColor: "#00488f",
+
+          // --- tokens propios (mismos nombres que antes) ---
           background: "#FFFFFF",
           surface: "#F4F4F7",
           backgroundInverse: "#222226",
-          color: "#003366",
           border: "#004d99",
           borderSecondary: "#b0cfef",
-          hoverColor: "{primary-500}",
-          activeColor: "#00488f",
           textPrincipal: "#1a1a1a",
           textSecondary: "#5a5c61",
-          textInverse: "{info-50}",
+          textInverse: "{info.50}",
           textResaltado: "#b0cfef",
           botonAccion: "{primary.textPrincipal}",
           inverseColor: "#121212",
           autoFillBox: "{primary.surface}",
         },
 
-        /**
-         * Escala de superficies
-         */
-        surface: {
-          0: "{primary.textPrincipal}",
-          50: "#f5f5f5",
-
-          100: colors.light.background,
-          200: colors.light.border,
-          300: "#5a5c61",
-
-          400: "#a8a8a8",
-          500: "#8a8a8a",
-
-          600: colors.light.text.secondary,
-
-          700: "#404040",
-
-          800: "#2d2d2d",
-
-          900: colors.light.text.primary,
-
-          950: "#0d0d0d",
-        },
-        formField: {
-          background: "color-mix(in srgb, {primary.surface} 75%, transparent)",
+        text: {
           color: "{primary.textPrincipal}",
-          placeholderColor:
-            "color-mix(in srgb, {primary.textSecondary} 50%, transparent)",
+          hoverColor: "{primary.textPrincipal}",
+          mutedColor: "{primary.textSecondary}",
+          hoverMutedColor: "{primary.textPrincipal}",
+        },
+
+        content: {
+          background: "{primary.surface}",
+          hoverBackground: mix("{primary.textSecondary}", 8),
+          borderColor: mix("{primary.textSecondary}", 20),
+          color: "{primary.textPrincipal}",
+          hoverColor: "{primary.textPrincipal}",
+        },
+
+        overlay: {
+          select: overlayBase,
+          popover: overlayBase,
+          modal: overlayBase,
+        },
+
+        list: { option: listOption },
+
+        formField: {
+          background: mix("{primary.surface}", 75),
+          color: "{primary.textPrincipal}",
+          placeholderColor: mix("{primary.textSecondary}", 50),
         },
       },
 
       dark: {
-        /**
-         * En modo oscuro usamos otro azul.
-         */
+        surface: surfaceDark,
+
         primary: {
+          // --- tokens estándar de PrimeVue ---
+          // En oscuro el azul de marca (#003366) casi no se ve sobre #121212
+          // (1.5:1). Se usa un tono más claro con texto oscuro encima,
+          // igual que hace Aura.
+          color: "{primary.400}",
+          contrastColor: "{primary.950}",
+          hoverColor: "{primary.300}",
+          activeColor: "{primary.200}",
+
+          // --- tokens propios (mismos nombres que antes) ---
           background: "#121212",
           surface: "#222226",
           backgroundInverse: "#F4F4F7",
-          color: "#003366",
           border: "#004d99",
           borderSecondary: "#b0cfef",
-          hoverColor: "{primary-500}",
-          activeColor: "#00488f",
           textPrincipal: "#ffffff",
           textSecondary: "#b3b3b7",
-          textInverse: "{info-600}",
+          textInverse: "{info.600}",
           textResaltado: "#b0cfef",
           botonAccion: "{primary.textPrincipal}",
           inverseColor: "#121212",
           autoFillBox: "{primary.surface}",
         },
 
-        surface: {
-          0: "{primary.textPrincipal}",
-
-          50: "#181818",
-
-          100: colors.dark.background,
-
-          200: colors.dark.border,
-
-          300: "#4a4a50",
-
-          400: "#66666e",
-
-          500: "#808088",
-
-          600: colors.dark.text.secondary,
-
-          700: "#d6d6da",
-
-          800: "#ececef",
-
-          900: colors.dark.text.primary,
-
-          950: "#ffffff",
-        },
-        formField: {
-          background: "color-mix(in srgb, {primary.surface} 75%, transparent)",
+        text: {
           color: "{primary.textPrincipal}",
-          placeholderColor:
-            "color-mix(in srgb, {primary.textSecondary} 50%, transparent)",
+          hoverColor: "{primary.textPrincipal}",
+          mutedColor: "{primary.textSecondary}",
+          hoverMutedColor: "{primary.textPrincipal}",
+        },
+
+        content: {
+          background: "{primary.surface}",
+          hoverBackground: mix("{primary.textSecondary}", 8),
+          borderColor: mix("{primary.textSecondary}", 20),
+          color: "{primary.textPrincipal}",
+          hoverColor: "{primary.textPrincipal}",
+        },
+
+        overlay: {
+          select: overlayBase,
+          popover: overlayBase,
+          modal: overlayBase,
+        },
+
+        list: { option: listOption },
+
+        formField: {
+          background: mix("{primary.surface}", 75),
+          color: "{primary.textPrincipal}",
+          placeholderColor: mix("{primary.textSecondary}", 50),
         },
       },
     },
   },
+
   /**
    * ===============================================================
    * COMPONENTS
    * ===============================================================
+   * Solo lo que NO se puede resolver con tokens semánticos.
+   * (dialog, popover, confirmdialog, datepicker y los overlays de
+   * select/autocomplete/multiselect ya salen de `semantic.overlay` y
+   * `semantic.content`.)
    */
   components: {
     button: {
-      outlined: {
-        primary: {
-          color: "{primary.textPrincipal}",
-          borderColor: "{primary.border}",
-          hoverBackground:
-            "color-mix(in srgb, {primary.color} 8%, transparent)",
-          activeBackground:
-            "color-mix(in srgb, {primary.color} 16%, transparent)",
-        },
-        secondary: {
-          color: "{primary.textSecondary}",
-          borderColor: "{primary.borderSecondary}",
-          hoverBackground:
-            "color-mix(in srgb, {primary.textSecondary} 8%, transparent)",
-          activeBackground:
-            "color-mix(in srgb, {primary.textSecondary} 16%, transparent)",
-        },
-      },
-      text: {
-        primary: {
-          color: "{primary.400}",
-          hoverBackground: "color-mix(in srgb, {primary.400} 12%, transparent)",
-          activeBackground:
-            "color-mix(in srgb, {primary.400} 20%, transparent)",
-        },
-        secondary: {
-          color: "{primary.textSecondary}",
-          hoverBackground:
-            "color-mix(in srgb, {primary.textSecondary} 8%, transparent)",
-          activeBackground:
-            "color-mix(in srgb, {primary.textSecondary} 16%, transparent)",
-        },
+      colorScheme: {
+        light: buttonScheme("light"),
+        dark: buttonScheme("dark"),
       },
     },
-    popover: {
-      root: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        borderColor:
-          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
-        color: "{primary.textPrincipal}",
-        gutter: "10px",
-        arrowOffset: "1.25rem",
+
+    togglebutton: {
+      colorScheme: {
+        light: toggleScheme(),
+        dark: toggleScheme(),
       },
     },
-    dialog: {
-      root: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        borderColor:
-          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
-        color: "{primary.textPrincipal}",
-      },
-    },
-    confirmdialog: {
-      root: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        borderColor:
-          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
-        color: "{primary.textPrincipal}",
-      },
-    },
+
     password: {
-      overlay: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        borderColor:
-          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
-        color: "{primary.textPrincipal}",
-      },
-      meter: {
-        background:
-          "color-mix(in srgb, {primary.textSecondary} 25%, transparent)",
-      },
       colorScheme: {
         light: {
           strength: {
@@ -297,112 +495,21 @@ export default definePreset(Aura, {
         },
       },
     },
-    togglebutton: {
-      root: {
-        background: "color-mix(in srgb, {primary.surface} 75%, transparent)",
-        color: "{primary.textPrincipal}",
-        borderColor: "{primary.borderSecondary}",
-        hoverBackground:
-          "color-mix(in srgb, {primary.textSecondary} 8%, transparent)",
-        hoverColor: "{primary.textPrincipal}",
-        checkedBackground: "{primary.color}",
-        checkedBorderColor: "{primary.color}",
-        checkedColor: "#ffffff",
-      },
-      icon: {
-        color: "{primary.textSecondary}",
-        hoverColor: "{primary.textPrincipal}",
-        checkedColor: "#ffffff",
-      },
-    },
-    select: {
-      overlay: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        color: "{primary.textPrincipal}",
-      },
-      option: {
-        color: "{primary.textSecondary}",
-        focusBackground: "{primary.hoverColor}",
-        focusColor: "{primary.textPrincipal}",
-        selectedBackground: "{primary.hoverColor}",
-        selectedColor: "{primary.textPrincipal}",
-        selectedFocusBackground: "{primary.hoverColor}",
-        selectedFocusColor: "{primary.textResaltado}",
-      },
-    },
+
     autocomplete: {
-      overlay: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        color: "{primary.textPrincipal}",
-      },
-      option: {
-        color: "{primary.textSecondary}",
-        focusBackground: "{primary.hoverColor}",
-        focusColor: "{primary.textPrincipal}",
-        selectedBackground: "{primary.hoverColor}",
-        selectedColor: "{primary.textPrincipal}",
-        selectedFocusBackground: "{primary.hoverColor}",
-        selectedFocusColor: "{primary.textResaltado}",
-      },
-      dropdown: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        color: "{primary.textPrincipal}",
-        hoverBackground: "{primary.hoverColor}",
-        hoverColor: "{primary.textPrincipal}",
-        activeBackground: "{primary.activeColor}",
-        activeColor: "{primary.textPrincipal}",
-      },
-      chip: {
-        focusBackground: "{primary.hoverColor}",
-        focusColor: "{primary.textPrincipal}",
+      colorScheme: {
+        light: autocompleteScheme(),
+        dark: autocompleteScheme(),
       },
     },
+
     multiselect: {
-      overlay: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        color: "{primary.textPrincipal}",
-      },
-      option: {
-        color: "{primary.textSecondary}",
-        focusBackground: "{primary.hoverColor}",
-        focusColor: "{primary.textPrincipal}",
-        selectedBackground: "{primary.hoverColor}",
-        selectedColor: "{primary.textPrincipal}",
-        selectedFocusBackground: "{primary.hoverColor}",
-        selectedFocusColor: "{primary.textResaltado}",
-      },
       chip: {
-        background:
-          "color-mix(in srgb, {primary.textSecondary} 14%, transparent)",
+        background: mix("{primary.textSecondary}", 14),
         color: "{primary.textPrincipal}",
       },
       emptyMessage: {
         color: "{primary.textSecondary}",
-      },
-    },
-    //TODO: revisar los tokens para poder ajustar bien los colores
-    datepicker: {
-      panel: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        bordercolor:
-          "color-mix(in srgb, {primary.textSecondary} 20%, transparent)",
-      },
-      header: {
-        background: "color-mix(in srgb, {primary.surface} 98%, transparent)",
-        color: "#c53b3b",
-      },
-      title: {
-        color: "#c53b3b",
-      },
-      weekday: {
-        color: "{primary.textSecondary}", // días de la semana (lu, ma, mi...)
-      },
-      date: {
-        color: "{primary.textSecondary}", // días de la semana (lu, ma, mi...)
-        hoverbackground: "{primary.hoverColor}", // hover sobre un día
-        hovercolor: "{primary.textPrincipal}",
-        selectedbackground: "{primary.color}", // fondo del día seleccionado
-        selectedcolor: "#ffffff",
       },
     },
   },

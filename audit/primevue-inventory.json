@@ -1,0 +1,5299 @@
+[
+  {
+    "component": "Button",
+    "file": "src/components/FiltroFechas.vue",
+    "line": 18,
+    "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" text",
+    "attrs": {
+      "v-if": "model",
+      "icon": "pi pi-times",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "@click": "model = null"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/NotificationBanner.vue",
+    "line": 27,
+    "signature": "severity=\"info\" size=\"small\"",
+    "attrs": {
+      "label": "Activar",
+      "size": "small",
+      "severity": "info",
+      ":loading": "loading",
+      "@click": "handleActivar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/NotificationBanner.vue",
+    "line": 34,
+    "signature": "class=\"text-surface-400 hover:text-surface-0\" severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "label": "Ahora no",
+      "size": "small",
+      "text": true,
+      "severity": "secondary",
+      "class": "text-surface-400 hover:text-surface-0",
+      "@click": "handleDescartar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/bitacora/ChecklistDialog.vue",
+    "line": 119,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "cerrar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/bitacora/ChecklistDialog.vue",
+    "line": 125,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Confirmar",
+      "icon": "pi pi-check",
+      ":disabled": "!valido",
+      ":loading": "loading",
+      "@click": "confirmar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/bitacora/EventoCard.vue",
+    "line": 72,
+    "signature": ":icon=\"collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'\" class=\"text-boton-accion/60\" rounded size=\"small\" text",
+    "attrs": {
+      ":icon": "collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "class": "text-boton-accion/60",
+      "@click.stop": "collapsed = !collapsed"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/bitacora/NovedadDialog.vue",
+    "line": 111,
+    "signature": "class=\"rounded-lg border border-border/80 shadow-lg\" severity=\"secondary\" text",
+    "attrs": {
+      "class": "rounded-lg border border-border/80 shadow-lg",
+      "label": "Cancelar",
+      "severity": "secondary",
+      "text": true,
+      ":disabled": "loading",
+      "@click": "$emit('update:visible', false)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/bitacora/NovedadDialog.vue",
+    "line": 119,
+    "signature": "icon=\"pi pi-flag\" severity=\"primary\"",
+    "attrs": {
+      "label": "Registrar",
+      "icon": "pi pi-flag",
+      "severity": "primary",
+      ":disabled": "!form.observaciones.trim()",
+      ":loading": "loading",
+      "@click": "handleRegister"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/bitacora/TurnoCard.vue",
+    "line": 72,
+    "signature": ":icon=\"collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'\" class=\"text-boton-accion\" rounded size=\"small\" text",
+    "attrs": {
+      ":icon": "collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "class": "text-boton-accion",
+      "@click": "collapsed = !collapsed"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/bitacora/TurnoCard.vue",
+    "line": 86,
+    "signature": ":icon=\"accionesLabels?.[accion]?.icon\" :severity=\"accionesLabels?.[accion]?.severity\" size=\"small\"",
+    "attrs": {
+      "v-for": "accion in accionesFiltradas",
+      ":key": "accion",
+      ":label": "accionesLabels?.[accion]?.label || accion",
+      ":icon": "accionesLabels?.[accion]?.icon",
+      ":severity": "accionesLabels?.[accion]?.severity",
+      "size": "small",
+      ":loading": "loading",
+      "@click": "handleClick(accion)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/common/InfoAyudaVista.vue",
+    "line": 26,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "aria-label": "Ver ayuda",
+      "v-tooltip.top": "'¿Qué significa cada opción?'",
+      "@click": "toggle"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/common/InfoAyudaVista.vue",
+    "line": 42,
+    "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-times",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Cerrar ayuda",
+      "@click": "op.hide()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/DetalleEncomiendaDialog.vue",
+    "line": 176,
+    "signature": "class=\"rounded-lg border border-border/80 shadow-lg\" severity=\"secondary\" text",
+    "attrs": {
+      "class": "rounded-lg border border-border/80 shadow-lg",
+      "label": "Cerrar",
+      "severity": "secondary",
+      "text": true,
+      "@click": "$emit('update:visible', false)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/EntregarEncomiendaDialog.vue",
+    "line": 75,
+    "signature": "class=\"rounded-lg border border-border/80 shadow-lg\" severity=\"secondary\" text",
+    "attrs": {
+      "class": "rounded-lg border border-border/80 shadow-lg",
+      "label": "Cancelar",
+      "severity": "secondary",
+      "text": true,
+      ":disabled": "loading",
+      "@click": "$emit('update:visible', false)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/EntregarEncomiendaDialog.vue",
+    "line": 83,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Confirmar entrega",
+      "icon": "pi pi-check",
+      ":disabled": "!nombreRetira.trim() || !rutRetira.trim()",
+      ":loading": "loading",
+      "@click": "handleConfirm"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/RegistrarEncomiendaDialog.vue",
+    "line": 232,
+    "signature": "class=\"rounded-lg border border-border/80\" icon=\"pi pi-camera\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Tomar foto",
+      "icon": "pi pi-camera",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "class": "rounded-lg border border-border/80",
+      "@click": "$refs.fileInput.click()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/RegistrarEncomiendaDialog.vue",
+    "line": 233,
+    "signature": "class=\"rounded-lg border border-border/80\" icon=\"pi pi-image\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Seleccionar",
+      "icon": "pi pi-image",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "class": "rounded-lg border border-border/80",
+      "@click": "$refs.fileInput.click()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/RegistrarEncomiendaDialog.vue",
+    "line": 237,
+    "signature": "class=\"absolute top-1 right-1\" icon=\"pi pi-times\" rounded severity=\"danger\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-times",
+      "severity": "danger",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "class": "absolute top-1 right-1",
+      "@click": "quitarFoto"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/RegistrarEncomiendaDialog.vue",
+    "line": 246,
+    "signature": "class=\"flex-1 rounded-lg border border-border/80 shadow-lg\" severity=\"secondary\" text",
+    "attrs": {
+      "class": "flex-1 rounded-lg border border-border/80 shadow-lg",
+      "label": "Cancelar",
+      "severity": "secondary",
+      "text": true,
+      ":disabled": "loading",
+      "@click": "$emit('update:visible', false)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/RegistrarEncomiendaDialog.vue",
+    "line": 254,
+    "signature": "class=\"flex-1 rounded-lg shadow-lg\" icon=\"pi pi-check\"",
+    "attrs": {
+      "class": "flex-1 rounded-lg shadow-lg",
+      "label": "Registrar",
+      "icon": "pi pi-check",
+      ":disabled": "!form.nombreDestinatario.trim() || !form.tipo || !unidadSeleccionada",
+      ":loading": "loading",
+      "@click": "handleRegister"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/encomiendas/TarjetaEncomiendasResidente.vue",
+    "line": 109,
+    "signature": "icon=\"pi pi-arrow-right\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Ver todas",
+      "icon": "pi pi-arrow-right",
+      "size": "small",
+      "variant": "text",
+      "@click": "verTodas"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/layout/AppHeader.vue",
+    "line": 32,
+    "signature": ":icon=\"esOscuro ? 'pi pi-sun' : 'pi pi-moon'\" class=\"btn-no-bg header-btn\" rounded severity=\"secondary\" text",
+    "attrs": {
+      "class": "btn-no-bg header-btn",
+      ":icon": "esOscuro ? 'pi pi-sun' : 'pi pi-moon'",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "@click": "toggleTema"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/layout/AppHeader.vue",
+    "line": 41,
+    "signature": "class=\"btn-no-bg header-btn\" icon=\"pi pi-bars\" rounded severity=\"secondary\" text",
+    "attrs": {
+      "class": "btn-no-bg header-btn",
+      "icon": "pi pi-bars",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "@click": "drawerVisible = true"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/layout/AppHeader.vue",
+    "line": 56,
+    "signature": ":severity=\"auth.activeContext === ctx.key ? 'primary' : 'secondary'\" :variant=\"auth.activeContext === ctx.key ? 'filled' : 'outlined'\" class=\"context-card\" rounded size=\"small\"",
+    "attrs": {
+      "class": "context-card",
+      "v-for": "ctx in auth.contextos",
+      ":key": "ctx.key",
+      ":severity": "auth.activeContext === ctx.key ? 'primary' : 'secondary'",
+      ":variant": "auth.activeContext === ctx.key ? 'filled' : 'outlined'",
+      "size": "small",
+      "rounded": true,
+      "@click": "switchContext(ctx)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/layout/AppHeaderLogin.vue",
+    "line": 15,
+    "signature": ":icon=\"esOscuro ? 'pi pi-sun' : 'pi pi-moon'\" class=\"btn-no-bg\" rounded severity=\"secondary\" text",
+    "attrs": {
+      "class": "btn-no-bg",
+      ":icon": "esOscuro ? 'pi pi-sun' : 'pi pi-moon'",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "@click": "toggleTema"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/layout/BottomNavigation.vue",
+    "line": 12,
+    "signature": ":icon=\"item.icon\" class=\"w-12! h-12! p-0! shadow-lg transform transition-transform active:scale-95\" rounded severity=\"primary\"",
+    "attrs": {
+      ":icon": "item.icon",
+      "severity": "primary",
+      "rounded": true,
+      "class": "w-12! h-12! p-0! shadow-lg transform transition-transform active:scale-95",
+      "aria-label": "Volver al inicio",
+      "@click": "go(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/layout/BottomNavigation.vue",
+    "line": 28,
+    "signature": ":class=\"[\n            'bottom-nav-item flex flex-col items-center justify-center flex-1 h-full py-1 transition-colors',\n            activo(item)\n              ? 'text-primary font-semibold'\n              : 'text-text-muted hover:text-text',\n          ]\"",
+    "attrs": {
+      "v-else": true,
+      "type": "button",
+      ":class": "[\n            'bottom-nav-item flex flex-col items-center justify-center flex-1 h-full py-1 transition-colors',\n            activo(item)\n              ? 'text-primary font-semibold'\n              : 'text-text-muted hover:text-text',\n          ]",
+      "@click": "go(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/layout/NotificacionPopover.vue",
+    "line": 65,
+    "signature": "class=\"btn-no-bg header-btn\" icon=\"pi pi-bell\" rounded severity=\"secondary\" text",
+    "attrs": {
+      "v-if": "!moduloNoContratado",
+      "class": "btn-no-bg header-btn",
+      "icon": "pi pi-bell",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "@click": "toggle"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/layout/NotificacionPopover.vue",
+    "line": 92,
+    "signature": "class=\"btn-no-bg header-btn text-text-muted\" link size=\"small\"",
+    "attrs": {
+      "class": "btn-no-bg header-btn text-text-muted",
+      "v-if": "notifCount >= 0",
+      "label": "Ver todas",
+      "size": "small",
+      "link": true,
+      "@click": "irAInbox"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 305,
+    "signature": ":icon=\"foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'\" severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      ":icon": "foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'",
+      ":label": "foco ? 'Salir de foco' : 'Foco'",
+      "severity": "secondary",
+      "text": true,
+      "size": "small",
+      "@click": "alternar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 314,
+    "signature": "icon=\"pi pi-pencil\" size=\"small\"",
+    "attrs": {
+      "label": "Editar",
+      "icon": "pi pi-pencil",
+      "size": "small",
+      "@click": "entrarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 322,
+    "signature": "icon=\"pi pi-check\" size=\"small\"",
+    "attrs": {
+      "label": "Listo",
+      "icon": "pi pi-check",
+      "size": "small",
+      "@click": "salirEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 328,
+    "signature": "severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "cancelarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 334,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Agregar fila",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "agregarFilaYSaltar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 694,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar estacionamiento\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar estacionamiento",
+      "@click": "p.quitarEstacionamiento(f.id, e.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 703,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar est.",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "p.agregarEstacionamiento(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 740,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar vehículo\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar vehículo",
+      "@click": "p.quitarVehiculo(f.id, v.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 750,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar vehículo",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "p.agregarVehiculo(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 785,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar bodega\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar bodega",
+      "@click": "p.quitarBodega(f.id, b.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 794,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar bodega",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "p.agregarBodega(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 834,
+    "signature": ":title=\"\n                        f.esNuevo === false\n                          ? 'Desvincular integrante'\n                          : 'Quitar fila'\n                      \" icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      ":title": "\n                        f.esNuevo === false\n                          ? 'Desvincular integrante'\n                          : 'Quitar fila'\n                      ",
+      "@click": "p.marcarEliminar(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1079,
+    "signature": "class=\"flex items-center justify-between w-full text-left\"",
+    "attrs": {
+      "type": "button",
+      "class": "flex items-center justify-between w-full text-left",
+      "@click": "toggleRecursos(f.id + '-est')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1111,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar estacionamiento\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar estacionamiento",
+      "@click": "p.quitarEstacionamiento(f.id, e.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1120,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar estacionamiento",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "p.agregarEstacionamiento(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1137,
+    "signature": "class=\"flex items-center justify-between w-full text-left\"",
+    "attrs": {
+      "type": "button",
+      "class": "flex items-center justify-between w-full text-left",
+      "@click": "toggleRecursos(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1168,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar vehículo\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar vehículo",
+      "@click": "p.quitarVehiculo(f.id, v.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1187,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar vehículo",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "p.agregarVehiculo(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1211,
+    "signature": "class=\"flex items-center justify-between w-full text-left\"",
+    "attrs": {
+      "type": "button",
+      "class": "flex items-center justify-between w-full text-left",
+      "@click": "toggleRecursos(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1243,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar bodega\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar bodega",
+      "@click": "p.quitarBodega(f.id, b.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1252,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar bodega",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "p.agregarBodega(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaDatos.vue",
+    "line": 1267,
+    "signature": ":icon=\"f.marcadoEliminar ? 'pi pi-undo' : 'pi pi-trash'\" :severity=\"f.marcadoEliminar ? 'secondary' : 'danger'\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      ":label": "f.marcadoEliminar ? 'Desmarcar' : 'Quitar'",
+      ":icon": "f.marcadoEliminar ? 'pi pi-undo' : 'pi pi-trash'",
+      "variant": "text",
+      ":severity": "f.marcadoEliminar ? 'secondary' : 'danger'",
+      "size": "small",
+      "@click": "p.marcarEliminar(f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaResultado.vue",
+    "line": 64,
+    "signature": ":icon=\"\n          filasExpandidas.has('__errores') ? 'pi pi-eye-slash' : 'pi pi-eye'\n        \" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      ":label": "\n          filasExpandidas.has('__errores')\n            ? `Ocultar ${resultado.errores.length} errores`\n            : `Ver ${resultado.errores.length} errores`\n        ",
+      ":icon": "\n          filasExpandidas.has('__errores') ? 'pi pi-eye-slash' : 'pi pi-eye'\n        ",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "@click": "alternarDetalle('__errores')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaResultado.vue",
+    "line": 90,
+    "signature": "class=\"bg-surface text-text-muted hover:bg-primary\" icon=\"pi pi-download\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Exportar resultado CSV",
+      "icon": "pi pi-download",
+      "variant": "outlined",
+      "class": "bg-surface text-text-muted hover:bg-primary",
+      "size": "small",
+      ":loading": "exportando",
+      ":disabled": "exportando",
+      "@click": "emit('exportar')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaResultado.vue",
+    "line": 111,
+    "signature": ":severity=\"filtro === o.valor ? 'primary' : 'secondary'\" :variant=\"filtro === o.valor ? undefined : 'outlined'\" size=\"small\"",
+    "attrs": {
+      "v-for": "o in FILTROS_FILA",
+      ":key": "o.valor",
+      ":label": "`${o.etiqueta} (${conteos[o.valor] ?? 0})`",
+      ":severity": "filtro === o.valor ? 'primary' : 'secondary'",
+      ":variant": "filtro === o.valor ? undefined : 'outlined'",
+      ":disabled": "o.valor !== 'todos' && !(conteos[o.valor] ?? 0)",
+      "size": "small",
+      "@click": "setFiltro(o.valor)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaResultado.vue",
+    "line": 131,
+    "signature": "class=\"flex items-center gap-2 w-full text-left text-sm\"",
+    "attrs": {
+      "type": "button",
+      "class": "flex items-center gap-2 w-full text-left text-sm",
+      "@click": "tieneDetalle(f) && alternarDetalle(f.numeroFila)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 221,
+    "signature": ":icon=\"foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'\" class=\"ml-auto\" severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      ":icon": "foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'",
+      ":label": "foco ? 'Salir de foco' : 'Foco'",
+      "severity": "secondary",
+      "text": true,
+      "size": "small",
+      "class": "ml-auto",
+      "@click": "alternar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 414,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar",
+      "@click": "emit('quitarEstacionamiento', f.id, e.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 423,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Est.",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "emit('agregarEstacionamiento', f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 455,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar vehículo\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar vehículo",
+      "@click": "emit('quitarVehiculo', f.id, v.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 487,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Vehículo",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "emit('agregarVehiculo', f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 509,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "@click": "emit('quitarBodega', f.id, b.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 517,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Bodega",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "emit('agregarBodega', f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 527,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" title=\"Quitar fila\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "severity": "danger",
+      "size": "small",
+      "title": "Quitar fila",
+      "@click": "emit('quitarFila', f.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 557,
+    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Limpiar todo",
+      "icon": "pi pi-trash",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      ":disabled": "enviando",
+      "@click": "emit('limpiar')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 566,
+    "signature": ":title=\"deshabilitado ? 'Sin permiso IMPORTACION_DATOS' : ''\" icon=\"pi pi-check-circle\" size=\"small\"",
+    "attrs": {
+      "label": "Validar en servidor",
+      "icon": "pi pi-check-circle",
+      "size": "small",
+      ":loading": "enviando",
+      ":disabled": "\n            deshabilitado || (!staging.length && !archivoPendienteNombre)\n          ",
+      ":title": "deshabilitado ? 'Sin permiso IMPORTACION_DATOS' : ''",
+      "@click": "emit('validar')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 597,
+    "signature": ":icon=\"foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'\" class=\"ml-auto\" severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      ":icon": "foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'",
+      ":label": "foco ? 'Salir de foco' : 'Foco'",
+      "severity": "secondary",
+      "text": true,
+      "size": "small",
+      "class": "ml-auto",
+      "@click": "alternar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 671,
+    "signature": ":severity=\"filtro === o.valor ? 'primary' : 'secondary'\" :variant=\"filtro === o.valor ? undefined : 'outlined'\" size=\"small\"",
+    "attrs": {
+      "v-for": "o in FILTROS_FILA",
+      ":key": "o.valor",
+      ":label": "`${o.etiqueta} (${conteos[o.valor] ?? 0})`",
+      ":severity": "filtro === o.valor ? 'primary' : 'secondary'",
+      ":variant": "filtro === o.valor ? undefined : 'outlined'",
+      ":disabled": "o.valor !== 'todos' && !(conteos[o.valor] ?? 0)",
+      "size": "small",
+      "@click": "setFiltro(o.valor)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 814,
+    "signature": ":icon=\"\n                        filasExpandidas.has(num)\n                          ? 'pi pi-eye-slash'\n                          : 'pi pi-eye'\n                      \" :title=\"\n                        filasExpandidas.has(num)\n                          ? 'Ocultar detalle'\n                          : 'Ver detalle'\n                      \" class=\"text-text-muted\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "tieneDetalle(estadoPorFila.get(num))",
+      ":icon": "\n                        filasExpandidas.has(num)\n                          ? 'pi pi-eye-slash'\n                          : 'pi pi-eye'\n                      ",
+      "variant": "text",
+      "class": "text-text-muted",
+      "size": "small",
+      ":title": "\n                        filasExpandidas.has(num)\n                          ? 'Ocultar detalle'\n                          : 'Ver detalle'\n                      ",
+      "@click": "alternarDetalle(num)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 946,
+    "signature": ":icon=\"\n                        filasExpandidas.has(f.numeroFila)\n                          ? 'pi pi-eye-slash'\n                          : 'pi pi-eye'\n                      \" :title=\"\n                        filasExpandidas.has(f.numeroFila)\n                          ? 'Ocultar detalle'\n                          : 'Ver detalle'\n                      \" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "tieneDetalle(f)",
+      ":icon": "\n                        filasExpandidas.has(f.numeroFila)\n                          ? 'pi pi-eye-slash'\n                          : 'pi pi-eye'\n                      ",
+      "variant": "text",
+      "size": "small",
+      ":title": "\n                        filasExpandidas.has(f.numeroFila)\n                          ? 'Ocultar detalle'\n                          : 'Ver detalle'\n                      ",
+      "@click": "alternarDetalle(f.numeroFila)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 1004,
+    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Limpiar todo",
+      "icon": "pi pi-trash",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      ":disabled": "enviando",
+      "@click": "emit('limpiar')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 1014,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Volver a editar",
+      "icon": "pi pi-pencil",
+      "severity": "secondary",
+      "size": "small",
+      "variant": "outlined",
+      ":disabled": "enviando",
+      "@click": "emit('descartar')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaStagedPreview.vue",
+    "line": 1023,
+    "signature": "icon=\"pi pi-check\" size=\"small\"",
+    "attrs": {
+      ":label": "`Importar ${previewData.filasOk} filas`",
+      "icon": "pi pi-check",
+      "size": "small",
+      ":loading": "enviando",
+      ":disabled": "!previewData.filasOk",
+      "@click": "emit('importar')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaUploader.vue",
+    "line": 36,
+    "signature": "icon=\"pi pi-download\" size=\"small\" title=\"Sin permiso IMPORTACION_DATOS\"",
+    "attrs": {
+      "label": "Descargar plantilla",
+      "icon": "pi pi-download",
+      "size": "small",
+      ":disabled": "deshabilitado",
+      "title": "Sin permiso IMPORTACION_DATOS",
+      "@click": "emit('descargar')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaUploader.vue",
+    "line": 69,
+    "signature": ":title=\"deshabilitado ? 'Sin permiso IMPORTACION_DATOS' : ''\" icon=\"pi pi-download\" size=\"small\"",
+    "attrs": {
+      "label": "Descargar plantilla",
+      "icon": "pi pi-download",
+      "size": "small",
+      ":disabled": "deshabilitado || enviando",
+      ":title": "deshabilitado ? 'Sin permiso IMPORTACION_DATOS' : ''",
+      "@click": "emit('descargar')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/planilla/PlanillaUploader.vue",
+    "line": 80,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Ver formato esperado",
+      "@click": "toggleFormatoInfo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/quickaccess/AccesoRapidoCard.vue",
+    "line": 31,
+    "signature": ":icon=\"item.icon\" :severity=\"item.severity || (item.isCentralFab ? 'primary' : 'secondary')\" :variant=\"item.variant || (item.isCentralFab ? 'filled' : 'outlined')\"",
+    "attrs": {
+      "v-for": "item in items",
+      ":key": "item.routeName",
+      ":label": "item.label",
+      ":icon": "item.icon",
+      ":severity": "item.severity || (item.isCentralFab ? 'primary' : 'secondary')",
+      ":variant": "item.variant || (item.isCentralFab ? 'filled' : 'outlined')",
+      "@click": "go(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 108,
+    "signature": "icon=\"pi pi-search\"",
+    "attrs": {
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      ":loading": "loading",
+      ":disabled": "patente.length < 3",
+      "@click": "consultar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 131,
+    "signature": "icon=\"pi pi-search\"",
+    "attrs": {
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      ":loading": "loading",
+      ":disabled": "patente.length < 3",
+      "@click": "consultar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 180,
+    "signature": "class=\"btn-no-bg body-btn\" icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "class": "btn-no-bg body-btn",
+      "icon": "pi pi-times",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "@click": "limpiar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 215,
+    "signature": "icon=\"pi pi-sign-in\" severity=\"success\"",
+    "attrs": {
+      "v-if": "tieneAccion('REGISTRAR_INGRESO', resultados[0])",
+      "label": "Registrar ingreso",
+      "icon": "pi pi-sign-in",
+      "severity": "success",
+      "@click": "irARegistrarIngreso(resultados[0])"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 222,
+    "signature": "icon=\"pi pi-sign-out\" severity=\"warn\"",
+    "attrs": {
+      "v-if": "tieneAccesoActivo(resultados[0])",
+      "label": "Registrar salida",
+      "icon": "pi pi-sign-out",
+      "severity": "warn",
+      "@click": "abrirDialogSalida(resultados[0])"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 229,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
+    "attrs": {
+      "v-if": "tieneAccion('NUEVA_VISITA', resultados[0])",
+      "label": "Nueva visita",
+      "icon": "pi pi-plus",
+      "severity": "secondary",
+      "@click": "irANuevaVisita"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 236,
+    "signature": "icon=\"pi pi-info-circle\" severity=\"info\" variant=\"outlined\"",
+    "attrs": {
+      "v-if": "tieneAccion('VER_DETALLE', resultados[0])",
+      "label": "Ver detalle",
+      "icon": "pi pi-info-circle",
+      "severity": "info",
+      "variant": "outlined",
+      "@click": "irAVerDetalle(resultados[0])"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 254,
+    "signature": "class=\"btn-no-bg body-btn\" icon=\"pi pi-times\" severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "class": "btn-no-bg body-btn",
+      "icon": "pi pi-times",
+      "label": "Limpiar",
+      "severity": "secondary",
+      "text": true,
+      "size": "small",
+      "@click": "limpiar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 328,
+    "signature": "icon=\"pi pi-sign-in\" severity=\"success\"",
+    "attrs": {
+      "v-if": "tieneAccion('REGISTRAR_INGRESO', res)",
+      "label": "Registrar ingreso",
+      "icon": "pi pi-sign-in",
+      "severity": "success",
+      "@click": "irARegistrarIngreso(res)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 335,
+    "signature": "icon=\"pi pi-sign-out\" severity=\"warn\"",
+    "attrs": {
+      "v-if": "tieneAccesoActivo(res)",
+      "label": "Registrar salida",
+      "icon": "pi pi-sign-out",
+      "severity": "warn",
+      "@click": "abrirDialogSalida(res)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 342,
+    "signature": "icon=\"pi pi-info-circle\" severity=\"info\" variant=\"outlined\"",
+    "attrs": {
+      "v-if": "tieneAccion('VER_DETALLE', res)",
+      "label": "Ver detalle",
+      "icon": "pi pi-info-circle",
+      "severity": "info",
+      "variant": "outlined",
+      "@click": "irAVerDetalle(res)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 381,
+    "signature": "class=\"btn-no-bg body-btn\" icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "class": "btn-no-bg body-btn",
+      "icon": "pi pi-times",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "@click": "limpiar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 400,
+    "signature": "icon=\"pi pi-plus\"",
+    "attrs": {
+      "label": "Registrar como visita",
+      "icon": "pi pi-plus",
+      "@click": "irANuevaVisita"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/BuscadorPatenteCard.vue",
+    "line": 405,
+    "signature": "icon=\"pi pi-sign-out\" severity=\"warn\"",
+    "attrs": {
+      "v-if": "tieneAccesoActivo(resultados[0])",
+      "label": "Registrar salida",
+      "icon": "pi pi-sign-out",
+      "severity": "warn",
+      "@click": "abrirDialogSalida(resultados[0])"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/ConfirmarSalidaDialog.vue",
+    "line": 99,
+    "signature": "class=\"rounded-lg border border-border/80 shadow-lg\" severity=\"secondary\" text",
+    "attrs": {
+      "class": "rounded-lg border border-border/80 shadow-lg",
+      "label": "Cancelar",
+      "severity": "secondary",
+      "text": true,
+      ":disabled": "loading",
+      "@click": "handleCancel"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/components/visitas/ConfirmarSalidaDialog.vue",
+    "line": 107,
+    "signature": "icon=\"pi pi-sign-out\" severity=\"warn\"",
+    "attrs": {
+      "label": "Confirmar salida",
+      "icon": "pi pi-sign-out",
+      "severity": "warn",
+      ":loading": "loading",
+      "@click": "handleConfirm"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/modules/permisos/views/CargosPermisosView.vue",
+    "line": 90,
+    "signature": "icon=\"pi pi-save\"",
+    "attrs": {
+      "label": "Guardar",
+      "icon": "pi pi-save",
+      ":loading": "guardando",
+      "@click": "confirmarGuardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/modules/permisos/views/CargosPermisosView.vue",
+    "line": 102,
+    "signature": "class=\"w-full flex items-center justify-between gap-2 p-3 text-left hover:bg-emphasis transition-colors\"",
+    "attrs": {
+      "class": "w-full flex items-center justify-between gap-2 p-3 text-left hover:bg-emphasis transition-colors",
+      "@click": "toggleGrupo(grupo.codigo)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/modules/permisos/views/CargosPermisosView.vue",
+    "line": 135,
+    "signature": "icon=\"pi pi-arrow-up\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Ir arriba",
+      "icon": "pi pi-arrow-up",
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
+      "@click": "irArriba"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/ConfiguracionAlmacenamientoView.vue",
+    "line": 87,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "type": "submit",
+      ":loading": "isSaving",
+      "label": "Guardar",
+      "icon": "pi pi-check"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonalView.vue",
+    "line": 73,
+    "signature": "icon=\"pi pi-user-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Asignar rol",
+      "icon": "pi pi-user-plus",
+      "size": "small",
+      "@click": "abrirAsignar(null)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonalView.vue",
+    "line": 98,
+    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-pencil",
+      "size": "small",
+      "variant": "text",
+      "@click": "abrirAsignar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonalView.vue",
+    "line": 99,
+    "signature": "icon=\"pi pi-ban\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "p.activo",
+      "icon": "pi pi-ban",
+      "size": "small",
+      "variant": "text",
+      "severity": "danger",
+      "@click": "confirmarRevocar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonalView.vue",
+    "line": 120,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "mostrarDialog = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonalView.vue",
+    "line": 121,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      ":disabled": "!usuarioId || !rolId",
+      "@click": "handleAsignar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 227,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nueva persona",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 255,
+    "signature": "icon=\"pi pi-link\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-link",
+      "variant": "text",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "verVinculos(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 256,
+    "signature": "icon=\"pi pi-user-plus\" severity=\"info\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-user-plus",
+      "variant": "text",
+      "size": "small",
+      "severity": "info",
+      "@click": "abrirCrearUsuario(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 257,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-pencil",
+      "variant": "text",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "abrirEditar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 258,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "size": "small",
+      "severity": "danger",
+      "@click": "confirmarDesactivar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 277,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrearPersona = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 278,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Crear",
+      ":loading": "enviando",
+      "@click": "crearPersona"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 294,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showEditarPersona = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 295,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "editarPersona"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 301,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo vínculo",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrearVinculo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 333,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrearVinculo = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 334,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "crearVinculo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 347,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrearUsuario = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 348,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Crear usuario",
+      ":loading": "enviando",
+      "@click": "crearUsuario"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PlantillasNotificacionView.vue",
+    "line": 117,
+    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-pencil",
+      "size": "small",
+      "variant": "text",
+      "@click": "abrirEdicion(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PlantillasNotificacionView.vue",
+    "line": 118,
+    "signature": "icon=\"pi pi-undo\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "p.origen === 'OVERRIDE'",
+      "icon": "pi pi-undo",
+      "size": "small",
+      "variant": "text",
+      "severity": "danger",
+      "@click": "confirmarRestaurar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PlantillasNotificacionView.vue",
+    "line": 132,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showEditar = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PlantillasNotificacionView.vue",
+    "line": 133,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Guardar",
+      "icon": "pi pi-check",
+      ":loading": "enviando",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/UnidadesView.vue",
+    "line": 253,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nueva unidad",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/UnidadesView.vue",
+    "line": 297,
+    "signature": ":icon=\"unidadExpandida === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'\" :title=\"unidadExpandida === u.id ? 'Ocultar quiénes viven aquí' : 'Ver quiénes viven aquí'\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      ":icon": "unidadExpandida === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'",
+      "variant": "text",
+      "size": "small",
+      "severity": "secondary",
+      ":title": "unidadExpandida === u.id ? 'Ocultar quiénes viven aquí' : 'Ver quiénes viven aquí'",
+      "@click": "toggleExpandir(u)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/UnidadesView.vue",
+    "line": 305,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-pencil",
+      "variant": "text",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "abrirEditar(u)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/UnidadesView.vue",
+    "line": 306,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "u.activo !== false",
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "size": "small",
+      "severity": "danger",
+      "@click": "confirmarDesactivar(u)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/UnidadesView.vue",
+    "line": 381,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrear = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/UnidadesView.vue",
+    "line": 382,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Crear",
+      ":loading": "enviando",
+      ":disabled": "tipoAlLimite(formCrear.tipo)",
+      "@click": "crearUnidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/UnidadesView.vue",
+    "line": 414,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showEditar = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/UnidadesView.vue",
+    "line": 415,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      ":disabled": "tipoAlLimiteAlEditar(formEditar.tipo)",
+      "@click": "editarUnidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/ForgotPasswordView.vue",
+    "line": 61,
+    "signature": "fluid icon=\"pi pi-send\"",
+    "attrs": {
+      "type": "submit",
+      "label": "Enviar enlace",
+      "icon": "pi pi-send",
+      ":loading": "loading",
+      "fluid": true
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/ForgotPasswordView.vue",
+    "line": 68,
+    "signature": "class=\"primary-text\" fluid icon=\"pi pi-arrow-left\" variant=\"text\"",
+    "attrs": {
+      "class": "primary-text",
+      "label": "Volver al login",
+      "icon": "pi pi-arrow-left",
+      "variant": "text",
+      "fluid": true,
+      "@click": "router.push({ name: 'Login' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/ForgotPasswordView.vue",
+    "line": 82,
+    "signature": "class=\"primary-text\" fluid icon=\"pi pi-arrow-left\"",
+    "attrs": {
+      "class": "primary-text",
+      "label": "Volver al login",
+      "icon": "pi pi-arrow-left",
+      "fluid": true,
+      "@click": "router.push({ name: 'Login' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/LoginView.vue",
+    "line": 123,
+    "signature": "fluid icon=\"pi pi-sign-in\"",
+    "attrs": {
+      "type": "submit",
+      "label": "Ingresar",
+      "icon": "pi pi-sign-in",
+      ":loading": "loading",
+      "fluid": true
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/ResetPasswordView.vue",
+    "line": 92,
+    "signature": "fluid icon=\"pi pi-check\"",
+    "attrs": {
+      "type": "submit",
+      "label": "Restablecer",
+      "icon": "pi pi-check",
+      ":loading": "loading",
+      "fluid": true
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/ResetPasswordView.vue",
+    "line": 99,
+    "signature": "class=\"primary-text\" fluid icon=\"pi pi-arrow-left\" variant=\"text\"",
+    "attrs": {
+      "class": "primary-text",
+      "label": "Volver al login",
+      "icon": "pi pi-arrow-left",
+      "variant": "text",
+      "fluid": true,
+      "@click": "router.push({ name: 'Login' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/ResetPasswordView.vue",
+    "line": 113,
+    "signature": "class=\"primary-text\" fluid icon=\"pi pi-sign-in\"",
+    "attrs": {
+      "class": "primary-text",
+      "label": "Ir al login",
+      "icon": "pi pi-sign-in",
+      "fluid": true,
+      "@click": "router.push({ name: 'Login' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/SetupPasswordView.vue",
+    "line": 92,
+    "signature": "fluid icon=\"pi pi-check\"",
+    "attrs": {
+      "type": "submit",
+      "label": "Establecer",
+      "icon": "pi pi-check",
+      ":loading": "loading",
+      "fluid": true
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/SetupPasswordView.vue",
+    "line": 99,
+    "signature": "class=\"primary-text\" fluid icon=\"pi pi-arrow-left\" variant=\"text\"",
+    "attrs": {
+      "class": "primary-text",
+      "label": "Volver al login",
+      "icon": "pi pi-arrow-left",
+      "variant": "text",
+      "fluid": true,
+      "@click": "router.push({ name: 'Login' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/auth/SetupPasswordView.vue",
+    "line": 112,
+    "signature": "class=\"primary-text\" fluid icon=\"pi pi-sign-in\"",
+    "attrs": {
+      "class": "primary-text",
+      "label": "Ir al login",
+      "icon": "pi pi-sign-in",
+      "fluid": true,
+      "@click": "router.push({ name: 'Login' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/common/EnConstruccionView.vue",
+    "line": 36,
+    "signature": "icon=\"pi pi-arrow-left\" severity=\"secondary\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Volver",
+      "icon": "pi pi-arrow-left",
+      "severity": "secondary",
+      "variant": "outlined",
+      "@click": "volver"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/dashboard/AdminDashboardView.vue",
+    "line": 139,
+    "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\"",
+    "attrs": {
+      "label": "Continuar configuración",
+      "icon": "pi pi-arrow-right",
+      "icon-pos": "right",
+      "size": "small",
+      "@click": "router.push({ name: 'Setup' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/dashboard/ResidenteDashboardView.vue",
+    "line": 105,
+    "signature": ":severity=\"unidadActiva === u.id ? 'primary' : 'secondary'\" :variant=\"unidadActiva === u.id ? 'solid' : 'outlined'\" size=\"small\"",
+    "attrs": {
+      "v-for": "u in dashboard.unidades",
+      ":key": "u.id",
+      "size": "small",
+      ":severity": "unidadActiva === u.id ? 'primary' : 'secondary'",
+      ":variant": "unidadActiva === u.id ? 'solid' : 'outlined'",
+      "@click": "unidadActiva = u.id"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/encomiendas/EncomiendasView.vue",
+    "line": 182,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Registrar",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "mostrarFormulario = !mostrarFormulario"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/encomiendas/EncomiendasView.vue",
+    "line": 216,
+    "signature": ":severity=\"busquedaVisible ? 'primary' : 'secondary'\" class=\"rounded-lg shrink-0\" icon=\"pi pi-search\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "icon": "pi pi-search",
+      "size": "small",
+      ":severity": "busquedaVisible ? 'primary' : 'secondary'",
+      "variant": "outlined",
+      "class": "rounded-lg shrink-0",
+      "aria-label": "Buscar",
+      ":aria-pressed": "busquedaVisible",
+      "@click": "toggleBusqueda"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/encomiendas/EncomiendasView.vue",
+    "line": 340,
+    "signature": "icon=\"pi pi-check\" severity=\"success\" size=\"small\"",
+    "attrs": {
+      "v-if": "e.estado === 'PENDIENTE'",
+      "label": "Entregar",
+      "icon": "pi pi-check",
+      "severity": "success",
+      "size": "small",
+      "@click.stop": "abrirEntrega(e)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/encomiendas/EncomiendasView.vue",
+    "line": 348,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Ver detalle completo",
+      "icon": "pi pi-search",
+      "severity": "secondary",
+      "size": "small",
+      "variant": "outlined",
+      "@click.stop": "abrirDetalle(e)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CargosAdicionalesView.vue",
+    "line": 149,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo cargo",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CargosAdicionalesView.vue",
+    "line": 200,
+    "signature": "icon=\"pi pi-ban\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "c.estado !== 'ANULADO'",
+      "icon": "pi pi-ban",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "abrirAnular(c)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CargosAdicionalesView.vue",
+    "line": 254,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrear = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CargosAdicionalesView.vue",
+    "line": 255,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "crearCargo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CargosAdicionalesView.vue",
+    "line": 269,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showAnular = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CargosAdicionalesView.vue",
+    "line": 270,
+    "signature": "severity=\"danger\"",
+    "attrs": {
+      "label": "Anular",
+      "severity": "danger",
+      ":loading": "enviando",
+      "@click": "anularCargo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CategoriasView.vue",
+    "line": 106,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nueva categoría",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CategoriasView.vue",
+    "line": 131,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "!c.esSistema",
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "size": "small",
+      "severity": "danger",
+      "@click": "confirmarEliminar(c)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CategoriasView.vue",
+    "line": 143,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrear = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CategoriasView.vue",
+    "line": 144,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Crear",
+      ":loading": "enviando",
+      "@click": "crearCategoria"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CuentasView.vue",
+    "line": 137,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nueva cuenta",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CuentasView.vue",
+    "line": 169,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-pencil",
+      "variant": "text",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "abrirEditar(cta)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CuentasView.vue",
+    "line": 170,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "cta.activa",
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "size": "small",
+      "severity": "danger",
+      "@click": "confirmarDesactivar(cta)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CuentasView.vue",
+    "line": 212,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showDialog = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/CuentasView.vue",
+    "line": 213,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosComunesView.vue",
+    "line": 118,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo periodo",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosComunesView.vue",
+    "line": 181,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrear = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosComunesView.vue",
+    "line": 182,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Crear",
+      ":loading": "enviando",
+      "@click": "crearPeriodo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosView.vue",
+    "line": 183,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo gasto",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosView.vue",
+    "line": 214,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "buscar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosView.vue",
+    "line": 244,
+    "signature": "icon=\"pi pi-ban\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "g.estado === 'ACTIVO'",
+      "icon": "pi pi-ban",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "abrirAnular(g)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosView.vue",
+    "line": 307,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrear = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosView.vue",
+    "line": 308,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "crearGasto"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosView.vue",
+    "line": 322,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showAnular = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/GastosView.vue",
+    "line": 323,
+    "signature": "severity=\"danger\"",
+    "attrs": {
+      "label": "Anular",
+      "severity": "danger",
+      ":loading": "enviando",
+      "@click": "anularGasto"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/LedgerView.vue",
+    "line": 114,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "buscar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PagosView.vue",
+    "line": 228,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Registrar pago",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PagosView.vue",
+    "line": 255,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "buscar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PagosView.vue",
+    "line": 396,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrear = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PagosView.vue",
+    "line": 397,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Registrar pago",
+      ":loading": "enviando",
+      ":disabled": "!form.unidadId || !form.cuentaDestinoId || (!cuotasSeleccionadas.length && !cargosSeleccionados.length)",
+      "@click": "crearPago"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PlantillasGastoView.vue",
+    "line": 140,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nueva plantilla",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PlantillasGastoView.vue",
+    "line": 169,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-pencil",
+      "variant": "text",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "abrirEditar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PlantillasGastoView.vue",
+    "line": 170,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "size": "small",
+      "severity": "danger",
+      "@click": "confirmarEliminar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PlantillasGastoView.vue",
+    "line": 205,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showDialog = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/finanzas/PlantillasGastoView.vue",
+    "line": 206,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/AnunciosView.vue",
+    "line": 126,
+    "signature": "icon=\"pi pi-filter\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      ":label": "mostrandoTodos ? 'Vigentes' : 'Todos'",
+      "icon": "pi pi-filter",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "toggleVista"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/AnunciosView.vue",
+    "line": 133,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo anuncio",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/AnunciosView.vue",
+    "line": 195,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrear = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/AnunciosView.vue",
+    "line": 196,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Publicar",
+      ":loading": "enviando",
+      "@click": "crear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 254,
+    "signature": "icon=\"pi pi-comment\" severity=\"secondary\"",
+    "attrs": {
+      "v-if": "detalle && detalle.estado !== 'CERRADO'",
+      "label": "Seguimiento",
+      "icon": "pi pi-comment",
+      "severity": "secondary",
+      "@click": "abrirSeguimiento"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 261,
+    "signature": "icon=\"pi pi-check\" severity=\"danger\"",
+    "attrs": {
+      "v-if": "detalle && detalle.estado !== 'CERRADO'",
+      "label": "Cerrar caso",
+      "icon": "pi pi-check",
+      "severity": "danger",
+      "@click": "showCerrar = true"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 290,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showSeguimiento = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 291,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "agregarSeguimiento"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 304,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCerrar = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 305,
+    "signature": "severity=\"danger\"",
+    "attrs": {
+      "label": "Cerrar caso",
+      "severity": "danger",
+      ":loading": "enviando",
+      "@click": "cerrarCaso"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/MiembrosView.vue",
+    "line": 155,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Asignar cargo",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirAsignar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/MiembrosView.vue",
+    "line": 181,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "m.activo",
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarDesactivar(m)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/MiembrosView.vue",
+    "line": 226,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showAsignar = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/MiembrosView.vue",
+    "line": 227,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Asignar",
+      ":loading": "enviando",
+      "@click": "asignar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/ReglasNotificacionView.vue",
+    "line": 163,
+    "signature": "icon=\"pi pi-undo\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "r.esSobrescritura",
+      "icon": "pi pi-undo",
+      "size": "small",
+      "variant": "text",
+      "severity": "danger",
+      ":disabled": "guardando === r.tipo",
+      "@click": "confirmarRestaurar(r)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/BitacoraView.vue",
+    "line": 125,
+    "signature": ":severity=\"busquedaVisible ? 'primary' : 'secondary'\" class=\"rounded-lg shrink-0\" icon=\"pi pi-search\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "icon": "pi pi-search",
+      "size": "small",
+      ":severity": "busquedaVisible ? 'primary' : 'secondary'",
+      "variant": "outlined",
+      "class": "rounded-lg shrink-0",
+      "aria-label": "Buscar",
+      ":aria-pressed": "busquedaVisible",
+      "@click": "toggleBusqueda"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/BitacoraView.vue",
+    "line": 135,
+    "signature": "icon=\"pi pi-flag\" severity=\"primary\"",
+    "attrs": {
+      "label": "Registrar novedad",
+      "icon": "pi pi-flag",
+      "severity": "primary",
+      "@click": "showDialog = true"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/ChecklistTemplatesView.vue",
+    "line": 112,
+    "signature": "icon=\"pi pi-search\" size=\"small\"",
+    "attrs": {
+      "label": "Cargar",
+      "icon": "pi pi-search",
+      "size": "small",
+      "@click": "cargar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/ChecklistTemplatesView.vue",
+    "line": 126,
+    "signature": "icon=\"pi pi-pencil\" severity=\"warn\" size=\"small\"",
+    "attrs": {
+      "v-if": "!editando && (auth.condominioActualRol === 'ADMINISTRADOR' || auth.condominioActualCargo === 'PRESIDENTE' || auth.condominioActualCargo === 'SECRETARIO')",
+      "label": "Editar",
+      "icon": "pi pi-pencil",
+      "size": "small",
+      "severity": "warn",
+      "@click": "iniciarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/ChecklistTemplatesView.vue",
+    "line": 127,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\"",
+    "attrs": {
+      "v-if": "!editando && (auth.condominioActualRol === 'ADMINISTRADOR' || auth.condominioActualCargo === 'PRESIDENTE')",
+      "label": "Desactivar",
+      "icon": "pi pi-trash",
+      "size": "small",
+      "severity": "danger",
+      "@click": "confirmarDesactivar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/ChecklistTemplatesView.vue",
+    "line": 139,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      "icon": "pi pi-trash",
+      "variant": "text",
+      "size": "small",
+      "severity": "danger",
+      "@click": "quitarItem(idx)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/ChecklistTemplatesView.vue",
+    "line": 142,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "v-if": "editando",
+      "label": "Agregar pregunta",
+      "icon": "pi pi-plus",
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
+      "@click": "agregarItem"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/ChecklistTemplatesView.vue",
+    "line": 147,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "editando = false; cargar()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/guardia/ChecklistTemplatesView.vue",
+    "line": 148,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Guardar",
+      "icon": "pi pi-check",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/menu/MenuView.vue",
+    "line": 69,
+    "signature": ":icon=\"item.icon\" class=\"w-full justify-content-start py-2\" variant=\"text\"",
+    "attrs": {
+      "v-for": "item in group.items",
+      ":key": "item.routeName",
+      ":label": "item.label",
+      ":icon": "item.icon",
+      "variant": "text",
+      "class": "w-full justify-content-start py-2",
+      "@click": "goTo(item.routeName)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/menu/MenuView.vue",
+    "line": 86,
+    "signature": "class=\"w-full justify-content-start py-2\" icon=\"pi pi-bell\" variant=\"text\"",
+    "attrs": {
+      "label": "Ver mensajes",
+      "icon": "pi pi-bell",
+      "variant": "text",
+      "class": "w-full justify-content-start py-2",
+      "@click": "goTo('Notificaciones')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/menu/MenuView.vue",
+    "line": 100,
+    "signature": "class=\"w-full justify-content-start py-2\" icon=\"pi pi-user\" variant=\"text\"",
+    "attrs": {
+      "label": "Perfil",
+      "icon": "pi pi-user",
+      "variant": "text",
+      "class": "w-full justify-content-start py-2",
+      "@click": "goTo('Perfil')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/menu/MenuView.vue",
+    "line": 107,
+    "signature": "class=\"w-full justify-content-start py-2\" icon=\"pi pi-bell\" variant=\"text\"",
+    "attrs": {
+      "label": "Notificaciones Push",
+      "icon": "pi pi-bell",
+      "variant": "text",
+      "class": "w-full justify-content-start py-2",
+      "@click": "goTo('Configuracion')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/menu/MenuView.vue",
+    "line": 115,
+    "signature": "class=\"w-full justify-content-start py-2\" icon=\"pi pi-sign-out\" severity=\"danger\" variant=\"text\"",
+    "attrs": {
+      "label": "Cerrar sesión",
+      "icon": "pi pi-sign-out",
+      "severity": "danger",
+      "variant": "text",
+      "class": "w-full justify-content-start py-2",
+      "@click": "handleLogout"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/notificaciones/NotificacionesView.vue",
+    "line": 80,
+    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "hayNoLeidas",
+      "label": "Marcar todas leídas",
+      "icon": "pi pi-check",
+      "size": "small",
+      "variant": "text",
+      "@click": "marcarTodas"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/CasosView.vue",
+    "line": 118,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "showDialog = true"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/CasosView.vue",
+    "line": 211,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showDialog = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/CasosView.vue",
+    "line": 217,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Abrir caso",
+      "icon": "pi pi-check",
+      ":loading": "enviando",
+      "@click": "abrirCaso"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/ConfiguracionView.vue",
+    "line": 43,
+    "signature": "icon=\"pi pi-bell\" size=\"small\"",
+    "attrs": {
+      "label": "Activar",
+      "icon": "pi pi-bell",
+      "size": "small",
+      ":loading": "cambiando",
+      "@click": "toggleOn"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/GestionesView.vue",
+    "line": 192,
+    "signature": "size=\"small\"",
+    "attrs": {
+      "label": "Enviar caso",
+      "size": "small",
+      ":loading": "enviando",
+      ":disabled": "!form.titulo.trim()",
+      "@click": "enviarCaso"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/InicioView.vue",
+    "line": 334,
+    "signature": "icon=\"pi pi-arrow-right\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Ver todas",
+      "icon": "pi pi-arrow-right",
+      "size": "small",
+      "variant": "text",
+      "@click": "router.push({ name: 'MisAutorizaciones' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/InicioView.vue",
+    "line": 343,
+    "signature": "icon=\"pi pi-arrow-right\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Administrar",
+      "icon": "pi pi-arrow-right",
+      "size": "small",
+      "variant": "text",
+      "@click": "router.push({ name: 'MisAutorizaciones' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisAutorizacionesView.vue",
+    "line": 209,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nueva",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirDialog"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisAutorizacionesView.vue",
+    "line": 265,
+    "signature": "icon=\"pi pi-times\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "a.estado === 'PENDIENTE'",
+      "label": "",
+      "icon": "pi pi-times",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "cancelarAutorizacion(a.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisAutorizacionesView.vue",
+    "line": 401,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showDialog = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisAutorizacionesView.vue",
+    "line": 407,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Crear",
+      "icon": "pi pi-check",
+      ":loading": "enviando",
+      "@click": "crearAutorizacion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/PerfilView.vue",
+    "line": 277,
+    "signature": "icon=\"pi pi-save\"",
+    "attrs": {
+      "label": "Guardar cambios",
+      "icon": "pi pi-save",
+      ":loading": "loadingDatos",
+      "@click": "guardarDatos"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/PerfilView.vue",
+    "line": 338,
+    "signature": "icon=\"pi pi-key\"",
+    "attrs": {
+      "label": "Cambiar contraseña",
+      "icon": "pi pi-key",
+      ":loading": "loadingPass",
+      "@click": "cambiarPassword"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/PerfilView.vue",
+    "line": 383,
+    "signature": "icon=\"pi pi-send\"",
+    "attrs": {
+      "label": "Solicitar cambio",
+      "icon": "pi pi-send",
+      ":loading": "loadingEmail",
+      "@click": "solicitarEmail"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAccesosView.vue",
+    "line": 100,
+    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "!editando",
+      "label": "Editar",
+      "icon": "pi pi-pencil",
+      "variant": "text",
+      "size": "small",
+      "@click": "entrarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAccesosView.vue",
+    "line": 109,
+    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Listo",
+      "icon": "pi pi-check",
+      "variant": "text",
+      "size": "small",
+      "@click": "salirEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAccesosView.vue",
+    "line": 110,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "variant": "text",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "cancelarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAccesosView.vue",
+    "line": 111,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar fila",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "u.agregarFila"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAccesosView.vue",
+    "line": 168,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAccesosView.vue",
+    "line": 204,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAccesosView.vue",
+    "line": 230,
+    "signature": ":title=\"!u.hayCambios ? 'Sin cambios pendientes' : ''\" icon=\"pi pi-save\"",
+    "attrs": {
+      ":label": "u.hayCambios ? `Guardar accesos (${u.pendientes.total})` : 'Guardar accesos'",
+      "icon": "pi pi-save",
+      ":loading": "u.enviando",
+      ":disabled": "!u.itemsValidos || !u.hayCambios",
+      ":title": "!u.hayCambios ? 'Sin cambios pendientes' : ''",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAreasComunesView.vue",
+    "line": 193,
+    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "!editando",
+      "label": "Editar",
+      "icon": "pi pi-pencil",
+      "variant": "text",
+      "size": "small",
+      "@click": "entrarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAreasComunesView.vue",
+    "line": 202,
+    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Listo",
+      "icon": "pi pi-check",
+      "variant": "text",
+      "size": "small",
+      "@click": "salirEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAreasComunesView.vue",
+    "line": 209,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "variant": "text",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "cancelarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAreasComunesView.vue",
+    "line": 216,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar espacio",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "u.agregarFila"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAreasComunesView.vue",
+    "line": 380,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAreasComunesView.vue",
+    "line": 434,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAreasComunesView.vue",
+    "line": 702,
+    "signature": ":title=\"u.motivoBloqueo || (!u.hayCambios ? 'Sin cambios pendientes' : '')\" icon=\"pi pi-save\"",
+    "attrs": {
+      ":label": "\n              u.hayCambios\n                ? `Guardar áreas (${u.pendientes.total})`\n                : 'Guardar áreas'\n            ",
+      "icon": "pi pi-save",
+      ":loading": "u.enviando",
+      ":disabled": "!u.itemsValidos || !u.hayCambios",
+      ":title": "u.motivoBloqueo || (!u.hayCambios ? 'Sin cambios pendientes' : '')",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupAreasComunesView.vue",
+    "line": 714,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "!u.estado.items.length && !u.hayCambios && !yaCerrado",
+      "label": "Cerrar paso sin configurar áreas comunes",
+      "variant": "text",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "confirmarCerrarSinConfigurar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 238,
+    "signature": ":class=\"\n              u.estado.paso === p.numero\n                ? 'bg-primary text-text'\n                : u.estado.paso > p.numero\n                  ? 'bg-surface border border-border cursor-pointer'\n                  : 'bg-surface border border-border opacity-60'\n            \" class=\"flex-1 flex items-center gap-2 p-2 border-round text-left transition-colors text-sm\"",
+    "attrs": {
+      "v-for": "p in PASOS_ENTIDADES",
+      ":key": "p.numero",
+      "type": "button",
+      "class": "flex-1 flex items-center gap-2 p-2 border-round text-left transition-colors text-sm",
+      ":class": "\n              u.estado.paso === p.numero\n                ? 'bg-primary text-text'\n                : u.estado.paso > p.numero\n                  ? 'bg-surface border border-border cursor-pointer'\n                  : 'bg-surface border border-border opacity-60'\n            ",
+      "@click": "irAPaso(p.numero)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 276,
+    "signature": "icon=\"pi pi-times\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "u.estado.grupos.length > 1",
+      "icon": "pi pi-times",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "u.eliminarGrupo(g.uid)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 318,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Agregar grupo",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "u.agregarGrupo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 374,
+    "signature": ":class=\"\n                    g.modo === m.value\n                      ? 'bg-primary text-white'\n                      : 'bg-surface border border-border hover:bg-emphasis'\n                  \" class=\"flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors\"",
+    "attrs": {
+      "v-for": "m in MODOS_NUMERACION",
+      ":key": "m.value",
+      "type": "button",
+      "class": "flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors",
+      ":class": "\n                    g.modo === m.value\n                      ? 'bg-primary text-white'\n                      : 'bg-surface border border-border hover:bg-emphasis'\n                  ",
+      "@click": "g.modo = m.value"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 442,
+    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Usar declarados",
+      "icon": "pi pi-check",
+      "size": "small",
+      "variant": "text",
+      "@click": "usarPisosDeclarados(g)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 473,
+    "signature": ":class=\"\n                  u.estado.grupos[0].modo === m.value\n                    ? 'bg-primary text-white'\n                    : 'bg-surface border border-border hover:bg-emphasis'\n                \" class=\"flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors\"",
+    "attrs": {
+      "v-for": "m in MODOS_NUMERACION",
+      ":key": "m.value",
+      "type": "button",
+      "class": "flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors",
+      ":class": "\n                  u.estado.grupos[0].modo === m.value\n                    ? 'bg-primary text-white'\n                    : 'bg-surface border border-border hover:bg-emphasis'\n                ",
+      "@click": "u.estado.grupos[0].modo = m.value"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 547,
+    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Usar declarados",
+      "icon": "pi pi-check",
+      "size": "small",
+      "variant": "text",
+      "@click": "usarPisosDeclarados(u.estado.grupos[0])"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 624,
+    "signature": "icon=\"pi pi-times\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "u.estado.sectoresNuevos.length > 1",
+      "icon": "pi pi-times",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "u.eliminarSectorNuevo(i)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 634,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar sector",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "variant": "text",
+      "@click": "u.agregarSectorNuevo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 666,
+    "signature": "icon=\"pi pi-check\" size=\"small\"",
+    "attrs": {
+      "label": "Aplicar",
+      "icon": "pi pi-check",
+      "size": "small",
+      ":disabled": "!asignarTodosValor",
+      "@click": "aplicarAsignarTodos"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 779,
+    "signature": "icon=\"pi pi-pencil\" size=\"small\"",
+    "attrs": {
+      "v-if": "!editando",
+      "label": "Editar",
+      "icon": "pi pi-pencil",
+      "size": "small",
+      "@click": "entrarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 787,
+    "signature": "icon=\"pi pi-check\" size=\"small\"",
+    "attrs": {
+      "label": "Listo",
+      "icon": "pi pi-check",
+      "size": "small",
+      "@click": "salirEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 793,
+    "signature": "severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "cancelarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 799,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Agregar fila",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "agregarFilaYSaltar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 982,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 1073,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 1182,
+    "signature": "class=\"text-text/80\" icon=\"pi pi-arrow-left\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "u.estado.paso > 1 && !u.modoReedicion",
+      "label": "Anterior",
+      "icon": "pi pi-arrow-left",
+      "class": "text-text/80",
+      "variant": "text",
+      "size": "small",
+      "@click": "u.atras"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 1194,
+    "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\"",
+    "attrs": {
+      "label": "Continuar",
+      "icon": "pi pi-arrow-right",
+      "icon-pos": "right",
+      "size": "small",
+      ":disabled": "!u.validoPaso(u.estado.paso)",
+      "@click": "u.siguiente"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupEntidadesView.vue",
+    "line": 1203,
+    "signature": ":title=\"u.modoReedicion && !u.hayCambios ? 'Sin cambios pendientes' : ''\" icon=\"pi pi-save\"",
+    "attrs": {
+      "v-else": true,
+      ":label": "u.hayCambios ? `Guardar ${etiquetas.plural} (${u.pendientes.total})` : `Guardar ${etiquetas.plural}`",
+      "icon": "pi pi-save",
+      ":loading": "u.enviando",
+      ":disabled": "!u.itemsValidos || (u.modoReedicion && !u.hayCambios)",
+      ":title": "u.modoReedicion && !u.hayCambios ? 'Sin cambios pendientes' : ''",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupLayout.vue",
+    "line": 99,
+    "signature": ":class=\"[\n            pasoActivo(p)\n              ? 'bg-primary text-white'\n              : p.completado\n                ? 'bg-surface border border-primary/40 hover:bg-emphasis cursor-pointer'\n                : 'bg-surface border border-border cursor-pointer opacity-70',\n          ]\" :title=\"`${p.label}: ${p.completado ? 'completado' : pasoActivo(p) ? 'en curso' : 'pendiente'}`\" class=\"flex flex-col sm:flex-row items-center sm:justify-start justify-center gap-1 px-1 py-2 border-round text-center sm:text-left transition-colors min-w-0\"",
+    "attrs": {
+      "v-for": "p in pasosVisibles",
+      ":key": "p.key",
+      "type": "button",
+      "class": "flex flex-col sm:flex-row items-center sm:justify-start justify-center gap-1 px-1 py-2 border-round text-center sm:text-left transition-colors min-w-0",
+      ":class": "[\n            pasoActivo(p)\n              ? 'bg-primary text-white'\n              : p.completado\n                ? 'bg-surface border border-primary/40 hover:bg-emphasis cursor-pointer'\n                : 'bg-surface border border-border cursor-pointer opacity-70',\n          ]",
+      ":title": "`${p.label}: ${p.completado ? 'completado' : pasoActivo(p) ? 'en curso' : 'pendiente'}`",
+      ":aria-label": "`${p.label}: ${p.completado ? 'completado' : pasoActivo(p) ? 'en curso' : 'pendiente'}`",
+      "@click": "irAPaso(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupLayout.vue",
+    "line": 141,
+    "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "!configuraciónCompleta",
+      "label": "Saltar por ahora",
+      "icon": "pi pi-arrow-right",
+      "icon-pos": "right",
+      "variant": "text",
+      "size": "small",
+      "@click": "irDashboard"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupLayout.vue",
+    "line": 150,
+    "signature": "icon=\"pi pi-home\" size=\"small\"",
+    "attrs": {
+      "v-else": true,
+      "label": "Ir al dashboard",
+      "icon": "pi pi-home",
+      "size": "small",
+      "@click": "irDashboard"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupLayout.vue",
+    "line": 157,
+    "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\"",
+    "attrs": {
+      "v-if": "!configuraciónCompleta",
+      "label": "Continuar",
+      "icon": "pi pi-arrow-right",
+      "icon-pos": "right",
+      "size": "small",
+      "@click": "irSiguiente"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPisosView.vue",
+    "line": 100,
+    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "!editando",
+      "label": "Editar",
+      "icon": "pi pi-pencil",
+      "variant": "text",
+      "size": "small",
+      "@click": "entrarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPisosView.vue",
+    "line": 109,
+    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Listo",
+      "icon": "pi pi-check",
+      "variant": "text",
+      "size": "small",
+      "@click": "salirEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPisosView.vue",
+    "line": 110,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "variant": "text",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "cancelarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPisosView.vue",
+    "line": 111,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar fila",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "u.agregarFila"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPisosView.vue",
+    "line": 183,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPisosView.vue",
+    "line": 220,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPisosView.vue",
+    "line": 253,
+    "signature": ":title=\"!u.hayCambios ? 'Sin cambios pendientes' : ''\" icon=\"pi pi-save\"",
+    "attrs": {
+      ":label": "u.hayCambios ? `Guardar pisos (${u.pendientes.total})` : 'Guardar pisos'",
+      "icon": "pi pi-save",
+      ":loading": "u.enviando",
+      ":disabled": "!u.itemsValidos || !u.hayCambios",
+      ":title": "!u.hayCambios ? 'Sin cambios pendientes' : ''",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPlanillaView.vue",
+    "line": 216,
+    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" title=\"Descarta el borrador local (no toca lo ya guardado)\" variant=\"text\"",
+    "attrs": {
+      "v-if": "planilla.filas.length && !planilla.resultado",
+      "label": "Limpiar todo",
+      "title": "Descarta el borrador local (no toca lo ya guardado)",
+      "icon": "pi pi-trash",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      ":disabled": "planilla.enviando",
+      "@click": "planilla.limpiarTodo()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupPlanillaView.vue",
+    "line": 228,
+    "signature": ":title=\"sinPermiso ? 'Sin permiso IMPORTACION_DATOS' : ''\" icon=\"pi pi-save\"",
+    "attrs": {
+      "label": "Guardar planilla",
+      "icon": "pi pi-save",
+      ":loading": "planilla.enviando",
+      ":disabled": "sinPermiso || !planilla.hayCambios",
+      ":title": "sinPermiso ? 'Sin permiso IMPORTACION_DATOS' : ''",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupSectoresView.vue",
+    "line": 95,
+    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "!editando",
+      "label": "Editar",
+      "icon": "pi pi-pencil",
+      "variant": "text",
+      "size": "small",
+      "@click": "entrarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupSectoresView.vue",
+    "line": 104,
+    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Listo",
+      "icon": "pi pi-check",
+      "variant": "text",
+      "size": "small",
+      "@click": "salirEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupSectoresView.vue",
+    "line": 105,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "variant": "text",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "cancelarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupSectoresView.vue",
+    "line": 106,
+    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Agregar fila",
+      "icon": "pi pi-plus",
+      "variant": "text",
+      "size": "small",
+      "@click": "u.agregarFila"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupSectoresView.vue",
+    "line": 165,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupSectoresView.vue",
+    "line": 196,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(item)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupSectoresView.vue",
+    "line": 227,
+    "signature": ":title=\"!u.hayCambios ? 'Sin cambios pendientes' : ''\" icon=\"pi pi-save\"",
+    "attrs": {
+      ":label": "u.hayCambios ? `Guardar sectores (${u.pendientes.total})` : 'Guardar sectores'",
+      "icon": "pi pi-save",
+      ":loading": "u.enviando",
+      ":disabled": "!u.itemsValidos || !u.hayCambios",
+      ":title": "!u.hayCambios ? 'Sin cambios pendientes' : ''",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 296,
+    "signature": ":class=\"\n              u.estado.paso === p.numero\n                ? 'bg-primary text-white'\n                : u.estado.paso > p.numero\n                  ? 'bg-surface border border-border cursor-pointer'\n                  : 'bg-surface border border-border opacity-60'\n            \" class=\"flex-1 flex items-center gap-2 p-2 border-round text-left transition-colors text-sm\"",
+    "attrs": {
+      "v-for": "p in PASOS_UNIDADES",
+      ":key": "p.numero",
+      "type": "button",
+      "class": "flex-1 flex items-center gap-2 p-2 border-round text-left transition-colors text-sm",
+      ":class": "\n              u.estado.paso === p.numero\n                ? 'bg-primary text-white'\n                : u.estado.paso > p.numero\n                  ? 'bg-surface border border-border cursor-pointer'\n                  : 'bg-surface border border-border opacity-60'\n            ",
+      "@click": "irAPaso(p.numero)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 352,
+    "signature": ":class=\"\n                u.estado.modo === m.value\n                  ? 'bg-primary text-white'\n                  : 'bg-surface border border-border hover:bg-emphasis'\n              \" class=\"flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors\"",
+    "attrs": {
+      "v-for": "m in MODOS_NUMERACION",
+      ":key": "m.value",
+      "type": "button",
+      "class": "flex-1 min-w-[140px] flex flex-col gap-1 p-3 border-round text-left transition-colors",
+      ":class": "\n                u.estado.modo === m.value\n                  ? 'bg-primary text-white'\n                  : 'bg-surface border border-border hover:bg-emphasis'\n              ",
+      "@click": "u.estado.modo = m.value"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 484,
+    "signature": "icon=\"pi pi-times\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "u.estado.sectoresNuevos.length > 1",
+      "icon": "pi pi-times",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "u.eliminarSectorNuevo(i)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 494,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Agregar sector",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "u.agregarSectorNuevo"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 526,
+    "signature": "icon=\"pi pi-check\" size=\"small\"",
+    "attrs": {
+      "label": "Aplicar",
+      "icon": "pi pi-check",
+      "size": "small",
+      ":disabled": "!asignarTodosValor",
+      "@click": "aplicarAsignarTodos"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 576,
+    "signature": "icon=\"pi pi-arrow-right\" size=\"small\"",
+    "attrs": {
+      "label": "Aplicar rango",
+      "icon": "pi pi-arrow-right",
+      "size": "small",
+      ":disabled": "!rangoDesde || !rangoHasta || rangoSector === null",
+      "@click": "aplicarRango"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 606,
+    "signature": "icon=\"pi pi-check\" size=\"small\"",
+    "attrs": {
+      "label": "Aplicar a lote",
+      "icon": "pi pi-check",
+      "size": "small",
+      ":disabled": "bulkSector === null",
+      "@click": "aplicarBulk"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 613,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Limpiar",
+      "size": "small",
+      "variant": "text",
+      "severity": "secondary",
+      "@click": "toggleTodos(false)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 748,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "v-if": "!editando",
+      "label": "Editar",
+      "icon": "pi pi-pencil",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "entrarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 757,
+    "signature": "icon=\"pi pi-check\" size=\"small\"",
+    "attrs": {
+      "label": "Listo",
+      "icon": "pi pi-check",
+      "size": "small",
+      "@click": "salirEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 763,
+    "signature": "severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "cancelarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 769,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Agregar fila",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "agregarFilaYSaltar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 915,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(un)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 975,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "editando",
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "text",
+      "size": "small",
+      "@click": "confirmarEliminar(un)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 1076,
+    "signature": "icon=\"pi pi-arrow-left\" size=\"small\"",
+    "attrs": {
+      "v-if": "u.estado.paso > 1 && !u.modoReedicion",
+      "label": "Anterior",
+      "icon": "pi pi-arrow-left",
+      "size": "small",
+      "@click": "u.atras"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 1086,
+    "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\"",
+    "attrs": {
+      "label": "Continuar",
+      "icon": "pi pi-arrow-right",
+      "icon-pos": "right",
+      "size": "small",
+      ":disabled": "!u.validoPaso(u.estado.paso)",
+      "@click": "u.siguiente"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/setup/SetupUnidadesView.vue",
+    "line": 1095,
+    "signature": ":title=\"u.modoReedicion && !u.hayCambios ? 'Sin cambios pendientes' : ''\" icon=\"pi pi-save\"",
+    "attrs": {
+      "v-else": true,
+      ":label": "u.hayCambios ? `Guardar unidades (${u.pendientes.total})` : 'Guardar unidades'",
+      "icon": "pi pi-save",
+      ":loading": "u.enviando",
+      ":disabled": "!u.itemsValidos || (u.modoReedicion && !u.hayCambios)",
+      ":title": "u.modoReedicion && !u.hayCambios ? 'Sin cambios pendientes' : ''",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/storage/ArchivosView.vue",
+    "line": 167,
+    "signature": "icon=\"pi pi-upload\" size=\"small\"",
+    "attrs": {
+      "label": "Subir",
+      "icon": "pi pi-upload",
+      "size": "small",
+      "@click": "abrirSubida"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/storage/ArchivosView.vue",
+    "line": 171,
+    "signature": ":icon=\"categoriaIcons[cat]\" :severity=\"categoriaSeleccionada === cat ? 'primary' : 'secondary'\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "v-for": "cat in CATEGORIAS",
+      ":key": "cat",
+      "size": "small",
+      ":icon": "categoriaIcons[cat]",
+      ":label": "CATEGORIA_LABELS[cat]",
+      ":severity": "categoriaSeleccionada === cat ? 'primary' : 'secondary'",
+      "variant": "outlined",
+      "@click": "cambiarCategoria(cat)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/storage/ArchivosView.vue",
+    "line": 208,
+    "signature": "icon=\"pi pi-download\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "v-if": "f.urlDescarga",
+      "icon": "pi pi-download",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "descargar(f.urlDescarga)",
+      "v-tooltip.top": "'Descargar'"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/storage/ArchivosView.vue",
+    "line": 217,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-trash",
+      "size": "small",
+      "severity": "danger",
+      "variant": "text",
+      "@click": "confirmarEliminar(f)",
+      "v-tooltip.top": "'Eliminar'"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/storage/ArchivosView.vue",
+    "line": 266,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      ":disabled": "subiendo",
+      "@click": "mostrarSubida = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/storage/ArchivosView.vue",
+    "line": 267,
+    "signature": "icon=\"pi pi-upload\"",
+    "attrs": {
+      "label": "Subir",
+      "icon": "pi pi-upload",
+      ":loading": "subiendo",
+      ":disabled": "!archivoSeleccionado",
+      "@click": "handleSubir"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasAlmacenamientoView.vue",
+    "line": 266,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Editar",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "@click": "abrirEditar(c.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasAlmacenamientoView.vue",
+    "line": 327,
+    "signature": "class=\"w-full\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Editar",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "class": "w-full",
+      "@click": "abrirEditar(c.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasAlmacenamientoView.vue",
+    "line": 448,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showEditar = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasAlmacenamientoView.vue",
+    "line": 454,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Guardar",
+      "icon": "pi pi-check",
+      ":loading": "guardando",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasAuditoriaView.vue",
+    "line": 207,
+    "signature": ":severity=\"busquedaVisible ? 'primary' : 'secondary'\" class=\"rounded-lg shrink-0\" icon=\"pi pi-search\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "icon": "pi pi-search",
+      "size": "small",
+      ":severity": "busquedaVisible ? 'primary' : 'secondary'",
+      "variant": "outlined",
+      "class": "rounded-lg shrink-0",
+      "aria-label": "Buscar",
+      ":aria-pressed": "busquedaVisible",
+      "@click": "toggleBusqueda"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasAuditoriaView.vue",
+    "line": 288,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "buscar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasAuditoriaView.vue",
+    "line": 289,
+    "signature": "size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Limpiar",
+      "size": "small",
+      "variant": "text",
+      "@click": "limpiarFiltros"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 318,
+    "signature": "icon=\"pi pi-arrow-right\" size=\"small\"",
+    "attrs": {
+      "label": "Entrar",
+      "size": "small",
+      "icon": "pi pi-arrow-right",
+      "@click": "entrarACondominio"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 324,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Editar",
+      "size": "small",
+      "icon": "pi pi-pencil",
+      "severity": "secondary",
+      "variant": "outlined",
+      "@click": "showEditar = true"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 332,
+    "signature": "icon=\"pi pi-ban\" severity=\"danger\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "v-if": "condominio.statusPago !== 'SUSPENDIDO'",
+      "label": "Suspender",
+      "size": "small",
+      "icon": "pi pi-ban",
+      "severity": "danger",
+      "variant": "outlined",
+      "@click": "showSuspender = true"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 341,
+    "signature": "icon=\"pi pi-check\" severity=\"success\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "v-else": true,
+      "label": "Reactivar",
+      "size": "small",
+      "icon": "pi pi-check",
+      "severity": "success",
+      "variant": "outlined",
+      ":loading": "enviando",
+      "@click": "reactivar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 424,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Editar capacidad",
+      "size": "small",
+      "icon": "pi pi-pencil",
+      "severity": "secondary",
+      "variant": "outlined",
+      "@click": "abrirCapacidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 611,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showEditar = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 617,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "guardarEdicion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 654,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCapacidad = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 660,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar",
+      ":loading": "enviando",
+      "@click": "guardarCapacidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 688,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showSuspender = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioDetailView.vue",
+    "line": 694,
+    "signature": "severity=\"danger\"",
+    "attrs": {
+      "label": "Suspender",
+      "severity": "danger",
+      ":loading": "enviando",
+      "@click": "suspender"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioSetupView.vue",
+    "line": 650,
+    "signature": "icon=\"pi pi-save\"",
+    "attrs": {
+      "label": "Guardar almacenamiento",
+      "icon": "pi pi-save",
+      ":disabled": "!storageValido",
+      ":loading": "guardando === 'storage'",
+      "@click": "guardarStorage"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioSetupView.vue",
+    "line": 740,
+    "signature": "icon=\"pi pi-save\" severity=\"secondary\"",
+    "attrs": {
+      "label": "Guardar sección",
+      "icon": "pi pi-save",
+      "severity": "secondary",
+      ":disabled": "!capacidadValida || tareaCompletada('CREAR_UNIDADES')",
+      ":loading": "guardando === 'capacidad'",
+      "@click": "guardarCapacidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioSetupView.vue",
+    "line": 864,
+    "signature": "icon=\"pi pi-user-plus\"",
+    "attrs": {
+      "label": "Crear administrador",
+      "icon": "pi pi-user-plus",
+      ":loading": "guardando === 'admin'",
+      "@click": "crearAdministrador"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioSetupView.vue",
+    "line": 880,
+    "signature": "icon=\"pi pi-save\" severity=\"secondary\"",
+    "attrs": {
+      "label": "Guardar sección",
+      "icon": "pi pi-save",
+      "severity": "secondary",
+      ":disabled": "!adminAsignado() || tareaCompletada('ASIGNAR_ADMIN')",
+      ":loading": "guardando === 'admin-seccion'",
+      "@click": "guardarSeccionAdmin"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioSetupView.vue",
+    "line": 960,
+    "signature": "icon=\"pi pi-refresh\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Verificar de nuevo",
+      "icon": "pi pi-refresh",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      ":loading": "verificandoCuenta",
+      "@click": "verificarCuenta"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominioSetupView.vue",
+    "line": 969,
+    "signature": "icon=\"pi pi-send\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Reenviar email",
+      "icon": "pi pi-send",
+      "size": "small",
+      "severity": "secondary",
+      ":loading": "reenviando",
+      "@click": "reenviarEmail"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominiosView.vue",
+    "line": 133,
+    "signature": ":severity=\"busquedaVisible ? 'primary' : 'secondary'\" class=\"rounded-lg shrink-0\" icon=\"pi pi-search\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "icon": "pi pi-search",
+      "size": "small",
+      ":severity": "busquedaVisible ? 'primary' : 'secondary'",
+      "variant": "outlined",
+      "class": "rounded-lg shrink-0",
+      "aria-label": "Buscar",
+      ":aria-pressed": "busquedaVisible",
+      "@click": "toggleBusqueda"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominiosView.vue",
+    "line": 143,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "irA('SaasCrearCondominio')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominiosView.vue",
+    "line": 202,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "buscar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominiosView.vue",
+    "line": 203,
+    "signature": "size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Limpiar",
+      "size": "small",
+      "variant": "text",
+      "@click": "limpiarFiltros"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominiosView.vue",
+    "line": 238,
+    "signature": "size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Entrar",
+      "size": "small",
+      "variant": "text",
+      "@click.stop": "entrarACondominio(c.id)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCondominiosView.vue",
+    "line": 239,
+    "signature": "icon=\"pi pi-cog\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-cog",
+      "size": "small",
+      "variant": "text",
+      "@click.stop": "irA('SaasCondominioDetail', { id: c.id })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCrearCondominioView.vue",
+    "line": 261,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "router.push({ name: 'SuperAdminDashboard' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasCrearCondominioView.vue",
+    "line": 267,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Crear condominio",
+      "icon": "pi pi-check",
+      ":loading": "enviando",
+      "@click": "crear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasEmailConfigView.vue",
+    "line": 285,
+    "signature": "icon=\"pi pi-arrow-left\" severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-arrow-left",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "router.back()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasEmailConfigView.vue",
+    "line": 351,
+    "signature": "icon=\"pi pi-save\"",
+    "attrs": {
+      "label": "Guardar configuración",
+      "icon": "pi pi-save",
+      ":loading": "guardando",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasEmailConfigView.vue",
+    "line": 352,
+    "signature": "icon=\"pi pi-bolt\" severity=\"secondary\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Probar conexión",
+      "icon": "pi pi-bolt",
+      "severity": "secondary",
+      "variant": "outlined",
+      ":loading": "probando",
+      "@click": "probarConexion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasEmailConfigView.vue",
+    "line": 353,
+    "signature": "icon=\"pi pi-trash\" severity=\"danger\" variant=\"outlined\"",
+    "attrs": {
+      "v-if": "tieneConfig",
+      "label": "Eliminar",
+      "icon": "pi pi-trash",
+      "severity": "danger",
+      "variant": "outlined",
+      ":loading": "eliminando",
+      "@click": "confirmarEliminar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasEmailConfigView.vue",
+    "line": 367,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo routing",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirRouting()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasEmailConfigView.vue",
+    "line": 391,
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "icon": "pi pi-pencil",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "abrirRouting(r.tipoNotificacion, r.proveedor)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasEmailConfigView.vue",
+    "line": 417,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showRoutingDialog = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasEmailConfigView.vue",
+    "line": 418,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Guardar routing",
+      ":loading": "guardandoRouting",
+      "@click": "guardarRouting"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasModulosView.vue",
+    "line": 70,
+    "signature": "icon=\"pi pi-arrow-left\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "← Volver",
+      "size": "small",
+      "variant": "text",
+      "icon": "pi pi-arrow-left",
+      "@click": "router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasModulosView.vue",
+    "line": 91,
+    "signature": "class=\"self-start\" icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Guardar cambios",
+      "icon": "pi pi-check",
+      ":loading": "enviando",
+      "class": "self-start",
+      "@click": "guardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlanesView.vue",
+    "line": 166,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nuevo plan",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "abrirCrear"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlanesView.vue",
+    "line": 194,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Editar",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "@click": "abrirEditar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlanesView.vue",
+    "line": 195,
+    "signature": "severity=\"danger\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "v-if": "p.activo",
+      "label": "Desactivar",
+      "size": "small",
+      "severity": "danger",
+      "variant": "outlined",
+      "@click": "confirmarDesactivar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlanesView.vue",
+    "line": 196,
+    "signature": "severity=\"success\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "v-else": true,
+      "label": "Reactivar",
+      "size": "small",
+      "severity": "success",
+      "variant": "outlined",
+      "@click": "confirmarReactivar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlanesView.vue",
+    "line": 244,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showDialog = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlanesView.vue",
+    "line": 245,
+    "signature": "(default)",
+    "attrs": {
+      ":label": "modoDialog === 'editar' ? 'Guardar cambios' : 'Crear plan'",
+      ":loading": "enviando",
+      "@click": "modoDialog === 'editar' ? actualizarPlan() : confirmarCrear()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 263,
+    "signature": ":severity=\"busquedaVisible ? 'primary' : 'secondary'\" class=\"rounded-lg shrink-0\" icon=\"pi pi-search\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "icon": "pi pi-search",
+      "size": "small",
+      ":severity": "busquedaVisible ? 'primary' : 'secondary'",
+      "variant": "outlined",
+      "class": "rounded-lg shrink-0",
+      "aria-label": "Buscar",
+      ":aria-pressed": "busquedaVisible",
+      "@click": "toggleBusqueda"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 306,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "buscar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 307,
+    "signature": "size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Limpiar",
+      "size": "small",
+      "variant": "text",
+      "@click": "limpiarFiltros"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 336,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Editar",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "@click": "abrirEditar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 337,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Preview",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "abrirPreview(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 338,
+    "signature": "severity=\"danger\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "v-if": "p.activo",
+      "label": "Desactivar",
+      "size": "small",
+      "severity": "danger",
+      "variant": "outlined",
+      "@click": "confirmarDesactivar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 339,
+    "signature": "severity=\"success\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "v-else": true,
+      "label": "Reactivar",
+      "size": "small",
+      "severity": "success",
+      "variant": "outlined",
+      "@click": "confirmarReactivar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 377,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "confirmarCancelar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 378,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Guardar",
+      "icon": "pi pi-check",
+      ":loading": "enviando",
+      "@click": "confirmarGuardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasPlantillasView.vue",
+    "line": 419,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cerrar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showPreview = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 248,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa visibilidad",
+      "@click": "toggleVisibilidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 257,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa cada audiencia",
+      "@click": "toggleAudiencia"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 264,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué implica cada prioridad",
+      "@click": "togglePrioridad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 271,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa cada canal",
+      "@click": "toggleCanales"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 281,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa obligatoriedad",
+      "@click": "toggleObligatoriedad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 286,
+    "signature": "class=\"w-full\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Editar",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "class": "w-full",
+      "@click": "abrirEditar(r)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 300,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa cada audiencia",
+      "@click": "toggleAudiencia"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 306,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa cada canal",
+      "@click": "toggleCanales"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 312,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa obligatoriedad",
+      "@click": "toggleObligatoriedad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 318,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa visibilidad",
+      "@click": "toggleVisibilidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 324,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué implica cada prioridad",
+      "@click": "togglePrioridad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 338,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa cada audiencia",
+      "@click": "toggleAudiencia"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 346,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa cada canal",
+      "@click": "toggleCanales"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 366,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa visibilidad",
+      "@click": "toggleVisibilidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 372,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué implica cada prioridad",
+      "@click": "togglePrioridad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 376,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Editar",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "@click": "abrirEditar(r)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 390,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa cada audiencia",
+      "@click": "toggleAudiencia"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 397,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa cada canal",
+      "@click": "toggleCanales"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 414,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué implica cada prioridad",
+      "@click": "togglePrioridad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 423,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa obligatoriedad",
+      "@click": "toggleObligatoriedad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 430,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa obligatoriedad",
+      "@click": "toggleObligatoriedad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 437,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa obligatoriedad",
+      "@click": "toggleObligatoriedad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 444,
+    "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" text",
+    "attrs": {
+      "icon": "pi pi-info-circle",
+      "severity": "secondary",
+      "text": true,
+      "rounded": true,
+      "size": "small",
+      "aria-label": "Qué significa visibilidad",
+      "@click": "toggleVisibilidad"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 452,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "confirmarCancelar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
+    "line": 453,
+    "signature": "icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Guardar",
+      "icon": "pi pi-check",
+      ":loading": "enviando",
+      ":disabled": "!canalesValidos",
+      "@click": "confirmarGuardar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasSuscripcionView.vue",
+    "line": 99,
+    "signature": "icon=\"pi pi-arrow-left\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "← Volver",
+      "size": "small",
+      "variant": "text",
+      "icon": "pi pi-arrow-left",
+      "@click": "router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasSuscripcionView.vue",
+    "line": 125,
+    "signature": "icon=\"pi pi-refresh\" severity=\"secondary\" size=\"small\"",
+    "attrs": {
+      "label": "Cambiar plan",
+      "icon": "pi pi-refresh",
+      "size": "small",
+      "severity": "secondary",
+      "@click": "showCambiarPlan = true"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasSuscripcionView.vue",
+    "line": 126,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Registrar pago",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "showPago = true"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasSuscripcionView.vue",
+    "line": 159,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCambiarPlan = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasSuscripcionView.vue",
+    "line": 160,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Cambiar",
+      ":loading": "enviando",
+      "@click": "cambiarPlan"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasSuscripcionView.vue",
+    "line": 176,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showPago = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasSuscripcionView.vue",
+    "line": 177,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Registrar",
+      ":loading": "enviando",
+      "@click": "registrarPago"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasUsuariosView.vue",
+    "line": 109,
+    "signature": "icon=\"pi pi-arrow-left\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "← Volver",
+      "size": "small",
+      "variant": "text",
+      "icon": "pi pi-arrow-left",
+      "@click": "router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasUsuariosView.vue",
+    "line": 145,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      "label": "Rol",
+      "size": "small",
+      "severity": "secondary",
+      "variant": "outlined",
+      "@click": "abrirAsignarRol(u)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasUsuariosView.vue",
+    "line": 146,
+    "signature": ":severity=\"u.activo ? 'danger' : 'success'\" size=\"small\" variant=\"outlined\"",
+    "attrs": {
+      ":label": "u.activo ? 'Desactivar' : 'Activar'",
+      "size": "small",
+      ":severity": "u.activo ? 'danger' : 'success'",
+      "variant": "outlined",
+      "@click": "toggleActivo(u)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasUsuariosView.vue",
+    "line": 167,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showRol = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/superadmin/SaasUsuariosView.vue",
+    "line": 168,
+    "signature": "(default)",
+    "attrs": {
+      "label": "Asignar",
+      ":loading": "enviando",
+      ":disabled": "!rolSeleccionado",
+      "@click": "asignarRol"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/visitas/BusquedaDetalleView.vue",
+    "line": 23,
+    "signature": "icon=\"pi pi-check\" severity=\"secondary\"",
+    "attrs": {
+      "label": "Entendido",
+      "icon": "pi pi-check",
+      "severity": "secondary",
+      "@click": "$router.back()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/visitas/RegistrarVisitaView.vue",
+    "line": 252,
+    "signature": "class=\"flex-1 border border-border text-text-muted\" severity=\"secondary\" variant=\"text\"",
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "class": "flex-1 border border-border text-text-muted",
+      "@click": "$router.back()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/visitas/RegistrarVisitaView.vue",
+    "line": 259,
+    "signature": "class=\"flex-1\" icon=\"pi pi-check\"",
+    "attrs": {
+      "label": "Registrar ingreso",
+      "icon": "pi pi-check",
+      ":loading": "loading",
+      "class": "flex-1",
+      "@click": "registrar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/visitas/VisitasView.vue",
+    "line": 160,
+    "signature": "icon=\"pi pi-plus\" size=\"small\"",
+    "attrs": {
+      "label": "Nueva",
+      "icon": "pi pi-plus",
+      "size": "small",
+      "@click": "router.push({ name: 'RegistrarVisita' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/visitas/VisitasView.vue",
+    "line": 200,
+    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "attrs": {
+      "label": "Limpiar",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "@click": "limpiarFiltros"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/visitas/VisitasView.vue",
+    "line": 298,
+    "signature": "icon=\"pi pi-sign-out\" severity=\"warn\" size=\"small\"",
+    "attrs": {
+      "label": "Registrar salida",
+      "icon": "pi pi-sign-out",
+      "severity": "warn",
+      "size": "small",
+      "@click.stop": "abrirDialogSalida(v)"
+    }
+  }
+]
