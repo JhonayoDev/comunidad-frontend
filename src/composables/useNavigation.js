@@ -154,7 +154,14 @@ export function useNavigation() {
   const currentRoute = computed(() => route.name);
 
   function puedeAcceder(routeName) {
-    const resolved = router.resolve({ name: routeName });
+    let resolved;
+    try {
+      resolved = router.resolve({ name: routeName });
+    } catch (e) {
+      // Ruta inexistente (p.ej. ítem de menú zombie): sin acceso, sin romper el menú.
+      console.error(`Ruta desconocida en navegación: ${routeName}`, e);
+      return false;
+    }
     const rRoles = resolved.meta?.roles;
     const rCargos = resolved.meta?.cargos;
     const necesitaRol = rRoles?.length > 0;
