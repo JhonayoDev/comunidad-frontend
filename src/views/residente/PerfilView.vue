@@ -311,7 +311,7 @@ async function solicitarEmail() {
                 toggleMask
                 :class="{ 'p-invalid': erroresPass.actual }"
               />
-              <small v-if="erroresPass.actual" class="text-red-500">{{ erroresPass.actual }}</small>
+              <small v-if="erroresPass.actual" class="text-danger">{{ erroresPass.actual }}</small>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold">Nueva contraseña</label>
@@ -320,7 +320,7 @@ async function solicitarEmail() {
                 toggleMask
                 :class="{ 'p-invalid': erroresPass.nueva }"
               />
-              <small v-if="erroresPass.nueva" class="text-red-500">{{ erroresPass.nueva }}</small>
+              <small v-if="erroresPass.nueva" class="text-danger">{{ erroresPass.nueva }}</small>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold">Confirmar contraseña</label>
@@ -330,7 +330,7 @@ async function solicitarEmail() {
                 toggleMask
                 :class="{ 'p-invalid': erroresPass.confirmacion }"
               />
-              <small v-if="erroresPass.confirmacion" class="text-red-500">{{ erroresPass.confirmacion }}</small>
+              <small v-if="erroresPass.confirmacion" class="text-danger">{{ erroresPass.confirmacion }}</small>
             </div>
             <Message v-if="mensajePass" :severity="errorPass ? 'error' : 'success'" :closable="false">
               {{ mensajePass }}
@@ -375,7 +375,7 @@ async function solicitarEmail() {
                 placeholder="nuevo@email.com"
                 :class="{ 'p-invalid': erroresEmail.nuevo }"
               />
-              <small v-if="erroresEmail.nuevo" class="text-red-500">{{ erroresEmail.nuevo }}</small>
+              <small v-if="erroresEmail.nuevo" class="text-danger">{{ erroresEmail.nuevo }}</small>
             </div>
             <Message v-if="mensajeEmail" :severity="errorEmail ? 'error' : 'success'" :closable="false">
               {{ mensajeEmail }}

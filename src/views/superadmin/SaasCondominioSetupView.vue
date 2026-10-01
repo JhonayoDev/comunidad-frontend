@@ -543,7 +543,7 @@ onUnmounted(() => {
             <i
               :class="
                 tareaCompletada('CONFIGURAR_STORAGE')
-                  ? 'pi pi-check-circle text-green-500'
+                  ? 'pi pi-check-circle text-success'
                   : 'pi pi-circle text-text-subtle'
               "
               class="text-lg"
@@ -669,7 +669,7 @@ onUnmounted(() => {
             <i
               :class="
                 tareaCompletada('CREAR_UNIDADES')
-                  ? 'pi pi-check-circle text-green-500'
+                  ? 'pi pi-check-circle text-success'
                   : 'pi pi-circle text-text-subtle'
               "
               class="text-lg"
@@ -760,7 +760,7 @@ onUnmounted(() => {
             <i
               :class="
                 tareaCompletada('ASIGNAR_ADMIN')
-                  ? 'pi pi-check-circle text-green-500'
+                  ? 'pi pi-check-circle text-success'
                   : 'pi pi-circle text-text-subtle'
               "
               class="text-lg"
@@ -800,7 +800,7 @@ onUnmounted(() => {
                 v-model="adminForm.nombre"
                 :class="{ 'p-invalid': errores.adminNombre }"
               />
-              <small v-if="errores.adminNombre" class="text-red-500">{{
+              <small v-if="errores.adminNombre" class="text-danger">{{
                 errores.adminNombre
               }}</small>
             </div>
@@ -812,7 +812,7 @@ onUnmounted(() => {
                 type="email"
                 :class="{ 'p-invalid': errores.adminEmail }"
               />
-              <small v-if="errores.adminEmail" class="text-red-500">{{
+              <small v-if="errores.adminEmail" class="text-danger">{{
                 errores.adminEmail
               }}</small>
             </div>
@@ -828,7 +828,7 @@ onUnmounted(() => {
                   @input="adminForm.rut = onRutInput(adminForm.rut)"
                   @blur="adminForm.rut = onRutBlur(adminForm.rut)"
                 />
-                <small v-if="errores.adminRut" class="text-red-500">{{
+                <small v-if="errores.adminRut" class="text-danger">{{
                   errores.adminRut
                 }}</small>
               </div>
@@ -847,7 +847,7 @@ onUnmounted(() => {
                     adminForm.telefono = onTelefonoBlur(adminForm.telefono)
                   "
                 />
-                <small v-if="errores.adminTelefono" class="text-red-500">{{
+                <small v-if="errores.adminTelefono" class="text-danger">{{
                   errores.adminTelefono
                 }}</small>
               </div>
@@ -900,7 +900,7 @@ onUnmounted(() => {
             <i
               :class="
                 cuentaAdminPasswordSetAt
-                  ? 'pi pi-check-circle text-green-500'
+                  ? 'pi pi-check-circle text-success'
                   : 'pi pi-clock text-amber-500'
               "
               class="text-lg"
@@ -984,7 +984,7 @@ onUnmounted(() => {
 
       <div
         v-if="progreso === 100"
-        class="text-center text-green-600 font-medium"
+        class="text-center text-success-strong font-medium"
       >
         ¡Puesta en marcha completa! El condominio está listo.
       </div>

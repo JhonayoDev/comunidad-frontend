@@ -146,7 +146,7 @@ onMounted(() => {
               class="flex items-center justify-between p-2 border-round hover:bg-emphasis"
             >
               <div class="flex items-center gap-3">
-                <i class="pi pi-arrow-right text-green-500"></i>
+                <i class="pi pi-arrow-right text-success"></i>
                 <div>
                   <p class="text-sm font-medium m-0">{{ mov.nombre }}</p>
                   <p class="text-xs text-text-muted m-0">

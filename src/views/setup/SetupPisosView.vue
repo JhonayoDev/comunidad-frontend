@@ -177,7 +177,7 @@ onMounted(() => u.cargar());
                     :title="item.error"
                   />
                   <Tag v-else-if="item.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
-                  <span v-else class="text-green-500 text-sm">Listo</span>
+                  <span v-else class="text-success text-sm">Listo</span>
                 </td>
                 <td v-if="editando">
                   <Button

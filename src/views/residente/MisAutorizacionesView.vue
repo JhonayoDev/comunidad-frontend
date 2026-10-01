@@ -305,7 +305,7 @@ onMounted(async () => {
             placeholder="Selecciona unidad"
             :class="{ 'p-invalid': errores.unidadId }"
           />
-          <small v-if="errores.unidadId" class="text-red-500">{{ errores.unidadId }}</small>
+          <small v-if="errores.unidadId" class="text-danger">{{ errores.unidadId }}</small>
         </div>
 
         <div class="flex flex-col gap-1">
@@ -325,7 +325,7 @@ onMounted(async () => {
             placeholder="Nombre del visitante"
             :class="{ 'p-invalid': errores.nombre }"
           />
-          <small v-if="errores.nombre" class="text-red-500">{{ errores.nombre }}</small>
+          <small v-if="errores.nombre" class="text-danger">{{ errores.nombre }}</small>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -372,7 +372,7 @@ onMounted(async () => {
               :min="ahoraLocal()"
               :class="{ 'p-invalid': errores.fechaInicio }"
             />
-            <small v-if="errores.fechaInicio" class="text-red-500">{{ errores.fechaInicio }}</small>
+            <small v-if="errores.fechaInicio" class="text-danger">{{ errores.fechaInicio }}</small>
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-sm font-medium">Hasta *</label>
@@ -382,7 +382,7 @@ onMounted(async () => {
               :min="horaFinMinima()"
               :class="{ 'p-invalid': errores.fechaFin }"
             />
-            <small v-if="errores.fechaFin" class="text-red-500">{{ errores.fechaFin }}</small>
+            <small v-if="errores.fechaFin" class="text-danger">{{ errores.fechaFin }}</small>
           </div>
         </div>
 

@@ -150,7 +150,7 @@ onMounted(cargar);
               </div>
               <div class="flex justify-between">
                 <span class="text-text-muted">Recaudado</span>
-                <span class="font-semibold text-green-600">{{ formatoMonto(p.montoRecaudado) }}</span>
+                <span class="font-semibold text-success-strong">{{ formatoMonto(p.montoRecaudado) }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-text-muted">Pagado</span>

@@ -85,7 +85,7 @@ watch(
       >
         <div class="flex align-items-center gap-2">
           <span class="text-sm font-medium">{{ item.pregunta }}</span>
-          <span v-if="item.obligatorio" class="text-red-500 text-xs">*</span>
+          <span v-if="item.obligatorio" class="text-danger text-xs">*</span>
         </div>
         <div class="flex gap-2">
           <ToggleButton

@@ -165,7 +165,7 @@ async function registrar() {
               placeholder="Nombre de quien ingresa"
               :class="{ 'p-invalid': errores.nombreVisitante }"
             />
-            <small v-if="errores.nombreVisitante" class="text-red-500">{{
+            <small v-if="errores.nombreVisitante" class="text-danger">{{
               errores.nombreVisitante
             }}</small>
           </div>
@@ -193,7 +193,7 @@ async function registrar() {
               :class="{ 'p-invalid': errores.cantidadPersonas }"
               class="w-full"
             />
-            <small v-if="errores.cantidadPersonas" class="text-red-500">{{
+            <small v-if="errores.cantidadPersonas" class="text-danger">{{
               errores.cantidadPersonas
             }}</small>
           </div>
@@ -208,7 +208,7 @@ async function registrar() {
               :class="{ 'p-invalid': errores.tipo }"
               class="w-full"
             />
-            <small v-if="errores.tipo" class="text-red-500">{{
+            <small v-if="errores.tipo" class="text-danger">{{
               errores.tipo
             }}</small>
           </div>
@@ -230,7 +230,7 @@ async function registrar() {
                 <span>{{ formatUnidadSugerencia(slotProps.option) }}</span>
               </template>
             </AutoComplete>
-            <small v-if="errores.unidadNumero" class="text-red-500">{{
+            <small v-if="errores.unidadNumero" class="text-danger">{{
               errores.unidadNumero
             }}</small>
             <small v-else class="text-text-muted"

@@ -53,19 +53,19 @@ onMounted(cargar);
         <Card>
           <template #content class="p-3">
             <div class="text-xs text-text-muted uppercase tracking-wide">Activos</div>
-            <div class="text-2xl font-bold text-green-600">{{ metrics.activos }}</div>
+            <div class="text-2xl font-bold text-success-strong">{{ metrics.activos }}</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
             <div class="text-xs text-text-muted uppercase tracking-wide">Suspendidos</div>
-            <div class="text-2xl font-bold text-red-600">{{ metrics.suspendidos }}</div>
+            <div class="text-2xl font-bold text-danger-strong">{{ metrics.suspendidos }}</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
             <div class="text-xs text-text-muted uppercase tracking-wide">Morosos</div>
-            <div class="text-2xl font-bold text-orange-600">{{ metrics.morosos }}</div>
+            <div class="text-2xl font-bold text-warning">{{ metrics.morosos }}</div>
           </template>
         </Card>
         <Card>

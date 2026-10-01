@@ -448,7 +448,7 @@ onMounted(cargar);
                 class="text-sm"
                 :class="
                   c.capacidad != null && c.total >= c.capacidad
-                    ? 'text-red-500'
+                    ? 'text-danger'
                     : 'text-text-muted'
                 "
               >
@@ -470,7 +470,7 @@ onMounted(cargar);
               <span class="font-medium">Envelope del plan</span>
               <span
                 :class="
-                  envelopePct >= 100 ? 'text-red-500' : 'text-text-muted'
+                  envelopePct >= 100 ? 'text-danger' : 'text-text-muted'
                 "
               >
                 {{ envelope.totalActual }} de
@@ -480,7 +480,7 @@ onMounted(cargar);
             <div class="mt-2 h-2 w-full bg-track rounded-full overflow-hidden">
               <div
                 class="h-full rounded-full transition-all"
-                :class="envelopePct >= 100 ? 'bg-red-500' : 'bg-primary'"
+                :class="envelopePct >= 100 ? 'bg-danger' : 'bg-primary'"
                 :style="{ width: envelopePct + '%' }"
               ></div>
             </div>
@@ -552,7 +552,7 @@ onMounted(cargar);
             v-model="editForm.nombre"
             :class="{ 'p-invalid': errores.nombre }"
           />
-          <small v-if="errores.nombre" class="text-red-500">{{
+          <small v-if="errores.nombre" class="text-danger">{{
             errores.nombre
           }}</small>
         </div>
@@ -567,7 +567,7 @@ onMounted(cargar);
             v-model="editForm.responsableNombre"
             :class="{ 'p-invalid': errores.responsableNombre }"
           />
-          <small v-if="errores.responsableNombre" class="text-red-500">{{
+          <small v-if="errores.responsableNombre" class="text-danger">{{
             errores.responsableNombre
           }}</small>
         </div>
@@ -579,7 +579,7 @@ onMounted(cargar);
             type="email"
             :class="{ 'p-invalid': errores.responsableEmail }"
           />
-          <small v-if="errores.responsableEmail" class="text-red-500">{{
+          <small v-if="errores.responsableEmail" class="text-danger">{{
             errores.responsableEmail
           }}</small>
         </div>
@@ -602,7 +602,7 @@ onMounted(cargar);
               )
             "
           />
-          <small v-if="errores.responsableTelefono" class="text-red-500">{{
+          <small v-if="errores.responsableTelefono" class="text-danger">{{
             errores.responsableTelefono
           }}</small>
         </div>

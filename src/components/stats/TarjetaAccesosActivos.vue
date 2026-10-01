@@ -25,7 +25,7 @@ const activos = computed(() => visitasActivas.value ?? props.conteoInicial ?? 0)
   >
     <template #content>
       <div class="text-center">
-        <p class="text-3xl font-bold m-0 text-green-600">
+        <p class="text-3xl font-bold m-0 text-success-strong">
           {{ activos }}
         </p>
         <p class="text-xs text-text/85 m-0 mt-1">Visitas</p>

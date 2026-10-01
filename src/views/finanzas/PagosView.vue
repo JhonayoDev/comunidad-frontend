@@ -282,7 +282,7 @@ onMounted(() => {
               </div>
               <div v-if="p.observacion" class="text-xs text-text-subprincipal">{{ p.observacion }}</div>
             </div>
-            <span class="font-bold text-lg text-green-600">{{ p.monto?.toLocaleString("es-CL") }}</span>
+            <span class="font-bold text-lg text-success-strong">{{ p.monto?.toLocaleString("es-CL") }}</span>
           </div>
         </div>
         <Paginator
@@ -365,7 +365,7 @@ onMounted(() => {
 
           <div v-if="totalCalculado > 0" class="flex justify-between items-center p-2 surface-card border-round font-bold">
             <span>Total seleccionado</span>
-            <span class="text-green-600">{{ totalCalculado.toLocaleString("es-CL") }}</span>
+            <span class="text-success-strong">{{ totalCalculado.toLocaleString("es-CL") }}</span>
           </div>
         </template>
 

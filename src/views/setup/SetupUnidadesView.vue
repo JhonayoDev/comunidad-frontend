@@ -909,7 +909,7 @@ onMounted(() => u.cargar());
                       severity="success"
                       size="small"
                     />
-                    <span v-else class="text-green-500 text-sm">Listo</span>
+                    <span v-else class="text-success text-sm">Listo</span>
                   </td>
                   <td v-if="editando">
                     <Button

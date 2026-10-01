@@ -146,7 +146,7 @@ onMounted(cargarPlanes);
         <div class="flex flex-col gap-3">
           <div class="flex flex-col gap-1">
             <label class="text-sm"
-              >Nombre <span class="text-red-500">*</span></label
+              >Nombre <span class="text-danger">*</span></label
             >
             <InputText
               ref="nombreRef"
@@ -154,7 +154,7 @@ onMounted(cargarPlanes);
               placeholder="Ej: Condominio Los Cipreses"
               :class="{ 'p-invalid': errores.nombre }"
             />
-            <small v-if="errores.nombre" class="text-red-500">{{
+            <small v-if="errores.nombre" class="text-danger">{{
               errores.nombre
             }}</small>
           </div>
@@ -171,7 +171,7 @@ onMounted(cargarPlanes);
                 @input="form.rut = onRutInput(form.rut)"
                 @blur="form.rut = onRutBlur(form.rut)"
               />
-              <small v-if="errores.rut" class="text-red-500">{{
+              <small v-if="errores.rut" class="text-danger">{{
                 errores.rut
               }}</small>
             </div>
@@ -181,7 +181,7 @@ onMounted(cargarPlanes);
                 v-model="form.direccion"
                 :class="{ 'p-invalid': errores.direccion }"
               />
-              <small v-if="errores.direccion" class="text-red-500">{{
+              <small v-if="errores.direccion" class="text-danger">{{
                 errores.direccion
               }}</small>
             </div>
@@ -189,7 +189,7 @@ onMounted(cargarPlanes);
 
           <div class="flex flex-col gap-1">
             <label class="text-sm"
-              >Responsable <span class="text-red-500">*</span></label
+              >Responsable <span class="text-danger">*</span></label
             >
             <InputText
               ref="responsableNombreRef"
@@ -197,7 +197,7 @@ onMounted(cargarPlanes);
               placeholder="Nombre del administrador"
               :class="{ 'p-invalid': errores.responsableNombre }"
             />
-            <small v-if="errores.responsableNombre" class="text-red-500">{{
+            <small v-if="errores.responsableNombre" class="text-danger">{{
               errores.responsableNombre
             }}</small>
           </div>
@@ -205,7 +205,7 @@ onMounted(cargarPlanes);
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
               <label class="text-sm"
-                >Email responsable <span class="text-red-500">*</span></label
+                >Email responsable <span class="text-danger">*</span></label
               >
               <InputText
                 ref="responsableEmailRef"
@@ -213,7 +213,7 @@ onMounted(cargarPlanes);
                 type="email"
                 :class="{ 'p-invalid': errores.responsableEmail }"
               />
-              <small v-if="errores.responsableEmail" class="text-red-500">{{
+              <small v-if="errores.responsableEmail" class="text-danger">{{
                 errores.responsableEmail
               }}</small>
             </div>
@@ -236,7 +236,7 @@ onMounted(cargarPlanes);
                   )
                 "
               />
-              <small v-if="errores.responsableTelefono" class="text-red-500">{{
+              <small v-if="errores.responsableTelefono" class="text-danger">{{
                 errores.responsableTelefono
               }}</small>
             </div>

@@ -207,7 +207,7 @@ onMounted(cargar);
                   >
                     <div
                       class="h-full rounded-full"
-                      :class="usoPct(c) >= 100 ? 'bg-red-500' : 'bg-primary'"
+                      :class="usoPct(c) >= 100 ? 'bg-danger' : 'bg-primary'"
                       :style="{ width: usoPct(c) + '%' }"
                     ></div>
                   </div>
@@ -298,7 +298,7 @@ onMounted(cargar);
                 >
                   <div
                     class="h-full rounded-full"
-                    :class="usoPct(c) >= 100 ? 'bg-red-500' : 'bg-primary'"
+                    :class="usoPct(c) >= 100 ? 'bg-danger' : 'bg-primary'"
                     :style="{ width: usoPct(c) + '%' }"
                   ></div>
                 </div>
@@ -406,7 +406,7 @@ onMounted(cargar);
               />
               <small
                 v-if="cfgDe(editandoId)?.data?.hasSecretKey"
-                class="text-green-600 text-xs"
+                class="text-success-strong text-xs"
                 >Ya configurada</small
               >
             </div>
@@ -438,7 +438,7 @@ onMounted(cargar);
             />
             <small
               v-if="cfgDe(editandoId)?.data?.hasDriveCredentials"
-              class="text-green-600 text-xs"
+              class="text-success-strong text-xs"
               >Ya configuradas</small
             >
           </div>

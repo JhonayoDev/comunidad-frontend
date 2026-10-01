@@ -163,7 +163,7 @@ onMounted(cargar);
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span class="font-bold" :class="cta.saldoActual >= 0 ? 'text-green-600' : 'text-red-600'">
+              <span class="font-bold" :class="cta.saldoActual >= 0 ? 'text-success-strong' : 'text-danger-strong'">
                 {{ cta.saldoActual?.toLocaleString("es-CL") || 0 }}
               </span>
               <Button icon="pi pi-pencil" variant="text" size="small" severity="secondary" @click="abrirEditar(cta)" />

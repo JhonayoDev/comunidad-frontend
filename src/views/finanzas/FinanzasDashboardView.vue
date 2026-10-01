@@ -65,13 +65,13 @@ onMounted(cargar);
             <div class="flex flex-col gap-2">
               <div class="flex justify-between">
                 <span class="text-sm">Ingresos</span>
-                <span class="text-sm font-semibold text-green-600">
+                <span class="text-sm font-semibold text-success-strong">
                   {{ formatoMonto(dashboard.mesActual?.totalIngresos) }}
                 </span>
               </div>
               <div class="flex justify-between">
                 <span class="text-sm">Egresos</span>
-                <span class="text-sm font-semibold text-red-600">
+                <span class="text-sm font-semibold text-danger-strong">
                   {{ formatoMonto(dashboard.mesActual?.totalEgresos) }}
                 </span>
               </div>
@@ -95,13 +95,13 @@ onMounted(cargar);
             <div class="flex flex-col gap-2">
               <div class="flex justify-between">
                 <span class="text-sm">Ingresos</span>
-                <span class="text-sm font-semibold text-green-600">
+                <span class="text-sm font-semibold text-success-strong">
                   {{ formatoMonto(dashboard.mesAnterior?.totalIngresos) }}
                 </span>
               </div>
               <div class="flex justify-between">
                 <span class="text-sm">Egresos</span>
-                <span class="text-sm font-semibold text-red-600">
+                <span class="text-sm font-semibold text-danger-strong">
                   {{ formatoMonto(dashboard.mesAnterior?.totalEgresos) }}
                 </span>
               </div>
@@ -125,16 +125,16 @@ onMounted(cargar);
                 <span class="text-sm">{{ dashboard.morosidad?.totalUnidades || 0 }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-sm text-green-600">Pagadas</span>
+                <span class="text-sm text-success-strong">Pagadas</span>
                 <span class="text-sm">{{ dashboard.morosidad?.unidadesPagadas || 0 }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-sm text-red-600">Pendientes</span>
+                <span class="text-sm text-danger-strong">Pendientes</span>
                 <span class="text-sm">{{ dashboard.morosidad?.unidadesPendientes || 0 }}</span>
               </div>
               <div class="flex justify-between border-t-1 surface-border pt-2">
                 <span class="text-sm font-bold">Total moroso</span>
-                <span class="text-sm font-bold text-red-600">
+                <span class="text-sm font-bold text-danger-strong">
                   {{ formatoMonto(dashboard.morosidad?.totalMoroso) }}
                 </span>
               </div>
@@ -161,7 +161,7 @@ onMounted(cargar);
                 <br>
                 <span class="text-xs text-text-subprincipal">{{ cta.banco }} {{ cta.numeroCuenta }}</span>
               </div>
-              <span class="font-bold" :class="cta.saldoActual >= 0 ? 'text-green-600' : 'text-red-600'">
+              <span class="font-bold" :class="cta.saldoActual >= 0 ? 'text-success-strong' : 'text-danger-strong'">
                 {{ formatoMonto(cta.saldoActual) }}
               </span>
             </div>

@@ -145,7 +145,7 @@ onMounted(cargar);
             </div>
             <span
               class="font-bold text-lg"
-              :class="m.tipo === 'CREDITO' ? 'text-green-600' : 'text-red-600'"
+              :class="m.tipo === 'CREDITO' ? 'text-success-strong' : 'text-danger-strong'"
             >
               {{ m.tipo === 'CREDITO' ? '+' : '-' }}{{ m.monto?.toLocaleString("es-CL") }}
             </span>

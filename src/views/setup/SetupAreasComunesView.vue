@@ -374,7 +374,7 @@ onMounted(() => u.cargar());
                     severity="danger"
                     size="small"
                   />
-                  <span v-else class="text-green-500 text-sm">Listo</span>
+                  <span v-else class="text-success text-sm">Listo</span>
                 </td>
                 <td v-if="editando">
                   <Button
@@ -607,7 +607,7 @@ onMounted(() => u.cargar());
                     size="small"
                     :title="item.error"
                   />
-                  <span v-else class="text-green-500 text-sm">Listo</span>
+                  <span v-else class="text-success text-sm">Listo</span>
                 </td>
               </tr>
             </tbody>

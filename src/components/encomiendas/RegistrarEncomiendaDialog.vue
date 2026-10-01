@@ -176,7 +176,7 @@ function handleRegister() {
             :class="{ 'p-invalid': errores.tipo }"
             class="w-full"
           />
-          <small v-if="errores.tipo" class="text-red-500">{{ errores.tipo }}</small>
+          <small v-if="errores.tipo" class="text-danger">{{ errores.tipo }}</small>
         </div>
 
         <div class="flex flex-col gap-1">
@@ -186,7 +186,7 @@ function handleRegister() {
             placeholder="Nombre del destinatario"
             :class="{ 'p-invalid': errores.nombreDestinatario }"
           />
-          <small v-if="errores.nombreDestinatario" class="text-red-500">{{ errores.nombreDestinatario }}</small>
+          <small v-if="errores.nombreDestinatario" class="text-danger">{{ errores.nombreDestinatario }}</small>
         </div>
 
         <div class="flex flex-col gap-1">
@@ -209,7 +209,7 @@ function handleRegister() {
               <span>{{ formatUnidad(slotProps.option) }}</span>
             </template>
           </AutoComplete>
-          <small v-if="errores.unidadId" class="text-red-500">{{ errores.unidadId }}</small>
+          <small v-if="errores.unidadId" class="text-danger">{{ errores.unidadId }}</small>
           <small v-else class="text-text-muted">Escriba el número y seleccione de las sugerencias</small>
         </div>
 
@@ -223,7 +223,7 @@ function handleRegister() {
             :class="{ 'p-invalid': errores.accesoId }"
             class="w-full"
           />
-          <small v-if="errores.accesoId" class="text-red-500">{{ errores.accesoId }}</small>
+          <small v-if="errores.accesoId" class="text-danger">{{ errores.accesoId }}</small>
         </div>
 
         <div class="flex flex-col gap-1">

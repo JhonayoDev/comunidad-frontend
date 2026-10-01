@@ -186,7 +186,7 @@ onMounted(cargar);
             placeholder="Resume el motivo"
             :class="{ 'p-invalid': errores.titulo }"
           />
-          <small v-if="errores.titulo" class="text-red-500">{{ errores.titulo }}</small>
+          <small v-if="errores.titulo" class="text-danger">{{ errores.titulo }}</small>
         </div>
         <div class="flex flex-col gap-2">
           <label class="text-sm font-medium">Prioridad *</label>

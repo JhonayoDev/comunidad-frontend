@@ -51,7 +51,7 @@
               <div>
                 <label class="font-medium text-sm">Secret Key</label>
                 <InputText v-model="form.r2SecretKey" type="password" placeholder="Dejar vacío para mantener el valor actual" fluid />
-                <small v-if="config?.hasSecretKey" class="text-green-600 text-xs">Ya configurada</small>
+                <small v-if="config?.hasSecretKey" class="text-success-strong text-xs">Ya configurada</small>
                 <small v-else class="text-text-subprincipal text-xs">Obligatorio si no hay una configurada</small>
               </div>
               <div class="sm:col-span-2">
@@ -70,7 +70,7 @@
             <div>
               <label class="font-medium text-sm">Service Account (JSON)</label>
               <Textarea v-model="form.driveCredentials" :autoResize="true" rows="6" placeholder='{ "type": "service_account", ... }' fluid />
-              <small v-if="config?.hasDriveCredentials" class="text-green-600 text-xs">Ya configuradas</small>
+              <small v-if="config?.hasDriveCredentials" class="text-success-strong text-xs">Ya configuradas</small>
               <small v-else class="text-text-subprincipal text-xs">Obligatorio si no hay credenciales configuradas</small>
             </div>
           </template>
