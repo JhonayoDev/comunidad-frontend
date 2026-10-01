@@ -101,6 +101,6 @@ function handleClick(accion) {
 </template>
 <style scoped>
 .header-text {
-  color: var(--p-surface-900);
+  color: var(--color-text);
 }
 </style>

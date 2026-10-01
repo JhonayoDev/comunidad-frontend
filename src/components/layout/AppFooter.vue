@@ -7,10 +7,10 @@
 </template>
 <style scoped>
 .footer-text {
-  color: var(--p-surface-900);
+  color: var(--color-text);
 }
 
 button.footer-btn .p-button-icon {
-  color: var(--p-surface-900) !important;
+  color: var(--color-text) !important;
 }
 </style>

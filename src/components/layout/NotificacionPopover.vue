@@ -148,6 +148,6 @@ function timeAgo(fecha) {
 
 <style>
 button.header-btn .p-button-icon {
-  color: var(--p-surface-900) !important;
+  color: var(--color-text) !important;
 }
 </style>

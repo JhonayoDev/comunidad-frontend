@@ -123,9 +123,9 @@ async function handleSubmit() {
 
 <style scoped>
 .primary-text {
-  color: var(--p-surface-900);
+  color: var(--color-text);
 }
 .secondary-text {
-  color: var(--p-surface-600);
+  color: var(--color-text-muted);
 }
 </style>
