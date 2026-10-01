@@ -131,14 +131,14 @@ async function desactivar() {
         <template #content>
           <div class="flex flex-col gap-2">
             <div v-for="(item, idx) in template.items" :key="idx" class="flex items-center gap-2 p-2 surface-ground border-round">
-              <span v-if="!editando" class="text-sm text-surface-500 w-6">{{ item.orden }}.</span>
+              <span v-if="!editando" class="text-sm text-text-muted w-6">{{ item.orden }}.</span>
               <span v-if="!editando" class="text-sm flex-1">{{ item.pregunta }}</span>
               <Tag v-if="!editando && item.obligatorio" value="Obligatorio" severity="danger" size="small" />
               <InputText v-if="editando" v-model="item.pregunta" placeholder="Pregunta" class="flex-1" size="small" />
               <Checkbox v-if="editando" v-model="item.obligatorio" :binary="true" />
               <Button v-if="editando" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="quitarItem(idx)" />
             </div>
-            <div v-if="!template.items.length" class="text-center text-surface-400 py-4">Sin preguntas configuradas</div>
+            <div v-if="!template.items.length" class="text-center text-text-subprincipal py-4">Sin preguntas configuradas</div>
             <Button v-if="editando" label="Agregar pregunta" icon="pi pi-plus" severity="secondary" variant="outlined" size="small" @click="agregarItem" />
           </div>
         </template>
@@ -149,7 +149,7 @@ async function desactivar() {
       </div>
     </template>
 
-    <div v-else-if="tipoSeleccionado && !loading && !error" class="text-center text-surface-400 py-8">
+    <div v-else-if="tipoSeleccionado && !loading && !error" class="text-center text-text-subprincipal py-8">
       Selecciona un tipo de evento y presiona "Cargar"
     </div>
 

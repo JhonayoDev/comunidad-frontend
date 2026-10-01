@@ -175,7 +175,7 @@ onMounted(() => {
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!cargos.length" class="text-center text-surface-400 py-8">
+      <div v-if="!cargos.length" class="text-center text-text-subprincipal py-8">
         No hay cargos adicionales registrados
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -190,7 +190,7 @@ onMounted(() => {
                 <span class="font-medium">{{ c.descripcion }}</span>
                 <Tag :value="c.estado" :severity="estadoSeverity(c.estado)" size="small" />
               </div>
-              <div class="text-sm text-surface-500">
+              <div class="text-sm text-text-muted">
                 Unidad {{ c.unidadNumero }} — {{ c.categoriaNombre }}
                 <span v-if="c.fechaVencimiento"> — Vence: {{ c.fechaVencimiento }}</span>
               </div>
@@ -259,7 +259,7 @@ onMounted(() => {
     <Dialog v-model:visible="showAnular" header="Anular cargo" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <p class="text-sm m-0">¿Estás seguro de anular este cargo?</p>
-        <p class="text-sm text-surface-500 m-0">{{ cargoSeleccionado?.descripcion }} — {{ cargoSeleccionado?.monto?.toLocaleString("es-CL") }}</p>
+        <p class="text-sm text-text-muted m-0">{{ cargoSeleccionado?.descripcion }} — {{ cargoSeleccionado?.monto?.toLocaleString("es-CL") }}</p>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Motivo</label>
           <Textarea v-model="motivoAnulacion" rows="2" placeholder="Indica el motivo" />

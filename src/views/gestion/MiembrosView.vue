@@ -159,7 +159,7 @@ onMounted(() => { cargar(); cargarPersonas(); });
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!miembros.length" class="text-center text-surface-400 py-8">
+      <div v-if="!miembros.length" class="text-center text-text-subprincipal py-8">
         No hay miembros registrados
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -174,10 +174,10 @@ onMounted(() => { cargar(); cargarPersonas(); });
               <Tag :value="m.cargo" severity="info" size="small" />
               <Tag v-if="!m.activo" value="Inactivo" severity="secondary" size="small" />
             </div>
-            <div class="text-sm text-surface-500">{{ m.personaEmail }}</div>
+            <div class="text-sm text-text-muted">{{ m.personaEmail }}</div>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs text-surface-400">{{ m.fechaInicio }}</span>
+            <span class="text-xs text-text-subprincipal">{{ m.fechaInicio }}</span>
             <Button
               v-if="m.activo"
               icon="pi pi-trash"
@@ -208,7 +208,7 @@ onMounted(() => { cargar(); cargarPersonas(); });
             <template #option="slotProps">
               <div class="flex flex-col">
                 <span class="font-medium">{{ slotProps.option.nombre }}</span>
-                <span class="text-xs text-surface-400">{{ slotProps.option.email }}</span>
+                <span class="text-xs text-text-subprincipal">{{ slotProps.option.email }}</span>
               </div>
             </template>
           </AutoComplete>

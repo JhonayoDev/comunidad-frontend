@@ -321,7 +321,7 @@ onMounted(() => {
             <div class="flex flex-col gap-1">
               <label class="text-sm">Contraseña *</label>
               <Password v-model="form.smtpPassword" placeholder="••••••••" :feedback="false" toggleMask class="w-full" input-class="w-full" />
-              <small class="text-xs text-surface-400">No se prellena al editar; reingresa para guardar.</small>
+              <small class="text-xs text-text-subprincipal">No se prellena al editar; reingresa para guardar.</small>
             </div>
             <div class="flex flex-col gap-1 md:col-span-2">
               <label class="text-sm">Remitente por defecto *</label>
@@ -373,7 +373,7 @@ onMounted(() => {
       <template #content>
         <Skeleton v-if="loadingRouting" width="100%" height="120px" />
         <Message v-else-if="errorRouting" severity="error" :closable="false">{{ errorRouting }}</Message>
-        <div v-else-if="!routingList.length" class="text-sm text-surface-400 py-2">Sin routing personalizado — todos los tipos usan Brevo.</div>
+        <div v-else-if="!routingList.length" class="text-sm text-text-subprincipal py-2">Sin routing personalizado — todos los tipos usan Brevo.</div>
         <div v-else class="overflow-x-auto">
           <table class="planilla w-full">
             <thead>
@@ -404,7 +404,7 @@ onMounted(() => {
         <div class="flex flex-col gap-1">
           <label class="text-sm">Tipo notificación *</label>
           <Select v-model="routingForm.tipoNotificacion" :options="tiposNotificacion" optionLabel="label" optionValue="value" placeholder="Selecciona tipo" filter class="w-full" />
-          <small class="text-xs text-surface-400">o escribe uno no listado</small>
+          <small class="text-xs text-text-subprincipal">o escribe uno no listado</small>
           <InputText v-model="routingForm.tipoNotificacion" placeholder="EJ: VISITA_INGRESADA" class="mt-1" />
         </div>
         <div class="flex flex-col gap-1">

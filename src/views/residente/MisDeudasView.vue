@@ -74,7 +74,7 @@ onMounted(async () => {
         />
       </div>
 
-      <div v-if="deudas.unidades?.length === 0" class="text-center py-8 text-surface-400">
+      <div v-if="deudas.unidades?.length === 0" class="text-center py-8 text-text-subprincipal">
         No tienes deudas pendientes
       </div>
 
@@ -102,7 +102,7 @@ onMounted(async () => {
                   />
                 </div>
               </div>
-              <p class="text-xs text-surface-500 m-0 ml-6">
+              <p class="text-xs text-text-muted m-0 ml-6">
                 Vence: {{ unidad.gastoComun.fechaVencimiento }}
               </p>
             </div>
@@ -110,7 +110,7 @@ onMounted(async () => {
             <!-- Cargos adicionales -->
             <div v-if="unidad.cargosAdicionales?.length > 0">
               <Divider class="my-2" />
-              <p class="text-xs font-semibold text-surface-500 uppercase mb-2">Cargos adicionales</p>
+              <p class="text-xs font-semibold text-text-muted uppercase mb-2">Cargos adicionales</p>
               <div
                 v-for="(cargo, i) in unidad.cargosAdicionales"
                 :key="cargo.cargoId"
@@ -119,7 +119,7 @@ onMounted(async () => {
               >
                 <div class="flex flex-col">
                   <span class="text-sm">{{ cargo.descripcion }}</span>
-                  <span class="text-xs text-surface-400">{{ cargo.categoria }}</span>
+                  <span class="text-xs text-text-subprincipal">{{ cargo.categoria }}</span>
                 </div>
                 <span class="text-sm font-medium">{{ formatMonto(cargo.monto) }}</span>
               </div>

@@ -144,7 +144,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!plantillas.length" class="text-center text-surface-400 py-8">
+      <div v-if="!plantillas.length" class="text-center text-text-subprincipal py-8">
         No hay plantillas registradas
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -159,11 +159,11 @@ onMounted(cargar);
                 <span class="font-medium">{{ p.nombre }}</span>
                 <Tag v-if="!p.activa" value="Inactiva" severity="secondary" size="small" />
               </div>
-              <div class="text-sm text-surface-500">
+              <div class="text-sm text-text-muted">
                 {{ p.categoriaNombre }} — {{ p.cuentaOrigenNombre }}
                 <span v-if="p.montoSugerido"> — ${{ p.montoSugerido?.toLocaleString("es-CL") }}</span>
               </div>
-              <div v-if="p.descripcionBase" class="text-xs text-surface-400">{{ p.descripcionBase }}</div>
+              <div v-if="p.descripcionBase" class="text-xs text-text-subprincipal">{{ p.descripcionBase }}</div>
             </div>
             <div class="flex items-center gap-1">
               <Button icon="pi pi-pencil" variant="text" size="small" severity="secondary" @click="abrirEditar(p)" />

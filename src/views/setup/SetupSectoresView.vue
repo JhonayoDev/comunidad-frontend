@@ -204,10 +204,10 @@ onMounted(() => u.cargar());
             </div>
             <div class="mt-2 flex flex-col gap-1">
               <template v-if="editando && !item.marcadoEliminar">
-                <label class="text-xs text-surface-400">Descripción</label>
+                <label class="text-xs text-text-subprincipal">Descripción</label>
                 <InputText v-model="item.descripcion" size="small" class="w-full" />
               </template>
-              <span v-else class="text-sm text-surface-400">{{ item.descripcion || "Sin descripción" }}</span>
+              <span v-else class="text-sm text-text-subprincipal">{{ item.descripcion || "Sin descripción" }}</span>
               <Tag v-if="item.error" :value="item.error" severity="danger" size="small" />
               <Tag v-else-if="item.marcadoEliminar" value="Eliminado" severity="danger" size="small" />
             </div>

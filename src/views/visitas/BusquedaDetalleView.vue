@@ -13,11 +13,11 @@ const route = useRoute();
       <template #content>
         <div class="flex flex-col items-center gap-3 py-6 text-center">
           <i class="pi pi-building text-4xl" style="color: var(--p-primary-400)"></i>
-          <p class="text-surface-500 m-0 max-w-md">
+          <p class="text-text-muted m-0 max-w-md">
             Esta sección está en construcción. Próximamente podrás consultar información detallada de
             propietarios, residentes, vehículos y unidades del condominio.
           </p>
-          <p v-if="route.query.patente" class="text-sm text-surface-400 m-0">
+          <p v-if="route.query.patente" class="text-sm text-text-subprincipal m-0">
             Búsqueda relacionada: <strong>{{ route.query.patente }}</strong>
           </p>
           <Button label="Entendido" icon="pi pi-check" severity="secondary" @click="$router.back()" />

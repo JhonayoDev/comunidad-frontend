@@ -122,7 +122,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!periodos.length" class="text-center text-surface-400 py-8">
+      <div v-if="!periodos.length" class="text-center text-text-subprincipal py-8">
         No hay periodos registrados
       </div>
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -141,19 +141,19 @@ onMounted(cargar);
           <template #content>
             <div class="flex flex-col gap-1 text-sm">
               <div class="flex justify-between">
-                <span class="text-surface-500">Vencimiento</span>
+                <span class="text-text-muted">Vencimiento</span>
                 <span>{{ p.fechaVencimiento }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-surface-500">Esperado</span>
+                <span class="text-text-muted">Esperado</span>
                 <span>{{ formatoMonto(p.montoEsperado) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-surface-500">Recaudado</span>
+                <span class="text-text-muted">Recaudado</span>
                 <span class="font-semibold text-green-600">{{ formatoMonto(p.montoRecaudado) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-surface-500">Pagado</span>
+                <span class="text-text-muted">Pagado</span>
                 <span>{{ p.unidadesPagadas }}/{{ p.totalUnidades }} ({{ p.porcentajePagado?.toFixed(0) }}%)</span>
               </div>
             </div>
@@ -185,7 +185,7 @@ onMounted(cargar);
 
     <Dialog v-model:visible="showDetalle" header="Detalle del periodo" modal :style="{ width: '95%', maxWidth: '600px' }">
       <template v-if="detalle">
-        <p class="text-sm text-surface-500 m-0 mb-3">{{ detalle.resumen?.periodo }} — {{ detalle.resumen?.estado }}</p>
+        <p class="text-sm text-text-muted m-0 mb-3">{{ detalle.resumen?.periodo }} — {{ detalle.resumen?.estado }}</p>
         <div class="flex flex-col gap-2">
           <div
             v-for="c in detalle.cuotas"
@@ -200,7 +200,7 @@ onMounted(cargar);
                 size="small"
                 class="ml-2"
               />
-              <span v-if="c.fechaPago" class="text-xs text-surface-400 ml-2">{{ c.fechaPago }}</span>
+              <span v-if="c.fechaPago" class="text-xs text-text-subprincipal ml-2">{{ c.fechaPago }}</span>
             </div>
             <span class="font-semibold">{{ c.monto?.toLocaleString("es-CL") }}</span>
           </div>

@@ -187,7 +187,7 @@ onMounted(() => {
       <template #content>
         <div class="flex flex-wrap gap-2 items-end">
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Categoría</label>
+            <label class="text-xs text-text-muted">Categoría</label>
             <Select
               v-model="filtroCategoria"
               :options="categoriasFiltradas"
@@ -200,15 +200,15 @@ onMounted(() => {
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Desde</label>
+            <label class="text-xs text-text-muted">Desde</label>
             <DatePicker v-model="filtroDesde" size="small" class="w-36" />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Hasta</label>
+            <label class="text-xs text-text-muted">Hasta</label>
             <DatePicker v-model="filtroHasta" size="small" class="w-36" />
           </div>
           <div class="flex items-center gap-2">
-            <label class="text-xs text-surface-500">Solo activos</label>
+            <label class="text-xs text-text-muted">Solo activos</label>
             <input type="checkbox" v-model="filtroSoloActivos" />
           </div>
           <Button label="Buscar" icon="pi pi-search" size="small" severity="secondary" @click="buscar" />
@@ -220,7 +220,7 @@ onMounted(() => {
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!gastos.length" class="text-center text-surface-400 py-8">
+      <div v-if="!gastos.length" class="text-center text-text-subprincipal py-8">
         No hay gastos registrados
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -234,7 +234,7 @@ onMounted(() => {
               <span class="font-medium">{{ g.descripcion }}</span>
               <Tag :value="g.estado" :severity="estadoSeverity(g.estado)" size="small" />
             </div>
-            <div class="text-sm text-surface-500">
+            <div class="text-sm text-text-muted">
               {{ g.fechaGasto }} — {{ g.categoriaNombre }}
               <span v-if="g.proveedorTexto"> — {{ g.proveedorTexto }}</span>
             </div>
@@ -312,7 +312,7 @@ onMounted(() => {
     <Dialog v-model:visible="showAnular" header="Anular gasto" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <p class="text-sm m-0">¿Estás seguro de anular este gasto?</p>
-        <p class="text-sm text-surface-500 m-0">{{ gastoSeleccionado?.descripcion }}</p>
+        <p class="text-sm text-text-muted m-0">{{ gastoSeleccionado?.descripcion }}</p>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Motivo</label>
           <Textarea v-model="motivoAnulacion" rows="2" placeholder="Indica el motivo de anulación" />

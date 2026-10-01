@@ -111,7 +111,7 @@ onMounted(cargar);
               <span class="font-medium">{{ codigoLabel(p.codigo) }}</span>
               <Tag :value="p.origen" :severity="p.origen === 'OVERRIDE' ? 'warn' : 'info'" size="small" />
             </div>
-            <p class="text-sm text-surface-500 m-0 mt-1 line-clamp-2">{{ p.tituloPlantilla }}</p>
+            <p class="text-sm text-text-muted m-0 mt-1 line-clamp-2">{{ p.tituloPlantilla }}</p>
           </div>
           <div class="flex gap-1 shrink-0">
             <Button icon="pi pi-pencil" size="small" variant="text" @click="abrirEdicion(p)" />
@@ -119,7 +119,7 @@ onMounted(cargar);
           </div>
         </div>
       </div>
-      <div v-if="!plantillas.length" class="text-center text-surface-400 py-8">No hay plantillas disponibles</div>
+      <div v-if="!plantillas.length" class="text-center text-text-subprincipal py-8">No hay plantillas disponibles</div>
     </div>
 
     <Dialog v-model:visible="showEditar" :header="editando ? codigoLabel(editando.codigo) : ''" modal :style="{ width: '95%', maxWidth: '500px' }">

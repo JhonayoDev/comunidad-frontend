@@ -114,7 +114,7 @@ function timeAgo(fecha) {
         </div>
 
         <template v-else-if="syncNotificaciones.length === 0">
-          <div class="flex flex-col items-center py-4 gap-1 text-surface-400">
+          <div class="flex flex-col items-center py-4 gap-1 text-text-subprincipal">
             <i class="pi pi-check-circle text-xl" />
             <span class="text-sm">No hay notificaciones nuevas</span>
           </div>
@@ -132,10 +132,10 @@ function timeAgo(fecha) {
             />
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium m-0 truncate">{{ n.titulo }}</p>
-              <p class="text-xs text-surface-400 m-0 truncate">
+              <p class="text-xs text-text-subprincipal m-0 truncate">
                 {{ n.mensaje }}
               </p>
-              <p class="text-xs text-surface-300 m-0 mt-1">
+              <p class="text-xs text-text-subtle m-0 mt-1">
                 {{ timeAgo(n.fechaCreacion) }}
               </p>
             </div>

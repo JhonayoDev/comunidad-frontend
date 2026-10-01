@@ -74,10 +74,10 @@ function verTodas() {
     </template>
     <template #content>
       <Skeleton v-if="loading" width="100%" height="5rem" />
-      <div v-else-if="error" class="text-sm text-surface-400 py-2">
+      <div v-else-if="error" class="text-sm text-text-subprincipal py-2">
         No se pudieron cargar tus encomiendas
       </div>
-      <div v-else-if="encomiendasLista.length === 0" class="text-sm text-surface-400 py-2">
+      <div v-else-if="encomiendasLista.length === 0" class="text-sm text-text-subprincipal py-2">
         No tienes encomiendas pendientes
       </div>
       <div v-else>
@@ -94,7 +94,7 @@ function verTodas() {
                 <span class="text-sm font-medium">
                   {{ env.tipo }} · {{ env.nombreDestinatario }}
                 </span>
-                <span class="text-xs text-surface-500">
+                <span class="text-xs text-text-muted">
                   Casa {{ env.unidadNumero }} · {{ formatFecha(env.creadoEn) }}
                 </span>
               </div>

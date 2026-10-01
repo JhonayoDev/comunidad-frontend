@@ -488,7 +488,7 @@ onMounted(() => u.cargar());
                 />
                 </template>
                 <template v-else>
-                <span class="text-sm text-surface-400"
+                <span class="text-sm text-text-subprincipal"
                   >{{ item.tipo }} · Piso {{ pisoLabel(item) }} ·
                   {{ sectorLabel(item) }}</span
                 >

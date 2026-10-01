@@ -354,27 +354,27 @@ onMounted(cargar);
         <template #content>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div class="text-sm">
-              <span class="text-surface-400">RUT:</span>
+              <span class="text-text-subprincipal">RUT:</span>
               {{ condominio.rut || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Dirección:</span>
+              <span class="text-text-subprincipal">Dirección:</span>
               {{ condominio.direccion || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Plan:</span>
+              <span class="text-text-subprincipal">Plan:</span>
               <strong>{{ condominio.planNombre }}</strong>
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Creado:</span>
+              <span class="text-text-subprincipal">Creado:</span>
               {{ formatFecha(condominio.createdAt) }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Vence:</span>
+              <span class="text-text-subprincipal">Vence:</span>
               {{ formatFecha(condominio.fechaVencimiento) }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Onboarding:</span>
+              <span class="text-text-subprincipal">Onboarding:</span>
               <Tag
                 :value="condominio.onboardingStatus"
                 :severity="
@@ -384,27 +384,27 @@ onMounted(cargar);
               />
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Responsable:</span>
+              <span class="text-text-subprincipal">Responsable:</span>
               {{ condominio.responsableNombre || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Email:</span>
+              <span class="text-text-subprincipal">Email:</span>
               {{ condominio.responsableEmail || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Teléfono:</span>
+              <span class="text-text-subprincipal">Teléfono:</span>
               {{ condominio.responsableTelefono || "—" }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Unidades:</span>
+              <span class="text-text-subprincipal">Unidades:</span>
               {{ condominio.totalUnidades }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Usuarios activos:</span>
+              <span class="text-text-subprincipal">Usuarios activos:</span>
               {{ condominio.totalUsuariosActivos }}
             </div>
             <div class="text-sm">
-              <span class="text-surface-400">Storage:</span>
+              <span class="text-text-subprincipal">Storage:</span>
               {{ (condominio.storageUsadoMb / 1024).toFixed(1) }}/{{
                 (condominio.storageLimitMb / 1024).toFixed(1)
               }}
@@ -432,7 +432,7 @@ onMounted(cargar);
           </div>
         </template>
         <template #content>
-          <p class="text-xs text-surface-500 m-0 mb-3">
+          <p class="text-xs text-text-muted m-0 mb-3">
             Estacionamientos y bodegas son entidades independientes (no
             unidades). Las capacidades por tipo son informativas; el límite real
             es el envelope del plan.
@@ -449,7 +449,7 @@ onMounted(cargar);
                 :class="
                   c.capacidad != null && c.total >= c.capacidad
                     ? 'text-red-500'
-                    : 'text-surface-600'
+                    : 'text-text-muted'
                 "
               >
                 {{ c.total }} {{ c.total === 1 ? "creada" : "creadas" }}
@@ -457,7 +457,7 @@ onMounted(cargar);
                   de {{ c.capacidad }}
                 </template>
                 <template v-else>
-                  <span class="text-xs text-surface-400">(sin límite)</span>
+                  <span class="text-xs text-text-subprincipal">(sin límite)</span>
                 </template>
               </span>
             </div>
@@ -470,7 +470,7 @@ onMounted(cargar);
               <span class="font-medium">Envelope del plan</span>
               <span
                 :class="
-                  envelopePct >= 100 ? 'text-red-500' : 'text-surface-600'
+                  envelopePct >= 100 ? 'text-red-500' : 'text-text-muted'
                 "
               >
                 {{ envelope.totalActual }} de
@@ -496,7 +496,7 @@ onMounted(cargar);
           <template #content class="flex flex-col items-center gap-1 p-3">
             <i class="pi pi-users text-2xl text-primary"></i>
             <span class="text-sm font-medium">Usuarios</span>
-            <span class="text-xs text-surface-400"
+            <span class="text-xs text-text-subprincipal"
               >Gestionar usuarios y roles</span
             >
           </template>
@@ -508,7 +508,7 @@ onMounted(cargar);
           <template #content class="flex flex-col items-center gap-1 p-3">
             <i class="pi pi-credit-card text-2xl text-primary"></i>
             <span class="text-sm font-medium">Suscripción</span>
-            <span class="text-xs text-surface-400">Plan, pagos, historial</span>
+            <span class="text-xs text-text-subprincipal">Plan, pagos, historial</span>
           </template>
         </Card>
         <Card
@@ -518,21 +518,21 @@ onMounted(cargar);
           <template #content class="flex flex-col items-center gap-1 p-3">
             <i class="pi pi-rocket text-2xl text-primary"></i>
             <span class="text-sm font-medium">Puesta en marcha</span>
-            <span class="text-xs text-surface-400">Wizard de configuración inicial</span>
+            <span class="text-xs text-text-subprincipal">Wizard de configuración inicial</span>
           </template>
         </Card>
         <Card class="cursor-pointer hover:shadow-3" @click="irA('SaasModulos')">
           <template #content class="flex flex-col items-center gap-1 p-3">
             <i class="pi pi-th-large text-2xl text-primary"></i>
             <span class="text-sm font-medium">Módulos</span>
-            <span class="text-xs text-surface-400">Activar/desactivar</span>
+            <span class="text-xs text-text-subprincipal">Activar/desactivar</span>
           </template>
         </Card>
         <Card class="cursor-pointer hover:shadow-3" @click="irA('SaasEmailConfig')">
           <template #content class="flex flex-col items-center gap-1 p-3">
             <i class="pi pi-envelope text-2xl text-primary"></i>
             <span class="text-sm font-medium">Email</span>
-            <span class="text-xs text-surface-400">SMTP y routing por condominio</span>
+            <span class="text-xs text-text-subprincipal">SMTP y routing por condominio</span>
           </template>
         </Card>
       </div>
@@ -625,7 +625,7 @@ onMounted(cargar);
       :style="{ width: '95%', maxWidth: '460px' }"
     >
       <div class="flex flex-col gap-3">
-        <p class="text-xs text-surface-500 m-0">
+        <p class="text-xs text-text-muted m-0">
           Declara la capacidad esperada por tipo (informativa). El límite real
           es el envelope del plan: unidades + estacionamientos + bodegas no
           pueden superar el cupo del plan.
@@ -672,7 +672,7 @@ onMounted(cargar);
           ¿Estás seguro de suspender <strong>{{ condominio?.nombre }}</strong
           >?
         </p>
-        <p class="text-xs text-surface-500">
+        <p class="text-xs text-text-muted">
           Esto bloqueará el acceso a todos los usuarios del condominio.
         </p>
         <div class="flex flex-col gap-1">

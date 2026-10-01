@@ -137,8 +137,8 @@ onMounted(cargar);
       <Card>
         <template #content>
           <div class="flex flex-column align-items-center gap-2 py-4">
-            <i class="pi pi-file text-4xl text-surface-300"></i>
-            <p class="text-surface-400 m-0">No tienes casos registrados</p>
+            <i class="pi pi-file text-4xl text-text-subtle"></i>
+            <p class="text-text-subprincipal m-0">No tienes casos registrados</p>
           </div>
         </template>
       </Card>
@@ -151,14 +151,14 @@ onMounted(cargar);
             <div class="flex items-start justify-between">
               <div class="flex flex-col gap-1 flex-1">
                 <div class="flex items-center gap-2">
-                  <span class="text-xs text-surface-400">#{{ c.numero }}</span>
+                  <span class="text-xs text-text-subprincipal">#{{ c.numero }}</span>
                   <span class="font-semibold">{{ c.titulo }}</span>
                   <Tag
                     :value="c.prioridad"
                     :severity="severityPrioridad(c.prioridad)"
                   />
                 </div>
-                <p class="text-xs text-surface-500 m-0">
+                <p class="text-xs text-text-muted m-0">
                   {{ c.abiertoPorNombre }} · {{ formatearFecha(c.abiertoEn) }}
                 </p>
               </div>

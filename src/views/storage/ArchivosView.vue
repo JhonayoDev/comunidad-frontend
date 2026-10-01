@@ -184,7 +184,7 @@ onMounted(() => { listar("DOCUMENTO"); });
 
     <Skeleton v-if="loading" width="100%" height="300px" />
 
-    <div v-else-if="!archivosFiltrados.length" class="text-center text-surface-400 py-8">
+    <div v-else-if="!archivosFiltrados.length" class="text-center text-text-subprincipal py-8">
       <i class="pi pi-folder-open text-4xl block mb-2"></i>
       <span v-if="auth.esSoloResidente">
         Aquí verás los archivos que tú subas
@@ -196,11 +196,11 @@ onMounted(() => { listar("DOCUMENTO"); });
       <Card v-for="f in archivosFiltrados" :key="f.id">
         <template #content>
           <div class="flex gap-3">
-            <i :class="contentTypeIcon(f.contentType) + ' text-2xl text-surface-400 shrink-0 mt-1'" />
+            <i :class="contentTypeIcon(f.contentType) + ' text-2xl text-text-subprincipal shrink-0 mt-1'" />
             <div class="flex-1 min-w-0">
               <p class="font-bold m-0 truncate" :title="f.nombreOriginal">{{ f.nombreOriginal }}</p>
-              <p class="text-xs text-surface-400 m-0">{{ formatBytes(f.tamanoBytes) }} · {{ f.contentType }}</p>
-              <p class="text-xs text-surface-300 m-0">{{ formatFecha(f.createdAt) }}</p>
+              <p class="text-xs text-text-subprincipal m-0">{{ formatBytes(f.tamanoBytes) }} · {{ f.contentType }}</p>
+              <p class="text-xs text-text-subtle m-0">{{ formatFecha(f.createdAt) }}</p>
             </div>
             <div class="flex flex-col gap-1 shrink-0">
               <Tag :value="f.estado" :severity="estadoSeverity(f.estado)" size="small" />
@@ -235,7 +235,7 @@ onMounted(() => { listar("DOCUMENTO"); });
           <label class="text-sm font-semibold">Archivo *</label>
           <input
             type="file"
-            class="block w-full text-sm text-surface-500 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-600"
+            class="block w-full text-sm text-text-muted file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-600"
             @change="(e) => { archivoSeleccionado = e.target.files[0]; errorSubida = ''; }"
           />
         </div>

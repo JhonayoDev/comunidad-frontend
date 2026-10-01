@@ -112,12 +112,12 @@ onMounted(cargar);
         </template>
         <template #content>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div><span class="text-surface-400">Plan:</span> <strong>{{ suscripcionActual.planNombre }}</strong></div>
-            <div><span class="text-surface-400">Ciclo:</span> {{ suscripcionActual.ciclo }}</div>
-            <div><span class="text-surface-400">Inicio:</span> {{ formatFecha(suscripcionActual.fechaInicio) }}</div>
-            <div><span class="text-surface-400">Fin:</span> {{ formatFecha(suscripcionActual.fechaFin) }}</div>
-            <div><span class="text-surface-400">Monto pagado:</span> {{ formatoCLP(suscripcionActual.montoPagado) }}</div>
-            <div><span class="text-surface-400">Pagado en:</span> {{ formatFecha(suscripcionActual.pagadoEn) }}</div>
+            <div><span class="text-text-subprincipal">Plan:</span> <strong>{{ suscripcionActual.planNombre }}</strong></div>
+            <div><span class="text-text-subprincipal">Ciclo:</span> {{ suscripcionActual.ciclo }}</div>
+            <div><span class="text-text-subprincipal">Inicio:</span> {{ formatFecha(suscripcionActual.fechaInicio) }}</div>
+            <div><span class="text-text-subprincipal">Fin:</span> {{ formatFecha(suscripcionActual.fechaFin) }}</div>
+            <div><span class="text-text-subprincipal">Monto pagado:</span> {{ formatoCLP(suscripcionActual.montoPagado) }}</div>
+            <div><span class="text-text-subprincipal">Pagado en:</span> {{ formatFecha(suscripcionActual.pagadoEn) }}</div>
           </div>
         </template>
         <template #footer>
@@ -137,7 +137,7 @@ onMounted(cargar);
                 <span class="font-medium">{{ s.planNombre }}</span>
                 <Tag :value="s.estado" :severity="estadoSeverity[s.estado] || 'info'" size="small" class="ml-2" />
               </div>
-              <div class="text-surface-400">{{ formatFecha(s.fechaInicio) }}</div>
+              <div class="text-text-subprincipal">{{ formatFecha(s.fechaInicio) }}</div>
             </div>
           </div>
         </template>

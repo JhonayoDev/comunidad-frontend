@@ -169,7 +169,7 @@ onMounted(cargar);
     }}</Message>
 
     <template v-else>
-      <div v-if="!condominios.length" class="text-center text-surface-400 py-8">
+      <div v-if="!condominios.length" class="text-center text-text-subprincipal py-8">
         No hay condominios
       </div>
 
@@ -192,7 +192,7 @@ onMounted(cargar);
               <tr v-for="c in condominios" :key="c.id">
                 <td>
                   <div class="font-medium">{{ c.nombre }}</div>
-                  <div class="text-xs text-surface-400">
+                  <div class="text-xs text-text-subprincipal">
                     {{ c.id.slice(0, 8) }}
                   </div>
                 </td>
@@ -240,7 +240,7 @@ onMounted(cargar);
                     "
                     size="small"
                   />
-                  <span v-else class="text-xs text-surface-400">—</span>
+                  <span v-else class="text-xs text-text-subprincipal">—</span>
                 </td>
                 <td class="whitespace-nowrap">
                   <template v-if="cfgDe(c.id).data">
@@ -260,7 +260,7 @@ onMounted(cargar);
                       size="small"
                     />
                   </template>
-                  <span v-else class="text-xs text-surface-400">—</span>
+                  <span v-else class="text-xs text-text-subprincipal">—</span>
                 </td>
                 <td class="text-right whitespace-nowrap">
                   <Button
@@ -289,7 +289,7 @@ onMounted(cargar);
                     size="small"
                   />
                 </div>
-                <div class="text-xs text-surface-500">
+                <div class="text-xs text-text-muted">
                   {{ (c.storageUsadoMb / 1024).toFixed(1) }} /
                   {{ (c.storageLimitMb / 1024).toFixed(1) }} GB
                 </div>
@@ -380,7 +380,7 @@ onMounted(cargar);
 
         <template v-if="form.proveedor === 'CLOUDFLARE_R2'">
           <Divider align="left"
-            ><span class="text-xs text-surface-500"
+            ><span class="text-xs text-text-muted"
               >Cloudflare R2</span
             ></Divider
           >
@@ -422,7 +422,7 @@ onMounted(cargar);
 
         <template v-else>
           <Divider align="left"
-            ><span class="text-xs text-surface-500">Google Drive</span></Divider
+            ><span class="text-xs text-text-muted">Google Drive</span></Divider
           >
           <div class="flex flex-col gap-1">
             <label class="text-sm">Folder ID</label>

@@ -277,7 +277,7 @@ onMounted(cargar);
       <template #content>
         <div class="flex flex-wrap gap-2 items-end">
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Canal</label>
+            <label class="text-xs text-text-muted">Canal</label>
             <Select
               v-model="filtroCanal"
               :options="canalOptions"
@@ -290,7 +290,7 @@ onMounted(cargar);
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Estado</label>
+            <label class="text-xs text-text-muted">Estado</label>
             <Select
               v-model="verInactivas"
               :options="[
@@ -313,7 +313,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!plantillasFiltradas.length" class="text-center text-surface-400 py-8">
+      <div v-if="!plantillasFiltradas.length" class="text-center text-text-subprincipal py-8">
         No hay plantillas con esos filtros
       </div>
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -329,7 +329,7 @@ onMounted(cargar);
               <Tag value="Global" severity="secondary" size="small" />
               <Tag v-for="c in p.canales || []" :key="c" :value="c" :severity="canalSeverity[c] || 'info'" size="small" />
             </div>
-            <p class="text-sm text-surface-500 m-0 line-clamp-2">{{ p.tituloPlantilla }}</p>
+            <p class="text-sm text-text-muted m-0 line-clamp-2">{{ p.tituloPlantilla }}</p>
           </template>
           <template #footer>
             <div class="flex gap-2">
@@ -346,7 +346,7 @@ onMounted(cargar);
     <Dialog v-model:visible="showEditar" :header="editando ? codigoLabel(editando.codigo) : ''" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-xs text-surface-500">Variables disponibles (toca para copiar)</label>
+          <label class="text-xs text-text-muted">Variables disponibles (toca para copiar)</label>
           <div class="flex flex-wrap gap-1">
             <Tag
               v-for="v in variables"
@@ -382,7 +382,7 @@ onMounted(cargar);
     <Dialog v-model:visible="showPreview" :header="editando ? `Preview — ${codigoLabel(editando.codigo)}` : 'Preview'" modal :style="{ width: '95%', maxWidth: '480px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-xs text-surface-500">Canal</label>
+          <label class="text-xs text-text-muted">Canal</label>
           <Select
             v-model="previewCanal"
             :options="canalOptions"
@@ -395,23 +395,23 @@ onMounted(cargar);
 
         <div v-if="previewCanal === 'IN_APP'" class="bg-surface p-3 border-round flex flex-col gap-1">
           <span class="font-bold text-sm">{{ interpolar(form.tituloPlantilla) }}</span>
-          <span class="text-sm text-surface-500">{{ interpolar(form.enAppPlantilla) }}</span>
+          <span class="text-sm text-text-muted">{{ interpolar(form.enAppPlantilla) }}</span>
         </div>
 
         <div v-else-if="previewCanal === 'PUSH'" class="bg-surface p-3 border-round flex flex-col gap-1">
-          <span class="text-xs text-surface-400">{{ ejemplo.condominio }}</span>
+          <span class="text-xs text-text-subprincipal">{{ ejemplo.condominio }}</span>
           <span class="font-bold text-sm">{{ interpolar(form.tituloPlantilla) }}</span>
-          <span class="text-sm text-surface-500">{{ interpolar(form.enAppPlantilla) }}</span>
+          <span class="text-sm text-text-muted">{{ interpolar(form.enAppPlantilla) }}</span>
         </div>
 
         <div v-else class="bg-surface p-3 border-round flex flex-col gap-1">
-          <span class="text-xs text-surface-400">De: {{ ejemplo.condominio }}</span>
+          <span class="text-xs text-text-subprincipal">De: {{ ejemplo.condominio }}</span>
           <span class="font-bold text-sm">{{ interpolar(form.tituloPlantilla) }}</span>
           <Divider />
-          <span class="text-sm text-surface-500">{{ interpolar(form.emailPlantilla || form.enAppPlantilla) }}</span>
+          <span class="text-sm text-text-muted">{{ interpolar(form.emailPlantilla || form.enAppPlantilla) }}</span>
         </div>
 
-        <div class="text-xs text-surface-400">
+        <div class="text-xs text-text-subprincipal">
           Preview simulado con datos de ejemplo ({{ ejemplo.nombre }}, {{ ejemplo.unidad }}, {{ ejemplo.condominio }}).
         </div>
       </div>

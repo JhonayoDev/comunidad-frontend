@@ -225,7 +225,7 @@ onMounted(cargar);
         <h1 class="text-xl font-bold m-0">Catálogo de reglas de notificación</h1>
         <InfoAyudaVista titulo="Reglas de notificación" :secciones="seccionesAyuda" />
       </div>
-      <p class="text-sm text-surface-500 m-0 mt-1">
+      <p class="text-sm text-text-muted m-0 mt-1">
         Reglas globales que aplican a todos los condominios que no tengan sobrescritura propia.
       </p>
     </div>
@@ -234,7 +234,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error" :closable="false">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!reglas.length" class="text-center text-surface-400 py-8">No hay reglas en el catálogo</div>
+      <div v-if="!reglas.length" class="text-center text-text-subprincipal py-8">No hay reglas en el catálogo</div>
 
       <template v-else>
         <!-- Mobile: cards -->
@@ -253,21 +253,21 @@ onMounted(cargar);
               <div class="flex flex-col gap-2 text-sm">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1">
-                    <span class="text-surface-500">Audiencia</span>
+                    <span class="text-text-muted">Audiencia</span>
                     <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
                   </div>
                   <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1">
-                    <span class="text-surface-500">Prioridad</span>
+                    <span class="text-text-muted">Prioridad</span>
                     <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
                   </div>
                   <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
                 </div>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1">
-                    <span class="text-surface-500">Canales</span>
+                    <span class="text-text-muted">Canales</span>
                     <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
                   </div>
                   <div class="flex flex-wrap gap-1 justify-end">
@@ -465,11 +465,11 @@ onMounted(cargar);
         <div class="flex flex-col gap-3 text-sm">
           <div class="flex flex-col gap-1">
             <span class="font-medium">Visible usuario</span>
-            <span class="text-xs text-surface-500">Aparece en <strong>Perfil &gt; Notificaciones</strong>. El usuario puede activar o desactivar los canales que no sean obligatorios. Se muestra en su bandeja y preferencias.</span>
+            <span class="text-xs text-text-muted">Aparece en <strong>Perfil &gt; Notificaciones</strong>. El usuario puede activar o desactivar los canales que no sean obligatorios. Se muestra en su bandeja y preferencias.</span>
           </div>
           <div class="flex flex-col gap-1">
             <span class="font-medium">Solo sistema</span>
-            <span class="text-xs text-surface-500">Se envía por los canales configurados, pero <strong>no aparece</strong> en preferencias. El usuario no puede desactivarla. Es de gestión interna del sistema (ej. aviso a guardias en turno, reclamo al comité, reserva a administradores).</span>
+            <span class="text-xs text-text-muted">Se envía por los canales configurados, pero <strong>no aparece</strong> en preferencias. El usuario no puede desactivarla. Es de gestión interna del sistema (ej. aviso a guardias en turno, reclamo al comité, reserva a administradores).</span>
           </div>
         </div>
       </div>
@@ -481,23 +481,23 @@ onMounted(cargar);
           <i class="pi pi-flag text-primary" />
           <span class="font-bold text-sm">Prioridad</span>
         </div>
-        <p class="text-xs text-surface-500 m-0">Define orden de reintento y reserva de cuota. No cambia el canal, solo la urgencia con la que el sistema la procesa.</p>
+        <p class="text-xs text-text-muted m-0">Define orden de reintento y reserva de cuota. No cambia el canal, solo la urgencia con la que el sistema la procesa.</p>
         <div class="flex flex-col gap-2 text-sm">
           <div class="flex flex-col gap-1">
             <span class="font-medium"><Tag value="BAJA" severity="info" size="small" class="mr-1" /> Baja</span>
-            <span class="text-xs text-surface-500">Informativa. Sin obligatoriedad por defecto. Se reintenta al final, última en cola.</span>
+            <span class="text-xs text-text-muted">Informativa. Sin obligatoriedad por defecto. Se reintenta al final, última en cola.</span>
           </div>
           <div class="flex flex-col gap-1">
             <span class="font-medium"><Tag value="NORMAL" severity="warn" size="small" class="mr-1" /> Normal</span>
-            <span class="text-xs text-surface-500">Habitual. Se reintenta después de ALTA. Es la prioridad por defecto de la mayoría de avisos.</span>
+            <span class="text-xs text-text-muted">Habitual. Se reintenta después de ALTA. Es la prioridad por defecto de la mayoría de avisos.</span>
           </div>
           <div class="flex flex-col gap-1">
             <span class="font-medium"><Tag value="ALTA" severity="danger" size="small" class="mr-1" style="background: var(--p-red-100); color: var(--p-red-700)" /> Alta</span>
-            <span class="text-xs text-surface-500">Importante. Reintento prioritario tras CRITICA. Para avisos que deben llegar pronto (visita, reclamo, gasto común).</span>
+            <span class="text-xs text-text-muted">Importante. Reintento prioritario tras CRITICA. Para avisos que deben llegar pronto (visita, reclamo, gasto común).</span>
           </div>
           <div class="flex flex-col gap-1">
             <span class="font-medium"><Tag value="CRITICA" severity="danger" size="small" class="mr-1" /> Crítica</span>
-            <span class="text-xs text-surface-500">Máxima prioridad. Reserva <strong>50 cupos diarios de email</strong> (Brevo 300/día) aun con cuota agotada y se reintenta primero. Solo <code>DEUDA_VENCIDA</code> la usa.</span>
+            <span class="text-xs text-text-muted">Máxima prioridad. Reserva <strong>50 cupos diarios de email</strong> (Brevo 300/día) aun con cuota agotada y se reintenta primero. Solo <code>DEUDA_VENCIDA</code> la usa.</span>
           </div>
         </div>
       </div>
@@ -509,15 +509,15 @@ onMounted(cargar);
           <i class="pi pi-lock text-primary" />
           <span class="font-bold text-sm">Obligatoriedad por canal</span>
         </div>
-        <p class="text-xs text-surface-500 m-0">Cuando <strong>SUPER_ADMIN</strong> (global) o <strong>ADMINISTRADOR</strong> (por condominio) marca un canal como obligatorio, el <strong>destinatario</strong> (según <em>Audiencia</em>: Unidad, Guardias en turno, etc.) <strong>no puede desactivar</strong> ese canal en <strong>Perfil &gt; Notificaciones</strong>.</p>
+        <p class="text-xs text-text-muted m-0">Cuando <strong>SUPER_ADMIN</strong> (global) o <strong>ADMINISTRADOR</strong> (por condominio) marca un canal como obligatorio, el <strong>destinatario</strong> (según <em>Audiencia</em>: Unidad, Guardias en turno, etc.) <strong>no puede desactivar</strong> ese canal en <strong>Perfil &gt; Notificaciones</strong>.</p>
         <div class="flex flex-col gap-2 text-sm">
           <div class="flex flex-col gap-1">
             <span class="font-medium">¿A quién afecta?</span>
-            <span class="text-xs text-surface-500">Al usuario final que recibe la notificación. Aunque apague el canal en sus preferencias, el sistema igual lo envía por ese canal. Ej.: <code>ENCOMIENDA_RECIBIDA</code> con <em>Email obligatorio</em> → el ocupante de la unidad no puede quitar el Email para esa notificación.</span>
+            <span class="text-xs text-text-muted">Al usuario final que recibe la notificación. Aunque apague el canal en sus preferencias, el sistema igual lo envía por ese canal. Ej.: <code>ENCOMIENDA_RECIBIDA</code> con <em>Email obligatorio</em> → el ocupante de la unidad no puede quitar el Email para esa notificación.</span>
           </div>
           <div class="flex flex-col gap-1">
             <span class="font-medium">¿Quién lo ve?</span>
-            <span class="text-xs text-surface-500"><strong>SUPER_ADMIN/SOPORTE</strong> lo configura en el catálogo global; <strong>ADMINISTRADOR</strong> lo puede sobrescribir por condominio. El <strong>usuario final</strong> lo ve como toggle bloqueado con candado y <em>Tag “obligatorio”</em> en sus preferencias. Si <em>Visible usuario = Solo sistema</em>, ni siquiera aparece para configurar.</span>
+            <span class="text-xs text-text-muted"><strong>SUPER_ADMIN/SOPORTE</strong> lo configura en el catálogo global; <strong>ADMINISTRADOR</strong> lo puede sobrescribir por condominio. El <strong>usuario final</strong> lo ve como toggle bloqueado con candado y <em>Tag “obligatorio”</em> en sus preferencias. Si <em>Visible usuario = Solo sistema</em>, ni siquiera aparece para configurar.</span>
           </div>
         </div>
       </div>
@@ -529,19 +529,19 @@ onMounted(cargar);
           <i class="pi pi-send text-primary" />
           <span class="font-bold text-sm">Canales</span>
         </div>
-        <p class="text-xs text-surface-500 m-0">Define por dónde se entrega la notificación. El sistema crea una <em>entrega</em> por cada canal seleccionado que el destinatario tenga activo (o sea obligatorio). Si el usuario apagó un canal no obligatorio, esa entrega no se crea.</p>
+        <p class="text-xs text-text-muted m-0">Define por dónde se entrega la notificación. El sistema crea una <em>entrega</em> por cada canal seleccionado que el destinatario tenga activo (o sea obligatorio). Si el usuario apagó un canal no obligatorio, esa entrega no se crea.</p>
         <div class="flex flex-col gap-2 text-sm">
           <div class="flex flex-col gap-1">
             <span class="font-medium"><Tag value="App" severity="info" size="small" class="mr-1" /> IN_APP</span>
-            <span class="text-xs text-surface-500">Bandeja dentro de la app + SSE <code>/notificaciones/stream</code> (siempre disponible, no consume cuota email, se confirma al SNAPSHOT). Es el canal base, casi siempre presente.</span>
+            <span class="text-xs text-text-muted">Bandeja dentro de la app + SSE <code>/notificaciones/stream</code> (siempre disponible, no consume cuota email, se confirma al SNAPSHOT). Es el canal base, casi siempre presente.</span>
           </div>
           <div class="flex flex-col gap-1">
             <span class="font-medium"><Tag value="Email" severity="warn" size="small" class="mr-1" /> EMAIL</span>
-            <span class="text-xs text-surface-500">Correo del destinatario via <strong>Brevo API</strong> global o <strong>SMTP propio</strong> por condominio (<code>SaasEmailConfig</code> V71). Consume cuota <strong>300/día</strong> (50 reservados para <code>CRITICA</code>), con reintento y backoff. Requiere <code>remitenteDefault</code> configurado.</span>
+            <span class="text-xs text-text-muted">Correo del destinatario via <strong>Brevo API</strong> global o <strong>SMTP propio</strong> por condominio (<code>SaasEmailConfig</code> V71). Consume cuota <strong>300/día</strong> (50 reservados para <code>CRITICA</code>), con reintento y backoff. Requiere <code>remitenteDefault</code> configurado.</span>
           </div>
           <div class="flex flex-col gap-1">
             <span class="font-medium"><Tag value="Push" severity="success" size="small" class="mr-1" /> PUSH</span>
-            <span class="text-xs text-surface-500">Push PWA al dispositivo (<code>userVisibleOnly: true</code>). Requiere permiso del navegador y PWA instalada. Si el usuario no tiene suscripción, esa entrega se omite sin error.</span>
+            <span class="text-xs text-text-muted">Push PWA al dispositivo (<code>userVisibleOnly: true</code>). Requiere permiso del navegador y PWA instalada. Si el usuario no tiene suscripción, esa entrega se omite sin error.</span>
           </div>
         </div>
       </div>
@@ -553,11 +553,11 @@ onMounted(cargar);
           <i class="pi pi-users text-primary" />
           <span class="font-bold text-sm">Audiencia</span>
         </div>
-        <p class="text-xs text-surface-500 m-0">Quién recibe la notificación. El sistema resuelve <code>DestinatarioResolver.java:48</code> consultando <code>vinculo_persona_unidad</code> y <code>miembros_condominio</code> con <code>recibeNotificaciones</code>. Se deduplica por persona.</p>
+        <p class="text-xs text-text-muted m-0">Quién recibe la notificación. El sistema resuelve <code>DestinatarioResolver.java:48</code> consultando <code>vinculo_persona_unidad</code> y <code>miembros_condominio</code> con <code>recibeNotificaciones</code>. Se deduplica por persona.</p>
         <div class="flex flex-col gap-2 text-sm overflow-y-auto pr-1" style="max-height: 45vh">
           <div v-for="(desc, codigo) in AUDIENCIA_DESC" :key="codigo" class="flex flex-col gap-1">
-            <span class="font-medium">{{ AUDIENCIA_LABELS[codigo] || codigo }} <span class="font-mono text-xs text-surface-400">({{ codigo }})</span></span>
-            <span class="text-xs text-surface-500">{{ desc }}</span>
+            <span class="font-medium">{{ AUDIENCIA_LABELS[codigo] || codigo }} <span class="font-mono text-xs text-text-subprincipal">({{ codigo }})</span></span>
+            <span class="text-xs text-text-muted">{{ desc }}</span>
           </div>
         </div>
         <Message severity="info" :closable="false" size="small" class="text-xs">Tip: <code>GUARDIAS_EN_TURNO</code> filtra por bitácora <code>EN_TURNO/EN_COLACION</code>; si ninguno está, avisa a todos los guardias para no perder avisos críticos. <code>TODOS</code> es vínculos activos + miembros con cargo.</Message>

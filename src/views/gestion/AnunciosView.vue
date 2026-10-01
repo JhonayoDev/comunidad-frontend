@@ -140,7 +140,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!anuncios.length" class="text-center text-surface-400 py-8">
+      <div v-if="!anuncios.length" class="text-center text-text-subprincipal py-8">
         No hay anuncios
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -157,7 +157,7 @@ onMounted(cargar);
             {{ a.audiencia }} · {{ a.fechaPublicacion ? new Date(a.fechaPublicacion).toLocaleDateString('es-CL') : '' }}
           </template>
           <template #content>
-            <p class="text-sm text-surface-700 m-0 whitespace-pre-line">{{ a.mensaje }}</p>
+            <p class="text-sm text-text m-0 whitespace-pre-line">{{ a.mensaje }}</p>
           </template>
         </Card>
       </div>
@@ -165,7 +165,7 @@ onMounted(cargar);
 
     <Dialog v-model:visible="showCrear" header="Nuevo anuncio" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
-        <div class="text-xs text-surface-400 mb-1">{{ auth.condominioActualNombre }}</div>
+        <div class="text-xs text-text-subprincipal mb-1">{{ auth.condominioActualNombre }}</div>
         <div class="flex flex-col gap-1">
           <label class="text-sm">Título</label>
           <InputText v-model="form.titulo" />

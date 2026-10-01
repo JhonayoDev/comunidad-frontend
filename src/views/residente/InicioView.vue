@@ -117,8 +117,12 @@ onMounted(async () => {
           </div>
         </template>
       </Card>
-      <Card><template #content><Skeleton width="100%" height="6rem" /></template></Card>
-      <Card><template #content><Skeleton width="100%" height="6rem" /></template></Card>
+      <Card
+        ><template #content><Skeleton width="100%" height="6rem" /></template
+      ></Card>
+      <Card
+        ><template #content><Skeleton width="100%" height="6rem" /></template
+      ></Card>
     </template>
 
     <template v-else-if="dashboard">
@@ -132,40 +136,51 @@ onMounted(async () => {
           >
             <div
               class="flex items-center gap-3 py-2 cursor-pointer select-none hover:bg-emphasis px-2 -mx-2 border-round"
-              :class="{ 'border-b border-surface-200': unidadExpandida === unidad.id }"
+              :class="{
+                'border-b border-surface-200': unidadExpandida === unidad.id,
+              }"
               @click="toggleUnidad(unidad.id)"
             >
               <i
                 class="pi text-lg"
-                :class="unidad.tipo === 'ESTACIONAMIENTO' ? 'pi-map-marker' : 'pi-home'"
+                :class="
+                  unidad.tipo === 'ESTACIONAMIENTO'
+                    ? 'pi-map-marker'
+                    : 'pi-home'
+                "
                 style="color: var(--p-primary-400)"
               ></i>
               <div class="flex-1">
                 <span class="font-semibold">
                   {{ tipoUnidad(unidad.tipo) }} {{ unidad.numero }}
                 </span>
-                <span class="text-xs text-surface-400 ml-2">
-                  · {{ unidad.personas?.length || 0 }} residentes
-                  · {{ unidad.vehiculos?.length || 0 }} vehículos
+                <span class="text-xs text-text-subprincipal ml-2">
+                  · {{ unidad.personas?.length || 0 }} residentes ·
+                  {{ unidad.vehiculos?.length || 0 }} vehículos
                 </span>
               </div>
               <i
-                class="pi pi-chevron-down text-surface-400 transition-transform"
+                class="pi pi-chevron-down text-text-subprincipal transition-transform"
                 :class="{ 'rotate-180': unidadExpandida === unidad.id }"
               ></i>
             </div>
 
             <!-- Expandido: info de la unidad -->
-            <div v-show="unidadExpandida === unidad.id" class="flex flex-col gap-4 px-2 pb-3 pt-3">
+            <div
+              v-show="unidadExpandida === unidad.id"
+              class="flex flex-col gap-4 px-2 pb-3 pt-3"
+            >
               <!-- Convivientes -->
               <div>
-                <p class="text-xs font-semibold text-surface-500 uppercase mb-2 flex items-center gap-2">
+                <p
+                  class="text-xs font-semibold text-text-muted uppercase mb-2 flex items-center gap-2"
+                >
                   <i class="pi pi-users"></i>
                   <span>Convivientes</span>
                 </p>
                 <div
                   v-if="!unidad.personas?.length"
-                  class="text-sm text-surface-400"
+                  class="text-sm text-text-subprincipal"
                 >
                   Sin convivientes registrados
                 </div>
@@ -176,11 +191,22 @@ onMounted(async () => {
                 >
                   <div class="flex items-center gap-2">
                     <Avatar
-                      :label="p.nombre.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)"
+                      :label="
+                        p.nombre
+                          .split(' ')
+                          .map((w) => w[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2)
+                      "
                       size="small"
                       shape="circle"
                       class="font-bold"
-                      style="background: var(--p-primary-400); color: #fff; font-size: 0.65rem"
+                      style="
+                        background: var(--p-primary-400);
+                        color: #fff;
+                        font-size: 0.65rem;
+                      "
                     />
                     <span class="text-sm">{{ p.nombre }}</span>
                   </div>
@@ -196,13 +222,15 @@ onMounted(async () => {
 
               <!-- Vehículos -->
               <div>
-                <p class="text-xs font-semibold text-surface-500 uppercase mb-2 flex items-center gap-2">
+                <p
+                  class="text-xs font-semibold text-text-muted uppercase mb-2 flex items-center gap-2"
+                >
                   <i class="pi pi-car"></i>
                   <span>Vehículos</span>
                 </p>
                 <div
                   v-if="!unidad.vehiculos?.length"
-                  class="text-sm text-surface-400"
+                  class="text-sm text-text-subprincipal"
                 >
                   Sin vehículos registrados
                 </div>
@@ -214,7 +242,7 @@ onMounted(async () => {
                   <div class="flex items-center gap-2">
                     <i
                       class="pi pi-car"
-                      :class="v.activo ? 'text-primary' : 'text-surface-300'"
+                      :class="v.activo ? 'text-primary' : 'text-text-subtle'"
                     ></i>
                     <span class="text-sm font-mono">{{ v.patente }}</span>
                   </div>
@@ -227,10 +255,7 @@ onMounted(async () => {
               </div>
             </div>
 
-            <Divider
-              v-if="idx < dashboard.unidades.length - 1"
-              class="my-1"
-            />
+            <Divider v-if="idx < dashboard.unidades.length - 1" class="my-1" />
           </div>
         </template>
       </Card>
@@ -248,13 +273,13 @@ onMounted(async () => {
           </div>
         </template>
         <template #content>
-          <div
-            v-for="(unidad, idx) in dashboard.unidades"
-            :key="unidad.id"
-          >
-            <div v-if="unidad.gastoActual" class="flex items-center justify-between p-2 border-round"
+          <div v-for="(unidad, idx) in dashboard.unidades" :key="unidad.id">
+            <div
+              v-if="unidad.gastoActual"
+              class="flex items-center justify-between p-2 border-round"
               :class="{
-                'bg-red-50 border-1 border-red-200': unidad.gastoActual.estadoPago === 'VENCIDO',
+                'bg-alert-bg border border-alert-border':
+                  unidad.gastoActual.estadoPago === 'VENCIDO',
                 'bg-emphasis': unidad.gastoActual.estadoPago !== 'VENCIDO',
               }"
             >
@@ -262,18 +287,25 @@ onMounted(async () => {
                 <div class="flex items-center gap-2">
                   <i
                     class="pi text-sm"
-                    :class="unidad.tipo === 'ESTACIONAMIENTO' ? 'pi-map-marker' : 'pi-home'"
+                    :class="
+                      unidad.tipo === 'ESTACIONAMIENTO'
+                        ? 'pi-map-marker'
+                        : 'pi-home'
+                    "
                   ></i>
                   <span class="text-sm font-medium">
                     {{ tipoUnidad(unidad.tipo) }} {{ unidad.numero }}
                   </span>
                 </div>
-                <span class="text-xs text-surface-500 ml-5">
-                  GC {{ unidad.gastoActual.periodo }} · Vence: {{ unidad.gastoActual.fechaVencimiento }}
+                <span class="text-xs text-text-muted ml-5">
+                  GC {{ unidad.gastoActual.periodo }} · Vence:
+                  {{ unidad.gastoActual.fechaVencimiento }}
                 </span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="font-bold text-sm">{{ formatMonto(unidad.gastoActual.monto) }}</span>
+                <span class="font-bold text-sm">{{
+                  formatMonto(unidad.gastoActual.monto)
+                }}</span>
                 <Tag
                   :value="labelDeuda(unidad.gastoActual.estadoPago)"
                   :severity="severityDeuda(unidad.gastoActual.estadoPago)"
@@ -288,8 +320,8 @@ onMounted(async () => {
           </div>
 
           <div
-            v-if="!dashboard.unidades.some(u => u.gastoActual)"
-            class="text-sm text-surface-400 py-2 italic"
+            v-if="!dashboard.unidades.some((u) => u.gastoActual)"
+            class="text-sm text-text-subprincipal py-2 italic"
           >
             Sin deudas pendientes
           </div>
@@ -309,7 +341,10 @@ onMounted(async () => {
           </div>
         </template>
         <template #content>
-          <div v-if="autorizaciones.length === 0" class="text-sm text-surface-400 py-2">
+          <div
+            v-if="autorizaciones.length === 0"
+            class="text-sm text-text-subprincipal py-2"
+          >
             No tienes autorizaciones activas
           </div>
           <div class="flex flex-col gap-2">
@@ -322,7 +357,7 @@ onMounted(async () => {
                 <i class="pi pi-verified text-primary"></i>
                 <div class="flex flex-col">
                   <span class="text-sm font-medium">{{ a.nombre }}</span>
-                  <span class="text-xs text-surface-500">
+                  <span class="text-xs text-text-muted">
                     {{ a.tipo }} · Casa {{ a.unidadNumero }}
                   </span>
                 </div>
@@ -352,9 +387,7 @@ onMounted(async () => {
       </Card>
 
       <!-- Card 5: Encomiendas (componente reutilizable) -->
-      <TarjetaEncomiendasResidente
-        :condominio-id="auth.condominioActualId"
-      />
+      <TarjetaEncomiendasResidente :condominio-id="auth.condominioActualId" />
     </template>
   </div>
 </template>

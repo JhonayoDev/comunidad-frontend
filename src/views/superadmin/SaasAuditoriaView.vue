@@ -221,7 +221,7 @@ onMounted(() => {
       <template #content>
         <div class="flex flex-wrap gap-3 items-end">
           <div class="flex flex-col gap-1 min-w-52 flex-1">
-            <label class="text-xs text-surface-500">Condominio</label>
+            <label class="text-xs text-text-muted">Condominio</label>
             <AutoComplete
               v-model="filtros.condominio"
               :suggestions="sugerenciasCondominios"
@@ -236,7 +236,7 @@ onMounted(() => {
               <template #option="slotProps">
                 <div class="flex items-center justify-between gap-2 w-full">
                   <span>{{ slotProps.option.nombre }}</span>
-                  <span v-if="slotProps.option.responsableNombre" class="text-xs text-surface-400">
+                  <span v-if="slotProps.option.responsableNombre" class="text-xs text-text-subprincipal">
                     {{ slotProps.option.responsableNombre }}
                   </span>
                 </div>
@@ -244,7 +244,7 @@ onMounted(() => {
             </AutoComplete>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Acción</label>
+            <label class="text-xs text-text-muted">Acción</label>
             <Select
               v-model="filtros.accion"
               :options="ACCIONES"
@@ -257,7 +257,7 @@ onMounted(() => {
             />
           </div>
           <div class="flex flex-col gap-1 flex-1 min-w-52">
-            <label class="text-xs text-surface-500">Email</label>
+            <label class="text-xs text-text-muted">Email</label>
             <IconField>
               <InputIcon class="pi pi-envelope" />
               <InputText
@@ -270,11 +270,11 @@ onMounted(() => {
             </IconField>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Desde / Hasta</label>
+            <label class="text-xs text-text-muted">Desde / Hasta</label>
             <FiltroFechas v-model="filtros.rango" />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Orden</label>
+            <label class="text-xs text-text-muted">Orden</label>
             <Select
               v-model="filtros.orden"
               :options="ORDENES"
@@ -295,7 +295,7 @@ onMounted(() => {
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!registros.length" class="text-center text-surface-400 py-8">No hay registros de auditoría</div>
+      <div v-if="!registros.length" class="text-center text-text-subprincipal py-8">No hay registros de auditoría</div>
 
       <template v-else>
         <!-- Mobile: cards desplegables -->

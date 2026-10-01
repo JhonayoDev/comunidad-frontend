@@ -116,8 +116,8 @@ onMounted(cargar);
       <Card>
         <template #content>
           <div class="flex flex-column align-items-center gap-2 py-4">
-            <i class="pi pi-verified text-4xl text-surface-300"></i>
-            <p class="text-surface-400 m-0">
+            <i class="pi pi-verified text-4xl text-text-subtle"></i>
+            <p class="text-text-subprincipal m-0">
               No hay autorizaciones {{ estadoFilter?.value ? estadoFilter.label.toLowerCase() : "" }}
             </p>
           </div>
@@ -138,7 +138,7 @@ onMounted(cargar);
                     severity="info"
                   />
                 </div>
-                <p class="text-sm text-surface-500 m-0">
+                <p class="text-sm text-text-muted m-0">
                   Casa {{ authItem.unidadNumero }}
                   <span v-if="authItem.patenteVisitante">
                     · {{ authItem.patenteVisitante }}
@@ -147,10 +147,10 @@ onMounted(cargar);
                     · {{ authItem.cantidadPersonas }} personas
                   </span>
                 </p>
-                <p class="text-xs text-surface-400 m-0">
+                <p class="text-xs text-text-subprincipal m-0">
                   {{ formatearRango(authItem.fechaInicio, authItem.fechaFin) }}
                 </p>
-                <p class="text-xs text-surface-400 m-0 mt-1">
+                <p class="text-xs text-text-subprincipal m-0 mt-1">
                   Creada {{ formatearFecha(authItem.createdAt || authItem.fechaInicio) }}
                 </p>
               </div>

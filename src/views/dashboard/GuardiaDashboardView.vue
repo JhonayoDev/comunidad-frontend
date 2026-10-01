@@ -109,7 +109,7 @@ onMounted(() => {
               >
                 {{ dashboard.totalUnidades || 0 }}
               </p>
-              <p class="text-xs text-surface-500 m-0 mt-1">Unidades</p>
+              <p class="text-xs text-text-muted m-0 mt-1">Unidades</p>
             </div>
           </template>
         </Card>
@@ -122,7 +122,7 @@ onMounted(() => {
               >
                 {{ dashboard.residentesActivos || 0 }}
               </p>
-              <p class="text-xs text-surface-500 m-0 mt-1">Residentes</p>
+              <p class="text-xs text-text-muted m-0 mt-1">Residentes</p>
             </div>
           </template>
         </Card>
@@ -149,12 +149,12 @@ onMounted(() => {
                 <i class="pi pi-arrow-right text-green-500"></i>
                 <div>
                   <p class="text-sm font-medium m-0">{{ mov.nombre }}</p>
-                  <p class="text-xs text-surface-500 m-0">
+                  <p class="text-xs text-text-muted m-0">
                     Casa {{ mov.unidad }} · {{ formatearFecha(mov.fecha) }}
                   </p>
                 </div>
               </div>
-              <span class="text-xs text-surface-400">{{ mov.tipo }}</span>
+              <span class="text-xs text-text-subprincipal">{{ mov.tipo }}</span>
             </div>
           </div>
         </template>
@@ -186,12 +186,12 @@ onMounted(() => {
                 ></i>
                 <div>
                   <p class="text-sm font-medium m-0">{{ auth.nombre }}</p>
-                  <p class="text-xs text-surface-500 m-0">
+                  <p class="text-xs text-text-muted m-0">
                     Casa {{ auth.unidadNumero }} · {{ auth.tipo }}
                   </p>
                 </div>
               </div>
-              <span class="text-xs text-surface-400">
+              <span class="text-xs text-text-subprincipal">
                 {{ formatearHora(auth.fechaInicio) }}
               </span>
             </div>

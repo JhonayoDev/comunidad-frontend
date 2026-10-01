@@ -116,7 +116,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!categorias.length" class="text-center text-surface-400 py-8">No hay categorías</div>
+      <div v-if="!categorias.length" class="text-center text-text-subprincipal py-8">No hay categorías</div>
       <div v-else class="flex flex-col gap-2">
         <div v-for="c in categorias" :key="c.id" class="surface-card p-3 border-round shadow-1 flex items-center justify-between">
           <div>
@@ -126,7 +126,7 @@ onMounted(cargar);
               <Tag v-if="c.esSistema" value="Sistema" severity="info" size="small" />
               <Tag v-if="!c.activa" value="Inactiva" severity="secondary" size="small" />
             </div>
-            <span v-if="c.descripcion" class="text-xs text-surface-400">{{ c.descripcion }}</span>
+            <span v-if="c.descripcion" class="text-xs text-text-subprincipal">{{ c.descripcion }}</span>
           </div>
           <Button v-if="!c.esSistema" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="confirmarEliminar(c)" />
         </div>

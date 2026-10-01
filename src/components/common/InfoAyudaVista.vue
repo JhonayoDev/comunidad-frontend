@@ -51,10 +51,10 @@ function toggle(event) {
         </div>
         <div class="flex flex-col gap-3 overflow-y-auto pr-1" style="max-height: 55vh">
           <div v-for="seccion in secciones" :key="seccion.titulo" class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-surface-500 uppercase">{{ seccion.titulo }}</span>
+            <span class="text-xs font-semibold text-text-muted uppercase">{{ seccion.titulo }}</span>
             <div v-for="item in seccion.items" :key="item.label" class="flex flex-col text-sm">
               <span class="font-medium">{{ item.label }}</span>
-              <span class="text-xs text-surface-400">{{ item.desc }}</span>
+              <span class="text-xs text-text-subprincipal">{{ item.desc }}</span>
             </div>
           </div>
         </div>

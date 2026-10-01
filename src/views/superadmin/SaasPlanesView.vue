@@ -170,7 +170,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!planes.length" class="text-center text-surface-400 py-8">No hay planes registrados</div>
+      <div v-if="!planes.length" class="text-center text-text-subprincipal py-8">No hay planes registrados</div>
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <Card v-for="p in planes" :key="p.id" :class="{ 'opacity-60': !p.activo }">
           <template #title>
@@ -180,13 +180,13 @@ onMounted(cargar);
             </div>
           </template>
           <template #content>
-            <p class="text-sm text-surface-500 m-0 mb-2">{{ p.descripcion || p.codigo }}</p>
+            <p class="text-sm text-text-muted m-0 mb-2">{{ p.descripcion || p.codigo }}</p>
             <div class="flex flex-col gap-1 text-sm">
-              <div class="flex justify-between"><span class="text-surface-400">Mensual</span><strong>{{ formatoCLP(p.precioMensual) }}</strong></div>
-              <div class="flex justify-between"><span class="text-surface-400">Anual</span><strong>{{ formatoCLP(p.precioAnual) }}</strong></div>
-              <div class="flex justify-between"><span class="text-surface-400">Storage</span>{{ (p.storageLimitMb / 1024).toFixed(0) }} GB</div>
-              <div class="flex justify-between"><span class="text-surface-400">Unidades</span>{{ p.unidadLimit }}</div>
-              <div class="flex justify-between"><span class="text-surface-400">Usuarios</span>{{ p.usuarioLimit }}</div>
+              <div class="flex justify-between"><span class="text-text-subprincipal">Mensual</span><strong>{{ formatoCLP(p.precioMensual) }}</strong></div>
+              <div class="flex justify-between"><span class="text-text-subprincipal">Anual</span><strong>{{ formatoCLP(p.precioAnual) }}</strong></div>
+              <div class="flex justify-between"><span class="text-text-subprincipal">Storage</span>{{ (p.storageLimitMb / 1024).toFixed(0) }} GB</div>
+              <div class="flex justify-between"><span class="text-text-subprincipal">Unidades</span>{{ p.unidadLimit }}</div>
+              <div class="flex justify-between"><span class="text-text-subprincipal">Usuarios</span>{{ p.usuarioLimit }}</div>
             </div>
           </template>
           <template #footer>

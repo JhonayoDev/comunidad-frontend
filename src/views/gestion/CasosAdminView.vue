@@ -169,7 +169,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!casos.length" class="text-center text-surface-400 py-8">
+      <div v-if="!casos.length" class="text-center text-text-subprincipal py-8">
         No hay casos registrados
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -181,11 +181,11 @@ onMounted(cargar);
         >
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-xs text-surface-400">#{{ c.numero }}</span>
+              <span class="text-xs text-text-subprincipal">#{{ c.numero }}</span>
               <span class="font-medium">{{ c.titulo }}</span>
               <Tag :value="c.prioridad" :severity="severityPrioridad(c.prioridad)" size="small" />
             </div>
-            <div class="text-xs text-surface-500 mt-1">
+            <div class="text-xs text-text-muted mt-1">
               {{ c.abiertoPorNombre }} · {{ formatearFecha(c.abiertoEn) }}
             </div>
           </div>
@@ -198,18 +198,18 @@ onMounted(cargar);
       <template v-if="detalle">
         <div class="flex flex-col gap-3">
           <div class="flex items-center gap-2">
-            <span class="text-xs text-surface-400">#{{ detalle.numero }}</span>
+            <span class="text-xs text-text-subprincipal">#{{ detalle.numero }}</span>
             <span class="font-bold text-lg">{{ detalle.titulo }}</span>
             <Tag :value="detalle.prioridad" :severity="severityPrioridad(detalle.prioridad)" size="small" />
             <Tag :value="detalle.estado" :severity="severityEstado(detalle.estado)" size="small" />
           </div>
-          <p v-if="detalle.descripcion" class="text-sm text-surface-700 m-0 whitespace-pre-line">{{ detalle.descripcion }}</p>
-          <div class="text-xs text-surface-400">
+          <p v-if="detalle.descripcion" class="text-sm text-text m-0 whitespace-pre-line">{{ detalle.descripcion }}</p>
+          <div class="text-xs text-text-subprincipal">
             Abierto por {{ detalle.abiertoPorNombre }} · {{ formatearFecha(detalle.abiertoEn) }}
           </div>
 
           <Divider v-if="detalle.referencias?.length" align="left">
-            <span class="text-xs font-semibold text-surface-500">Recursos vinculados</span>
+            <span class="text-xs font-semibold text-text-muted">Recursos vinculados</span>
           </Divider>
           <div v-if="detalle.referencias?.length" class="flex flex-col gap-2">
             <div
@@ -217,15 +217,15 @@ onMounted(cargar);
               :key="r.id"
               class="p-2 surface-50 border-round text-sm flex items-center gap-2"
             >
-              <i class="pi pi-link text-surface-400" />
+              <i class="pi pi-link text-text-subprincipal" />
               <Tag :value="r.tipo" size="small" severity="info" />
-              <span class="text-xs text-surface-500 truncate">{{ r.descripcionSnapshot }}</span>
-              <span class="text-xs text-surface-400 ml-auto">{{ r.vinculadoPorNombre }} · {{ formatearFecha(r.vinculadoEn) }}</span>
+              <span class="text-xs text-text-muted truncate">{{ r.descripcionSnapshot }}</span>
+              <span class="text-xs text-text-subprincipal ml-auto">{{ r.vinculadoPorNombre }} · {{ formatearFecha(r.vinculadoEn) }}</span>
             </div>
           </div>
 
           <Divider v-if="detalle.seguimientos?.length" align="left">
-            <span class="text-xs font-semibold text-surface-500">Seguimientos</span>
+            <span class="text-xs font-semibold text-text-muted">Seguimientos</span>
           </Divider>
           <div v-if="detalle.seguimientos?.length" class="flex flex-col gap-2">
             <div
@@ -236,16 +236,16 @@ onMounted(cargar);
               <div class="flex items-center gap-2">
                 <span class="font-medium">{{ s.realizadoPorNombre }}</span>
                 <Tag v-if="s.estadoResultante" :value="s.estadoResultante" :severity="severityEstado(s.estadoResultante)" size="small" />
-                <span class="text-xs text-surface-400">{{ formatearFecha(s.creadoEn) }}</span>
+                <span class="text-xs text-text-subprincipal">{{ formatearFecha(s.creadoEn) }}</span>
               </div>
               <p class="m-0 mt-1 whitespace-pre-line">{{ s.comentario }}</p>
             </div>
           </div>
 
           <div v-if="detalle.estado === 'CERRADO'" class="mt-2 p-2 surface-50 border-round">
-            <p class="text-xs font-semibold m-0 text-surface-500">Resumen de cierre</p>
+            <p class="text-xs font-semibold m-0 text-text-muted">Resumen de cierre</p>
             <p class="text-sm m-0 whitespace-pre-line">{{ detalle.resumenCierre }}</p>
-            <p class="text-xs text-surface-400 mt-1">Cerrado por {{ detalle.cerradoPorNombre }} · {{ formatearFecha(detalle.cerradoEn) }}</p>
+            <p class="text-xs text-text-subprincipal mt-1">Cerrado por {{ detalle.cerradoPorNombre }} · {{ formatearFecha(detalle.cerradoEn) }}</p>
           </div>
         </div>
       </template>

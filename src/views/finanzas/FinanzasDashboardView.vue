@@ -59,7 +59,7 @@ onMounted(cargar);
         <Card>
           <template #title>Mes Actual</template>
           <template #content>
-            <p class="text-sm text-surface-500 m-0 mb-2">
+            <p class="text-sm text-text-muted m-0 mb-2">
               {{ dashboard.mesActual?.periodo || "—" }}
             </p>
             <div class="flex flex-col gap-2">
@@ -89,7 +89,7 @@ onMounted(cargar);
         <Card>
           <template #title>Mes Anterior</template>
           <template #content>
-            <p class="text-sm text-surface-500 m-0 mb-2">
+            <p class="text-sm text-text-muted m-0 mb-2">
               {{ dashboard.mesAnterior?.periodo || "—" }}
             </p>
             <div class="flex flex-col gap-2">
@@ -146,7 +146,7 @@ onMounted(cargar);
       <Card>
         <template #title>Saldos de Cuentas</template>
         <template #content>
-          <div v-if="!dashboard.saldosCuentas?.length" class="text-sm text-surface-500">
+          <div v-if="!dashboard.saldosCuentas?.length" class="text-sm text-text-muted">
             No hay cuentas registradas
           </div>
           <div v-else class="flex flex-col gap-3">
@@ -157,9 +157,9 @@ onMounted(cargar);
             >
               <div>
                 <span class="font-medium">{{ cta.cuentaNombre }}</span>
-                <span class="text-xs text-surface-500 ml-2">{{ cta.cuentaTipo }}</span>
+                <span class="text-xs text-text-muted ml-2">{{ cta.cuentaTipo }}</span>
                 <br>
-                <span class="text-xs text-surface-400">{{ cta.banco }} {{ cta.numeroCuenta }}</span>
+                <span class="text-xs text-text-subprincipal">{{ cta.banco }} {{ cta.numeroCuenta }}</span>
               </div>
               <span class="font-bold" :class="cta.saldoActual >= 0 ? 'text-green-600' : 'text-red-600'">
                 {{ formatoMonto(cta.saldoActual) }}

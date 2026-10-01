@@ -104,12 +104,12 @@ function confirmarGuardar() {
           @click="toggleGrupo(grupo.codigo)"
         >
           <div class="flex items-center gap-2">
-            <i :class="expandidos.has(grupo.codigo) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs text-surface-400"></i>
+            <i :class="expandidos.has(grupo.codigo) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs text-text-subprincipal"></i>
             <span class="font-bold text-text">{{ grupo.nombre }}</span>
             <Tag :value="grupo.permisos.length" severity="secondary" size="small" />
             <Tag :value="grupo.permisos.filter((p) => p.activo).length + ' activos'" severity="info" size="small" />
           </div>
-          <span class="text-xs text-surface-400 hidden sm:inline">{{ expandidos.has(grupo.codigo) ? 'Ocultar' : 'Mostrar' }}</span>
+          <span class="text-xs text-text-subprincipal hidden sm:inline">{{ expandidos.has(grupo.codigo) ? 'Ocultar' : 'Mostrar' }}</span>
         </button>
         <div v-show="expandidos.has(grupo.codigo)" class="p-3 pt-0">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -122,8 +122,8 @@ function confirmarGuardar() {
               <Checkbox :modelValue="p.activo" binary @update:modelValue="toggle(p.codigo)" />
               <div class="flex flex-col min-w-0">
                 <span class="text-sm font-medium leading-tight">{{ p.nombre }}</span>
-                <span class="text-xs font-mono text-surface-400">{{ p.codigo }}</span>
-                <span class="text-xs text-surface-500 line-clamp-2">{{ p.descripcion }}</span>
+                <span class="text-xs font-mono text-text-subprincipal">{{ p.codigo }}</span>
+                <span class="text-xs text-text-muted line-clamp-2">{{ p.descripcion }}</span>
               </div>
             </label>
           </div>

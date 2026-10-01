@@ -473,6 +473,9 @@ export default definePreset(Aura, {
           primaryContrast: "#ffffff",
           bannerText: "#f0f4f8",
           bannerBorder: "#2d4a6a",
+          alertBackground: "#fef2f2", // rojo muy suave
+          alertBorder: "#f5aaaa", // tu danger.200
+          alertBg: "#fef2f2",
         },
         text: {
           color: "{primary.textPrincipal}",
@@ -539,6 +542,9 @@ export default definePreset(Aura, {
           primaryContrast: "#ffffff",
           bannerText: "#f0f4f8",
           bannerBorder: "#2d4a6a",
+          alertBackground: "#2d1515",
+          alertBorder: "#651414", // tu danger.800
+          alertBg: "#2d1515",
         },
         text: {
           color: "{primary.textPrincipal}",

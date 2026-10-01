@@ -8,7 +8,7 @@
           <i class="pi pi-building text-4xl" style="color: var(--p-primary-400)"></i>
           <div>
             <p class="text-lg font-medium m-0">Módulo en construcción</p>
-            <p class="text-sm text-surface-500 m-0 mt-1">
+            <p class="text-sm text-text-muted m-0 mt-1">
               Las solicitudes de registro estarán disponibles próximamente.
             </p>
           </div>

@@ -340,7 +340,7 @@ onMounted(() => u.cargar());
               class="w-full"
             />
           </div>
-          <small class="text-xs text-surface-400">
+          <small class="text-xs text-text-subprincipal">
             La cantidad define el total para numeración correlativa. En "Por
             piso" el total se calcula de pisos × unidades por piso.
           </small>
@@ -459,7 +459,7 @@ onMounted(() => u.cargar());
 
             <div
               v-if="u.estado.sectorOrigen === 'sin-sector'"
-              class="text-sm text-surface-400"
+              class="text-sm text-text-subprincipal"
             >
               Las unidades se crearán sin sector asignado.
             </div>
@@ -501,7 +501,7 @@ onMounted(() => u.cargar());
               </div>
             </div>
 
-            <div v-else class="text-sm text-surface-400">
+            <div v-else class="text-sm text-text-subprincipal">
               Selecciona el sector de cada unidad en la siguiente fase
               (Asignación).
             </div>
@@ -531,7 +531,7 @@ onMounted(() => u.cargar());
               @click="aplicarAsignarTodos"
             />
           </div>
-          <small v-else class="text-xs text-surface-400">
+          <small v-else class="text-xs text-text-subprincipal">
             Las unidades se guardarán sin sector.
           </small>
 
@@ -984,7 +984,7 @@ onMounted(() => u.cargar());
               </div>
               <div class="mt-2 flex flex-col gap-1">
                 <template v-if="editando && !un.marcadoEliminar">
-                  <label class="text-xs text-surface-400">Tipo</label>
+                  <label class="text-xs text-text-subprincipal">Tipo</label>
                   <Select
                     v-model="un.tipo"
                     :options="TIPOS_UNIDAD_CREAR"
@@ -993,7 +993,7 @@ onMounted(() => u.cargar());
                     class="w-full"
                   />
                   <div class="flex items-center gap-2">
-                    <label class="text-xs text-surface-400 w-10">Piso</label>
+                    <label class="text-xs text-text-subprincipal w-10">Piso</label>
                     <Select
                       v-if="opcionesPisoFila.length"
                       v-model="un.piso"
@@ -1014,7 +1014,7 @@ onMounted(() => u.cargar());
                     />
                   </div>
                   <template v-if="u.sectoresOpciones.length">
-                    <label class="text-xs text-surface-400">Sector</label>
+                    <label class="text-xs text-text-subprincipal">Sector</label>
                     <Select
                       v-model="un.sectorRef"
                       :options="opcionesSectorFila"
@@ -1026,7 +1026,7 @@ onMounted(() => u.cargar());
                     />
                   </template>
                 </template>
-                <span v-else class="text-sm text-surface-400">
+                <span v-else class="text-sm text-text-subprincipal">
                   Piso {{ un.piso ?? "—" }} · {{ sectorLabel(un.sectorRef) }}
                 </span>
                 <Tag

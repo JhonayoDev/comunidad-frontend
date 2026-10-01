@@ -136,7 +136,7 @@ async function handleRestaurar(tipo) {
         <h1 class="text-xl font-bold m-0">Reglas de Notificación</h1>
         <InfoAyudaVista titulo="Reglas de notificación" :secciones="seccionesAyuda" />
       </div>
-      <p class="text-sm text-surface-500 m-0 mt-1 hidden sm:block">Matriz de reglas por defecto vs sobrescritas por condominio</p>
+      <p class="text-sm text-text-muted m-0 mt-1 hidden sm:block">Matriz de reglas por defecto vs sobrescritas por condominio</p>
     </div>
 
     <Message v-if="error" severity="error" :closable="false">{{ error }}</Message>
@@ -171,7 +171,7 @@ async function handleRestaurar(tipo) {
                 />
               </div>
             </div>
-            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-surface-500">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-text-muted">
               <div class="flex items-center gap-2">
                 <span>Audiencia:</span>
                 <Select

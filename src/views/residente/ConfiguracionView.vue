@@ -9,7 +9,7 @@
         </div>
       </template>
       <template #content>
-        <p class="text-sm text-surface-500 mb-3">
+        <p class="text-sm text-text-muted mb-3">
           Recibe alertas al instante cuando llegue una visita, una encomienda o
           haya novedades en tu condominio.
         </p>
@@ -19,7 +19,7 @@
           <div class="flex items-center justify-between py-2">
             <div class="flex flex-col">
               <span class="font-medium">Notificaciones activas</span>
-              <span class="text-xs text-surface-400">
+              <span class="text-xs text-text-subprincipal">
                 Recibirás alertas en este dispositivo
               </span>
             </div>
@@ -36,7 +36,7 @@
           <div class="flex items-center justify-between py-2">
             <div class="flex flex-col">
               <span class="font-medium">Notificaciones inactivas</span>
-              <span class="text-xs text-surface-400">
+              <span class="text-xs text-text-subprincipal">
                 Actívalas para recibir alertas al instante
               </span>
             </div>
@@ -55,7 +55,7 @@
           <div class="flex items-center justify-between py-2">
             <div class="flex flex-col">
               <span class="font-medium">Notificaciones bloqueadas</span>
-              <span class="text-xs text-surface-400">
+              <span class="text-xs text-text-subprincipal">
                 El navegador tiene las notificaciones deshabilitadas
               </span>
             </div>
@@ -78,7 +78,7 @@
               }"
             >
               <div class="flex flex-col gap-2 text-sm">
-                <span class="font-semibold text-surface-700">
+                <span class="font-semibold text-text">
                   Instrucciones paso a paso:
                 </span>
 
@@ -88,7 +88,7 @@
                   >
                     1
                   </span>
-                  <span class="text-surface-600">
+                  <span class="text-text-muted">
                     Haz clic en el <strong>candado</strong> (🔒) o
                     <strong>información</strong> (ℹ️) en la barra de dirección.
                   </span>
@@ -100,7 +100,7 @@
                   >
                     2
                   </span>
-                  <span class="text-surface-600">
+                  <span class="text-text-muted">
                     Busca la opción <strong>"Notificaciones"</strong> y
                     cámbiala a <strong>"Permitir"</strong>.
                   </span>
@@ -112,7 +112,7 @@
                   >
                     3
                   </span>
-                  <span class="text-surface-600">
+                  <span class="text-text-muted">
                     <strong>Recarga la página</strong> para que los cambios
                     tengan efecto.
                   </span>

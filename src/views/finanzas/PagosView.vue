@@ -232,7 +232,7 @@ onMounted(() => {
       <template #content>
         <div class="flex flex-wrap gap-2 items-end">
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Unidad</label>
+            <label class="text-xs text-text-muted">Unidad</label>
             <Select
               v-model="filtroUnidad"
               :options="unidades"
@@ -245,11 +245,11 @@ onMounted(() => {
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Desde</label>
+            <label class="text-xs text-text-muted">Desde</label>
             <DatePicker v-model="filtroDesde" size="small" class="w-32" />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Hasta</label>
+            <label class="text-xs text-text-muted">Hasta</label>
             <DatePicker v-model="filtroHasta" size="small" class="w-32" />
           </div>
           <Button label="Buscar" icon="pi pi-search" size="small" severity="secondary" @click="buscar" />
@@ -261,7 +261,7 @@ onMounted(() => {
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!pagos.length" class="text-center text-surface-400 py-8">
+      <div v-if="!pagos.length" class="text-center text-text-subprincipal py-8">
         No hay pagos registrados
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -274,13 +274,13 @@ onMounted(() => {
             <div>
               <div class="flex items-center gap-2">
                 <span class="font-medium">Unidad {{ p.unidadNumero }}</span>
-                <span class="text-sm text-surface-400">{{ p.fechaPago }}</span>
+                <span class="text-sm text-text-subprincipal">{{ p.fechaPago }}</span>
               </div>
-              <div class="text-sm text-surface-500">
+              <div class="text-sm text-text-muted">
                 {{ p.cuentaDestinoNombre }}
                 <span v-if="p.numeroOperacion"> — Op: {{ p.numeroOperacion }}</span>
               </div>
-              <div v-if="p.observacion" class="text-xs text-surface-400">{{ p.observacion }}</div>
+              <div v-if="p.observacion" class="text-xs text-text-subprincipal">{{ p.observacion }}</div>
             </div>
             <span class="font-bold text-lg text-green-600">{{ p.monto?.toLocaleString("es-CL") }}</span>
           </div>
@@ -304,7 +304,7 @@ onMounted(() => {
         <Divider />
         <label class="text-sm font-semibold">Deudas a pagar</label>
 
-        <div v-if="!form.unidadId" class="text-sm text-surface-400 py-2">
+        <div v-if="!form.unidadId" class="text-sm text-text-subprincipal py-2">
           Selecciona una unidad para ver sus deudas pendientes
         </div>
 
@@ -313,12 +313,12 @@ onMounted(() => {
         </template>
 
         <template v-else-if="!cuotasDisponibles.length && !cargosDisponibles.length">
-          <p class="text-sm text-surface-400">No hay deudas pendientes para esta unidad</p>
+          <p class="text-sm text-text-subprincipal">No hay deudas pendientes para esta unidad</p>
         </template>
 
         <template v-else>
           <div v-if="cuotasDisponibles.length" class="flex flex-col gap-2">
-            <span class="text-xs text-surface-500 font-semibold uppercase">Gastos Comunes</span>
+            <span class="text-xs text-text-muted font-semibold uppercase">Gastos Comunes</span>
             <div
               v-for="c in cuotasDisponibles"
               :key="c.id"
@@ -341,7 +341,7 @@ onMounted(() => {
           </div>
 
           <div v-if="cargosDisponibles.length" class="flex flex-col gap-2">
-            <span class="text-xs text-surface-500 font-semibold uppercase mt-2">Cargos Adicionales</span>
+            <span class="text-xs text-text-muted font-semibold uppercase mt-2">Cargos Adicionales</span>
             <div
               v-for="c in cargosDisponibles"
               :key="c.id"
@@ -356,7 +356,7 @@ onMounted(() => {
               <div class="flex-1 flex items-center justify-between text-sm">
                 <div>
                   <span class="font-medium">{{ c.descripcion }}</span>
-                  <span class="text-surface-400 ml-1">{{ c.categoriaNombre }}</span>
+                  <span class="text-text-subprincipal ml-1">{{ c.categoriaNombre }}</span>
                 </div>
                 <span>{{ c.monto?.toLocaleString("es-CL") }}</span>
               </div>

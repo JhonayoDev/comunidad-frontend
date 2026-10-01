@@ -114,16 +114,16 @@ onMounted(cargarCasos);
             <span class="text-xl">🚪</span>
             <div>
               <p class="font-medium">Visita esperada</p>
-              <p class="text-xs text-surface-400">Preautorizar ingreso de visita</p>
+              <p class="text-xs text-text-subprincipal">Preautorizar ingreso de visita</p>
             </div>
           </div>
-          <span class="text-surface-400">{{ seccionActiva === "visita" ? "∨" : "›" }}</span>
+          <span class="text-text-subprincipal">{{ seccionActiva === "visita" ? "∨" : "›" }}</span>
         </div>
         <div v-if="seccionActiva === 'visita'" class="px-4 pb-4 border-t border-surface-200">
           <div class="flex flex-col items-center py-6 gap-2">
             <span class="text-4xl">🚧</span>
             <p class="font-semibold">Próximamente</p>
-            <p class="text-sm text-surface-500 text-center">
+            <p class="text-sm text-text-muted text-center">
               Podrás avisar al guardia que espera una visita con anticipación.
             </p>
           </div>
@@ -141,16 +141,16 @@ onMounted(cargarCasos);
             <span class="text-xl">📅</span>
             <div>
               <p class="font-medium">Reservar área común</p>
-              <p class="text-xs text-surface-400">Quincho, sala multiuso, cancha</p>
+              <p class="text-xs text-text-subprincipal">Quincho, sala multiuso, cancha</p>
             </div>
           </div>
-          <span class="text-surface-400">{{ seccionActiva === "reserva" ? "∨" : "›" }}</span>
+          <span class="text-text-subprincipal">{{ seccionActiva === "reserva" ? "∨" : "›" }}</span>
         </div>
         <div v-if="seccionActiva === 'reserva'" class="px-4 pb-4 border-t border-surface-200">
           <div class="flex flex-col items-center py-6 gap-2">
             <span class="text-4xl">🚧</span>
             <p class="font-semibold">Próximamente</p>
-            <p class="text-sm text-surface-500 text-center">
+            <p class="text-sm text-text-muted text-center">
               Podrás reservar espacios comunes del condominio.
             </p>
           </div>
@@ -168,10 +168,10 @@ onMounted(cargarCasos);
             <span class="text-xl">📝</span>
             <div>
               <p class="font-medium">Reclamos y casos</p>
-              <p class="text-xs text-surface-400">Reclamos, sugerencias y solicitudes</p>
+              <p class="text-xs text-text-subprincipal">Reclamos, sugerencias y solicitudes</p>
             </div>
           </div>
-          <span class="text-surface-400">{{ seccionActiva === "reclamo" ? "∨" : "›" }}</span>
+          <span class="text-text-subprincipal">{{ seccionActiva === "reclamo" ? "∨" : "›" }}</span>
         </div>
         <div v-if="seccionActiva === 'reclamo'" class="px-4 pb-4 border-t border-surface-200">
           <div class="flex flex-col gap-3 pt-3">
@@ -195,7 +195,7 @@ onMounted(cargarCasos);
             <Skeleton v-if="loadingCasos" width="100%" height="80px" />
             <div v-else-if="!casos.length" class="flex flex-col items-center py-4 gap-2">
               <span class="text-3xl">📭</span>
-              <p class="text-sm text-surface-500">No tienes casos anteriores</p>
+              <p class="text-sm text-text-muted">No tienes casos anteriores</p>
             </div>
             <div v-else class="flex flex-col gap-2">
               <div
@@ -205,11 +205,11 @@ onMounted(cargarCasos);
                 @click="router.push({ name: 'MisCasos' })"
               >
                 <div class="flex items-center gap-2">
-                  <span class="text-xs text-surface-400">#{{ c.numero }}</span>
+                  <span class="text-xs text-text-subprincipal">#{{ c.numero }}</span>
                   <span class="text-sm font-medium">{{ c.titulo }}</span>
                   <Tag :value="c.prioridad" :severity="severityPrioridad(c.prioridad)" size="small" />
                 </div>
-                <div class="text-xs text-surface-400 flex items-center gap-2 mt-1">
+                <div class="text-xs text-text-subprincipal flex items-center gap-2 mt-1">
                   <Tag :value="c.estado" :severity="severityEstado(c.estado)" size="small" />
                   <span>{{ formatearFecha(c.abiertoEn) }}</span>
                 </div>
@@ -230,10 +230,10 @@ onMounted(cargarCasos);
             <span class="text-xl">📦</span>
             <div>
               <p class="font-medium">Mis encomiendas</p>
-              <p class="text-xs text-surface-400">Paquetes pendientes de retiro</p>
+              <p class="text-xs text-text-subprincipal">Paquetes pendientes de retiro</p>
             </div>
           </div>
-          <span class="text-surface-400">›</span>
+          <span class="text-text-subprincipal">›</span>
         </div>
       </template>
     </Card>

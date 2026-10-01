@@ -126,7 +126,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!usuarios.length" class="text-center text-surface-400 py-8">No hay usuarios</div>
+      <div v-if="!usuarios.length" class="text-center text-text-subprincipal py-8">No hay usuarios</div>
       <div v-else class="flex flex-col gap-2">
         <Card v-for="u in usuarios" :key="u.usuarioId">
           <template #content>
@@ -136,7 +136,7 @@ onMounted(cargar);
                   <span class="font-medium text-sm">{{ u.nombre }}</span>
                   <Tag :value="u.activo ? 'Activo' : 'Inactivo'" :severity="u.activo ? 'success' : 'danger'" size="small" />
                 </div>
-                <div class="text-xs text-surface-500">{{ u.email }}</div>
+                <div class="text-xs text-text-muted">{{ u.email }}</div>
                 <div class="flex flex-wrap gap-1 mt-1">
                   <Tag v-for="r in u.roles" :key="r" :value="r" size="small" severity="info" removable @remove="revocarRol(u, r)" />
                 </div>

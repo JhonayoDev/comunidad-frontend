@@ -517,7 +517,7 @@ onUnmounted(() => {
   <div class="p-4 flex flex-col gap-4">
     <div>
       <h1 class="text-xl font-bold m-0">Puesta en marcha</h1>
-      <div v-if="condominio" class="text-sm text-surface-500">
+      <div v-if="condominio" class="text-sm text-text-muted">
         {{ condominio.nombre }}
       </div>
     </div>
@@ -544,7 +544,7 @@ onUnmounted(() => {
               :class="
                 tareaCompletada('CONFIGURAR_STORAGE')
                   ? 'pi pi-check-circle text-green-500'
-                  : 'pi pi-circle text-surface-300'
+                  : 'pi pi-circle text-text-subtle'
               "
               class="text-lg"
             ></i>
@@ -655,7 +655,7 @@ onUnmounted(() => {
                 @click="guardarStorage"
               />
             </div>
-            <p v-if="!storageValido" class="text-xs text-surface-400 m-0">
+            <p v-if="!storageValido" class="text-xs text-text-subprincipal m-0">
               Completa los campos del proveedor para guardar.
             </p>
           </div>
@@ -670,7 +670,7 @@ onUnmounted(() => {
               :class="
                 tareaCompletada('CREAR_UNIDADES')
                   ? 'pi pi-check-circle text-green-500'
-                  : 'pi pi-circle text-surface-300'
+                  : 'pi pi-circle text-text-subtle'
               "
               class="text-lg"
             ></i>
@@ -685,7 +685,7 @@ onUnmounted(() => {
         </template>
         <template #content>
           <div class="flex flex-col gap-4">
-            <p class="text-sm text-surface-500 m-0">
+            <p class="text-sm text-text-muted m-0">
               Declara la capacidad esperada de cada tipo (informativa).
               Estacionamientos y bodegas son entidades independientes (no
               unidades). El límite real es el envelope del plan: la suma
@@ -701,7 +701,7 @@ onUnmounted(() => {
               >
                 <div class="flex flex-col">
                   <span class="text-sm font-medium">{{ c.label }}</span>
-                  <span class="text-xs text-surface-500">
+                  <span class="text-xs text-text-muted">
                     {{
                       condominio
                         ? `${c.total} creadas${
@@ -745,7 +745,7 @@ onUnmounted(() => {
                 :loading="guardando === 'capacidad'"
                 @click="guardarCapacidad"
               />
-              <span class="text-xs text-surface-400"
+              <span class="text-xs text-text-subprincipal"
                 >La sección avanza solo al hacer clic en "Guardar sección" con al menos una capacidad declarada. Si la suma supera el límite del plan, el backend lo rechazará.</span
               >
             </div>
@@ -761,7 +761,7 @@ onUnmounted(() => {
               :class="
                 tareaCompletada('ASIGNAR_ADMIN')
                   ? 'pi pi-check-circle text-green-500'
-                  : 'pi pi-circle text-surface-300'
+                  : 'pi pi-circle text-text-subtle'
               "
               class="text-lg"
             ></i>
@@ -789,7 +789,7 @@ onUnmounted(() => {
                 option-value="value"
                 fluid
               />
-              <small v-if="tipoAccesoActual" class="text-surface-500">{{
+              <small v-if="tipoAccesoActual" class="text-text-muted">{{
                 tipoAccesoActual.desc
               }}</small>
             </div>
@@ -868,7 +868,7 @@ onUnmounted(() => {
                 @click="crearAdministrador"
               />
             </div>
-            <p class="text-xs text-surface-400 m-0">
+            <p class="text-xs text-text-subprincipal m-0">
               Se creará la persona, su cuenta de usuario con rol
               {{ rolElegido }} y el cargo {{ cargoElegido }}. Se enviará un
               email con el enlace para configurar su contraseña. Los datos se
@@ -885,7 +885,7 @@ onUnmounted(() => {
                 :loading="guardando === 'admin-seccion'"
                 @click="guardarSeccionAdmin"
               />
-              <span class="text-xs text-surface-400"
+              <span class="text-xs text-text-subprincipal"
                 >La sección avanza solo al hacer clic en "Guardar sección" una vez creado el administrador o presidente. Luego queda el paso 4: la activación de su cuenta.</span
               >
             </div>
@@ -923,7 +923,7 @@ onUnmounted(() => {
         <template #content>
           <div
             v-if="!cuentaAdminPersonaId"
-            class="text-sm text-surface-500 m-0"
+            class="text-sm text-text-muted m-0"
           >
             Crea el administrador o presidente en la sección 3 para continuar.
           </div>
@@ -976,7 +976,7 @@ onUnmounted(() => {
                 />
               </div>
               <Message v-if="resultadoReenvio" :severity="resultadoReenvio.severity" :closable="false">{{ resultadoReenvio.text }}</Message>
-              <small class="text-xs text-surface-400">Si la persona no entró en 24h el link expira y el anterior queda inválido. Reenviar genera un nuevo token de 24h.</small>
+              <small class="text-xs text-text-subprincipal">Si la persona no entró en 24h el link expira y el anterior queda inválido. Reenviar genera un nuevo token de 24h.</small>
             </div>
           </div>
         </template>

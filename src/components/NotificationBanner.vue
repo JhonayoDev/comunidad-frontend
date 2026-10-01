@@ -4,7 +4,7 @@
       v-if="visible"
       class="notification-banner fixed bottom-0 left-0 right-0 z-50 mx-auto mb-4 w-[calc(100%-2rem)] max-w-md shadow-xl border border-surface-300 sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2"
       :pt="{
-        root: { class: 'bg-surface-800 text-surface-0 border-none' },
+        root: { class: 'bg-surface-800 text-banner-text border-none' },
         body: { class: 'p-3 flex items-center gap-3' },
         content: {
           class: 'p-0 flex flex-col gap-2 sm:flex-row sm:items-center flex-1',
@@ -15,10 +15,10 @@
         <div class="flex items-center gap-3 flex-1 min-w-0">
           <i class="pi pi-bell text-xl text-primary shrink-0" />
           <div class="flex flex-col min-w-0">
-            <span class="font-semibold text-sm leading-tight text-surface-0">
+            <span class="font-semibold text-sm leading-tight text-banner-text">
               Activa las notificaciones
             </span>
-            <span class="text-xs text-surface-400 leading-tight mt-0.5">
+            <span class="text-xs text-text-subprincipal leading-tight mt-0.5">
               Recibe alertas de visitas, encomiendas y avisos al instante.
             </span>
           </div>
@@ -36,7 +36,7 @@
             size="small"
             text
             severity="secondary"
-            class="text-surface-400 hover:text-surface-0"
+            class="text-text-subprincipal hover:text-banner-text"
             @click="handleDescartar"
           />
         </div>

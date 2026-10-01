@@ -270,11 +270,11 @@ onMounted(cargar);
           >
         </Tag>
       </div>
-      <small class="text-xs text-surface-400">
+      <small class="text-xs text-text-subprincipal">
         Los estacionamientos y bodegas son entidades independientes y no se registran aquí como
         unidades.
       </small>
-      <div v-if="!unidades.length" class="text-center text-surface-400 py-8">No hay unidades</div>
+      <div v-if="!unidades.length" class="text-center text-text-subprincipal py-8">No hay unidades</div>
       <div v-else class="flex flex-col gap-2">
         <div v-for="u in unidades" :key="u.id" class="surface-card p-3 border-round shadow-1">
           <div class="flex items-center justify-between">
@@ -291,7 +291,7 @@ onMounted(cargar);
                   :title="`${vinculos[u.id].length} persona(s) vinculada(s)`"
                 />
               </div>
-              <span class="text-sm text-surface-400">{{ sectorLabel(u.sectorId) }}</span>
+              <span class="text-sm text-text-subprincipal">{{ sectorLabel(u.sectorId) }}</span>
             </div>
             <div class="flex items-center gap-1">
               <Button
@@ -308,7 +308,7 @@ onMounted(cargar);
           </div>
           <div v-if="unidadExpandida === u.id" class="mt-2 pt-2 border-t border-surface-200">
             <Skeleton v-if="cargandoVinculos[u.id]" width="100%" height="3rem" />
-            <div v-else-if="!(vinculos[u.id] || []).length" class="text-sm text-surface-400 py-1">
+            <div v-else-if="!(vinculos[u.id] || []).length" class="text-sm text-text-subprincipal py-1">
               Sin personas vinculadas a esta unidad.
             </div>
             <div v-else class="flex flex-col gap-1">
@@ -328,7 +328,7 @@ onMounted(cargar);
                   <Tag v-if="v.esOcupante" value="Ocupante" severity="success" size="small" />
                   <Tag v-if="!v.activo" value="Inactivo" severity="secondary" size="small" />
                 </div>
-                <div class="flex items-center gap-1 text-xs text-surface-500 shrink-0">
+                <div class="flex items-center gap-1 text-xs text-text-muted shrink-0">
                   <span>Notif.</span>
                   <InputSwitch
                     :modelValue="v.recibeNotificaciones"
@@ -337,7 +337,7 @@ onMounted(cargar);
                   />
                 </div>
               </div>
-              <span class="text-xs text-surface-400">Ocupante = vive físicamente aquí · Notif. en OFF no recibe avisos de esta unidad</span>
+              <span class="text-xs text-text-subprincipal">Ocupante = vive físicamente aquí · Notif. en OFF no recibe avisos de esta unidad</span>
             </div>
           </div>
         </div>
@@ -364,7 +364,7 @@ onMounted(cargar);
         >
         <small
           v-else-if="capacidadDe(formCrear.tipo) != null"
-          class="text-xs text-surface-400"
+          class="text-xs text-text-subprincipal"
           >Cupo: {{ usoDe(formCrear.tipo) }} de
           {{ capacidadDe(formCrear.tipo) }}.</small
         >

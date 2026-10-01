@@ -329,7 +329,7 @@ onMounted(() => u.cargar());
             <div class="flex flex-col gap-1">
               <label class="text-sm">Prefijo del nombre</label>
               <InputText :model-value="u.estado.grupos[0].prefijo" disabled />
-              <small class="text-xs text-surface-400">
+              <small class="text-xs text-text-subprincipal">
                 Fijo para mantener la integridad de los nombres. Ej: "B-" genera
                 B-1, B-2, ...
               </small>
@@ -414,7 +414,7 @@ onMounted(() => u.cargar());
                 <div class="flex flex-col gap-1 flex-1">
                   <label class="text-sm">Pisos (separados por coma)</label>
                   <InputText v-model="g.pisos" placeholder="1,2,-1" />
-                  <small class="text-xs text-surface-400">
+                  <small class="text-xs text-text-subprincipal">
                     Usa negativos para subterráneos. El piso se guarda como
                     columna, no en el nombre.
                   </small>
@@ -516,7 +516,7 @@ onMounted(() => u.cargar());
                   v-model="u.estado.grupos[0].pisos"
                   placeholder="1,2,-1"
                 />
-                <small class="text-xs text-surface-400">
+                <small class="text-xs text-text-subprincipal">
                   Usa negativos para subterráneos. El piso se guarda como
                   columna, no en el nombre.
                 </small>
@@ -641,7 +641,7 @@ onMounted(() => u.cargar());
               </div>
             </div>
 
-            <div v-else class="text-sm text-surface-400">
+            <div v-else class="text-sm text-text-subprincipal">
               Selecciona el sector de cada {{ etiquetas.singular }} en la
               siguiente fase (Asignación).
             </div>
@@ -671,7 +671,7 @@ onMounted(() => u.cargar());
               @click="aplicarAsignarTodos"
             />
           </div>
-          <small v-else class="text-xs text-surface-400">
+          <small v-else class="text-xs text-text-subprincipal">
             Los {{ etiquetas.plural }} se guardarán sin sector.
           </small>
 
@@ -732,7 +732,7 @@ onMounted(() => u.cargar());
                   <span class="font-medium">{{ item.nombre }}</span>
                   <span
                     v-if="u.multigrupo"
-                    class="block text-xs text-surface-400"
+                    class="block text-xs text-text-subprincipal"
                   >
                     {{ u.grupoLabel(item.grupoUid) }}
                   </span>
@@ -754,7 +754,7 @@ onMounted(() => u.cargar());
                   class="w-full"
                   @change="onSectorFilaChange(item)"
                 />
-                <span v-else class="text-sm text-surface-400">Sin sector</span>
+                <span v-else class="text-sm text-text-subprincipal">Sin sector</span>
               </div>
             </div>
           </div>
@@ -1025,7 +1025,7 @@ onMounted(() => u.cargar());
                       />
                       <i
                         v-if="item.tieneVinculos"
-                        class="pi pi-lock text-surface-400"
+                        class="pi pi-lock text-text-subprincipal"
                         title="Tiene vínculos activos: el nombre no se puede cambiar, solo sector o piso."
                       ></i>
                     </div>
@@ -1046,7 +1046,7 @@ onMounted(() => u.cargar());
                   </template>
                   <span
                     v-if="u.multigrupo && !(editando && !item.marcadoEliminar)"
-                    class="block text-xs text-surface-400"
+                    class="block text-xs text-text-subprincipal"
                   >
                     {{ u.grupoLabel(item.grupoUid) }}
                   </span>
@@ -1083,7 +1083,7 @@ onMounted(() => u.cargar());
               <div class="mt-2 flex flex-col gap-1">
                 <template v-if="editando && !item.marcadoEliminar">
                   <template v-if="u.multigrupo">
-                    <label class="text-xs text-surface-400">Tipo</label>
+                    <label class="text-xs text-text-subprincipal">Tipo</label>
                     <Select
                       :model-value="item.grupoUid"
                       :options="opcionesTipo"
@@ -1095,7 +1095,7 @@ onMounted(() => u.cargar());
                     />
                   </template>
                   <div class="flex items-center gap-2">
-                    <label class="text-xs text-surface-400 w-10">Piso</label>
+                    <label class="text-xs text-text-subprincipal w-10">Piso</label>
                     <Select
                       v-if="opcionesPisoFila.length"
                       v-model="item.piso"
@@ -1116,7 +1116,7 @@ onMounted(() => u.cargar());
                     />
                   </div>
                   <template v-if="u.sectoresOpciones.length">
-                    <label class="text-xs text-surface-400">Sector</label>
+                    <label class="text-xs text-text-subprincipal">Sector</label>
                     <Select
                       v-model="item.sectorRef"
                       :options="opcionesSectorFila"
@@ -1132,7 +1132,7 @@ onMounted(() => u.cargar());
                     <label for="delcond-m" class="text-sm">Del condominio</label>
                   </div>
                 </template>
-                <span v-else class="text-sm text-surface-400">{{
+                <span v-else class="text-sm text-text-subprincipal">{{
                   sectorLabel(item.sectorRef)
                 }}</span>
                 <Tag

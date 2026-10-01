@@ -65,7 +65,7 @@ function handleClick(accion) {
             class="w-2 h-8 border-round"
             :style="{ background: headerInfo.dotColor }"
           ></span>
-          <span class="font-bold text-surface-900 text-sm">{{
+          <span class="font-bold text-text text-sm">{{
             headerInfo.text
           }}</span>
         </div>

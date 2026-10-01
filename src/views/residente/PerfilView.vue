@@ -234,7 +234,7 @@ async function solicitarEmail() {
             />
             <div>
               <h2 class="text-xl font-bold m-0">{{ me.nombre }}</h2>
-              <p class="text-sm text-surface-500 m-0">{{ me.email }}</p>
+              <p class="text-sm text-text-muted m-0">{{ me.email }}</p>
             </div>
             <Tag :value="auth.userRole" severity="info" />
           </div>
@@ -254,7 +254,7 @@ async function solicitarEmail() {
             </div>
             <i
               :class="seccionActiva === 'datos' ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              class="text-surface-400"
+              class="text-text-subprincipal"
             ></i>
           </div>
         </template>
@@ -297,7 +297,7 @@ async function solicitarEmail() {
             </div>
             <i
               :class="seccionActiva === 'password' ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              class="text-surface-400"
+              class="text-text-subprincipal"
             ></i>
           </div>
         </template>
@@ -358,13 +358,13 @@ async function solicitarEmail() {
             </div>
             <i
               :class="seccionActiva === 'email' ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              class="text-surface-400"
+              class="text-text-subprincipal"
             ></i>
           </div>
         </template>
         <template v-if="seccionActiva === 'email'" #content>
           <div class="flex flex-col gap-3 pt-2">
-            <p class="text-sm text-surface-500">
+            <p class="text-sm text-text-muted">
               Te enviaremos un link de verificación al nuevo email. El cambio se aplicará al confirmar.
             </p>
             <div class="flex flex-col gap-1">
@@ -403,7 +403,7 @@ async function solicitarEmail() {
             </div>
             <i
               :class="seccionActiva === 'notificaciones' ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              class="text-surface-400"
+              class="text-text-subprincipal"
             ></i>
           </div>
         </template>
@@ -415,21 +415,21 @@ async function solicitarEmail() {
             <div v-for="pref in preferencias" :key="pref.tipo" class="flex items-center justify-between py-1">
               <span class="text-sm">{{ tipoLabels[pref.tipo] || pref.tipo }}</span>
               <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1 text-xs text-surface-500">
+                <div class="flex items-center gap-1 text-xs text-text-muted">
                   <span>App</span>
                   <InputSwitch v-model="pref.enApp" :disabled="guardandoPref[`${pref.tipo}-enApp`]" @change="togglePref(pref.tipo, 'enApp')" />
                 </div>
-                <div class="flex items-center gap-1 text-xs text-surface-500">
+                <div class="flex items-center gap-1 text-xs text-text-muted">
                   <span>Email</span>
                   <InputSwitch v-model="pref.email" :disabled="guardandoPref[`${pref.tipo}-email`]" @change="togglePref(pref.tipo, 'email')" />
                 </div>
-                <div class="flex items-center gap-1 text-xs text-surface-500">
+                <div class="flex items-center gap-1 text-xs text-text-muted">
                   <span>Push</span>
                   <InputSwitch v-model="pref.push" :disabled="guardandoPref[`${pref.tipo}-push`]" @change="togglePref(pref.tipo, 'push')" />
                 </div>
               </div>
             </div>
-            <p v-if="!preferencias.length" class="text-sm text-surface-400 text-center py-2">No hay preferencias disponibles</p>
+            <p v-if="!preferencias.length" class="text-sm text-text-subprincipal text-center py-2">No hay preferencias disponibles</p>
           </div>
         </template>
       </Card>

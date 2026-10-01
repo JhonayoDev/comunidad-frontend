@@ -237,7 +237,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!personasFiltradas.length" class="text-center text-surface-400 py-8">
+      <div v-if="!personasFiltradas.length" class="text-center text-text-subprincipal py-8">
         No hay personas registradas
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -249,7 +249,7 @@ onMounted(cargar);
           <div class="flex items-center justify-between">
             <div>
               <span class="font-medium">{{ p.nombre }}</span>
-              <span class="text-sm text-surface-500 ml-2">{{ p.email }}</span>
+              <span class="text-sm text-text-muted ml-2">{{ p.email }}</span>
             </div>
             <div class="flex items-center gap-1">
               <Button icon="pi pi-link" variant="text" size="small" severity="secondary" @click="verVinculos(p)" />
@@ -299,13 +299,13 @@ onMounted(cargar);
     <Dialog v-model:visible="showVinculos" header="Vínculos" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-2">
         <Button label="Nuevo vínculo" icon="pi pi-plus" size="small" @click="abrirCrearVinculo" />
-        <div v-if="!vinculos.length" class="text-center text-surface-400 py-4">Sin vínculos</div>
+        <div v-if="!vinculos.length" class="text-center text-text-subprincipal py-4">Sin vínculos</div>
         <div v-for="v in vinculos" :key="v.id" class="flex justify-between items-center p-2 surface-50 border-round">
           <div>
             <span class="text-sm font-medium">{{ v.personaNombre }}</span>
             <Tag :value="v.tipo" size="small" class="ml-2" />
           </div>
-          <span class="text-xs text-surface-400">{{ v.unidadNumero }}</span>
+          <span class="text-xs text-text-subprincipal">{{ v.unidadNumero }}</span>
         </div>
       </div>
     </Dialog>
@@ -336,7 +336,7 @@ onMounted(cargar);
     </Dialog>
 
     <Dialog v-model:visible="showCrearUsuario" header="Crear usuario" modal :style="{ width: '95%', maxWidth: '400px' }">
-      <p class="text-sm text-surface-500 m-0 mb-3">Crear cuenta para {{ personaSeleccionada?.nombre }}. Se enviará un email con el link de configuración de contraseña.</p>
+      <p class="text-sm text-text-muted m-0 mb-3">Crear cuenta para {{ personaSeleccionada?.nombre }}. Se enviará un email con el link de configuración de contraseña.</p>
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Rol</label>

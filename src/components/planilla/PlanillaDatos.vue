@@ -412,7 +412,7 @@ const { foco, alternar, salir } = useModoFoco();
       </div>
       <div
         v-else-if="!filasFiltradas.length"
-        class="text-center text-surface-400 py-10"
+        class="text-center text-text-subprincipal py-10"
       >
         <i class="pi pi-search text-3xl block mb-2"></i>
         Sin filas para ese filtro.
@@ -502,7 +502,7 @@ const { foco, alternar, salir } = useModoFoco();
                     <span
                       v-if="soloUnidadesExistentes"
                       class="text-sm"
-                      :class="f.sector ? '' : 'text-surface-400'"
+                      :class="f.sector ? '' : 'text-text-subprincipal'"
                     >
                       {{ f.sector || "—" }}
                     </span>
@@ -519,7 +519,7 @@ const { foco, alternar, salir } = useModoFoco();
                   <span
                     v-else
                     class="text-sm"
-                    :class="f.sector ? '' : 'text-surface-400'"
+                    :class="f.sector ? '' : 'text-text-subprincipal'"
                   >
                     {{ f.sector || "—" }}
                   </span>
@@ -761,7 +761,7 @@ const { foco, alternar, salir } = useModoFoco();
                       {{ v.patente
                       }}<template v-if="v.est"> · {{ v.est }}</template>
                     </span>
-                    <span v-if="!vehiculosDe(f).length" class="text-surface-400"
+                    <span v-if="!vehiculosDe(f).length" class="text-text-subprincipal"
                       >—</span
                     >
                   </div>
@@ -875,7 +875,7 @@ const { foco, alternar, salir } = useModoFoco();
           >
             <div class="grid grid-cols-2 gap-2">
               <div class="flex flex-col gap-1">
-                <label class="text-xs text-surface-400">Casa *</label>
+                <label class="text-xs text-text-subprincipal">Casa *</label>
                 <template v-if="editando">
                   <AutoComplete
                     v-if="soloUnidadesExistentes"
@@ -899,7 +899,7 @@ const { foco, alternar, salir } = useModoFoco();
                 <span v-else class="text-sm">{{ f.unidad || "—" }}</span>
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs text-surface-400">Tipo</label>
+                <label class="text-xs text-text-subprincipal">Tipo</label>
                 <template v-if="editando">
                   <Tag
                     v-if="soloUnidadesExistentes"
@@ -925,14 +925,14 @@ const { foco, alternar, salir } = useModoFoco();
                 />
               </div>
               <div class="flex flex-col gap-1 col-span-2">
-                <label class="text-xs text-surface-400">Nombre *</label>
+                <label class="text-xs text-text-subprincipal">Nombre *</label>
                 <template v-if="editando">
                   <InputText v-model="f.nombre" placeholder="Nombre completo" />
                 </template>
                 <span v-else class="text-sm">{{ f.nombre || "—" }}</span>
               </div>
               <div class="flex flex-col gap-1 col-span-2">
-                <label class="text-xs text-surface-400">Email *</label>
+                <label class="text-xs text-text-subprincipal">Email *</label>
                 <template v-if="editando && f.esNuevo !== false">
                   <InputText v-model="f.email" placeholder="email@ejemplo.cl" />
                 </template>
@@ -949,7 +949,7 @@ const { foco, alternar, salir } = useModoFoco();
                 </span>
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs text-surface-400">RUT</label>
+                <label class="text-xs text-text-subprincipal">RUT</label>
                 <template v-if="editando && f.esNuevo !== false">
                   <InputText
                     v-model="f.rut"
@@ -972,7 +972,7 @@ const { foco, alternar, salir } = useModoFoco();
                 </span>
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs text-surface-400">Teléfono</label>
+                <label class="text-xs text-text-subprincipal">Teléfono</label>
                 <template v-if="editando">
                   <InputText
                     v-model="f.telefono"
@@ -985,12 +985,12 @@ const { foco, alternar, salir } = useModoFoco();
                 <span v-else class="text-sm">{{ f.telefono || "—" }}</span>
               </div>
               <div class="flex flex-col gap-1 col-span-2">
-                <label class="text-xs text-surface-400">Sector</label>
+                <label class="text-xs text-text-subprincipal">Sector</label>
                 <template v-if="editando">
                   <span
                     v-if="soloUnidadesExistentes"
                     class="text-sm"
-                    :class="f.sector ? '' : 'text-surface-400'"
+                    :class="f.sector ? '' : 'text-text-subprincipal'"
                   >
                     {{ f.sector || "—" }}
                   </span>
@@ -999,13 +999,13 @@ const { foco, alternar, salir } = useModoFoco();
                 <span
                   v-else
                   class="text-sm"
-                  :class="f.sector ? '' : 'text-surface-400'"
+                  :class="f.sector ? '' : 'text-text-subprincipal'"
                 >
                   {{ f.sector || "—" }}
                 </span>
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs text-surface-400">Vínculo</label>
+                <label class="text-xs text-text-subprincipal">Vínculo</label>
                 <template v-if="editando">
                   <Select
                     v-model="f.tipo_vinculo"
@@ -1023,7 +1023,7 @@ const { foco, alternar, salir } = useModoFoco();
                   size="small"
                   class="w-fit"
                 />
-                <span v-else class="text-sm text-surface-400">—</span>
+                <span v-else class="text-sm text-text-subprincipal">—</span>
               </div>
               <div class="flex items-end gap-2 col-span-2">
                 <div class="flex items-center gap-2">
@@ -1081,7 +1081,7 @@ const { foco, alternar, salir } = useModoFoco();
                 class="flex items-center justify-between w-full text-left"
                 @click="toggleRecursos(f.id + '-est')"
               >
-                <span class="text-xs font-semibold text-surface-400">
+                <span class="text-xs font-semibold text-text-subprincipal">
                   Estacionamientos ({{ (f.estacionamientos || []).length }})
                 </span>
                 <i
@@ -1139,7 +1139,7 @@ const { foco, alternar, salir } = useModoFoco();
                 class="flex items-center justify-between w-full text-left"
                 @click="toggleRecursos(f.id)"
               >
-                <span class="text-xs font-semibold text-surface-400">
+                <span class="text-xs font-semibold text-text-subprincipal">
                   Vehículos ({{ (f.vehiculos || []).length }})
                 </span>
                 <i
@@ -1197,7 +1197,7 @@ const { foco, alternar, salir } = useModoFoco();
                     {{ v.patente
                     }}<template v-if="v.est"> · {{ v.est }}</template>
                   </span>
-                  <span v-if="!vehiculosDe(f).length" class="text-surface-400"
+                  <span v-if="!vehiculosDe(f).length" class="text-text-subprincipal"
                     >—</span
                   >
                 </div>
@@ -1213,7 +1213,7 @@ const { foco, alternar, salir } = useModoFoco();
                 class="flex items-center justify-between w-full text-left"
                 @click="toggleRecursos(f.id)"
               >
-                <span class="text-xs font-semibold text-surface-400">
+                <span class="text-xs font-semibold text-text-subprincipal">
                   Bodegas ({{ (f.bodegas || []).length }})
                 </span>
                 <i

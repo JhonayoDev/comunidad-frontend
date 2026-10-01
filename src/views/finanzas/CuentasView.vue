@@ -141,7 +141,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!cuentas.length" class="text-center text-surface-400 py-8">
+      <div v-if="!cuentas.length" class="text-center text-text-subprincipal py-8">
         No hay cuentas registradas
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -156,7 +156,7 @@ onMounted(cargar);
                 <span class="font-medium">{{ cta.nombre }}</span>
                 <Tag :value="cta.activa ? 'Activa' : 'Inactiva'" :severity="cta.activa ? 'success' : 'secondary'" size="small" />
               </div>
-              <div class="text-sm text-surface-500">
+              <div class="text-sm text-text-muted">
                 {{ tipoLabel(cta.tipo) }}
                 <span v-if="cta.banco"> — {{ cta.banco }}</span>
                 <span v-if="cta.numeroCuenta"> — {{ cta.numeroCuenta }}</span>

@@ -228,8 +228,8 @@ onMounted(async () => {
       <Card>
         <template #content>
           <div class="flex flex-column align-items-center gap-2 py-4">
-            <i class="pi pi-verified text-4xl text-surface-300"></i>
-            <p class="text-surface-400 m-0">No tienes autorizaciones activas</p>
+            <i class="pi pi-verified text-4xl text-text-subtle"></i>
+            <p class="text-text-subprincipal m-0">No tienes autorizaciones activas</p>
           </div>
         </template>
       </Card>
@@ -248,7 +248,7 @@ onMounted(async () => {
                     severity="info"
                   />
                 </div>
-                <p class="text-sm text-surface-500 m-0">
+                <p class="text-sm text-text-muted m-0">
                   Casa {{ a.unidadNumero }}
                   <span v-if="a.patenteVisitante">
                     · {{ a.patenteVisitante }}
@@ -257,7 +257,7 @@ onMounted(async () => {
                     · {{ a.cantidadPersonas }} personas
                   </span>
                 </p>
-                <p class="text-xs text-surface-400 m-0">
+                <p class="text-xs text-text-subprincipal m-0">
                   {{ formatearRango(a.fechaInicio, a.fechaFin) }}
                 </p>
               </div>
@@ -279,7 +279,7 @@ onMounted(async () => {
             </div>
             <p
               v-if="a.observacion"
-              class="text-xs text-surface-500 mt-2 mb-0 italic"
+              class="text-xs text-text-muted mt-2 mb-0 italic"
             >
               {{ a.observacion }}
             </p>

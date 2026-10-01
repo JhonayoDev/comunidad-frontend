@@ -109,7 +109,7 @@ onMounted(cargar);
               </h1>
               <span
                 v-if="dashboard.condominio?.direccion"
-                class="text-sm text-surface-400"
+                class="text-sm text-text-subprincipal"
                 >{{ dashboard.condominio.direccion }}</span
               >
             </div>
@@ -131,7 +131,7 @@ onMounted(cargar);
                 ></i>
                 <span class="font-medium">Configuración pendiente</span>
               </div>
-              <span class="text-sm text-surface-400"
+              <span class="text-sm text-text-subprincipal"
                 >Falta:
                 {{ pasosPendientes.map((p) => p.label).join(", ") }}.</span
               >
@@ -157,7 +157,7 @@ onMounted(cargar);
             <span class="text-2xl font-bold">{{
               dashboard.totales.unidades
             }}</span>
-            <span class="text-xs text-surface-400">Unidades</span>
+            <span class="text-xs text-text-subprincipal">Unidades</span>
           </template>
         </Card>
         <Card>
@@ -169,7 +169,7 @@ onMounted(cargar);
             <span class="text-2xl font-bold">{{
               dashboard.totales.residentesActivos
             }}</span>
-            <span class="text-xs text-surface-400">Residentes</span>
+            <span class="text-xs text-text-subprincipal">Residentes</span>
           </template>
         </Card>
         <Card>
@@ -181,7 +181,7 @@ onMounted(cargar);
             <span class="text-2xl font-bold">{{
               dashboard.totales.vehiculos
             }}</span>
-            <span class="text-xs text-surface-400">Vehículos</span>
+            <span class="text-xs text-text-subprincipal">Vehículos</span>
           </template>
         </Card>
         <Card>
@@ -196,7 +196,7 @@ onMounted(cargar);
             <span class="text-2xl font-bold">{{
               dashboard.anunciosVigentes
             }}</span>
-            <span class="text-xs text-surface-400">Anuncios</span>
+            <span class="text-xs text-text-subprincipal">Anuncios</span>
           </template>
         </Card>
         <TarjetaAccesosActivos
@@ -223,7 +223,7 @@ onMounted(cargar);
         <template #content>
           <div
             v-if="!dashboard.accesos.ultimosMovimientos?.length"
-            class="text-sm text-surface-400 text-center py-2"
+            class="text-sm text-text-subprincipal text-center py-2"
           >
             Sin movimientos recientes
           </div>
@@ -244,7 +244,7 @@ onMounted(cargar);
                   <p class="text-sm font-medium m-0 truncate">
                     {{ m.nombreVisitante }}
                   </p>
-                  <p class="text-xs text-surface-400 m-0">
+                  <p class="text-xs text-text-subprincipal m-0">
                     {{ m.unidadNumero }} · {{ tipoLabel(m.tipo) }}
                   </p>
                 </div>
@@ -255,7 +255,7 @@ onMounted(cargar);
                   :severity="estadoSeverity(m.estado)"
                   size="small"
                 />
-                <span class="text-xs text-surface-400">{{
+                <span class="text-xs text-text-subprincipal">{{
                   formatFecha(m.ingreso)
                 }}</span>
               </div>
@@ -275,7 +275,7 @@ onMounted(cargar);
         <template #content>
           <div class="flex flex-col gap-2">
             <div class="flex justify-between text-sm">
-              <span class="text-surface-400">Vencimiento</span>
+              <span class="text-text-subprincipal">Vencimiento</span>
               <span>{{
                 new Date(
                   dashboard.gastoComunActual.fechaVencimiento,
@@ -283,7 +283,7 @@ onMounted(cargar);
               }}</span>
             </div>
             <div class="flex justify-between text-sm">
-              <span class="text-surface-400">Recaudado</span>
+              <span class="text-text-subprincipal">Recaudado</span>
               <span class="font-medium"
                 >{{
                   (dashboard.gastoComunActual.porcentajePagado || 0).toFixed(0)
@@ -299,7 +299,7 @@ onMounted(cargar);
                 }"
               ></div>
             </div>
-            <div class="flex justify-between text-xs text-surface-400">
+            <div class="flex justify-between text-xs text-text-subprincipal">
               <span
                 >{{ dashboard.gastoComunActual.unidadesPagadas }} /
                 {{ dashboard.gastoComunActual.totalUnidades }} unidades</span

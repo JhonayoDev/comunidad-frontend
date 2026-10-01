@@ -23,14 +23,6 @@
                 optionLabel="label"
                 optionValue="value"
                 fluid
-                :pt="{
-                  root: {
-                    style: {
-                      '--p-select-background': 'var(--p-surface-200)',
-                      '--p-select-placeholder-color': 'var(--p-surface-400)',
-                    },
-                  },
-                }"
               />
             </div>
             <div class="w-full sm:flex-1 flex items-end">
@@ -42,7 +34,7 @@
           </div>
 
           <template v-if="form.proveedor === 'CLOUDFLARE_R2'">
-            <Divider align="left"><span class="text-xs text-surface-500">Cloudflare R2</span></Divider>
+            <Divider align="left"><span class="text-xs text-text-muted">Cloudflare R2</span></Divider>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="font-medium text-sm">Bucket</label>
@@ -60,7 +52,7 @@
                 <label class="font-medium text-sm">Secret Key</label>
                 <InputText v-model="form.r2SecretKey" type="password" placeholder="Dejar vacío para mantener el valor actual" fluid />
                 <small v-if="config?.hasSecretKey" class="text-green-600 text-xs">Ya configurada</small>
-                <small v-else class="text-surface-400 text-xs">Obligatorio si no hay una configurada</small>
+                <small v-else class="text-text-subprincipal text-xs">Obligatorio si no hay una configurada</small>
               </div>
               <div class="sm:col-span-2">
                 <label class="font-medium text-sm">Public URL</label>
@@ -70,7 +62,7 @@
           </template>
 
           <template v-if="form.proveedor === 'GOOGLE_DRIVE'">
-            <Divider align="left"><span class="text-xs text-surface-500">Google Drive</span></Divider>
+            <Divider align="left"><span class="text-xs text-text-muted">Google Drive</span></Divider>
             <div>
               <label class="font-medium text-sm">Folder ID</label>
               <InputText v-model="form.driveFolderId" placeholder="1ABC..." fluid />
@@ -79,7 +71,7 @@
               <label class="font-medium text-sm">Service Account (JSON)</label>
               <Textarea v-model="form.driveCredentials" :autoResize="true" rows="6" placeholder='{ "type": "service_account", ... }' fluid />
               <small v-if="config?.hasDriveCredentials" class="text-green-600 text-xs">Ya configuradas</small>
-              <small v-else class="text-surface-400 text-xs">Obligatorio si no hay credenciales configuradas</small>
+              <small v-else class="text-text-subprincipal text-xs">Obligatorio si no hay credenciales configuradas</small>
             </div>
           </template>
 

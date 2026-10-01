@@ -41,14 +41,14 @@ const totalPropios = computed(() => permisosEfectivos.value.length);
       <template #content>
         <div class="flex flex-wrap gap-3 items-center">
           <div>
-            <span class="text-sm text-surface-500">Rol:</span>
+            <span class="text-sm text-text-muted">Rol:</span>
             <Tag :value="auth.condominioActualRol || auth.user?.roles?.[0] || '—'" severity="info" class="ml-1" />
           </div>
           <div v-if="auth.condominioActualCargo">
-            <span class="text-sm text-surface-500">Cargo:</span>
+            <span class="text-sm text-text-muted">Cargo:</span>
             <Tag :value="auth.condominioActualCargo" severity="warn" class="ml-1" />
           </div>
-          <div class="text-sm text-surface-400 ml-auto">
+          <div class="text-sm text-text-subprincipal ml-auto">
             {{ totalPropios }} de {{ totalPermisos }} permisos
           </div>
         </div>
@@ -91,7 +91,7 @@ const totalPropios = computed(() => permisosEfectivos.value.length);
       </div>
     </div>
 
-    <div v-if="!permisosDetalle.length" class="text-center text-surface-400 py-8">
+    <div v-if="!permisosDetalle.length" class="text-center text-text-subprincipal py-8">
       No hay permisos asignados
     </div>
   </div>

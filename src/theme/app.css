@@ -46,6 +46,9 @@
   --color-border-soft: var(--p-primary-border-soft);
   --color-border-subtle: var(--p-primary-border-subtle);
   --color-banner-border: var(--p-primary-banner-border);
+
+  --color-alert-border: var(--p-primary-alert-border);
+  --color-alert-bg: var(--p-primary-alert-bg);
 }
 
 /* ==========================================================================

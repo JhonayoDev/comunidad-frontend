@@ -92,8 +92,8 @@ onMounted(() => cargar());
       <Card>
         <template #content>
           <div class="flex flex-col items-center py-6 gap-2">
-            <i class="pi pi-box text-5xl text-surface-300"></i>
-            <p class="text-surface-400">No tienes encomiendas</p>
+            <i class="pi pi-box text-5xl text-text-subtle"></i>
+            <p class="text-text-subprincipal">No tienes encomiendas</p>
           </div>
         </template>
       </Card>
@@ -109,10 +109,10 @@ onMounted(() => cargar());
                 <span class="font-semibold">{{ e.tipo }}</span>
               </div>
               <p class="text-sm mt-1">{{ e.nombreDestinatario }}</p>
-              <p class="text-xs text-surface-400">
+              <p class="text-xs text-text-subprincipal">
                 Casa {{ e.unidadNumero }} · Recibida {{ formatFecha(e.creadoEn) }}
               </p>
-              <p v-if="e.nombreRetira" class="text-xs text-surface-400">
+              <p v-if="e.nombreRetira" class="text-xs text-text-subprincipal">
                 Retirada por {{ e.nombreRetira }} {{ e.rutRetira ? '(' + e.rutRetira + ')' : '' }}
               </p>
             </div>
@@ -131,16 +131,16 @@ onMounted(() => cargar());
         <div v-if="detalle.imagenUrl" class="w-full">
           <img :src="detalle.imagenUrl" alt="Foto encomienda" class="w-full h-64 object-cover border-round" />
         </div>
-        <div v-else class="flex flex-col items-center py-4 text-surface-400">
+        <div v-else class="flex flex-col items-center py-4 text-text-subprincipal">
           <i class="pi pi-camera text-3xl mb-1"></i>
           <span class="text-sm">Sin fotografía</span>
         </div>
         <div class="grid grid-cols-2 gap-2 text-sm">
-          <span class="text-surface-500">Tipo:</span><span class="font-medium">{{ detalle.tipo }}</span>
-          <span class="text-surface-500">Destinatario:</span><span class="font-medium">{{ detalle.nombreDestinatario }}</span>
-          <span class="text-surface-500">Estado:</span><Tag :value="detalle.estado" :severity="detalle.estado === 'PENDIENTE' ? 'warn' : 'success'" size="small" />
-          <span class="text-surface-500">Recibida:</span><span>{{ formatFecha(detalle.creadoEn) }}</span>
-          <span v-if="detalle.nombreRetira" class="text-surface-500">Retirada por:</span>
+          <span class="text-text-muted">Tipo:</span><span class="font-medium">{{ detalle.tipo }}</span>
+          <span class="text-text-muted">Destinatario:</span><span class="font-medium">{{ detalle.nombreDestinatario }}</span>
+          <span class="text-text-muted">Estado:</span><Tag :value="detalle.estado" :severity="detalle.estado === 'PENDIENTE' ? 'warn' : 'success'" size="small" />
+          <span class="text-text-muted">Recibida:</span><span>{{ formatFecha(detalle.creadoEn) }}</span>
+          <span v-if="detalle.nombreRetira" class="text-text-muted">Retirada por:</span>
           <span v-if="detalle.nombreRetira">{{ detalle.nombreRetira }} {{ detalle.rutRetira ? `(${detalle.rutRetira})` : '' }}</span>
         </div>
       </div>

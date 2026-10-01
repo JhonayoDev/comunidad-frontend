@@ -41,7 +41,7 @@ async function handleLogout() {
           />
           <div class="flex min-w-0 flex-col gap-1">
             <p class="m-0 truncate font-bold text-text">{{ auth.userName }}</p>
-            <p class="m-0 truncate text-sm text-surface-500">
+            <p class="m-0 truncate text-sm text-text-muted">
               {{ auth.user?.email }}
             </p>
           </div>
@@ -62,7 +62,7 @@ async function handleLogout() {
             align="left"
             class="my-3"
           >
-            <span class="text-xs font-semibold text-surface-500 uppercase">{{
+            <span class="text-xs font-semibold text-text-muted uppercase">{{
               group.label
             }}</span>
           </Divider>

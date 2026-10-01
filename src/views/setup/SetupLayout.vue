@@ -61,7 +61,7 @@ function onEdicionPlanilla(enEdicion) {
             <h1 class="text-xl font-bold m-0 truncate">
               Configuración de {{ auth.condominioActualNombre }}
             </h1>
-            <span class="text-sm text-surface-400"
+            <span class="text-sm text-text-subprincipal"
               >Completa estos pasos para dejar tu condominio listo</span
             >
           </div>
@@ -74,7 +74,7 @@ function onEdicionPlanilla(enEdicion) {
         </div>
 
         <div class="mt-4 flex flex-col gap-1">
-          <div class="flex justify-between text-xs text-surface-400">
+          <div class="flex justify-between text-xs text-text-subprincipal">
             <span>Progreso</span>
             <span>{{ progreso }}%</span>
           </div>
@@ -119,7 +119,7 @@ function onEdicionPlanilla(enEdicion) {
                 ? 'pi-check-circle text-primary'
                 : pasoActivo(p)
                   ? p.icon
-                  : `${p.icon} text-surface-400`,
+                  : `${p.icon} text-text-subprincipal`,
             ]"
           ></i>
           <span class="sm:hidden text-[10px] leading-tight truncate max-w-full">{{ p.corto }}</span>

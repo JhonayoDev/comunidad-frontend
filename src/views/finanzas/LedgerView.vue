@@ -91,7 +91,7 @@ onMounted(cargar);
       <template #content>
         <div class="flex flex-wrap gap-2 items-end">
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Cuenta</label>
+            <label class="text-xs text-text-muted">Cuenta</label>
             <Select
               v-model="filtroCuenta"
               :options="cuentas"
@@ -104,11 +104,11 @@ onMounted(cargar);
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Desde</label>
+            <label class="text-xs text-text-muted">Desde</label>
             <DatePicker v-model="filtroDesde" size="small" class="w-36" />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Hasta</label>
+            <label class="text-xs text-text-muted">Hasta</label>
             <DatePicker v-model="filtroHasta" size="small" class="w-36" />
           </div>
           <Button label="Buscar" icon="pi pi-search" size="small" severity="secondary" @click="buscar" />
@@ -120,7 +120,7 @@ onMounted(cargar);
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!movimientos.length" class="text-center text-surface-400 py-8">
+      <div v-if="!movimientos.length" class="text-center text-text-subprincipal py-8">
         No hay movimientos registrados
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -135,11 +135,11 @@ onMounted(cargar);
                 <Tag :value="m.tipo" :severity="tipoSeverity(m.tipo)" size="small" />
                 <span class="font-medium">{{ m.descripcion }}</span>
               </div>
-              <div class="text-sm text-surface-500">
+              <div class="text-sm text-text-muted">
                 {{ m.fechaTransaccion }} — {{ m.cuentaNombre }}
                 <span v-if="m.referenciaTipo" class="ml-2">Ref: {{ m.referenciaTipo }}</span>
               </div>
-              <div class="text-xs text-surface-400">
+              <div class="text-xs text-text-subprincipal">
                 {{ m.registradoPorNombre }}
               </div>
             </div>

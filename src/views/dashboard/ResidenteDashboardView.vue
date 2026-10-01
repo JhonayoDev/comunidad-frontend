@@ -128,7 +128,7 @@ onMounted(async () => {
                 <h2 class="text-xl font-bold m-0">
                   {{ tipoUnidad(unidad.tipo) }} {{ unidad.numero }}
                 </h2>
-                <p class="text-sm text-surface-500 m-0 mt-1">{{ dashboard.email }}</p>
+                <p class="text-sm text-text-muted m-0 mt-1">{{ dashboard.email }}</p>
               </div>
               <Tag
                 v-if="unidad.gastoActual"
@@ -151,7 +151,7 @@ onMounted(async () => {
           <template #content>
             <div
               v-if="!unidad.personas?.length"
-              class="text-sm text-surface-400 py-2"
+              class="text-sm text-text-subprincipal py-2"
             >
               Sin convivientes registrados
             </div>
@@ -193,7 +193,7 @@ onMounted(async () => {
           <template #content>
             <div
               v-if="!unidad.vehiculos?.length"
-              class="text-sm text-surface-400 py-2"
+              class="text-sm text-text-subprincipal py-2"
             >
               Sin vehículos registrados
             </div>
@@ -206,7 +206,7 @@ onMounted(async () => {
                 <div class="flex items-center gap-3">
                   <i
                     class="pi pi-car text-lg"
-                    :class="v.activo ? 'text-primary' : 'text-surface-300'"
+                    :class="v.activo ? 'text-primary' : 'text-text-subtle'"
                   ></i>
                   <span class="text-sm font-mono font-medium">{{ v.patente }}</span>
                 </div>
@@ -231,28 +231,28 @@ onMounted(async () => {
           <template #content>
             <div
               v-if="!unidad.gastoActual"
-              class="text-sm text-surface-400 py-2 italic"
+              class="text-sm text-text-subprincipal py-2 italic"
             >
               Sin gasto común activo para este período
             </div>
             <div v-else class="flex flex-col gap-3">
               <div class="flex items-center justify-between">
-                <span class="text-sm text-surface-500">Período</span>
+                <span class="text-sm text-text-muted">Período</span>
                 <span class="text-sm font-medium">{{ unidad.gastoActual.periodo }}</span>
               </div>
               <Divider class="my-1" />
               <div class="flex items-center justify-between">
-                <span class="text-sm text-surface-500">Vencimiento</span>
+                <span class="text-sm text-text-muted">Vencimiento</span>
                 <span class="text-sm font-medium">{{ unidad.gastoActual.fechaVencimiento }}</span>
               </div>
               <Divider class="my-1" />
               <div class="flex items-center justify-between">
-                <span class="text-sm text-surface-500">Monto</span>
+                <span class="text-sm text-text-muted">Monto</span>
                 <span class="text-lg font-bold">{{ formatMonto(unidad.gastoActual.monto) }}</span>
               </div>
               <Divider class="my-1" />
               <div class="flex items-center justify-between">
-                <span class="text-sm text-surface-500">Estado</span>
+                <span class="text-sm text-text-muted">Estado</span>
                 <Tag
                   :value="labelDeuda(unidad.gastoActual.estadoPago)"
                   :severity="severityDeuda(unidad.gastoActual.estadoPago)"
@@ -263,7 +263,7 @@ onMounted(async () => {
                 v-if="unidad.gastoActual.fechaPago"
                 class="flex items-center justify-between"
               >
-                <span class="text-sm text-surface-500">Pagado el</span>
+                <span class="text-sm text-text-muted">Pagado el</span>
                 <span class="text-sm font-medium">{{ unidad.gastoActual.fechaPago }}</span>
               </div>
             </div>

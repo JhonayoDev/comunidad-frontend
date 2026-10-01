@@ -46,49 +46,49 @@ onMounted(cargar);
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card>
           <template #content class="p-3">
-            <div class="text-xs text-surface-500 uppercase tracking-wide">Total</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">Total</div>
             <div class="text-2xl font-bold">{{ metrics.totalCondominios }}</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
-            <div class="text-xs text-surface-500 uppercase tracking-wide">Activos</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">Activos</div>
             <div class="text-2xl font-bold text-green-600">{{ metrics.activos }}</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
-            <div class="text-xs text-surface-500 uppercase tracking-wide">Suspendidos</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">Suspendidos</div>
             <div class="text-2xl font-bold text-red-600">{{ metrics.suspendidos }}</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
-            <div class="text-xs text-surface-500 uppercase tracking-wide">Morosos</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">Morosos</div>
             <div class="text-2xl font-bold text-orange-600">{{ metrics.morosos }}</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
-            <div class="text-xs text-surface-500 uppercase tracking-wide">MRR Aproximado</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">MRR Aproximado</div>
             <div class="text-lg font-bold text-primary">{{ formatoCLP(metrics.mrrAproximado) }}</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
-            <div class="text-xs text-surface-500 uppercase tracking-wide">Usuarios activos</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">Usuarios activos</div>
             <div class="text-2xl font-bold">{{ metrics.totalUsuariosActivos }}</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
-            <div class="text-xs text-surface-500 uppercase tracking-wide">Storage usado</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">Storage usado</div>
             <div class="text-lg font-bold">{{ (metrics.storageTotalUsadoMb / 1024).toFixed(1) }} GB</div>
           </template>
         </Card>
         <Card>
           <template #content class="p-3">
-            <div class="text-xs text-surface-500 uppercase tracking-wide">Nuevos este mes</div>
+            <div class="text-xs text-text-muted uppercase tracking-wide">Nuevos este mes</div>
             <div class="text-2xl font-bold text-primary">{{ metrics.condominiosNuevosEsteMes }}</div>
           </template>
         </Card>

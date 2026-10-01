@@ -781,7 +781,7 @@ function alternarDetalle(numeroFila) {
                     <span v-if="vehiculosResumen(f)">{{
                       vehiculosResumen(f)
                     }}</span>
-                    <span v-else class="text-surface-400">—</span>
+                    <span v-else class="text-text-subprincipal">—</span>
                     <ul
                       v-if="estadoPorFila.get(num)?.errores?.length"
                       class="m-0 mt-1 pl-3 text-xs text-danger text-left"
@@ -828,7 +828,7 @@ function alternarDetalle(numeroFila) {
                       "
                       @click="alternarDetalle(num)"
                     />
-                    <span v-else class="text-xs text-surface-400">—</span>
+                    <span v-else class="text-xs text-text-subprincipal">—</span>
                   </td>
                 </tr>
                 <tr
@@ -959,7 +959,7 @@ function alternarDetalle(numeroFila) {
                       "
                       @click="alternarDetalle(f.numeroFila)"
                     />
-                    <span v-else class="text-xs text-surface-400">—</span>
+                    <span v-else class="text-xs text-text-subprincipal">—</span>
                   </td>
                 </tr>
                 <tr

@@ -94,11 +94,11 @@ function handleMarcarLeida(n) {
     <Card v-if="moduloNoContratado">
       <template #content>
         <div class="flex flex-col items-center py-6 gap-2 text-center">
-          <i class="pi pi-bell-slash text-5xl text-surface-300"></i>
-          <p class="font-semibold text-surface-600 m-0">
+          <i class="pi pi-bell-slash text-5xl text-text-subtle"></i>
+          <p class="font-semibold text-text-muted m-0">
             Módulo de comunicaciones no contratado
           </p>
-          <p class="text-sm text-surface-400 m-0 max-w-md">
+          <p class="text-sm text-text-subprincipal m-0 max-w-md">
             Tu condominio no tiene suscrito el módulo de comunicaciones. Si
             crees que esto es un error, contáctate con la administración.
           </p>
@@ -124,8 +124,8 @@ function handleMarcarLeida(n) {
       <Card>
         <template #content>
           <div class="flex flex-col items-center py-6 gap-2">
-            <i class="pi pi-bell text-5xl text-surface-300"></i>
-            <p class="text-surface-400">No tienes notificaciones</p>
+            <i class="pi pi-bell text-5xl text-text-subtle"></i>
+            <p class="text-text-subprincipal">No tienes notificaciones</p>
           </div>
         </template>
       </Card>
@@ -150,14 +150,14 @@ function handleMarcarLeida(n) {
                 <span class="font-semibold text-sm truncate">{{ notif.titulo }}</span>
                 <Badge v-if="!notif.leido" value="Nueva" severity="info" class="shrink-0" />
               </div>
-              <p class="text-xs text-surface-400 mt-1">
+              <p class="text-xs text-text-subprincipal mt-1">
                 {{ formatFecha(notif.fechaCreacion) }}
               </p>
               <div v-if="expandedId === notif.id" class="mt-2 pt-2 border-t border-surface-200">
-                <p class="text-sm text-surface-600">{{ notif.mensaje }}</p>
+                <p class="text-sm text-text-muted">{{ notif.mensaje }}</p>
               </div>
               <div v-else class="mt-1">
-                <p class="text-sm text-surface-500 truncate">{{ notif.mensaje }}</p>
+                <p class="text-sm text-text-muted truncate">{{ notif.mensaje }}</p>
               </div>
             </div>
           </div>

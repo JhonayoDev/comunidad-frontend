@@ -77,7 +77,7 @@ async function handleRevocar(uid) {
 
     <Skeleton v-if="loading" width="100%" height="300px" />
 
-    <div v-else-if="!personal?.length" class="text-center text-surface-400 py-8">
+    <div v-else-if="!personal?.length" class="text-center text-text-subprincipal py-8">
       <i class="pi pi-users text-4xl block mb-2"></i>
       <span>No hay personal registrado</span>
     </div>
@@ -88,7 +88,7 @@ async function handleRevocar(uid) {
           <div class="flex items-start justify-between gap-2">
             <div class="flex-1 min-w-0">
               <p class="font-semibold m-0">{{ p.nombre }}</p>
-              <p class="text-sm text-surface-400 m-0">{{ p.email }}</p>
+              <p class="text-sm text-text-subprincipal m-0">{{ p.email }}</p>
               <div class="flex items-center gap-2 mt-1">
                 <Tag :value="p.rolEnCondominio" severity="info" size="small" />
                 <Tag v-if="!p.activo" value="Inactivo" severity="danger" size="small" />

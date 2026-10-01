@@ -148,7 +148,7 @@ onMounted(() => {
       <template #content>
         <div class="flex flex-wrap gap-2 items-end">
           <div class="flex flex-col gap-1 min-w-40 flex-1">
-            <label class="text-xs text-surface-500">Buscar</label>
+            <label class="text-xs text-text-muted">Buscar</label>
             <IconField>
               <InputIcon class="pi pi-search" />
               <InputText
@@ -161,7 +161,7 @@ onMounted(() => {
             </IconField>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Estado pago</label>
+            <label class="text-xs text-text-muted">Estado pago</label>
             <Select
               v-model="filtros.statusPago"
               :options="statusOptions"
@@ -174,7 +174,7 @@ onMounted(() => {
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Onboarding</label>
+            <label class="text-xs text-text-muted">Onboarding</label>
             <Select
               v-model="filtros.onboardingStatus"
               :options="onboardingOptions"
@@ -187,7 +187,7 @@ onMounted(() => {
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs text-surface-500">Plan</label>
+            <label class="text-xs text-text-muted">Plan</label>
             <Select
               v-model="filtros.planId"
               :options="planes"
@@ -209,7 +209,7 @@ onMounted(() => {
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <div v-if="!condominios.length" class="text-center text-surface-400 py-8">
+      <div v-if="!condominios.length" class="text-center text-text-subprincipal py-8">
         No hay condominios con esos filtros
       </div>
       <div v-else class="flex flex-col gap-2">
@@ -227,10 +227,10 @@ onMounted(() => {
                   <Tag :value="c.statusPago" :severity="statusSeverity[c.statusPago] || 'info'" size="small" />
                   <Tag :value="c.onboardingStatus" :severity="onboardingSeverity[c.onboardingStatus] || 'info'" size="small" />
                 </div>
-                <div class="text-xs text-surface-500 mt-1">
+                <div class="text-xs text-text-muted mt-1">
                   {{ c.planNombre }} — {{ c.responsableNombre }}
                 </div>
-                <div class="text-xs text-surface-400">
+                <div class="text-xs text-text-subprincipal">
                   {{ c.totalUnidades }} unid. · {{ c.totalUsuariosActivos }} usu. · {{ (c.storageUsadoMb / 1024).toFixed(1) }}/{{ (c.storageLimitMb / 1024).toFixed(1) }} GB · vence {{ formatFecha(c.fechaVencimiento) }}
                 </div>
               </div>
