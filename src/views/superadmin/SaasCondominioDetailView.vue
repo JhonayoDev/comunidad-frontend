@@ -441,7 +441,7 @@ onMounted(cargar);
             <div
               v-for="c in capacidadResumen"
               :key="c.tipo"
-              class="flex flex-col gap-1 p-2 border-round bg-surface-50"
+              class="flex flex-col gap-1 p-2 border-round bg-subtle-light"
             >
               <span class="text-sm font-medium">{{ c.label }}</span>
               <span
@@ -464,7 +464,7 @@ onMounted(cargar);
           </div>
           <div
             v-if="envelope"
-            class="mt-3 p-2 border-round bg-surface-50"
+            class="mt-3 p-2 border-round bg-subtle-light"
           >
             <div class="flex items-center justify-between text-sm">
               <span class="font-medium">Envelope del plan</span>
@@ -477,7 +477,7 @@ onMounted(cargar);
                 {{ envelope.planUnidadLimit }}
               </span>
             </div>
-            <div class="mt-2 h-2 w-full bg-surface-200 rounded-full overflow-hidden">
+            <div class="mt-2 h-2 w-full bg-track rounded-full overflow-hidden">
               <div
                 class="h-full rounded-full transition-all"
                 :class="envelopePct >= 100 ? 'bg-red-500' : 'bg-primary'"

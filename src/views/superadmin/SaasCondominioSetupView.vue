@@ -697,7 +697,7 @@ onUnmounted(() => {
               <div
                 v-for="c in capacidadResumen"
                 :key="c.tipo"
-                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 border-round bg-surface-50"
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 border-round bg-subtle-light"
               >
                 <div class="flex flex-col">
                   <span class="text-sm font-medium">{{ c.label }}</span>

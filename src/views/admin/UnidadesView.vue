@@ -315,7 +315,7 @@ onMounted(cargar);
               <div
                 v-for="v in vinculos[u.id]"
                 :key="v.id"
-                class="flex items-center justify-between p-2 border-round bg-surface-100"
+                class="flex items-center justify-between p-2 border-round bg-subtle"
               >
                 <div class="flex items-center gap-2 min-w-0">
                   <i class="pi pi-user text-primary"></i>

@@ -538,7 +538,7 @@ onMounted(() => u.cargar());
           <!-- Asignación por rango (1-33 → Sector 1) -->
           <div
             v-if="u.sectoresOpciones.length && u.estado.unidades.length"
-            class="flex flex-col gap-2 p-2 border border-border border-round bg-surface-50"
+            class="flex flex-col gap-2 p-2 border border-border border-round bg-subtle-light"
           >
             <span class="text-xs font-medium text-text/90"
               >Asignar por rango</span

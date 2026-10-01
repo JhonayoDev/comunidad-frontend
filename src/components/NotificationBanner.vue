@@ -4,7 +4,7 @@
       v-if="visible"
       class="notification-banner fixed bottom-0 left-0 right-0 z-50 mx-auto mb-4 w-[calc(100%-2rem)] max-w-md shadow-xl border border-surface-300 sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2"
       :pt="{
-        root: { class: 'bg-surface-800 text-banner-text border-none' },
+        root: { class: 'bg-banner text-banner-text border-none' },
         body: { class: 'p-3 flex items-center gap-3' },
         content: {
           class: 'p-0 flex flex-col gap-2 sm:flex-row sm:items-center flex-1',

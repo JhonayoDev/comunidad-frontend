@@ -101,13 +101,13 @@ function timeAgo(fecha) {
 
         <div v-if="syncLoading" class="flex flex-col gap-2 py-3">
           <div v-for="i in 3" :key="i" class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-surface-200 border-round animate-pulse" />
+            <div class="w-8 h-8 bg-track border-round animate-pulse" />
             <div class="flex-1 space-y-1">
               <div
-                class="h-3 bg-surface-200 border-round w-3/4 animate-pulse"
+                class="h-3 bg-track border-round w-3/4 animate-pulse"
               />
               <div
-                class="h-2 bg-surface-100 border-round w-1/2 animate-pulse"
+                class="h-2 bg-subtle border-round w-1/2 animate-pulse"
               />
             </div>
           </div>
@@ -124,7 +124,7 @@ function timeAgo(fecha) {
           <div
             v-for="n in syncNotificaciones.slice(0, 5)"
             :key="n.id"
-            class="flex items-start gap-2 px-1 py-2 border-b border-surface-100 last:border-b-0 cursor-pointer hover:bg-surface-50 transition-colors duration-150 rounded"
+            class="flex items-start gap-2 px-1 py-2 border-b border-surface-100 last:border-b-0 cursor-pointer hover:bg-subtle-light transition-colors duration-150 rounded"
           >
             <i
               :class="iconoPorTipo(n.tipo)"

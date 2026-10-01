@@ -290,7 +290,7 @@ onMounted(cargar);
                 }}%</span
               >
             </div>
-            <div class="w-full bg-surface-200 h-2 border-round overflow-hidden">
+            <div class="w-full bg-track h-2 border-round overflow-hidden">
               <div
                 class="bg-primary h-full border-round transition-all"
                 :style="{

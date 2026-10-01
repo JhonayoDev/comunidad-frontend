@@ -203,7 +203,7 @@ onMounted(cargar);
                     {{ (c.storageLimitMb / 1024).toFixed(1) }} GB
                   </div>
                   <div
-                    class="h-1.5 w-full bg-surface-200 rounded-full overflow-hidden mt-1"
+                    class="h-1.5 w-full bg-track rounded-full overflow-hidden mt-1"
                   >
                     <div
                       class="h-full rounded-full"
@@ -294,7 +294,7 @@ onMounted(cargar);
                   {{ (c.storageLimitMb / 1024).toFixed(1) }} GB
                 </div>
                 <div
-                  class="h-1.5 w-full bg-surface-200 rounded-full overflow-hidden"
+                  class="h-1.5 w-full bg-track rounded-full overflow-hidden"
                 >
                   <div
                     class="h-full rounded-full"
