@@ -137,7 +137,7 @@ onMounted(async () => {
             <div
               class="flex items-center gap-3 py-2 cursor-pointer select-none hover:bg-emphasis px-2 -mx-2 border-round"
               :class="{
-                'border-b border-surface-200': unidadExpandida === unidad.id,
+                'border-b border-border-soft': unidadExpandida === unidad.id,
               }"
               @click="toggleUnidad(unidad.id)"
             >

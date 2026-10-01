@@ -115,7 +115,7 @@ onMounted(async () => {
                 v-for="(cargo, i) in unidad.cargosAdicionales"
                 :key="cargo.cargoId"
                 class="flex items-center justify-between py-1"
-                :class="{ 'border-t border-surface-100': i > 0 }"
+                :class="{ 'border-t border-border-subtle': i > 0 }"
               >
                 <div class="flex flex-col">
                   <span class="text-sm">{{ cargo.descripcion }}</span>

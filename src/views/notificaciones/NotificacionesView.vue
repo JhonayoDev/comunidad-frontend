@@ -153,7 +153,7 @@ function handleMarcarLeida(n) {
               <p class="text-xs text-text-subprincipal mt-1">
                 {{ formatFecha(notif.fechaCreacion) }}
               </p>
-              <div v-if="expandedId === notif.id" class="mt-2 pt-2 border-t border-surface-200">
+              <div v-if="expandedId === notif.id" class="mt-2 pt-2 border-t border-border-soft">
                 <p class="text-sm text-text-muted">{{ notif.mensaje }}</p>
               </div>
               <div v-else class="mt-1">

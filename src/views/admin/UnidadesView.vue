@@ -306,7 +306,7 @@ onMounted(cargar);
               <Button v-if="u.activo !== false" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="confirmarDesactivar(u)" />
             </div>
           </div>
-          <div v-if="unidadExpandida === u.id" class="mt-2 pt-2 border-t border-surface-200">
+          <div v-if="unidadExpandida === u.id" class="mt-2 pt-2 border-t border-border-soft">
             <Skeleton v-if="cargandoVinculos[u.id]" width="100%" height="3rem" />
             <div v-else-if="!(vinculos[u.id] || []).length" class="text-sm text-text-subprincipal py-1">
               Sin personas vinculadas a esta unidad.

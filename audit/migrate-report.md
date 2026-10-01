@@ -1,20 +1,20 @@
 # Reporte de migración de tokens
 
 Modo: **ESCRITURA**
-Grupo: **bg**
-Fecha: 2026-10-01T06:51:57.441Z
+Grupo: **border**
+Fecha: 2026-10-01T06:51:57.549Z
 
 ## Resumen
 
 | Total cambios | Archivos afectados |
 |---|---|
-| 15 | 9 |
+| 9 | 7 |
 
 ### Por grupo
 
 | Grupo | Cambios |
 |---|---|
-| bg | 15 |
+| border | 9 |
 
 ## Detalle por archivo
 
@@ -22,59 +22,43 @@ Fecha: 2026-10-01T06:51:57.441Z
 
 | Línea | Grupo | De | A |
 |---|---|---|---|
-| 7 | bg | `bg-surface-800` | `bg-banner` |
+| 5 | border | `border-surface-300` | `border-banner-border` |
 
-### src/components/layout/NotificacionPopover.vue (4 cambios)
+### src/components/layout/NotificacionPopover.vue (1 cambios)
 
 | Línea | Grupo | De | A |
 |---|---|---|---|
-| 127 | bg | `bg-surface-50` | `bg-subtle-light` |
-| 110 | bg | `bg-surface-100` | `bg-subtle` |
-| 104 | bg | `bg-surface-200` | `bg-track` |
-| 107 | bg | `bg-surface-200` | `bg-track` |
+| 127 | border | `border-surface-100` | `border-border-subtle` |
 
 ### src/views/admin/UnidadesView.vue (1 cambios)
 
 | Línea | Grupo | De | A |
 |---|---|---|---|
-| 318 | bg | `bg-surface-100` | `bg-subtle` |
+| 309 | border | `border-surface-200` | `border-border-soft` |
 
-### src/views/dashboard/AdminDashboardView.vue (1 cambios)
-
-| Línea | Grupo | De | A |
-|---|---|---|---|
-| 293 | bg | `bg-surface-200` | `bg-track` |
-
-### src/views/setup/SetupLayout.vue (1 cambios)
+### src/views/notificaciones/NotificacionesView.vue (1 cambios)
 
 | Línea | Grupo | De | A |
 |---|---|---|---|
-| 81 | bg | `bg-surface-200` | `bg-track` |
+| 156 | border | `border-surface-200` | `border-border-soft` |
 
-### src/views/setup/SetupUnidadesView.vue (1 cambios)
-
-| Línea | Grupo | De | A |
-|---|---|---|---|
-| 541 | bg | `bg-surface-50` | `bg-subtle-light` |
-
-### src/views/superadmin/SaasAlmacenamientoView.vue (2 cambios)
+### src/views/residente/GestionesView.vue (3 cambios)
 
 | Línea | Grupo | De | A |
 |---|---|---|---|
-| 206 | bg | `bg-surface-200` | `bg-track` |
-| 297 | bg | `bg-surface-200` | `bg-track` |
+| 122 | border | `border-surface-200` | `border-border-soft` |
+| 149 | border | `border-surface-200` | `border-border-soft` |
+| 176 | border | `border-surface-200` | `border-border-soft` |
 
-### src/views/superadmin/SaasCondominioDetailView.vue (3 cambios)
-
-| Línea | Grupo | De | A |
-|---|---|---|---|
-| 444 | bg | `bg-surface-50` | `bg-subtle-light` |
-| 467 | bg | `bg-surface-50` | `bg-subtle-light` |
-| 480 | bg | `bg-surface-200` | `bg-track` |
-
-### src/views/superadmin/SaasCondominioSetupView.vue (1 cambios)
+### src/views/residente/InicioView.vue (1 cambios)
 
 | Línea | Grupo | De | A |
 |---|---|---|---|
-| 700 | bg | `bg-surface-50` | `bg-subtle-light` |
+| 140 | border | `border-surface-200` | `border-border-soft` |
+
+### src/views/residente/MisDeudasView.vue (1 cambios)
+
+| Línea | Grupo | De | A |
+|---|---|---|---|
+| 118 | border | `border-surface-100` | `border-border-subtle` |
 

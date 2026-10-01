@@ -119,7 +119,7 @@ onMounted(cargarCasos);
           </div>
           <span class="text-text-subprincipal">{{ seccionActiva === "visita" ? "∨" : "›" }}</span>
         </div>
-        <div v-if="seccionActiva === 'visita'" class="px-4 pb-4 border-t border-surface-200">
+        <div v-if="seccionActiva === 'visita'" class="px-4 pb-4 border-t border-border-soft">
           <div class="flex flex-col items-center py-6 gap-2">
             <span class="text-4xl">🚧</span>
             <p class="font-semibold">Próximamente</p>
@@ -146,7 +146,7 @@ onMounted(cargarCasos);
           </div>
           <span class="text-text-subprincipal">{{ seccionActiva === "reserva" ? "∨" : "›" }}</span>
         </div>
-        <div v-if="seccionActiva === 'reserva'" class="px-4 pb-4 border-t border-surface-200">
+        <div v-if="seccionActiva === 'reserva'" class="px-4 pb-4 border-t border-border-soft">
           <div class="flex flex-col items-center py-6 gap-2">
             <span class="text-4xl">🚧</span>
             <p class="font-semibold">Próximamente</p>
@@ -173,7 +173,7 @@ onMounted(cargarCasos);
           </div>
           <span class="text-text-subprincipal">{{ seccionActiva === "reclamo" ? "∨" : "›" }}</span>
         </div>
-        <div v-if="seccionActiva === 'reclamo'" class="px-4 pb-4 border-t border-surface-200">
+        <div v-if="seccionActiva === 'reclamo'" class="px-4 pb-4 border-t border-border-soft">
           <div class="flex flex-col gap-3 pt-3">
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold">Título *</label>

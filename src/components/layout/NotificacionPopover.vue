@@ -124,7 +124,7 @@ function timeAgo(fecha) {
           <div
             v-for="n in syncNotificaciones.slice(0, 5)"
             :key="n.id"
-            class="flex items-start gap-2 px-1 py-2 border-b border-surface-100 last:border-b-0 cursor-pointer hover:bg-subtle-light transition-colors duration-150 rounded"
+            class="flex items-start gap-2 px-1 py-2 border-b border-border-subtle last:border-b-0 cursor-pointer hover:bg-subtle-light transition-colors duration-150 rounded"
           >
             <i
               :class="iconoPorTipo(n.tipo)"
