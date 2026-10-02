@@ -701,5 +701,36 @@ export default definePreset(Aura, {
         },
       },
     },
+
+    tabs: {
+      tab: {
+        activeColor: "{primary.color}",
+      },
+      activeBar: {
+        background: "{primary.color}",
+      },
+      colorScheme: {
+        light: {
+          tab: { activeColor: "{primary.color}" },
+          activeBar: { background: "{primary.color}" },
+        },
+        dark: {
+          tab: { activeColor: "{primary.400}" },
+          activeBar: { background: "{primary.400}" },
+        },
+      },
+    },
+
+    datatable: {
+      colorScheme: {
+        light: {
+          row: { stripedBackground: "{primary.subtleLight}" },
+        },
+        dark: {
+          root: { borderColor: "{content.borderColor}" },
+          row: { stripedBackground: "{primary.subtleLight}" },
+        },
+      },
+    },
   },
 });

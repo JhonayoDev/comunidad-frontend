@@ -479,6 +479,18 @@ const routes = [
     ],
   },
 
+  // ── UI Lab (SOLO desarrollo: no entra al build de producción) ──
+  ...(import.meta.env.DEV
+    ? [
+        {
+          path: "/dev/ui-lab",
+          name: "UiLab",
+          meta: { public: true },
+          component: () => import("../dev/ui-lab/UiLabView.vue"),
+        },
+      ]
+    : []),
+
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];
 
