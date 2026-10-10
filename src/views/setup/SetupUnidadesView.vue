@@ -610,11 +610,8 @@ onMounted(() => u.cargar());
               :disabled="bulkSector === null"
               @click="aplicarBulk"
             />
-            <Button
+            <Button severity="secondary"
               label="Limpiar"
-              size="small"
-              variant="text"
-              severity="secondary"
               @click="toggleTodos(false)"
             />
           </div>

@@ -234,7 +234,7 @@ function handleRegister() {
           </div>
           <div v-else class="relative">
             <img :src="previewUrl" alt="Preview" class="w-full h-40 object-cover rounded-lg border border-border/60" />
-            <Button icon="pi pi-times" severity="danger" text rounded size="small" class="absolute top-1 right-1" @click="quitarFoto" />
+            <Button variant="text" icon="pi pi-times" severity="danger" rounded size="small" class="absolute top-1 right-1" @click="quitarFoto" />
           </div>
           <input ref="fileInput" type="file" accept="image/*" capture="environment" class="hidden" @change="onFileChange" />
         </div>
@@ -243,11 +243,9 @@ function handleRegister() {
 
     <template #footer>
       <div class="flex gap-2 w-full">
-        <Button
-          class="flex-1 rounded-lg border border-border/80 shadow-lg"
+        <Button severity="secondary"
+          class="flex-1 rounded-lg"
           label="Cancelar"
-          severity="secondary"
-          text
           :disabled="loading"
           @click="$emit('update:visible', false)"
         />

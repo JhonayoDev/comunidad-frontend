@@ -190,34 +190,25 @@ onMounted(() => u.cargar());
             severity="secondary"
             size="small"
           />
-          <Button
+          <Button severity="secondary" variant="outlined" size="small"
             v-if="!editando"
             label="Editar"
             icon="pi pi-pencil"
-            variant="text"
-            size="small"
             @click="entrarEdicion"
           />
           <template v-else>
             <Button
               label="Listo"
               icon="pi pi-check"
-              variant="text"
-              size="small"
               @click="salirEdicion"
             />
-            <Button
+            <Button severity="secondary"
               label="Cancelar"
-              variant="text"
-              severity="secondary"
-              size="small"
               @click="cancelarEdicion"
             />
-            <Button
+            <Button severity="secondary"
               label="Agregar espacio"
               icon="pi pi-plus"
-              variant="text"
-              size="small"
               @click="u.agregarFila"
             />
           </template>
@@ -711,12 +702,9 @@ onMounted(() => u.cargar());
             :title="u.motivoBloqueo || (!u.hayCambios ? 'Sin cambios pendientes' : '')"
             @click="guardar"
           />
-          <Button
+          <Button severity="secondary"
             v-if="!u.estado.items.length && !u.hayCambios && !yaCerrado"
             label="Cerrar paso sin configurar áreas comunes"
-            variant="text"
-            severity="secondary"
-            size="small"
             @click="confirmarCerrarSinConfigurar"
           />
           <span

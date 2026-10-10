@@ -202,7 +202,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showDialog = false" />
+        <Button severity="secondary" label="Cancelar" @click="showDialog = false" />
         <Button label="Guardar" :loading="enviando" @click="guardar" />
       </template>
     </Dialog>

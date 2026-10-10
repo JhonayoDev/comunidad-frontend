@@ -5,6 +5,9 @@ import Select from "primevue/select";
 import { useUiLabTheme } from "./useUiLabTheme";
 import UiLabPaletas from "./UiLabPaletas.vue";
 import UiLabComponentes from "./UiLabComponentes.vue";
+import UiLabEstandar from "./UiLabEstandar.vue";
+import UiLabDisponibles from "./UiLabDisponibles.vue";
+import UiLabFooter from "./UiLabFooter.vue";
 
 const { esOscuro, initTema, toggleTema } = useUiLabTheme();
 
@@ -62,6 +65,14 @@ onMounted(() => {
 
       <h2 class="text-lg font-bold mt-6 mb-3">Componentes de prueba</h2>
       <UiLabComponentes />
+
+      <h2 id="estandar" class="text-lg font-bold mt-6 mb-3 scroll-mt-24">Estándar propuesto (en el proyecto)</h2>
+      <UiLabEstandar />
+
+      <h2 class="text-lg font-bold mt-6 mb-3">Disponible (aún no aplicado)</h2>
+      <UiLabDisponibles />
+
+      <UiLabFooter />
     </div>
   </div>
 </template>

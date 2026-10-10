@@ -29,20 +29,18 @@
     </div>
 
     <div class="flex align-items-center gap-1 ml-auto">
-      <Button
+      <Button variant="text"
         class="btn-no-bg header-btn"
         :icon="esOscuro ? 'pi pi-sun' : 'pi pi-moon'"
         severity="secondary"
-        text
         rounded
         @click="toggleTema"
       />
       <NotificacionPopover />
-      <Button
+      <Button variant="text"
         class="btn-no-bg header-btn"
         icon="pi pi-bars"
         severity="secondary"
-        text
         rounded
         @click="drawerVisible = true"
       />

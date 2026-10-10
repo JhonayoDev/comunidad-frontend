@@ -345,12 +345,9 @@ onMounted(async () => {
               size="small"
               @click.stop="abrirEntrega(e)"
             />
-            <Button
+            <Button severity="secondary"
               label="Ver detalle completo"
               icon="pi pi-search"
-              severity="secondary"
-              size="small"
-              variant="outlined"
               @click.stop="abrirDetalle(e)"
             />
           </div>

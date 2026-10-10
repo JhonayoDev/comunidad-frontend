@@ -12,11 +12,10 @@
 
     <div class="flex align-items-center gap-1 ml-auto">
       <!-- Agregamos la clase reutilizable btn-no-bg -->
-      <Button
+      <Button variant="text"
         class="btn-no-bg"
         :icon="esOscuro ? 'pi pi-sun' : 'pi pi-moon'"
         severity="secondary"
-        text
         rounded
         @click="toggleTema"
       />

@@ -15,11 +15,10 @@ const model = defineModel({ type: Array, default: null });
       placeholder="Filtrar por fechas"
       class="w-full"
     />
-    <Button
+    <Button variant="text"
       v-if="model"
       icon="pi pi-times"
       severity="secondary"
-      text
       rounded
       @click="model = null"
     />

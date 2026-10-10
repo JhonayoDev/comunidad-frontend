@@ -349,7 +349,7 @@ onMounted(() => {
 
           <div class="flex gap-2 flex-wrap">
             <Button label="Guardar configuración" icon="pi pi-save" :loading="guardando" @click="guardar" />
-            <Button label="Probar conexión" icon="pi pi-bolt" severity="secondary" variant="outlined" :loading="probando" @click="probarConexion" />
+            <Button severity="secondary" label="Probar conexión" icon="pi pi-bolt" :loading="probando" @click="probarConexion" />
             <Button v-if="tieneConfig" label="Eliminar" icon="pi pi-trash" severity="danger" variant="outlined" :loading="eliminando" @click="confirmarEliminar" />
           </div>
         </div>
@@ -414,7 +414,7 @@ onMounted(() => {
         <Message v-if="errorRouting" severity="error" :closable="false">{{ errorRouting }}</Message>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showRoutingDialog = false" />
+        <Button severity="secondary" label="Cancelar" @click="showRoutingDialog = false" />
         <Button label="Guardar routing" :loading="guardandoRouting" @click="guardarRouting" />
       </template>
     </Dialog>

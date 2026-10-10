@@ -135,7 +135,6 @@ onMounted(() => {
         <Button
           label="Registrar novedad"
           icon="pi pi-flag"
-          severity="primary"
           @click="showDialog = true"
         />
       </div>

@@ -245,7 +245,7 @@ onMounted(cargar);
                 <span class="text-sm">{{ tipoLabel(r.tipoNotificacion) }}</span>
                 <div class="flex items-center gap-1">
                   <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
-                  <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                  <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
                 </div>
               </div>
             </template>
@@ -254,21 +254,21 @@ onMounted(cargar);
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1">
                     <span class="text-text-muted">Audiencia</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
                   </div>
                   <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1">
                     <span class="text-text-muted">Prioridad</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
                   </div>
                   <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
                 </div>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1">
                     <span class="text-text-muted">Canales</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
                   </div>
                   <div class="flex flex-wrap gap-1 justify-end">
                     <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
@@ -278,12 +278,12 @@ onMounted(cargar);
                   <Tag v-if="r.esObligatoriaInapp" value="App obligatoria" severity="danger" size="small" />
                   <Tag v-if="r.esObligatoriaEmail" value="Email obligatorio" severity="danger" size="small" />
                   <Tag v-if="r.esObligatoriaPush" value="Push obligatorio" severity="danger" size="small" />
-                  <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+                  <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
                 </div>
               </div>
             </template>
             <template #footer>
-              <Button label="Editar" size="small" severity="secondary" variant="outlined" class="w-full" @click="abrirEditar(r)" />
+              <Button label="Editar" class="w-full" @click="abrirEditar(r)" />
             </template>
           </Card>
         </div>
@@ -297,31 +297,31 @@ onMounted(cargar);
                 <th>
                   <div class="flex items-center gap-1">
                     <span>Audiencia</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
                   </div>
                 </th>
                 <th>
                   <div class="flex items-center gap-1">
                     <span>Canales</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
                   </div>
                 </th>
                 <th>
                   <div class="flex items-center gap-1">
                     <span>Obligatoriedad</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
                   </div>
                 </th>
                 <th>
                   <div class="flex items-center gap-1">
                     <span>Visibilidad</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
                   </div>
                 </th>
                 <th>
                   <div class="flex items-center gap-1">
                     <span>Prioridad</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
                   </div>
                 </th>
                 <th class="text-right">Acción</th>
@@ -335,7 +335,7 @@ onMounted(cargar);
                 <td class="whitespace-nowrap">
                   <div class="flex items-center gap-1">
                     <span>{{ AUDIENCIA_LABELS[r.audiencia] || r.audiencia }}</span>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
                   </div>
                 </td>
                 <td>
@@ -343,7 +343,7 @@ onMounted(cargar);
                     <div class="flex flex-wrap gap-1">
                       <Tag v-for="c in r.canales || []" :key="c" :value="CANAL_LABELS[c] || c" :severity="canalSeverity[c] || 'info'" size="small" />
                     </div>
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
                   </div>
                 </td>
                 <td class="whitespace-nowrap">
@@ -363,17 +363,17 @@ onMounted(cargar);
                 <td class="whitespace-nowrap">
                   <div class="flex items-center gap-1">
                     <Tag :value="r.visibleUsuario ? 'Visible usuario' : 'Solo sistema'" :severity="r.visibleUsuario ? 'success' : 'secondary'" size="small" />
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
                   </div>
                 </td>
                 <td class="whitespace-nowrap">
                   <div class="flex items-center gap-1">
                     <Tag :value="r.prioridad" :severity="PRIORIDAD_SEVERITY[r.prioridad] || 'info'" size="small" />
-                    <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+                    <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
                   </div>
                 </td>
                 <td class="text-right whitespace-nowrap">
-                  <Button label="Editar" size="small" severity="secondary" variant="outlined" @click="abrirEditar(r)" />
+                  <Button label="Editar" @click="abrirEditar(r)" />
                 </td>
               </tr>
             </tbody>
@@ -387,14 +387,14 @@ onMounted(cargar);
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-1">
             <label class="text-sm">Audiencia</label>
-            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
+            <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa cada audiencia" @click="toggleAudiencia" />
           </div>
           <Select v-model="form.audiencia" :options="audienciaOptions" option-label="label" option-value="value" class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-1">
             <label class="text-sm">Canales</label>
-            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
+            <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa cada canal" @click="toggleCanales" />
           </div>
           <MultiSelect v-model="form.canales" :options="canalOptions" option-label="label" option-value="value" placeholder="Seleccionar canales" :show-toggle-all="false" class="w-full" :class="{ 'p-invalid': !canalesValidos }">
             <template #header>
@@ -411,7 +411,7 @@ onMounted(cargar);
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-1">
             <label class="text-sm">Prioridad</label>
-            <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
+            <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué implica cada prioridad" @click="togglePrioridad" />
           </div>
           <Select v-model="form.prioridad" :options="prioridadOptions" option-label="label" option-value="value" class="w-full" />
         </div>
@@ -420,28 +420,28 @@ onMounted(cargar);
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1">
               <span class="text-sm">App obligatoria</span>
-              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+              <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
             </div>
             <InputSwitch v-model="form.esObligatoriaInapp" />
           </div>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1">
               <span class="text-sm">Email obligatorio</span>
-              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+              <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
             </div>
             <InputSwitch v-model="form.esObligatoriaEmail" />
           </div>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1">
               <span class="text-sm">Push obligatorio</span>
-              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
+              <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa obligatoriedad" @click="toggleObligatoriedad" />
             </div>
             <InputSwitch v-model="form.esObligatoriaPush" />
           </div>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1">
               <span class="text-sm">Visible en preferencias del usuario</span>
-              <Button icon="pi pi-info-circle" severity="secondary" text rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
+              <Button variant="text" icon="pi pi-info-circle" severity="secondary" rounded size="small" aria-label="Qué significa visibilidad" @click="toggleVisibilidad" />
             </div>
             <InputSwitch v-model="form.visibleUsuario" />
           </div>
@@ -449,7 +449,7 @@ onMounted(cargar);
         <Message v-if="resultado" severity="error" :closable="false">{{ resultado }}</Message>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="confirmarCancelar" />
+        <Button severity="secondary" label="Cancelar" @click="confirmarCancelar" />
         <Button label="Guardar" icon="pi pi-check" :loading="enviando" :disabled="!canalesValidos" @click="confirmarGuardar" />
       </template>
     </Dialog>

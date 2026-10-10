@@ -112,11 +112,9 @@ async function handleLogout() {
           @click="goTo('Configuracion')"
         />
         <Divider class="my-3" />
-        <Button
+        <Button severity="secondary" variant="text"
           label="Cerrar sesión"
           icon="pi pi-sign-out"
-          severity="danger"
-          variant="text"
           class="w-full justify-content-start py-2"
           @click="handleLogout"
         />

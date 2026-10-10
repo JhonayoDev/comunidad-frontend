@@ -366,20 +366,16 @@ onMounted(async () => {
             </div>
           </div>
           <div v-if="autorizaciones.length > 4" class="mt-2">
-            <Button
+            <Button severity="secondary" variant="outlined" size="small"
               label="Ver todas"
               icon="pi pi-arrow-right"
-              size="small"
-              variant="text"
               @click="router.push({ name: 'MisAutorizaciones' })"
             />
           </div>
           <div v-else-if="autorizaciones.length > 0" class="mt-2">
-            <Button
+            <Button severity="secondary" variant="outlined" size="small"
               label="Administrar"
               icon="pi pi-arrow-right"
-              size="small"
-              variant="text"
               @click="router.push({ name: 'MisAutorizaciones' })"
             />
           </div>

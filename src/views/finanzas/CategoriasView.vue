@@ -140,7 +140,7 @@ onMounted(cargar);
         <div class="flex flex-col gap-1"><label class="text-sm">Descripción</label><Textarea v-model="form.descripcion" rows="2" placeholder="Opcional" /></div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showCrear = false" />
+        <Button severity="secondary" label="Cancelar" @click="showCrear = false" />
         <Button label="Crear" :loading="enviando" @click="crearCategoria" />
       </template>
     </Dialog>

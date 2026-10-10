@@ -286,7 +286,7 @@ onMounted(() => {
             />
           </div>
           <Button label="Buscar" icon="pi pi-search" size="small" severity="secondary" @click="buscar" />
-          <Button label="Limpiar" size="small" variant="text" @click="limpiarFiltros" />
+          <Button label="Limpiar" @click="limpiarFiltros" />
         </div>
       </template>
     </Card>

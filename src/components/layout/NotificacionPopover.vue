@@ -62,12 +62,11 @@ function timeAgo(fecha) {
 
 <template>
   <div>
-    <Button
+    <Button variant="text"
       v-if="!moduloNoContratado"
       class="btn-no-bg header-btn"
       icon="pi pi-bell"
       severity="secondary"
-      text
       rounded
       @click="toggle"
     >
@@ -90,11 +89,9 @@ function timeAgo(fecha) {
         >
           <span class="font-bold text-sm">Notificaciones</span>
           <Button
-            class="btn-no-bg header-btn text-text-muted"
+           
             v-if="notifCount >= 0"
             label="Ver todas"
-            size="small"
-            link
             @click="irAInbox"
           />
         </div>

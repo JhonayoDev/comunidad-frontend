@@ -263,7 +263,7 @@ onMounted(() => { listar("DOCUMENTO"); });
         <Message v-if="exitoSubida" severity="success" :closable="false">{{ exitoSubida }}</Message>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" :disabled="subiendo" @click="mostrarSubida = false" />
+        <Button severity="secondary" label="Cancelar" :disabled="subiendo" @click="mostrarSubida = false" />
         <Button label="Subir" icon="pi pi-upload" :loading="subiendo" :disabled="!archivoSeleccionado" @click="handleSubir" />
       </template>
     </Dialog>

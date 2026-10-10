@@ -218,11 +218,10 @@ function alternarDetalle(numeroFila) {
           size="small"
         />
         <Tag :value="`${staging.length} filas`" severity="info" size="small" />
-        <Button
+        <Button variant="text"
           :icon="foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
           :label="foco ? 'Salir de foco' : 'Foco'"
           severity="secondary"
-          text
           size="small"
           class="ml-auto"
           @click="alternar"
@@ -420,11 +419,9 @@ function alternarDetalle(numeroFila) {
                         @click="emit('quitarEstacionamiento', f.id, e.uid)"
                       />
                     </div>
-                    <Button
+                    <Button severity="secondary"
                       label="Est."
                       icon="pi pi-plus"
-                      variant="text"
-                      size="small"
                       @click="emit('agregarEstacionamiento', f.id)"
                     />
                   </div>
@@ -484,11 +481,9 @@ function alternarDetalle(numeroFila) {
                         />
                       </div>
                     </div>
-                    <Button
+                    <Button severity="secondary"
                       label="Vehículo"
                       icon="pi pi-plus"
-                      variant="text"
-                      size="small"
                       @click="emit('agregarVehiculo', f.id)"
                     />
                   </div>
@@ -514,11 +509,9 @@ function alternarDetalle(numeroFila) {
                         @click="emit('quitarBodega', f.id, b.uid)"
                       />
                     </div>
-                    <Button
+                    <Button severity="secondary"
                       label="Bodega"
                       icon="pi pi-plus"
-                      variant="text"
-                      size="small"
                       @click="emit('agregarBodega', f.id)"
                     />
                   </div>
@@ -554,12 +547,9 @@ function alternarDetalle(numeroFila) {
       </p>
 
       <div class="mt-3 flex flex-wrap gap-2 justify-between items-center">
-        <Button
+        <Button severity="secondary" variant="outlined" size="small"
           label="Limpiar todo"
           icon="pi pi-trash"
-          severity="secondary"
-          variant="text"
-          size="small"
           :disabled="enviando"
           @click="emit('limpiar')"
         />
@@ -594,11 +584,10 @@ function alternarDetalle(numeroFila) {
           severity="secondary"
           size="small"
         />
-        <Button
+        <Button variant="text"
           :icon="foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
           :label="foco ? 'Salir de foco' : 'Foco'"
           severity="secondary"
-          text
           size="small"
           class="ml-auto"
           @click="alternar"
@@ -1001,12 +990,9 @@ function alternarDetalle(numeroFila) {
       </template>
 
       <div class="mt-3 flex flex-wrap gap-2 justify-between items-center">
-        <Button
+        <Button severity="secondary" variant="outlined" size="small"
           label="Limpiar todo"
           icon="pi pi-trash"
-          severity="secondary"
-          variant="text"
-          size="small"
           :disabled="enviando"
           @click="emit('limpiar')"
         />

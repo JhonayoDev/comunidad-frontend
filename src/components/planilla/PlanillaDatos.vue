@@ -302,11 +302,10 @@ const { foco, alternar, salir } = useModoFoco();
         Los estacionamientos EV-* son de visitas y no se asignan a casas.
       </span>
       <div class="flex gap-1 sm:ml-auto">
-        <Button
+        <Button variant="text"
           :icon="foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
           :label="foco ? 'Salir de foco' : 'Foco'"
           severity="secondary"
-          text
           size="small"
           @click="alternar"
         />
@@ -700,11 +699,9 @@ const { foco, alternar, salir } = useModoFoco();
                           @click="p.quitarEstacionamiento(f.id, e.uid)"
                         />
                       </div>
-                      <Button
+                      <Button severity="secondary"
                         label="Agregar est."
                         icon="pi pi-plus"
-                        variant="text"
-                        size="small"
                         @click="p.agregarEstacionamiento(f.id)"
                       />
                     </div>
@@ -747,11 +744,9 @@ const { foco, alternar, salir } = useModoFoco();
                           />
                         </div>
                       </div>
-                      <Button
+                      <Button severity="secondary"
                         label="Agregar vehículo"
                         icon="pi pi-plus"
-                        variant="text"
-                        size="small"
                         @click="p.agregarVehiculo(f.id)"
                       />
                     </div>
@@ -791,11 +786,9 @@ const { foco, alternar, salir } = useModoFoco();
                           @click="p.quitarBodega(f.id, b.uid)"
                         />
                       </div>
-                      <Button
+                      <Button severity="secondary"
                         label="Agregar bodega"
                         icon="pi pi-plus"
-                        variant="text"
-                        size="small"
                         @click="p.agregarBodega(f.id)"
                       />
                     </div>
@@ -1117,11 +1110,9 @@ const { foco, alternar, salir } = useModoFoco();
                       @click="p.quitarEstacionamiento(f.id, e.uid)"
                     />
                   </div>
-                  <Button
+                  <Button severity="secondary"
                     label="Agregar estacionamiento"
                     icon="pi pi-plus"
-                    variant="text"
-                    size="small"
                     @click="p.agregarEstacionamiento(f.id)"
                   />
                 </template>
@@ -1184,11 +1175,9 @@ const { foco, alternar, salir } = useModoFoco();
                       @update:modelValue="v.tipo = $event"
                     />
                   </div>
-                  <Button
+                  <Button severity="secondary"
                     label="Agregar vehículo"
                     icon="pi pi-plus"
-                    variant="text"
-                    size="small"
                     @click="p.agregarVehiculo(f.id)"
                   />
                 </template>
@@ -1249,11 +1238,9 @@ const { foco, alternar, salir } = useModoFoco();
                       @click="p.quitarBodega(f.id, b.uid)"
                     />
                   </div>
-                  <Button
+                  <Button severity="secondary"
                     label="Agregar bodega"
                     icon="pi pi-plus"
-                    variant="text"
-                    size="small"
                     @click="p.agregarBodega(f.id)"
                   />
                 </template>

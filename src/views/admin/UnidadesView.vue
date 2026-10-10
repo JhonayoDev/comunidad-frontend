@@ -378,7 +378,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showCrear = false" />
+        <Button severity="secondary" label="Cancelar" @click="showCrear = false" />
         <Button label="Crear" :loading="enviando" :disabled="tipoAlLimite(formCrear.tipo)" @click="crearUnidad" />
       </template>
     </Dialog>
@@ -411,7 +411,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showEditar = false" />
+        <Button severity="secondary" label="Cancelar" @click="showEditar = false" />
         <Button label="Guardar" :loading="enviando" :disabled="tipoAlLimiteAlEditar(formEditar.tipo)" @click="editarUnidad" />
       </template>
     </Dialog>

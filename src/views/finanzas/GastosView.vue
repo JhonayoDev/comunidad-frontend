@@ -304,7 +304,7 @@ onMounted(() => {
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showCrear = false" />
+        <Button severity="secondary" label="Cancelar" @click="showCrear = false" />
         <Button label="Guardar" :loading="enviando" @click="crearGasto" />
       </template>
     </Dialog>
@@ -319,7 +319,7 @@ onMounted(() => {
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showAnular = false" />
+        <Button severity="secondary" label="Cancelar" @click="showAnular = false" />
         <Button label="Anular" severity="danger" :loading="enviando" @click="anularGasto" />
       </template>
     </Dialog>

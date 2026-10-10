@@ -274,7 +274,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showCrearPersona = false" />
+        <Button severity="secondary" label="Cancelar" @click="showCrearPersona = false" />
         <Button label="Crear" :loading="enviando" @click="crearPersona" />
       </template>
     </Dialog>
@@ -291,7 +291,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showEditarPersona = false" />
+        <Button severity="secondary" label="Cancelar" @click="showEditarPersona = false" />
         <Button label="Guardar" :loading="enviando" @click="editarPersona" />
       </template>
     </Dialog>
@@ -330,7 +330,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showCrearVinculo = false" />
+        <Button severity="secondary" label="Cancelar" @click="showCrearVinculo = false" />
         <Button label="Guardar" :loading="enviando" @click="crearVinculo" />
       </template>
     </Dialog>
@@ -344,7 +344,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showCrearUsuario = false" />
+        <Button severity="secondary" label="Cancelar" @click="showCrearUsuario = false" />
         <Button label="Crear usuario" :loading="enviando" @click="crearUsuario" />
       </template>
     </Dialog>

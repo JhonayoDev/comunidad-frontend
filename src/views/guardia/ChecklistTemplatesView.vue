@@ -139,12 +139,12 @@ async function desactivar() {
               <Button v-if="editando" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="quitarItem(idx)" />
             </div>
             <div v-if="!template.items.length" class="text-center text-text-subprincipal py-4">Sin preguntas configuradas</div>
-            <Button v-if="editando" label="Agregar pregunta" icon="pi pi-plus" severity="secondary" variant="outlined" size="small" @click="agregarItem" />
+            <Button v-if="editando" label="Agregar pregunta" icon="pi pi-plus" @click="agregarItem" />
           </div>
         </template>
       </Card>
       <div v-if="editando" class="flex gap-2 justify-end">
-        <Button label="Cancelar" severity="secondary" variant="text" @click="editando = false; cargar()" />
+        <Button severity="secondary" label="Cancelar" @click="editando = false; cargar()" />
         <Button label="Guardar" icon="pi pi-check" @click="guardar" />
       </div>
     </template>

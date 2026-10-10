@@ -69,9 +69,8 @@ function formatearFecha(iso) {
         <span class="text-xs text-text-muted">
           {{ formatearFecha(evento.registradoEn) }}
         </span>
-        <Button
+        <Button variant="text"
           :icon="collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'"
-          text
           rounded
           size="small"
           class="text-boton-accion/60"

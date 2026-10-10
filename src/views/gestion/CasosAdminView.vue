@@ -262,7 +262,6 @@ onMounted(cargar);
             v-if="detalle && detalle.estado !== 'CERRADO'"
             label="Cerrar caso"
             icon="pi pi-check"
-            severity="danger"
             @click="showCerrar = true"
           />
         </div>
@@ -287,7 +286,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showSeguimiento = false" />
+        <Button severity="secondary" label="Cancelar" @click="showSeguimiento = false" />
         <Button label="Guardar" :loading="enviando" @click="agregarSeguimiento" />
       </template>
     </Dialog>
@@ -301,7 +300,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showCerrar = false" />
+        <Button severity="secondary" label="Cancelar" @click="showCerrar = false" />
         <Button label="Cerrar caso" severity="danger" :loading="enviando" @click="cerrarCaso" />
       </template>
     </Dialog>

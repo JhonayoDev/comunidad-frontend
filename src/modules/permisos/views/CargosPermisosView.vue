@@ -132,7 +132,7 @@ function confirmarGuardar() {
 
       <!-- Botón ir arriba (desktop y mobile) -->
       <div class="flex justify-center pt-2">
-        <Button label="Ir arriba" icon="pi pi-arrow-up" severity="secondary" variant="outlined" size="small" @click="irArriba" />
+        <Button severity="secondary" variant="text" size="small" rounded label="Ir arriba" icon="pi pi-arrow-up" @click="irArriba" />
       </div>
     </template>
 

@@ -106,11 +106,9 @@ function verTodas() {
           </div>
         </div>
         <div v-if="encomiendasLista.length > limite" class="mt-2">
-          <Button
+          <Button severity="secondary" variant="outlined" size="small"
             label="Ver todas"
             icon="pi pi-arrow-right"
-            size="small"
-            variant="text"
             @click="verTodas"
           />
         </div>

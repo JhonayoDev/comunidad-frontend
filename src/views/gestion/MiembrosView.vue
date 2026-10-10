@@ -223,7 +223,7 @@ onMounted(() => { cargar(); cargarPersonas(); });
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showAsignar = false" />
+        <Button severity="secondary" label="Cancelar" @click="showAsignar = false" />
         <Button label="Asignar" :loading="enviando" @click="asignar" />
       </template>
     </Dialog>

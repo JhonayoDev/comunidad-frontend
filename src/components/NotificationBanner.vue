@@ -31,12 +31,9 @@
             :loading="loading"
             @click="handleActivar"
           />
-          <Button
+          <Button severity="secondary"
             label="Ahora no"
-            size="small"
-            text
-            severity="secondary"
-            class="text-text-subprincipal hover:text-banner-text"
+           
             @click="handleDescartar"
           />
         </div>

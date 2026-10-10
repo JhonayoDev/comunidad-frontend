@@ -249,11 +249,9 @@ async function registrar() {
             errorGeneral
           }}</Message>
           <div class="flex gap-2 mt-1">
-            <Button
+            <Button severity="secondary"
               label="Cancelar"
-              severity="secondary"
-              variant="text"
-              class="flex-1 border border-border text-text-muted"
+              class="flex-1"
               @click="$router.back()"
             />
             <Button

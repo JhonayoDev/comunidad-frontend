@@ -114,8 +114,8 @@ onMounted(cargar);
             <p class="text-sm text-text-muted m-0 mt-1 line-clamp-2">{{ p.tituloPlantilla }}</p>
           </div>
           <div class="flex gap-1 shrink-0">
-            <Button icon="pi pi-pencil" size="small" variant="text" @click="abrirEdicion(p)" />
-            <Button v-if="p.origen === 'OVERRIDE'" icon="pi pi-undo" size="small" variant="text" severity="danger" @click="confirmarRestaurar(p)" />
+            <Button severity="secondary" variant="outlined" size="small" icon="pi pi-pencil" @click="abrirEdicion(p)" />
+            <Button severity="secondary" variant="text" v-if="p.origen === 'OVERRIDE'" icon="pi pi-undo" @click="confirmarRestaurar(p)" />
           </div>
         </div>
       </div>
@@ -129,7 +129,7 @@ onMounted(cargar);
         <div class="flex flex-col gap-1"><label class="text-sm">Plantilla Email</label><Textarea v-model="form.emailPlantilla" rows="3" placeholder="Mensaje para notificaciones por email (opcional)" /></div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showEditar = false" />
+        <Button severity="secondary" label="Cancelar" @click="showEditar = false" />
         <Button label="Guardar" icon="pi pi-check" :loading="enviando" @click="guardar" />
       </template>
     </Dialog>

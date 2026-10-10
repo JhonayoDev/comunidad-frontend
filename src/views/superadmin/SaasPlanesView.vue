@@ -191,7 +191,7 @@ onMounted(cargar);
           </template>
           <template #footer>
             <div class="flex gap-2">
-              <Button label="Editar" size="small" severity="secondary" variant="outlined" @click="abrirEditar(p)" />
+              <Button label="Editar" @click="abrirEditar(p)" />
               <Button v-if="p.activo" label="Desactivar" size="small" severity="danger" variant="outlined" @click="confirmarDesactivar(p)" />
               <Button v-else label="Reactivar" size="small" severity="success" variant="outlined" @click="confirmarReactivar(p)" />
             </div>
@@ -241,7 +241,7 @@ onMounted(cargar);
         <Message v-if="resultado" severity="error" :closable="false">{{ resultado }}</Message>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showDialog = false" />
+        <Button severity="secondary" label="Cancelar" @click="showDialog = false" />
         <Button :label="modoDialog === 'editar' ? 'Guardar cambios' : 'Crear plan'" :loading="enviando" @click="modoDialog === 'editar' ? actualizarPlan() : confirmarCrear()" />
       </template>
     </Dialog>

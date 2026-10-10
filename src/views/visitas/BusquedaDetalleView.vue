@@ -20,7 +20,7 @@ const route = useRoute();
           <p v-if="route.query.patente" class="text-sm text-text-subprincipal m-0">
             Búsqueda relacionada: <strong>{{ route.query.patente }}</strong>
           </p>
-          <Button label="Entendido" icon="pi pi-check" severity="secondary" @click="$router.back()" />
+          <Button label="Entendido" icon="pi pi-check" @click="$router.back()" />
         </div>
       </template>
     </Card>

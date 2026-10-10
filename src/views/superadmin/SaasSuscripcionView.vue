@@ -96,7 +96,7 @@ onMounted(cargar);
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <Button label="← Volver" size="small" variant="text" icon="pi pi-arrow-left" @click="router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })" />
+    <Button severity="secondary" variant="outlined" size="small" label="← Volver" icon="pi pi-arrow-left" @click="router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })" />
     <h1 class="text-xl font-bold m-0">Suscripción</h1>
 
     <Skeleton v-if="loading" width="100%" height="200px" />
@@ -156,7 +156,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showCambiarPlan = false" />
+        <Button severity="secondary" label="Cancelar" @click="showCambiarPlan = false" />
         <Button label="Cambiar" :loading="enviando" @click="cambiarPlan" />
       </template>
     </Dialog>
@@ -173,7 +173,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showPago = false" />
+        <Button severity="secondary" label="Cancelar" @click="showPago = false" />
         <Button label="Registrar" :loading="enviando" @click="registrarPago" />
       </template>
     </Dialog>

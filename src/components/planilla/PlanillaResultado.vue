@@ -90,9 +90,7 @@ function alternarDetalle(numeroFila) {
     <Button
       label="Exportar resultado CSV"
       icon="pi pi-download"
-      variant="outlined"
-      class="bg-surface text-text-muted hover:bg-primary"
-      size="small"
+     
       :loading="exportando"
       :disabled="exportando"
       @click="emit('exportar')"

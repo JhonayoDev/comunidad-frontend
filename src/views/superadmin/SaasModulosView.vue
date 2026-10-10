@@ -67,7 +67,7 @@ onMounted(cargar);
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <Button label="← Volver" size="small" variant="text" icon="pi pi-arrow-left" @click="router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })" />
+    <Button severity="secondary" variant="outlined" size="small" label="← Volver" icon="pi pi-arrow-left" @click="router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })" />
     <h1 class="text-xl font-bold m-0">Módulos del condominio</h1>
 
     <Skeleton v-if="loading" width="100%" height="200px" />

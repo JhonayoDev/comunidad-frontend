@@ -197,11 +197,8 @@ onMounted(() => cargar({ estado: "ACTIVO" }));
               size="small"
               @change="buscarInmediato"
             />
-            <Button
+            <Button severity="secondary"
               label="Limpiar"
-              severity="secondary"
-              variant="text"
-              size="small"
               @click="limpiarFiltros"
             />
           </div>

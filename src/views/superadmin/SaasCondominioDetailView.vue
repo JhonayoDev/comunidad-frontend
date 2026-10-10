@@ -608,10 +608,8 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button
+        <Button severity="secondary"
           label="Cancelar"
-          severity="secondary"
-          variant="text"
           @click="showEditar = false"
         />
         <Button label="Guardar" :loading="enviando" @click="guardarEdicion" />
@@ -651,10 +649,8 @@ onMounted(cargar);
         >
       </div>
       <template #footer>
-        <Button
+        <Button severity="secondary"
           label="Cancelar"
-          severity="secondary"
-          variant="text"
           @click="showCapacidad = false"
         />
         <Button label="Guardar" :loading="enviando" @click="guardarCapacidad" />
@@ -685,10 +681,8 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button
+        <Button severity="secondary"
           label="Cancelar"
-          severity="secondary"
-          variant="text"
           @click="showSuspender = false"
         />
         <Button

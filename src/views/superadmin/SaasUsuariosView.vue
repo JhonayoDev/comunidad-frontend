@@ -106,7 +106,7 @@ onMounted(cargar);
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <Button label="← Volver" size="small" variant="text" icon="pi pi-arrow-left" @click="router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })" />
+    <Button severity="secondary" variant="outlined" size="small" label="← Volver" icon="pi pi-arrow-left" @click="router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })" />
     <h1 class="text-xl font-bold m-0">Usuarios del condominio</h1>
 
     <div class="flex gap-2">
@@ -142,7 +142,7 @@ onMounted(cargar);
                 </div>
               </div>
               <div class="flex gap-1 shrink-0">
-                <Button label="Rol" size="small" severity="secondary" variant="outlined" @click="abrirAsignarRol(u)" />
+                <Button label="Rol" @click="abrirAsignarRol(u)" />
                 <Button
                   :label="u.activo ? 'Desactivar' : 'Activar'"
                   size="small"
@@ -164,7 +164,7 @@ onMounted(cargar);
         <Select v-model="rolSeleccionado" :options="rolesDisponibles" optionLabel="label" optionValue="value" placeholder="Seleccionar rol" class="w-full" />
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="showRol = false" />
+        <Button severity="secondary" label="Cancelar" @click="showRol = false" />
         <Button label="Asignar" :loading="enviando" :disabled="!rolSeleccionado" @click="asignarRol" />
       </template>
     </Dialog>

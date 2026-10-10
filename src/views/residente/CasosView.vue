@@ -208,10 +208,8 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button
+        <Button severity="secondary"
           label="Cancelar"
-          severity="secondary"
-          variant="text"
           @click="showDialog = false"
         />
         <Button

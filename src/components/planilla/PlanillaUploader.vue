@@ -77,10 +77,9 @@ function onChange(event) {
     </div>
     <div class="flex items-center gap-1 text-xs text-text-muted">
       <span class="shrink-0">Máx 1000 filas. Nada se envía hasta Validar.</span>
-      <Button
+      <Button variant="text"
         icon="pi pi-info-circle"
         severity="secondary"
-        text
         rounded
         size="small"
         aria-label="Ver formato esperado"

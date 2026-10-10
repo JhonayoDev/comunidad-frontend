@@ -200,7 +200,7 @@ onMounted(() => {
             />
           </div>
           <Button label="Buscar" icon="pi pi-search" size="small" severity="secondary" @click="buscar" />
-          <Button label="Limpiar" size="small" variant="text" @click="limpiarFiltros" />
+          <Button label="Limpiar" @click="limpiarFiltros" />
         </div>
       </template>
     </Card>
@@ -235,7 +235,7 @@ onMounted(() => {
                 </div>
               </div>
               <div class="flex flex-col items-end gap-1 shrink-0">
-                <Button label="Entrar" size="small" variant="text" @click.stop="entrarACondominio(c.id)" />
+                <Button label="Entrar" @click.stop="entrarACondominio(c.id)" />
                 <Button
                   icon="pi pi-cog"
                   size="small"

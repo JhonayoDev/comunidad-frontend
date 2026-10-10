@@ -79,8 +79,8 @@ async function handleSubmit() {
           Si el email está registrado, recibirás un enlace para restablecer tu
           contraseña.
         </Message>
-        <Button
-          class="primary-text"
+        <Button severity="secondary"
+         
           label="Volver al login"
           icon="pi pi-arrow-left"
           fluid

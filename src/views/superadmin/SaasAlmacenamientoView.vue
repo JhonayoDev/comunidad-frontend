@@ -265,9 +265,6 @@ onMounted(cargar);
                 <td class="text-right whitespace-nowrap">
                   <Button
                     label="Editar"
-                    size="small"
-                    severity="secondary"
-                    variant="outlined"
                     @click="abrirEditar(c.id)"
                   />
                 </td>
@@ -326,9 +323,6 @@ onMounted(cargar);
                 </div>
                 <Button
                   label="Editar"
-                  size="small"
-                  severity="secondary"
-                  variant="outlined"
                   class="w-full"
                   @click="abrirEditar(c.id)"
                 />
@@ -445,10 +439,8 @@ onMounted(cargar);
         </template>
       </div>
       <template #footer>
-        <Button
+        <Button severity="secondary"
           label="Cancelar"
-          severity="secondary"
-          variant="text"
           @click="showEditar = false"
         />
         <Button

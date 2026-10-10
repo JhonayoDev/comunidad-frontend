@@ -81,8 +81,6 @@ function handleMarcarLeida(n) {
         v-if="hayNoLeidas"
         label="Marcar todas leídas"
         icon="pi pi-check"
-        size="small"
-        variant="text"
         @click="marcarTodas"
       />
     </div>

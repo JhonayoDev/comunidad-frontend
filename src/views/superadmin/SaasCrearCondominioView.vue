@@ -258,10 +258,8 @@ onMounted(cargarPlanes);
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <Button
+          <Button severity="secondary"
             label="Cancelar"
-            severity="secondary"
-            variant="text"
             @click="router.push({ name: 'SuperAdminDashboard' })"
           />
           <Button

@@ -95,7 +95,7 @@ async function handleRevocar(uid) {
               </div>
             </div>
             <div class="flex flex-col gap-1 shrink-0">
-              <Button icon="pi pi-pencil" size="small" variant="text" @click="abrirAsignar(p)" />
+              <Button severity="secondary" variant="outlined" size="small" icon="pi pi-pencil" @click="abrirAsignar(p)" />
               <Button v-if="p.activo" icon="pi pi-ban" size="small" variant="text" severity="danger" @click="confirmarRevocar(p)" />
             </div>
           </div>
@@ -117,7 +117,7 @@ async function handleRevocar(uid) {
         <Message v-if="errorForm" severity="error" :closable="false">{{ errorForm }}</Message>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="mostrarDialog = false" />
+        <Button severity="secondary" label="Cancelar" @click="mostrarDialog = false" />
         <Button label="Guardar" :loading="enviando" :disabled="!usuarioId || !rolId" @click="handleAsignar" />
       </template>
     </Dialog>

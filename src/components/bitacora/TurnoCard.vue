@@ -69,9 +69,8 @@ function handleClick(accion) {
             headerInfo.text
           }}</span>
         </div>
-        <Button
+        <Button variant="text"
           :icon="collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'"
-          text
           rounded
           size="small"
           class="text-boton-accion"

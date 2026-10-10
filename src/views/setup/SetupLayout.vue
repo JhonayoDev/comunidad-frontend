@@ -138,13 +138,11 @@ function onEdicionPlanilla(enEdicion) {
       </router-view>
 
       <div class="flex justify-between items-center gap-2">
-        <Button
+        <Button severity="secondary" variant="outlined" size="small"
           v-if="!configuraciónCompleta"
           label="Saltar por ahora"
           icon="pi pi-arrow-right"
           icon-pos="right"
-          variant="text"
-          size="small"
           @click="irDashboard"
         />
         <Button

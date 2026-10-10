@@ -5,12 +5,12 @@
     "line": 18,
     "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "v-if": "model",
       "icon": "pi pi-times",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "@click": "model = null"
     }
@@ -34,15 +34,12 @@
     "component": "Button",
     "file": "src/components/NotificationBanner.vue",
     "line": 34,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
-    "classes": "text-surface-400 hover:text-surface-0",
-    "legacyProp": true,
+    "signature": "severity=\"secondary\"",
+    "classes": "",
+    "legacyProp": false,
     "attrs": {
-      "label": "Ahora no",
-      "size": "small",
-      "text": true,
       "severity": "secondary",
-      "class": "text-surface-400 hover:text-surface-0",
+      "label": "Ahora no",
       "@click": "handleDescartar"
     }
   },
@@ -50,20 +47,19 @@
     "component": "Button",
     "file": "src/components/bitacora/ChecklistDialog.vue",
     "line": 119,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "cerrar"
     }
   },
   {
     "component": "Button",
     "file": "src/components/bitacora/ChecklistDialog.vue",
-    "line": 125,
+    "line": 123,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -81,10 +77,10 @@
     "line": 72,
     "signature": ":icon=\"collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'\" rounded size=\"small\" variant=\"text\"",
     "classes": "text-boton-accion/60",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       ":icon": "collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'",
-      "text": true,
       "rounded": true,
       "size": "small",
       "class": "text-boton-accion/60",
@@ -95,14 +91,13 @@
     "component": "Button",
     "file": "src/components/bitacora/NovedadDialog.vue",
     "line": 111,
-    "signature": "severity=\"secondary\" variant=\"text\"",
-    "classes": "rounded-lg border border-border/80 shadow-lg",
-    "legacyProp": true,
+    "signature": "severity=\"secondary\"",
+    "classes": "rounded-lg",
+    "legacyProp": false,
     "attrs": {
-      "class": "rounded-lg border border-border/80 shadow-lg",
-      "label": "Cancelar",
       "severity": "secondary",
-      "text": true,
+      "class": "rounded-lg",
+      "label": "Cancelar",
       ":disabled": "loading",
       "@click": "$emit('update:visible', false)"
     }
@@ -110,14 +105,13 @@
   {
     "component": "Button",
     "file": "src/components/bitacora/NovedadDialog.vue",
-    "line": 119,
-    "signature": "icon=\"pi pi-flag\" severity=\"primary\"",
+    "line": 117,
+    "signature": "icon=\"pi pi-flag\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Registrar",
       "icon": "pi pi-flag",
-      "severity": "primary",
       ":disabled": "!form.observaciones.trim()",
       ":loading": "loading",
       "@click": "handleRegister"
@@ -129,10 +123,10 @@
     "line": 72,
     "signature": ":icon=\"collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'\" rounded size=\"small\" variant=\"text\"",
     "classes": "text-boton-accion",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       ":icon": "collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'",
-      "text": true,
       "rounded": true,
       "size": "small",
       "class": "text-boton-accion",
@@ -142,7 +136,7 @@
   {
     "component": "Button",
     "file": "src/components/bitacora/TurnoCard.vue",
-    "line": 86,
+    "line": 85,
     "signature": ":icon=\"accionesLabels?.[accion]?.icon\" :severity=\"accionesLabels?.[accion]?.severity\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -159,15 +153,26 @@
   },
   {
     "component": "Button",
+    "file": "src/components/common/AppButton.vue",
+    "line": 64,
+    "signature": "v-bind=\"{ ...resueltas, ...attrs }\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-bind": "{ ...resueltas, ...attrs }"
+    }
+  },
+  {
+    "component": "Button",
     "file": "src/components/common/InfoAyudaVista.vue",
     "line": 26,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "aria-label": "Ver ayuda",
       "v-tooltip.top": "'¿Qué significa cada opción?'",
@@ -177,14 +182,14 @@
   {
     "component": "Button",
     "file": "src/components/common/InfoAyudaVista.vue",
-    "line": 42,
+    "line": 41,
     "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-times",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Cerrar ayuda",
@@ -195,14 +200,13 @@
     "component": "Button",
     "file": "src/components/encomiendas/DetalleEncomiendaDialog.vue",
     "line": 176,
-    "signature": "severity=\"secondary\" variant=\"text\"",
-    "classes": "rounded-lg border border-border/80 shadow-lg",
-    "legacyProp": true,
+    "signature": "severity=\"secondary\"",
+    "classes": "rounded-lg",
+    "legacyProp": false,
     "attrs": {
-      "class": "rounded-lg border border-border/80 shadow-lg",
-      "label": "Cerrar",
       "severity": "secondary",
-      "text": true,
+      "class": "rounded-lg",
+      "label": "Cerrar",
       "@click": "$emit('update:visible', false)"
     }
   },
@@ -210,14 +214,13 @@
     "component": "Button",
     "file": "src/components/encomiendas/EntregarEncomiendaDialog.vue",
     "line": 75,
-    "signature": "severity=\"secondary\" variant=\"text\"",
-    "classes": "rounded-lg border border-border/80 shadow-lg",
-    "legacyProp": true,
+    "signature": "severity=\"secondary\"",
+    "classes": "rounded-lg",
+    "legacyProp": false,
     "attrs": {
-      "class": "rounded-lg border border-border/80 shadow-lg",
-      "label": "Cancelar",
       "severity": "secondary",
-      "text": true,
+      "class": "rounded-lg",
+      "label": "Cancelar",
       ":disabled": "loading",
       "@click": "$emit('update:visible', false)"
     }
@@ -225,7 +228,7 @@
   {
     "component": "Button",
     "file": "src/components/encomiendas/EntregarEncomiendaDialog.vue",
-    "line": 83,
+    "line": 81,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -277,11 +280,11 @@
     "line": 237,
     "signature": "icon=\"pi pi-times\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "absolute top-1 right-1",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-times",
       "severity": "danger",
-      "text": true,
       "rounded": true,
       "size": "small",
       "class": "absolute top-1 right-1",
@@ -292,14 +295,13 @@
     "component": "Button",
     "file": "src/components/encomiendas/RegistrarEncomiendaDialog.vue",
     "line": 246,
-    "signature": "severity=\"secondary\" variant=\"text\"",
-    "classes": "flex-1 rounded-lg border border-border/80 shadow-lg",
-    "legacyProp": true,
+    "signature": "severity=\"secondary\"",
+    "classes": "flex-1 rounded-lg",
+    "legacyProp": false,
     "attrs": {
-      "class": "flex-1 rounded-lg border border-border/80 shadow-lg",
-      "label": "Cancelar",
       "severity": "secondary",
-      "text": true,
+      "class": "flex-1 rounded-lg",
+      "label": "Cancelar",
       ":disabled": "loading",
       "@click": "$emit('update:visible', false)"
     }
@@ -307,7 +309,7 @@
   {
     "component": "Button",
     "file": "src/components/encomiendas/RegistrarEncomiendaDialog.vue",
-    "line": 254,
+    "line": 252,
     "signature": "icon=\"pi pi-check\"",
     "classes": "flex-1 rounded-lg shadow-lg",
     "legacyProp": false,
@@ -324,14 +326,15 @@
     "component": "Button",
     "file": "src/components/encomiendas/TarjetaEncomiendasResidente.vue",
     "line": 109,
-    "signature": "icon=\"pi pi-arrow-right\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-arrow-right\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "label": "Ver todas",
       "icon": "pi pi-arrow-right",
-      "size": "small",
-      "variant": "text",
       "@click": "verTodas"
     }
   },
@@ -341,12 +344,12 @@
     "line": 32,
     "signature": ":icon=\"esOscuro ? 'pi pi-sun' : 'pi pi-moon'\" rounded severity=\"secondary\" variant=\"text\"",
     "classes": "btn-no-bg header-btn",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "class": "btn-no-bg header-btn",
       ":icon": "esOscuro ? 'pi pi-sun' : 'pi pi-moon'",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "@click": "toggleTema"
     }
@@ -354,15 +357,15 @@
   {
     "component": "Button",
     "file": "src/components/layout/AppHeader.vue",
-    "line": 41,
+    "line": 40,
     "signature": "icon=\"pi pi-bars\" rounded severity=\"secondary\" variant=\"text\"",
     "classes": "btn-no-bg header-btn",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "class": "btn-no-bg header-btn",
       "icon": "pi pi-bars",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "@click": "drawerVisible = true"
     }
@@ -370,7 +373,7 @@
   {
     "component": "Button",
     "file": "src/components/layout/AppHeader.vue",
-    "line": 56,
+    "line": 54,
     "signature": ":severity=\"auth.activeContext === ctx.key ? 'primary' : 'secondary'\" :variant=\"auth.activeContext === ctx.key ? 'filled' : 'outlined'\" rounded size=\"small\"",
     "classes": "context-card",
     "legacyProp": false,
@@ -391,12 +394,12 @@
     "line": 15,
     "signature": ":icon=\"esOscuro ? 'pi pi-sun' : 'pi pi-moon'\" rounded severity=\"secondary\" variant=\"text\"",
     "classes": "btn-no-bg",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "class": "btn-no-bg",
       ":icon": "esOscuro ? 'pi pi-sun' : 'pi pi-moon'",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "@click": "toggleTema"
     }
@@ -437,13 +440,13 @@
     "line": 65,
     "signature": "icon=\"pi pi-bell\" rounded severity=\"secondary\" variant=\"text\"",
     "classes": "btn-no-bg header-btn",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "v-if": "!moduloNoContratado",
       "class": "btn-no-bg header-btn",
       "icon": "pi pi-bell",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "@click": "toggle"
     }
@@ -451,16 +454,13 @@
   {
     "component": "Button",
     "file": "src/components/layout/NotificacionPopover.vue",
-    "line": 92,
-    "signature": "size=\"small\" variant=\"link\"",
-    "classes": "btn-no-bg header-btn text-text-muted",
-    "legacyProp": true,
+    "line": 91,
+    "signature": "(default)",
+    "classes": "",
+    "legacyProp": false,
     "attrs": {
-      "class": "btn-no-bg header-btn text-text-muted",
       "v-if": "notifCount >= 0",
       "label": "Ver todas",
-      "size": "small",
-      "link": true,
       "@click": "irAInbox"
     }
   },
@@ -470,12 +470,12 @@
     "line": 305,
     "signature": ":icon=\"foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'\" severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       ":icon": "foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'",
       ":label": "foco ? 'Salir de foco' : 'Foco'",
       "severity": "secondary",
-      "text": true,
       "size": "small",
       "@click": "alternar"
     }
@@ -483,7 +483,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 314,
+    "line": 313,
     "signature": "icon=\"pi pi-pencil\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -497,7 +497,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 322,
+    "line": 321,
     "signature": "icon=\"pi pi-check\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -511,7 +511,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 328,
+    "line": 327,
     "signature": "severity=\"secondary\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -525,7 +525,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 334,
+    "line": 333,
     "signature": "icon=\"pi pi-plus\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -539,7 +539,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 694,
+    "line": 693,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -555,22 +555,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 703,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 702,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar est.",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "p.agregarEstacionamiento(f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 740,
+    "line": 737,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -586,22 +585,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 750,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 747,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar vehículo",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "p.agregarVehiculo(f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 785,
+    "line": 780,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -617,22 +615,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 794,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 789,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar bodega",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "p.agregarBodega(f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 834,
+    "line": 827,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -649,7 +646,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1079,
+    "line": 1072,
     "signature": "(default)",
     "classes": "flex items-center justify-between w-full text-left",
     "legacyProp": false,
@@ -662,7 +659,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1111,
+    "line": 1104,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -678,22 +675,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1120,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 1113,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar estacionamiento",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "p.agregarEstacionamiento(f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1137,
+    "line": 1128,
     "signature": "(default)",
     "classes": "flex items-center justify-between w-full text-left",
     "legacyProp": false,
@@ -706,7 +702,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1168,
+    "line": 1159,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -722,22 +718,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1187,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 1178,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar vehículo",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "p.agregarVehiculo(f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1211,
+    "line": 1200,
     "signature": "(default)",
     "classes": "flex items-center justify-between w-full text-left",
     "legacyProp": false,
@@ -750,7 +745,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1243,
+    "line": 1232,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -766,22 +761,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1252,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 1241,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar bodega",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "p.agregarBodega(f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaDatos.vue",
-    "line": 1267,
+    "line": 1254,
     "signature": ":icon=\"f.marcadoEliminar ? 'pi pi-undo' : 'pi pi-trash'\" :severity=\"f.marcadoEliminar ? 'secondary' : 'danger'\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -815,15 +809,12 @@
     "component": "Button",
     "file": "src/components/planilla/PlanillaResultado.vue",
     "line": 90,
-    "signature": "icon=\"pi pi-download\" size=\"small\" variant=\"outlined\"",
-    "classes": "bg-surface text-text-muted hover:bg-primary",
+    "signature": "icon=\"pi pi-download\"",
+    "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Exportar resultado CSV",
       "icon": "pi pi-download",
-      "variant": "outlined",
-      "class": "bg-surface text-text-muted hover:bg-primary",
-      "size": "small",
       ":loading": "exportando",
       ":disabled": "exportando",
       "@click": "emit('exportar')"
@@ -832,7 +823,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaResultado.vue",
-    "line": 111,
+    "line": 109,
     "signature": ":severity=\"filtro === o.valor ? 'primary' : 'secondary'\" :variant=\"filtro === o.valor ? undefined : 'outlined'\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -850,7 +841,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaResultado.vue",
-    "line": 131,
+    "line": 129,
     "signature": "(default)",
     "classes": "flex items-center gap-2 w-full text-left text-sm",
     "legacyProp": false,
@@ -866,12 +857,12 @@
     "line": 221,
     "signature": ":icon=\"foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'\" severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "ml-auto",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       ":icon": "foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'",
       ":label": "foco ? 'Salir de foco' : 'Foco'",
       "severity": "secondary",
-      "text": true,
       "size": "small",
       "class": "ml-auto",
       "@click": "alternar"
@@ -880,7 +871,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 414,
+    "line": 413,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -896,22 +887,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 423,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 422,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Est.",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "emit('agregarEstacionamiento', f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 455,
+    "line": 452,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -927,22 +917,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 487,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 484,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Vehículo",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "emit('agregarVehiculo', f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 509,
+    "line": 504,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -957,22 +946,21 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 517,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 512,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Bodega",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "emit('agregarBodega', f.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 527,
+    "line": 520,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -988,16 +976,16 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 557,
-    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "line": 550,
+    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "label": "Limpiar todo",
       "icon": "pi pi-trash",
-      "severity": "secondary",
-      "variant": "text",
-      "size": "small",
       ":disabled": "enviando",
       "@click": "emit('limpiar')"
     }
@@ -1005,7 +993,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 566,
+    "line": 556,
     "signature": "icon=\"pi pi-check-circle\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -1022,15 +1010,15 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 597,
+    "line": 587,
     "signature": ":icon=\"foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'\" severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "ml-auto",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       ":icon": "foco ? 'pi pi-window-minimize' : 'pi pi-window-maximize'",
       ":label": "foco ? 'Salir de foco' : 'Foco'",
       "severity": "secondary",
-      "text": true,
       "size": "small",
       "class": "ml-auto",
       "@click": "alternar"
@@ -1039,7 +1027,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 671,
+    "line": 660,
     "signature": ":severity=\"filtro === o.valor ? 'primary' : 'secondary'\" :variant=\"filtro === o.valor ? undefined : 'outlined'\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -1057,7 +1045,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 814,
+    "line": 803,
     "signature": ":icon=\"\n                        filasExpandidas.has(num)\n                          ? 'pi pi-eye-slash'\n                          : 'pi pi-eye'\n                      \" size=\"small\" variant=\"text\"",
     "classes": "text-text-muted",
     "legacyProp": false,
@@ -1074,7 +1062,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 946,
+    "line": 935,
     "signature": ":icon=\"\n                        filasExpandidas.has(f.numeroFila)\n                          ? 'pi pi-eye-slash'\n                          : 'pi pi-eye'\n                      \" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1090,16 +1078,16 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 1004,
-    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "line": 993,
+    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "label": "Limpiar todo",
       "icon": "pi pi-trash",
-      "severity": "secondary",
-      "variant": "text",
-      "size": "small",
       ":disabled": "enviando",
       "@click": "emit('limpiar')"
     }
@@ -1107,7 +1095,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 1014,
+    "line": 1000,
     "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
@@ -1124,7 +1112,7 @@
   {
     "component": "Button",
     "file": "src/components/planilla/PlanillaStagedPreview.vue",
-    "line": 1023,
+    "line": 1009,
     "signature": "icon=\"pi pi-check\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -1175,11 +1163,11 @@
     "line": 80,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Ver formato esperado",
@@ -1239,12 +1227,12 @@
     "line": 180,
     "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "btn-no-bg body-btn",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "class": "btn-no-bg body-btn",
       "icon": "pi pi-times",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "@click": "limpiar"
@@ -1253,7 +1241,7 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 215,
+    "line": 214,
     "signature": "icon=\"pi pi-sign-in\" severity=\"success\"",
     "classes": "",
     "legacyProp": false,
@@ -1268,7 +1256,7 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 222,
+    "line": 221,
     "signature": "icon=\"pi pi-sign-out\" severity=\"warn\"",
     "classes": "",
     "legacyProp": false,
@@ -1283,22 +1271,21 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 229,
-    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
+    "line": 228,
+    "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "v-if": "tieneAccion('NUEVA_VISITA', resultados[0])",
       "label": "Nueva visita",
       "icon": "pi pi-plus",
-      "severity": "secondary",
       "@click": "irANuevaVisita"
     }
   },
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 236,
+    "line": 234,
     "signature": "icon=\"pi pi-info-circle\" severity=\"info\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
@@ -1314,24 +1301,23 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 254,
-    "signature": "icon=\"pi pi-times\" severity=\"secondary\" size=\"small\" variant=\"text\"",
-    "classes": "btn-no-bg body-btn",
-    "legacyProp": true,
+    "line": 252,
+    "signature": "icon=\"pi pi-times\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "classes": "",
+    "legacyProp": false,
     "attrs": {
-      "class": "btn-no-bg body-btn",
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "icon": "pi pi-times",
       "label": "Limpiar",
-      "severity": "secondary",
-      "text": true,
-      "size": "small",
       "@click": "limpiar"
     }
   },
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 328,
+    "line": 323,
     "signature": "icon=\"pi pi-sign-in\" severity=\"success\"",
     "classes": "",
     "legacyProp": false,
@@ -1346,7 +1332,7 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 335,
+    "line": 330,
     "signature": "icon=\"pi pi-sign-out\" severity=\"warn\"",
     "classes": "",
     "legacyProp": false,
@@ -1361,7 +1347,7 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 342,
+    "line": 337,
     "signature": "icon=\"pi pi-info-circle\" severity=\"info\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
@@ -1377,15 +1363,15 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 381,
+    "line": 376,
     "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "btn-no-bg body-btn",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "class": "btn-no-bg body-btn",
       "icon": "pi pi-times",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "@click": "limpiar"
@@ -1394,7 +1380,7 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 400,
+    "line": 394,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -1407,7 +1393,7 @@
   {
     "component": "Button",
     "file": "src/components/visitas/BuscadorPatenteCard.vue",
-    "line": 405,
+    "line": 399,
     "signature": "icon=\"pi pi-sign-out\" severity=\"warn\"",
     "classes": "",
     "legacyProp": false,
@@ -1423,14 +1409,13 @@
     "component": "Button",
     "file": "src/components/visitas/ConfirmarSalidaDialog.vue",
     "line": 99,
-    "signature": "severity=\"secondary\" variant=\"text\"",
-    "classes": "rounded-lg border border-border/80 shadow-lg",
-    "legacyProp": true,
+    "signature": "severity=\"secondary\"",
+    "classes": "rounded-lg",
+    "legacyProp": false,
     "attrs": {
-      "class": "rounded-lg border border-border/80 shadow-lg",
-      "label": "Cancelar",
       "severity": "secondary",
-      "text": true,
+      "class": "rounded-lg",
+      "label": "Cancelar",
       ":disabled": "loading",
       "@click": "handleCancel"
     }
@@ -1438,7 +1423,7 @@
   {
     "component": "Button",
     "file": "src/components/visitas/ConfirmarSalidaDialog.vue",
-    "line": 107,
+    "line": 105,
     "signature": "icon=\"pi pi-sign-out\" severity=\"warn\"",
     "classes": "",
     "legacyProp": false,
@@ -1480,22 +1465,23 @@
     "component": "Button",
     "file": "src/modules/permisos/views/CargosPermisosView.vue",
     "line": 135,
-    "signature": "icon=\"pi pi-arrow-up\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "icon=\"pi pi-arrow-up\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "rounded": true,
       "label": "Ir arriba",
       "icon": "pi pi-arrow-up",
-      "severity": "secondary",
-      "variant": "outlined",
-      "size": "small",
       "@click": "irArriba"
     }
   },
   {
     "component": "Button",
     "file": "src/views/admin/ConfiguracionAlmacenamientoView.vue",
-    "line": 87,
+    "line": 79,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -1524,13 +1510,14 @@
     "component": "Button",
     "file": "src/views/admin/PersonalView.vue",
     "line": 98,
-    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "icon": "pi pi-pencil",
+      "severity": "secondary",
+      "variant": "outlined",
       "size": "small",
-      "variant": "text",
+      "icon": "pi pi-pencil",
       "@click": "abrirAsignar(p)"
     }
   },
@@ -1554,13 +1541,12 @@
     "component": "Button",
     "file": "src/views/admin/PersonalView.vue",
     "line": 120,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "mostrarDialog = false"
     }
   },
@@ -1656,13 +1642,12 @@
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
     "line": 277,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrearPersona = false"
     }
   },
@@ -1683,13 +1668,12 @@
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
     "line": 294,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showEditarPersona = false"
     }
   },
@@ -1724,13 +1708,12 @@
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
     "line": 333,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrearVinculo = false"
     }
   },
@@ -1751,13 +1734,12 @@
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
     "line": 347,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrearUsuario = false"
     }
   },
@@ -1778,13 +1760,14 @@
     "component": "Button",
     "file": "src/views/admin/PlantillasNotificacionView.vue",
     "line": 117,
-    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "icon": "pi pi-pencil",
+      "severity": "secondary",
+      "variant": "outlined",
       "size": "small",
-      "variant": "text",
+      "icon": "pi pi-pencil",
       "@click": "abrirEdicion(p)"
     }
   },
@@ -1792,15 +1775,14 @@
     "component": "Button",
     "file": "src/views/admin/PlantillasNotificacionView.vue",
     "line": 118,
-    "signature": "icon=\"pi pi-undo\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-undo\" severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "text",
       "v-if": "p.origen === 'OVERRIDE'",
       "icon": "pi pi-undo",
-      "size": "small",
-      "variant": "text",
-      "severity": "danger",
       "@click": "confirmarRestaurar(p)"
     }
   },
@@ -1808,13 +1790,12 @@
     "component": "Button",
     "file": "src/views/admin/PlantillasNotificacionView.vue",
     "line": 132,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showEditar = false"
     }
   },
@@ -1897,13 +1878,12 @@
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
     "line": 381,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrear = false"
     }
   },
@@ -1925,13 +1905,12 @@
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
     "line": 414,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showEditar = false"
     }
   },
@@ -1984,11 +1963,11 @@
     "component": "Button",
     "file": "src/views/auth/ForgotPasswordView.vue",
     "line": 82,
-    "signature": "fluid icon=\"pi pi-arrow-left\"",
-    "classes": "primary-text",
+    "signature": "fluid icon=\"pi pi-arrow-left\" severity=\"secondary\"",
+    "classes": "",
     "legacyProp": false,
     "attrs": {
-      "class": "primary-text",
+      "severity": "secondary",
       "label": "Volver al login",
       "icon": "pi pi-arrow-left",
       "fluid": true,
@@ -2200,15 +2179,13 @@
     "component": "Button",
     "file": "src/views/encomiendas/EncomiendasView.vue",
     "line": 348,
-    "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Ver detalle completo",
       "icon": "pi pi-search",
-      "severity": "secondary",
-      "size": "small",
-      "variant": "outlined",
       "@click.stop": "abrirDetalle(e)"
     }
   },
@@ -2246,13 +2223,12 @@
     "component": "Button",
     "file": "src/views/finanzas/CargosAdicionalesView.vue",
     "line": 254,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrear = false"
     }
   },
@@ -2273,13 +2249,12 @@
     "component": "Button",
     "file": "src/views/finanzas/CargosAdicionalesView.vue",
     "line": 269,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showAnular = false"
     }
   },
@@ -2331,13 +2306,12 @@
     "component": "Button",
     "file": "src/views/finanzas/CategoriasView.vue",
     "line": 143,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrear = false"
     }
   },
@@ -2403,13 +2377,12 @@
     "component": "Button",
     "file": "src/views/finanzas/CuentasView.vue",
     "line": 212,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showDialog = false"
     }
   },
@@ -2444,13 +2417,12 @@
     "component": "Button",
     "file": "src/views/finanzas/GastosComunesView.vue",
     "line": 181,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrear = false"
     }
   },
@@ -2516,13 +2488,12 @@
     "component": "Button",
     "file": "src/views/finanzas/GastosView.vue",
     "line": 307,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrear = false"
     }
   },
@@ -2543,13 +2514,12 @@
     "component": "Button",
     "file": "src/views/finanzas/GastosView.vue",
     "line": 322,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showAnular = false"
     }
   },
@@ -2615,13 +2585,12 @@
     "component": "Button",
     "file": "src/views/finanzas/PagosView.vue",
     "line": 396,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrear = false"
     }
   },
@@ -2687,13 +2656,12 @@
     "component": "Button",
     "file": "src/views/finanzas/PlantillasGastoView.vue",
     "line": 205,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showDialog = false"
     }
   },
@@ -2743,13 +2711,12 @@
     "component": "Button",
     "file": "src/views/gestion/AnunciosView.vue",
     "line": 195,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCrear = false"
     }
   },
@@ -2785,35 +2752,33 @@
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
     "line": 261,
-    "signature": "icon=\"pi pi-check\" severity=\"danger\"",
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "v-if": "detalle && detalle.estado !== 'CERRADO'",
       "label": "Cerrar caso",
       "icon": "pi pi-check",
-      "severity": "danger",
       "@click": "showCerrar = true"
     }
   },
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 290,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "line": 289,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showSeguimiento = false"
     }
   },
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 291,
+    "line": 290,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2826,21 +2791,20 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 304,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "line": 303,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCerrar = false"
     }
   },
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 305,
+    "line": 304,
     "signature": "severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -2885,13 +2849,12 @@
     "component": "Button",
     "file": "src/views/gestion/MiembrosView.vue",
     "line": 226,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showAsignar = false"
     }
   },
@@ -2912,15 +2875,14 @@
     "component": "Button",
     "file": "src/views/gestion/ReglasNotificacionView.vue",
     "line": 163,
-    "signature": "icon=\"pi pi-undo\" severity=\"danger\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-undo\" severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "text",
       "v-if": "r.esSobrescritura",
       "icon": "pi pi-undo",
-      "size": "small",
-      "variant": "text",
-      "severity": "danger",
       ":disabled": "guardando === r.tipo",
       "@click": "confirmarRestaurar(r)"
     }
@@ -2947,13 +2909,12 @@
     "component": "Button",
     "file": "src/views/guardia/BitacoraView.vue",
     "line": 135,
-    "signature": "icon=\"pi pi-flag\" severity=\"primary\"",
+    "signature": "icon=\"pi pi-flag\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Registrar novedad",
       "icon": "pi pi-flag",
-      "severity": "primary",
       "@click": "showDialog = true"
     }
   },
@@ -3023,16 +2984,13 @@
     "component": "Button",
     "file": "src/views/guardia/ChecklistTemplatesView.vue",
     "line": 142,
-    "signature": "icon=\"pi pi-plus\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "v-if": "editando",
       "label": "Agregar pregunta",
       "icon": "pi pi-plus",
-      "severity": "secondary",
-      "variant": "outlined",
-      "size": "small",
       "@click": "agregarItem"
     }
   },
@@ -3040,13 +2998,12 @@
     "component": "Button",
     "file": "src/views/guardia/ChecklistTemplatesView.vue",
     "line": 147,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "editando = false; cargar()"
     }
   },
@@ -3129,14 +3086,14 @@
     "component": "Button",
     "file": "src/views/menu/MenuView.vue",
     "line": 115,
-    "signature": "icon=\"pi pi-sign-out\" severity=\"danger\" variant=\"text\"",
+    "signature": "icon=\"pi pi-sign-out\" severity=\"secondary\" variant=\"text\"",
     "classes": "w-full justify-content-start py-2",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "text",
       "label": "Cerrar sesión",
       "icon": "pi pi-sign-out",
-      "severity": "danger",
-      "variant": "text",
       "class": "w-full justify-content-start py-2",
       "@click": "handleLogout"
     }
@@ -3145,15 +3102,13 @@
     "component": "Button",
     "file": "src/views/notificaciones/NotificacionesView.vue",
     "line": 80,
-    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "v-if": "hayNoLeidas",
       "label": "Marcar todas leídas",
       "icon": "pi pi-check",
-      "size": "small",
-      "variant": "text",
       "@click": "marcarTodas"
     }
   },
@@ -3175,20 +3130,19 @@
     "component": "Button",
     "file": "src/views/residente/CasosView.vue",
     "line": 211,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showDialog = false"
     }
   },
   {
     "component": "Button",
     "file": "src/views/residente/CasosView.vue",
-    "line": 217,
+    "line": 215,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -3232,30 +3186,32 @@
   {
     "component": "Button",
     "file": "src/views/residente/InicioView.vue",
-    "line": 334,
-    "signature": "icon=\"pi pi-arrow-right\" size=\"small\" variant=\"text\"",
+    "line": 369,
+    "signature": "icon=\"pi pi-arrow-right\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "label": "Ver todas",
       "icon": "pi pi-arrow-right",
-      "size": "small",
-      "variant": "text",
       "@click": "router.push({ name: 'MisAutorizaciones' })"
     }
   },
   {
     "component": "Button",
     "file": "src/views/residente/InicioView.vue",
-    "line": 343,
-    "signature": "icon=\"pi pi-arrow-right\" size=\"small\" variant=\"text\"",
+    "line": 376,
+    "signature": "icon=\"pi pi-arrow-right\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "label": "Administrar",
       "icon": "pi pi-arrow-right",
-      "size": "small",
-      "variant": "text",
       "@click": "router.push({ name: 'MisAutorizaciones' })"
     }
   },
@@ -3294,20 +3250,19 @@
     "component": "Button",
     "file": "src/views/residente/MisAutorizacionesView.vue",
     "line": 401,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showDialog = false"
     }
   },
   {
     "component": "Button",
     "file": "src/views/residente/MisAutorizacionesView.vue",
-    "line": 407,
+    "line": 405,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -3364,67 +3319,63 @@
     "component": "Button",
     "file": "src/views/setup/SetupAccesosView.vue",
     "line": 100,
-    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "v-if": "!editando",
       "label": "Editar",
       "icon": "pi pi-pencil",
-      "variant": "text",
-      "size": "small",
       "@click": "entrarEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupAccesosView.vue",
-    "line": 109,
-    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "line": 107,
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Listo",
       "icon": "pi pi-check",
-      "variant": "text",
-      "size": "small",
       "@click": "salirEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupAccesosView.vue",
-    "line": 110,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "line": 108,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
-      "variant": "text",
       "severity": "secondary",
-      "size": "small",
+      "label": "Cancelar",
       "@click": "cancelarEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupAccesosView.vue",
-    "line": 111,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 109,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar fila",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "u.agregarFila"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupAccesosView.vue",
-    "line": 168,
+    "line": 166,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3439,7 +3390,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupAccesosView.vue",
-    "line": 204,
+    "line": 202,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3455,7 +3406,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupAccesosView.vue",
-    "line": 230,
+    "line": 228,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -3472,67 +3423,63 @@
     "component": "Button",
     "file": "src/views/setup/SetupAreasComunesView.vue",
     "line": 193,
-    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "v-if": "!editando",
       "label": "Editar",
       "icon": "pi pi-pencil",
-      "variant": "text",
-      "size": "small",
       "@click": "entrarEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupAreasComunesView.vue",
-    "line": 202,
-    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "line": 200,
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Listo",
       "icon": "pi pi-check",
-      "variant": "text",
-      "size": "small",
       "@click": "salirEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupAreasComunesView.vue",
-    "line": 209,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "line": 205,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
-      "variant": "text",
       "severity": "secondary",
-      "size": "small",
+      "label": "Cancelar",
       "@click": "cancelarEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupAreasComunesView.vue",
-    "line": 216,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 209,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar espacio",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "u.agregarFila"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupAreasComunesView.vue",
-    "line": 380,
+    "line": 371,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3547,7 +3494,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupAreasComunesView.vue",
-    "line": 434,
+    "line": 425,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3563,7 +3510,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupAreasComunesView.vue",
-    "line": 702,
+    "line": 693,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -3579,16 +3526,14 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupAreasComunesView.vue",
-    "line": 714,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "line": 705,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "v-if": "!u.estado.items.length && !u.hayCambios && !yaCerrado",
       "label": "Cerrar paso sin configurar áreas comunes",
-      "variant": "text",
-      "severity": "secondary",
-      "size": "small",
       "@click": "confirmarCerrarSinConfigurar"
     }
   },
@@ -3658,21 +3603,19 @@
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
     "line": 442,
-    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Usar declarados",
       "icon": "pi pi-check",
-      "size": "small",
-      "variant": "text",
       "@click": "usarPisosDeclarados(g)"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 473,
+    "line": 471,
     "signature": "(default)",
     "classes": "\n                  u.estado.grupos[0].modo === m.value\n                    ? 'bg-primary text-white'\n                    : 'bg-surface border border-border hover:bg-emphasis'\n                ",
     "legacyProp": false,
@@ -3688,22 +3631,20 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 547,
-    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "line": 545,
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Usar declarados",
       "icon": "pi pi-check",
-      "size": "small",
-      "variant": "text",
       "@click": "usarPisosDeclarados(u.estado.grupos[0])"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 624,
+    "line": 620,
     "signature": "icon=\"pi pi-times\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3719,22 +3660,21 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 634,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 630,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar sector",
       "icon": "pi pi-plus",
-      "size": "small",
-      "variant": "text",
       "@click": "u.agregarSectorNuevo"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 666,
+    "line": 660,
     "signature": "icon=\"pi pi-check\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3749,7 +3689,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 779,
+    "line": 773,
     "signature": "icon=\"pi pi-pencil\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3764,7 +3704,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 787,
+    "line": 781,
     "signature": "icon=\"pi pi-check\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3778,7 +3718,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 793,
+    "line": 787,
     "signature": "severity=\"secondary\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3792,7 +3732,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 799,
+    "line": 793,
     "signature": "icon=\"pi pi-plus\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3806,7 +3746,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 982,
+    "line": 976,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3821,7 +3761,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 1073,
+    "line": 1067,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3837,24 +3777,24 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 1182,
-    "signature": "icon=\"pi pi-arrow-left\" size=\"small\" variant=\"text\"",
-    "classes": "text-text/80",
+    "line": 1176,
+    "signature": "icon=\"pi pi-arrow-left\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "v-if": "u.estado.paso > 1 && !u.modoReedicion",
       "label": "Anterior",
       "icon": "pi pi-arrow-left",
-      "class": "text-text/80",
-      "variant": "text",
-      "size": "small",
       "@click": "u.atras"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 1194,
+    "line": 1186,
     "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3870,7 +3810,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupEntidadesView.vue",
-    "line": 1203,
+    "line": 1195,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -3906,23 +3846,24 @@
     "component": "Button",
     "file": "src/views/setup/SetupLayout.vue",
     "line": 141,
-    "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\" variant=\"text\"",
+    "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "v-if": "!configuraciónCompleta",
       "label": "Saltar por ahora",
       "icon": "pi pi-arrow-right",
       "icon-pos": "right",
-      "variant": "text",
-      "size": "small",
       "@click": "irDashboard"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupLayout.vue",
-    "line": 150,
+    "line": 148,
     "signature": "icon=\"pi pi-home\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3937,7 +3878,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupLayout.vue",
-    "line": 157,
+    "line": 155,
     "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3954,67 +3895,63 @@
     "component": "Button",
     "file": "src/views/setup/SetupPisosView.vue",
     "line": 100,
-    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "v-if": "!editando",
       "label": "Editar",
       "icon": "pi pi-pencil",
-      "variant": "text",
-      "size": "small",
       "@click": "entrarEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupPisosView.vue",
-    "line": 109,
-    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "line": 107,
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Listo",
       "icon": "pi pi-check",
-      "variant": "text",
-      "size": "small",
       "@click": "salirEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupPisosView.vue",
-    "line": 110,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "line": 108,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
-      "variant": "text",
       "severity": "secondary",
-      "size": "small",
+      "label": "Cancelar",
       "@click": "cancelarEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupPisosView.vue",
-    "line": 111,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 109,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar fila",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "u.agregarFila"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupPisosView.vue",
-    "line": 183,
+    "line": 181,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4029,7 +3966,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupPisosView.vue",
-    "line": 220,
+    "line": 218,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4045,7 +3982,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupPisosView.vue",
-    "line": 253,
+    "line": 251,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -4062,17 +3999,17 @@
     "component": "Button",
     "file": "src/views/setup/SetupPlanillaView.vue",
     "line": 216,
-    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-trash\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "v-if": "planilla.filas.length && !planilla.resultado",
       "label": "Limpiar todo",
       "title": "Descarta el borrador local (no toca lo ya guardado)",
       "icon": "pi pi-trash",
-      "severity": "secondary",
-      "variant": "text",
-      "size": "small",
       ":disabled": "planilla.enviando",
       "@click": "planilla.limpiarTodo()"
     }
@@ -4080,7 +4017,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupPlanillaView.vue",
-    "line": 228,
+    "line": 225,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -4097,67 +4034,63 @@
     "component": "Button",
     "file": "src/views/setup/SetupSectoresView.vue",
     "line": 95,
-    "signature": "icon=\"pi pi-pencil\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
       "v-if": "!editando",
       "label": "Editar",
       "icon": "pi pi-pencil",
-      "variant": "text",
-      "size": "small",
       "@click": "entrarEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupSectoresView.vue",
-    "line": 104,
-    "signature": "icon=\"pi pi-check\" size=\"small\" variant=\"text\"",
+    "line": 102,
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Listo",
       "icon": "pi pi-check",
-      "variant": "text",
-      "size": "small",
       "@click": "salirEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupSectoresView.vue",
-    "line": 105,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "line": 103,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
-      "variant": "text",
       "severity": "secondary",
-      "size": "small",
+      "label": "Cancelar",
       "@click": "cancelarEdicion"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupSectoresView.vue",
-    "line": 106,
-    "signature": "icon=\"pi pi-plus\" size=\"small\" variant=\"text\"",
+    "line": 104,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Agregar fila",
       "icon": "pi pi-plus",
-      "variant": "text",
-      "size": "small",
       "@click": "u.agregarFila"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupSectoresView.vue",
-    "line": 165,
+    "line": 163,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4172,7 +4105,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupSectoresView.vue",
-    "line": 196,
+    "line": 194,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4188,7 +4121,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupSectoresView.vue",
-    "line": 227,
+    "line": 225,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -4313,21 +4246,19 @@
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
     "line": 613,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Limpiar",
-      "size": "small",
-      "variant": "text",
       "severity": "secondary",
+      "label": "Limpiar",
       "@click": "toggleTodos(false)"
     }
   },
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 748,
+    "line": 745,
     "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -4343,7 +4274,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 757,
+    "line": 754,
     "signature": "icon=\"pi pi-check\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -4357,7 +4288,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 763,
+    "line": 760,
     "signature": "severity=\"secondary\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -4371,7 +4302,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 769,
+    "line": 766,
     "signature": "icon=\"pi pi-plus\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -4385,7 +4316,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 915,
+    "line": 912,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4400,7 +4331,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 975,
+    "line": 972,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4416,7 +4347,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 1076,
+    "line": 1073,
     "signature": "icon=\"pi pi-arrow-left\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -4431,7 +4362,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 1086,
+    "line": 1083,
     "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -4447,7 +4378,7 @@
   {
     "component": "Button",
     "file": "src/views/setup/SetupUnidadesView.vue",
-    "line": 1095,
+    "line": 1092,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -4530,13 +4461,12 @@
     "component": "Button",
     "file": "src/views/storage/ArchivosView.vue",
     "line": 266,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       ":disabled": "subiendo",
       "@click": "mostrarSubida = false"
     }
@@ -4560,29 +4490,23 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasAlmacenamientoView.vue",
     "line": 266,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Editar",
-      "size": "small",
-      "severity": "secondary",
-      "variant": "outlined",
       "@click": "abrirEditar(c.id)"
     }
   },
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasAlmacenamientoView.vue",
-    "line": 327,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "line": 324,
+    "signature": "(default)",
     "classes": "w-full",
     "legacyProp": false,
     "attrs": {
       "label": "Editar",
-      "size": "small",
-      "severity": "secondary",
-      "variant": "outlined",
       "class": "w-full",
       "@click": "abrirEditar(c.id)"
     }
@@ -4590,21 +4514,20 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasAlmacenamientoView.vue",
-    "line": 448,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "line": 442,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showEditar = false"
     }
   },
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasAlmacenamientoView.vue",
-    "line": 454,
+    "line": 446,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -4652,13 +4575,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasAuditoriaView.vue",
     "line": 289,
-    "signature": "size=\"small\" variant=\"text\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Limpiar",
-      "size": "small",
-      "variant": "text",
       "@click": "limpiarFiltros"
     }
   },
@@ -4747,20 +4668,19 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioDetailView.vue",
     "line": 611,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showEditar = false"
     }
   },
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioDetailView.vue",
-    "line": 617,
+    "line": 615,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -4773,21 +4693,20 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioDetailView.vue",
-    "line": 654,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "line": 652,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCapacidad = false"
     }
   },
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioDetailView.vue",
-    "line": 660,
+    "line": 656,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -4800,21 +4719,20 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioDetailView.vue",
-    "line": 688,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "line": 684,
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showSuspender = false"
     }
   },
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioDetailView.vue",
-    "line": 694,
+    "line": 688,
     "signature": "severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -4844,13 +4762,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioSetupView.vue",
     "line": 740,
-    "signature": "icon=\"pi pi-save\" severity=\"secondary\"",
+    "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Guardar sección",
       "icon": "pi pi-save",
-      "severity": "secondary",
       ":disabled": "!capacidadValida || tareaCompletada('CREAR_UNIDADES')",
       ":loading": "guardando === 'capacidad'",
       "@click": "guardarCapacidad"
@@ -4859,7 +4776,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioSetupView.vue",
-    "line": 864,
+    "line": 863,
     "signature": "icon=\"pi pi-user-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -4873,14 +4790,13 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioSetupView.vue",
-    "line": 880,
-    "signature": "icon=\"pi pi-save\" severity=\"secondary\"",
+    "line": 879,
+    "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Guardar sección",
       "icon": "pi pi-save",
-      "severity": "secondary",
       ":disabled": "!adminAsignado() || tareaCompletada('ASIGNAR_ADMIN')",
       ":loading": "guardando === 'admin-seccion'",
       "@click": "guardarSeccionAdmin"
@@ -4889,7 +4805,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioSetupView.vue",
-    "line": 960,
+    "line": 958,
     "signature": "icon=\"pi pi-refresh\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
@@ -4906,7 +4822,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominioSetupView.vue",
-    "line": 969,
+    "line": 967,
     "signature": "icon=\"pi pi-send\" severity=\"secondary\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -4970,13 +4886,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominiosView.vue",
     "line": 203,
-    "signature": "size=\"small\" variant=\"text\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Limpiar",
-      "size": "small",
-      "variant": "text",
       "@click": "limpiarFiltros"
     }
   },
@@ -4984,13 +4898,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasCondominiosView.vue",
     "line": 238,
-    "signature": "size=\"small\" variant=\"text\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Entrar",
-      "size": "small",
-      "variant": "text",
       "@click.stop": "entrarACondominio(c.id)"
     }
   },
@@ -5012,20 +4924,19 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasCrearCondominioView.vue",
     "line": 261,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "router.push({ name: 'SuperAdminDashboard' })"
     }
   },
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasCrearCondominioView.vue",
-    "line": 267,
+    "line": 265,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -5068,14 +4979,13 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
     "line": 352,
-    "signature": "icon=\"pi pi-bolt\" severity=\"secondary\" variant=\"outlined\"",
+    "signature": "icon=\"pi pi-bolt\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
+      "severity": "secondary",
       "label": "Probar conexión",
       "icon": "pi pi-bolt",
-      "severity": "secondary",
-      "variant": "outlined",
       ":loading": "probando",
       "@click": "probarConexion"
     }
@@ -5130,13 +5040,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
     "line": 417,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showRoutingDialog = false"
     }
   },
@@ -5157,13 +5066,14 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasModulosView.vue",
     "line": 70,
-    "signature": "icon=\"pi pi-arrow-left\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-arrow-left\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "← Volver",
+      "severity": "secondary",
+      "variant": "outlined",
       "size": "small",
-      "variant": "text",
+      "label": "← Volver",
       "icon": "pi pi-arrow-left",
       "@click": "router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })"
     }
@@ -5201,14 +5111,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasPlanesView.vue",
     "line": 194,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Editar",
-      "size": "small",
-      "severity": "secondary",
-      "variant": "outlined",
       "@click": "abrirEditar(p)"
     }
   },
@@ -5248,13 +5155,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasPlanesView.vue",
     "line": 244,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showDialog = false"
     }
   },
@@ -5308,13 +5214,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasPlantillasView.vue",
     "line": 307,
-    "signature": "size=\"small\" variant=\"text\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Limpiar",
-      "size": "small",
-      "variant": "text",
       "@click": "limpiarFiltros"
     }
   },
@@ -5322,14 +5226,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasPlantillasView.vue",
     "line": 336,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Editar",
-      "size": "small",
-      "severity": "secondary",
-      "variant": "outlined",
       "@click": "abrirEditar(p)"
     }
   },
@@ -5337,14 +5238,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasPlantillasView.vue",
     "line": 337,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Preview",
-      "size": "small",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Preview",
       "@click": "abrirPreview(p)"
     }
   },
@@ -5384,13 +5283,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasPlantillasView.vue",
     "line": 377,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "confirmarCancelar"
     }
   },
@@ -5412,13 +5310,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasPlantillasView.vue",
     "line": 419,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cerrar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cerrar",
       "@click": "showPreview = false"
     }
   },
@@ -5428,11 +5325,11 @@
     "line": 248,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa visibilidad",
@@ -5445,11 +5342,11 @@
     "line": 257,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa cada audiencia",
@@ -5462,11 +5359,11 @@
     "line": 264,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué implica cada prioridad",
@@ -5479,11 +5376,11 @@
     "line": 271,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa cada canal",
@@ -5496,11 +5393,11 @@
     "line": 281,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa obligatoriedad",
@@ -5511,14 +5408,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
     "line": 286,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "(default)",
     "classes": "w-full",
     "legacyProp": false,
     "attrs": {
       "label": "Editar",
-      "size": "small",
-      "severity": "secondary",
-      "variant": "outlined",
       "class": "w-full",
       "@click": "abrirEditar(r)"
     }
@@ -5529,11 +5423,11 @@
     "line": 300,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa cada audiencia",
@@ -5546,11 +5440,11 @@
     "line": 306,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa cada canal",
@@ -5563,11 +5457,11 @@
     "line": 312,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa obligatoriedad",
@@ -5580,11 +5474,11 @@
     "line": 318,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa visibilidad",
@@ -5597,11 +5491,11 @@
     "line": 324,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué implica cada prioridad",
@@ -5614,11 +5508,11 @@
     "line": 338,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa cada audiencia",
@@ -5631,11 +5525,11 @@
     "line": 346,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa cada canal",
@@ -5648,11 +5542,11 @@
     "line": 366,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa visibilidad",
@@ -5665,11 +5559,11 @@
     "line": 372,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué implica cada prioridad",
@@ -5680,14 +5574,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
     "line": 376,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Editar",
-      "size": "small",
-      "severity": "secondary",
-      "variant": "outlined",
       "@click": "abrirEditar(r)"
     }
   },
@@ -5697,11 +5588,11 @@
     "line": 390,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa cada audiencia",
@@ -5714,11 +5605,11 @@
     "line": 397,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa cada canal",
@@ -5731,11 +5622,11 @@
     "line": 414,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué implica cada prioridad",
@@ -5748,11 +5639,11 @@
     "line": 423,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa obligatoriedad",
@@ -5765,11 +5656,11 @@
     "line": 430,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa obligatoriedad",
@@ -5782,11 +5673,11 @@
     "line": 437,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa obligatoriedad",
@@ -5799,11 +5690,11 @@
     "line": 444,
     "signature": "icon=\"pi pi-info-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
-    "legacyProp": true,
+    "legacyProp": false,
     "attrs": {
+      "variant": "text",
       "icon": "pi pi-info-circle",
       "severity": "secondary",
-      "text": true,
       "rounded": true,
       "size": "small",
       "aria-label": "Qué significa visibilidad",
@@ -5814,13 +5705,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasReglasNotificacionView.vue",
     "line": 452,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "confirmarCancelar"
     }
   },
@@ -5843,13 +5733,14 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasSuscripcionView.vue",
     "line": 99,
-    "signature": "icon=\"pi pi-arrow-left\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-arrow-left\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "← Volver",
+      "severity": "secondary",
+      "variant": "outlined",
       "size": "small",
-      "variant": "text",
+      "label": "← Volver",
       "icon": "pi pi-arrow-left",
       "@click": "router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })"
     }
@@ -5887,13 +5778,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasSuscripcionView.vue",
     "line": 159,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showCambiarPlan = false"
     }
   },
@@ -5914,13 +5804,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasSuscripcionView.vue",
     "line": 176,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showPago = false"
     }
   },
@@ -5941,13 +5830,14 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasUsuariosView.vue",
     "line": 109,
-    "signature": "icon=\"pi pi-arrow-left\" size=\"small\" variant=\"text\"",
+    "signature": "icon=\"pi pi-arrow-left\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "← Volver",
+      "severity": "secondary",
+      "variant": "outlined",
       "size": "small",
-      "variant": "text",
+      "label": "← Volver",
       "icon": "pi pi-arrow-left",
       "@click": "router.push({ name: 'SaasCondominioDetail', params: { id: route.params.id } })"
     }
@@ -5956,14 +5846,11 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasUsuariosView.vue",
     "line": 145,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Rol",
-      "size": "small",
-      "severity": "secondary",
-      "variant": "outlined",
       "@click": "abrirAsignarRol(u)"
     }
   },
@@ -5986,13 +5873,12 @@
     "component": "Button",
     "file": "src/views/superadmin/SaasUsuariosView.vue",
     "line": 167,
-    "signature": "severity=\"secondary\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
+      "label": "Cancelar",
       "@click": "showRol = false"
     }
   },
@@ -6014,13 +5900,12 @@
     "component": "Button",
     "file": "src/views/visitas/BusquedaDetalleView.vue",
     "line": 23,
-    "signature": "icon=\"pi pi-check\" severity=\"secondary\"",
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Entendido",
       "icon": "pi pi-check",
-      "severity": "secondary",
       "@click": "$router.back()"
     }
   },
@@ -6028,21 +5913,20 @@
     "component": "Button",
     "file": "src/views/visitas/RegistrarVisitaView.vue",
     "line": 252,
-    "signature": "severity=\"secondary\" variant=\"text\"",
-    "classes": "flex-1 border border-border text-text-muted",
+    "signature": "severity=\"secondary\"",
+    "classes": "flex-1",
     "legacyProp": false,
     "attrs": {
-      "label": "Cancelar",
       "severity": "secondary",
-      "variant": "text",
-      "class": "flex-1 border border-border text-text-muted",
+      "label": "Cancelar",
+      "class": "flex-1",
       "@click": "$router.back()"
     }
   },
   {
     "component": "Button",
     "file": "src/views/visitas/RegistrarVisitaView.vue",
-    "line": 259,
+    "line": 257,
     "signature": "icon=\"pi pi-check\"",
     "classes": "flex-1",
     "legacyProp": false,
@@ -6072,21 +5956,19 @@
     "component": "Button",
     "file": "src/views/visitas/VisitasView.vue",
     "line": 200,
-    "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Limpiar",
       "severity": "secondary",
-      "variant": "text",
-      "size": "small",
+      "label": "Limpiar",
       "@click": "limpiarFiltros"
     }
   },
   {
     "component": "Button",
     "file": "src/views/visitas/VisitasView.vue",
-    "line": 298,
+    "line": 295,
     "signature": "icon=\"pi pi-sign-out\" severity=\"warn\" size=\"small\"",
     "classes": "",
     "legacyProp": false,

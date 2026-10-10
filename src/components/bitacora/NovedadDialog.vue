@@ -108,18 +108,15 @@ function handleRegister() {
     </div>
 
     <template #footer>
-      <Button
-        class="rounded-lg border border-border/80 shadow-lg"
+      <Button severity="secondary"
+        class="rounded-lg"
         label="Cancelar"
-        severity="secondary"
-        text
         :disabled="loading"
         @click="$emit('update:visible', false)"
       />
       <Button
         label="Registrar"
         icon="pi pi-flag"
-        severity="primary"
         :disabled="!form.observaciones.trim()"
         :loading="loading"
         @click="handleRegister"

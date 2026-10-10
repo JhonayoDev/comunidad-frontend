@@ -92,18 +92,16 @@ onMounted(() => u.cargar());
       <template v-else>
         <div class="flex flex-wrap items-center gap-2">
           <Tag :value="`${u.estado.items.length} sectores`" severity="info" size="small" />
-          <Button
+          <Button severity="secondary" variant="outlined" size="small"
             v-if="!editando"
             label="Editar"
             icon="pi pi-pencil"
-            variant="text"
-            size="small"
             @click="entrarEdicion"
           />
           <template v-else>
-            <Button label="Listo" icon="pi pi-check" variant="text" size="small" @click="salirEdicion" />
-            <Button label="Cancelar" variant="text" severity="secondary" size="small" @click="cancelarEdicion" />
-            <Button label="Agregar fila" icon="pi pi-plus" variant="text" size="small" @click="u.agregarFila" />
+            <Button label="Listo" icon="pi pi-check" @click="salirEdicion" />
+            <Button severity="secondary" label="Cancelar" @click="cancelarEdicion" />
+            <Button severity="secondary" label="Agregar fila" icon="pi pi-plus" @click="u.agregarFila" />
           </template>
         </div>
 

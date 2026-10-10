@@ -304,7 +304,7 @@ onMounted(cargar);
             />
           </div>
           <Button label="Buscar" icon="pi pi-search" size="small" severity="secondary" @click="buscar" />
-          <Button label="Limpiar" size="small" variant="text" @click="limpiarFiltros" />
+          <Button label="Limpiar" @click="limpiarFiltros" />
         </div>
       </template>
     </Card>
@@ -333,8 +333,8 @@ onMounted(cargar);
           </template>
           <template #footer>
             <div class="flex gap-2">
-              <Button label="Editar" size="small" severity="secondary" variant="outlined" @click="abrirEditar(p)" />
-              <Button label="Preview" size="small" severity="secondary" variant="text" @click="abrirPreview(p)" />
+              <Button label="Editar" @click="abrirEditar(p)" />
+              <Button severity="secondary" label="Preview" @click="abrirPreview(p)" />
               <Button v-if="p.activo" label="Desactivar" size="small" severity="danger" variant="outlined" @click="confirmarDesactivar(p)" />
               <Button v-else label="Reactivar" size="small" severity="success" variant="outlined" @click="confirmarReactivar(p)" />
             </div>
@@ -374,7 +374,7 @@ onMounted(cargar);
         <Message v-if="resultado" severity="error" :closable="false">{{ resultado }}</Message>
       </div>
       <template #footer>
-        <Button label="Cancelar" severity="secondary" variant="text" @click="confirmarCancelar" />
+        <Button severity="secondary" label="Cancelar" @click="confirmarCancelar" />
         <Button label="Guardar" icon="pi pi-check" :loading="enviando" @click="confirmarGuardar" />
       </template>
     </Dialog>
@@ -416,7 +416,7 @@ onMounted(cargar);
         </div>
       </div>
       <template #footer>
-        <Button label="Cerrar" severity="secondary" variant="text" @click="showPreview = false" />
+        <Button severity="secondary" label="Cerrar" @click="showPreview = false" />
       </template>
     </Dialog>
 

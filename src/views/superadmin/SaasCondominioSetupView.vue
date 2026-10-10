@@ -740,7 +740,6 @@ onUnmounted(() => {
               <Button
                 label="Guardar sección"
                 icon="pi pi-save"
-                severity="secondary"
                 :disabled="!capacidadValida || tareaCompletada('CREAR_UNIDADES')"
                 :loading="guardando === 'capacidad'"
                 @click="guardarCapacidad"
@@ -880,7 +879,6 @@ onUnmounted(() => {
               <Button
                 label="Guardar sección"
                 icon="pi pi-save"
-                severity="secondary"
                 :disabled="!adminAsignado() || tareaCompletada('ASIGNAR_ADMIN')"
                 :loading="guardando === 'admin-seccion'"
                 @click="guardarSeccionAdmin"

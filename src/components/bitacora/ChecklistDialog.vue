@@ -116,10 +116,8 @@ watch(
       </div>
     </div>
     <template #footer>
-      <Button
+      <Button severity="secondary"
         label="Cancelar"
-        severity="secondary"
-        variant="text"
         @click="cerrar"
       />
       <Button

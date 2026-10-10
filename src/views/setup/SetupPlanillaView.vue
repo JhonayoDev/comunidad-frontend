@@ -213,14 +213,11 @@ onMounted(() => planilla.cargar());
         </div>
 
         <div class="mt-4 flex justify-between items-center gap-2">
-          <Button
+          <Button severity="secondary" variant="outlined" size="small"
             v-if="planilla.filas.length && !planilla.resultado"
             label="Limpiar todo"
             title="Descarta el borrador local (no toca lo ya guardado)"
             icon="pi pi-trash"
-            severity="secondary"
-            variant="text"
-            size="small"
             :disabled="planilla.enviando"
             @click="planilla.limpiarTodo()"
           />

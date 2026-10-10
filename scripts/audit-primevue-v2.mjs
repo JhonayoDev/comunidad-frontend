@@ -25,6 +25,7 @@ function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name)
     if (name === 'node_modules' || name.startsWith('.')) continue
+    if (p === 'src/dev' || p.startsWith('src/dev/')) continue // UI Lab: solo DEV, no es producto
     statSync(p).isDirectory() ? walk(p, out) : p.endsWith('.vue') && out.push(p)
   }
   return out

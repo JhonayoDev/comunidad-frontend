@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
+    "verificar:estandar": "node scripts/verificar-estandar.mjs",
     "test:ui": "vitest --ui",
     "coverage": "vitest run --coverage"
   },

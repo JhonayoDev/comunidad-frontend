@@ -160,12 +160,9 @@ async function handleRestaurar(tipo) {
                   :disabled="guardando === r.tipo"
                   @update:modelValue="toggleHabilitada(r)"
                 />
-                <Button
+                <Button severity="secondary" variant="text"
                   v-if="r.esSobrescritura"
                   icon="pi pi-undo"
-                  size="small"
-                  variant="text"
-                  severity="danger"
                   :disabled="guardando === r.tipo"
                   @click="confirmarRestaurar(r)"
                 />

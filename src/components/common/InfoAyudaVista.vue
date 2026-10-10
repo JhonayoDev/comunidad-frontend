@@ -23,10 +23,9 @@ function toggle(event) {
 
 <template>
   <div class="inline-flex items-center">
-    <Button
+    <Button variant="text"
       icon="pi pi-info-circle"
       severity="secondary"
-      text
       rounded
       aria-label="Ver ayuda"
       v-tooltip.top="'¿Qué significa cada opción?'"
@@ -39,10 +38,9 @@ function toggle(event) {
             <i class="pi pi-question-circle text-primary" />
             <span class="font-bold text-sm">{{ titulo }}</span>
           </div>
-          <Button
+          <Button variant="text"
             icon="pi pi-times"
             severity="secondary"
-            text
             rounded
             size="small"
             aria-label="Cerrar ayuda"

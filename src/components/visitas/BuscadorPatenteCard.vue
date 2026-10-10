@@ -177,11 +177,10 @@ function onSalidaConfirmada(observacion) {
               size="small"
             />
           </div>
-          <Button
+          <Button variant="text"
             class="btn-no-bg body-btn"
             icon="pi pi-times"
             severity="secondary"
-            text
             rounded
             size="small"
             @click="limpiar"
@@ -230,7 +229,6 @@ function onSalidaConfirmada(observacion) {
             v-if="tieneAccion('NUEVA_VISITA', resultados[0])"
             label="Nueva visita"
             icon="pi pi-plus"
-            severity="secondary"
             @click="irANuevaVisita"
           />
           <Button
@@ -251,13 +249,10 @@ function onSalidaConfirmada(observacion) {
         <span class="text-sm text-text/90"
           >{{ resultados.length }} resultado(s)</span
         >
-        <Button
-          class="btn-no-bg body-btn"
+        <Button severity="secondary" variant="outlined" size="small"
+         
           icon="pi pi-times"
           label="Limpiar"
-          severity="secondary"
-          text
-          size="small"
           @click="limpiar"
         />
       </div>
@@ -378,11 +373,10 @@ function onSalidaConfirmada(observacion) {
             ></i>
             <span>Patente no registrada</span>
           </div>
-          <Button
+          <Button variant="text"
             class="btn-no-bg body-btn"
             icon="pi pi-times"
             severity="secondary"
-            text
             rounded
             size="small"
             @click="limpiar"

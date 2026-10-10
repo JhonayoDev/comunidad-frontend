@@ -442,8 +442,6 @@ onMounted(() => u.cargar());
                 <Button
                   label="Usar declarados"
                   icon="pi pi-check"
-                  size="small"
-                  variant="text"
                   @click="usarPisosDeclarados(g)"
                 />
               </div>
@@ -547,8 +545,6 @@ onMounted(() => u.cargar());
               <Button
                 label="Usar declarados"
                 icon="pi pi-check"
-                size="small"
-                variant="text"
                 @click="usarPisosDeclarados(u.estado.grupos[0])"
               />
             </div>
@@ -631,11 +627,9 @@ onMounted(() => u.cargar());
                 />
               </div>
               <div>
-                <Button
+                <Button severity="secondary"
                   label="Agregar sector"
                   icon="pi pi-plus"
-                  size="small"
-                  variant="text"
                   @click="u.agregarSectorNuevo"
                 />
               </div>
@@ -1179,13 +1173,11 @@ onMounted(() => u.cargar());
           v-if="!editando"
           class="mt-4 flex justify-between items-center gap-2"
         >
-          <Button
+          <Button severity="secondary" variant="outlined" size="small"
             v-if="u.estado.paso > 1 && !u.modoReedicion"
             label="Anterior"
             icon="pi pi-arrow-left"
-            class="text-text/80"
-            variant="text"
-            size="small"
+           
             @click="u.atras"
           />
           <span v-else></span>
