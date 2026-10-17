@@ -1,7 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   esErrorModuloNoContratado,
   esErrorPlan,
+  esPeriodoGracia,
+  marcarGracia,
+  limpiarGracia,
+  enGracia,
   mensajeError,
 } from "@/utils/errores";
 
@@ -48,6 +52,54 @@ describe("errores", () => {
     it("devuelve false ante otros códigos", () => {
       expect(esErrorPlan({ response: { status: 400 } })).toBe(false);
       expect(esErrorPlan(null)).toBe(false);
+    });
+  });
+
+  describe("esPeriodoGracia", () => {
+    it("detecta el 403 de gracia por el message del backend", () => {
+      const error = {
+        response: {
+          status: 403,
+          data: {
+            message:
+              "El condominio está en período de gracia por pago pendiente. Solo se permite consultar información. Contacta al soporte.",
+          },
+        },
+      };
+      expect(esPeriodoGracia(error)).toBe(true);
+    });
+
+    it("respeta la bandera periodoGracia adjuntada", () => {
+      expect(esPeriodoGracia({ periodoGracia: true })).toBe(true);
+    });
+
+    it("NO confunde otros 403 (permisos, módulo) con gracia", () => {
+      expect(
+        esPeriodoGracia({ response: { status: 403, data: { message: "No tienes permisos" } } }),
+      ).toBe(false);
+      expect(
+        esPeriodoGracia({ response: { status: 403, data: { message: "no tiene suscrito el módulo X" } } }),
+      ).toBe(false);
+      expect(esPeriodoGracia(null)).toBe(false);
+    });
+  });
+
+  describe("flag persistido de gracia", () => {
+    beforeEach(() => localStorage.clear());
+
+    it("marcar/enGracia/limpiar sobrevive por localStorage", () => {
+      expect(enGracia("cid-g1")).toBe(false);
+      marcarGracia("cid-g1");
+      expect(enGracia("cid-g1")).toBe(true);
+      expect(localStorage.getItem("comunidad:gracia:cid-g1")).toBe("1");
+      limpiarGracia("cid-g1");
+      expect(enGracia("cid-g1")).toBe(false);
+      expect(localStorage.getItem("comunidad:gracia:cid-g1")).toBe(null);
+    });
+
+    it("enGracia recupera el flag de otra sesión vía localStorage", () => {
+      localStorage.setItem("comunidad:gracia:cid-g2", "1");
+      expect(enGracia("cid-g2")).toBe(true);
     });
   });
 

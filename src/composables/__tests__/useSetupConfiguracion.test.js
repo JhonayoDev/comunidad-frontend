@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { defineComponent } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
-import { useSetupConfiguracion, SETUP_PASOS, marcarEnEdicion, marcarPasoGuardado, reiniciarGuardados } from "@/composables/useSetupConfiguracion";
+import { useSetupConfiguracion, SETUP_PASOS, marcarEnEdicion, marcarPasoGuardado, reiniciarGuardados, hidratarGuardados } from "@/composables/useSetupConfiguracion";
 
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: () => ({
@@ -319,5 +319,23 @@ describe("useSetupConfiguracion", () => {
     await wrapper.vm.cargar();
     await flushPromises();
     expect(wrapper.vm.pasos.find((p) => p.key === "areas-comunes").completado).toBe(false);
+  });
+
+  it("hidratarGuardados recupera flags sin refetchear (caso dashboard)", async () => {
+    dashboardService.admin.mockResolvedValue({
+      data: { totales: { unidades: 5, residentesActivos: 3, vehiculos: 0 } },
+    });
+    unidadesService.getCapacidad.mockResolvedValue({ data: null });
+    marcarPasoGuardado("cid-1", "areas-comunes");
+    // Simula entrada directa al dashboard: memoria vacía, localStorage con flag.
+    reiniciarGuardados();
+    const wrapper = montar();
+    // Sin hidratar: pendiente aunque el flag exista (bug que esto evita).
+    expect(wrapper.vm.pasos.find((p) => p.key === "areas-comunes").completado).toBe(false);
+    hidratarGuardados("cid-1");
+    // El dashboard además hidrata el conteo (misma fuente que el wizard).
+    wrapper.vm.totalEspacios = 2;
+    await flushPromises();
+    expect(wrapper.vm.pasos.find((p) => p.key === "areas-comunes").completado).toBe(true);
   });
 });

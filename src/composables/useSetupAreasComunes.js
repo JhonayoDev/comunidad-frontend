@@ -5,6 +5,7 @@ import { estacionamientosService } from "@/services/estacionamientosService";
 import { unidadesService } from "@/services/unidadesService";
 import { compararUnidades } from "@/utils/ordenamientoNatural";
 import { esEstacionamientoVisita } from "@/data/planillaColumnas";
+import { esPeriodoGracia, marcarGracia, limpiarGracia } from "@/utils/errores";
 
 let contador = 0;
 function uid(prefijo) {
@@ -317,6 +318,7 @@ export function useSetupAreasComunes() {
     let visitas = 0;
     let vinculadas = 0;
     let hayErrores = false;
+    let hayGracia = false;
     try {
       const activos = estado.items.filter((x) => !x.marcadoEliminar);
 
@@ -337,6 +339,7 @@ export function useSetupAreasComunes() {
         } catch (e) {
           x.error = e?.response?.data?.message || `No se pudo crear ${x.nombre}`;
           hayErrores = true;
+          if (esPeriodoGracia(e)) hayGracia = true;
         }
       }
 
@@ -354,6 +357,7 @@ export function useSetupAreasComunes() {
         } catch (e) {
           x.error = e?.response?.data?.message || `No se pudo actualizar ${x.nombre}`;
           hayErrores = true;
+          if (esPeriodoGracia(e)) hayGracia = true;
         }
       }
 
@@ -369,6 +373,7 @@ export function useSetupAreasComunes() {
           x.marcadoEliminar = false;
           x.error = e?.response?.data?.message || `No se pudo eliminar ${x.nombre}`;
           hayErrores = true;
+          if (esPeriodoGracia(e)) hayGracia = true;
         }
       }
 
@@ -385,6 +390,7 @@ export function useSetupAreasComunes() {
         } catch (e) {
           x.error = e?.response?.data?.message || `No se pudo actualizar ${x.nombre}`;
           hayErrores = true;
+          if (esPeriodoGracia(e)) hayGracia = true;
         }
       }
 
@@ -413,12 +419,25 @@ export function useSetupAreasComunes() {
         } catch (e) {
           x.error = e?.response?.data?.message || `No se pudo vincular ${x.nombre}`;
           hayErrores = true;
+          if (esPeriodoGracia(e)) hayGracia = true;
         }
       }
 
       resultado.value = { creados, actualizados, eliminados, visitas, vinculadas };
       ordenarEspacios();
-      return !hayErrores;
+      if (!hayErrores) {
+        // Una escritura exitosa levanta el período de gracia (si lo había).
+        limpiarGracia(cid);
+        return true;
+      }
+      // Un 403 de gracia no es un error por fila: merece banner global con
+      // el mensaje real en vez de quedar oculto en el tooltip "No guardado".
+      if (hayGracia) {
+        marcarGracia(cid);
+        error.value =
+          "El condominio está en período de gracia por pago pendiente: solo se permite consultar información. Contacta al soporte.";
+      }
+      return false;
     } catch (e) {
       console.error("Error al guardar áreas comunes", e);
       error.value = e?.response?.data?.message || "No se pudieron guardar las áreas comunes";

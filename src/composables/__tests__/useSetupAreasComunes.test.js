@@ -200,6 +200,63 @@ describe("useSetupAreasComunes", () => {
     expect(u.resultado).toEqual({ creados: 0, actualizados: 0, eliminados: 0, visitas: 1, vinculadas: 0 });
   });
 
+  it("un 403 de gracia al crear fija banner global y marca el flag", async () => {
+    localStorage.clear();
+    espaciosService.crearEspacio.mockRejectedValue({
+      response: {
+        status: 403,
+        data: {
+          message:
+            "El condominio está en período de gracia por pago pendiente. Solo se permite consultar información. Contacta al soporte.",
+        },
+      },
+    });
+    const u = useSetupAreasComunes();
+    u.estado.items = [
+      {
+        id: "a",
+        nombre: "Quincho",
+        tipo: "QUINCHO",
+        piso: null,
+        sectorId: null,
+        error: null,
+        espacioId: null,
+        esNuevo: true,
+        marcadoEliminar: false,
+        original: null,
+      },
+    ];
+    u.estado.visitas = [];
+    const ok = await u.guardar();
+    expect(ok).toBe(false);
+    expect(u.error).toContain("período de gracia");
+    expect(localStorage.getItem("comunidad:gracia:cid-1")).toBe("1");
+  });
+
+  it("un guardar exitoso limpia el flag de gracia", async () => {
+    localStorage.setItem("comunidad:gracia:cid-1", "1");
+    espaciosService.crearEspacio.mockResolvedValue({ data: { id: "e9" } });
+    const u = useSetupAreasComunes();
+    u.estado.items = [
+      {
+        id: "a",
+        nombre: "Quincho",
+        tipo: "QUINCHO",
+        piso: null,
+        sectorId: null,
+        error: null,
+        espacioId: null,
+        esNuevo: true,
+        marcadoEliminar: false,
+        original: null,
+      },
+    ];
+    u.estado.visitas = [];
+    const ok = await u.guardar();
+    expect(ok).toBe(true);
+    expect(localStorage.getItem("comunidad:gracia:cid-1")).toBe(null);
+  });
+
   it("vincula EV- huérfanas al condominio y omite las vinculadas", async () => {
     unidadesService.getUnidades.mockResolvedValue({
       data: [{ id: "uc", numero: "0", tipo: "CONDOMINIO" }],
