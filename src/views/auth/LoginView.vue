@@ -37,13 +37,21 @@ async function handleLogin(event) {
   try {
     await auth.login(email.value, password.value);
 
+    const roles = auth.user?.roles || [];
+    if (roles.includes("SUPER_ADMIN")) {
+      router.push({ name: "SuperAdminDashboard" });
+      return;
+    }
+    if (roles.includes("SOPORTE")) {
+      router.push({ name: "SaasAuditoria" });
+      return;
+    }
+
     if (auth.condominios.length === 0) {
       error.value = "No tienes acceso a ningún condominio";
       return;
     }
-    if (auth.user.roles.includes("SUPER_ADMIN")) {
-      router.push({ name: "SuperAdminDashboard" });
-    } else if (auth.condominioActualRol === "ADMINISTRADOR") {
+    if (auth.condominioActualRol === "ADMINISTRADOR") {
       router.push({ name: "Dashboard" });
     } else if (auth.condominioActualRol === "GUARDIA") {
       router.push({ name: "GuardiaDashboard" });

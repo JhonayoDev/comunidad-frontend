@@ -3,7 +3,6 @@ import { computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useSetupConfiguracion, marcarEnEdicion } from "@/composables/useSetupConfiguracion";
-import { enGracia } from "@/utils/errores";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -19,8 +18,6 @@ const { cargando, error, pasos, primerPasoPendiente, configuraciónCompleta, pro
   useSetupConfiguracion();
 
 const pasosVisibles = computed(() => pasos.value.filter((p) => !p.oculto));
-
-const condominioEnGracia = computed(() => enGracia(auth.condominioActualId));
 
 onMounted(cargar);
 
@@ -95,11 +92,6 @@ function onEdicionPlanilla(enEdicion) {
     <Message v-else-if="error" severity="error">{{ error }}</Message>
 
     <template v-else>
-      <Message v-if="condominioEnGracia" severity="warn" :closable="false">
-        El condominio está en período de gracia por pago pendiente: solo se
-        permite consultar información. Los cambios no se guardarán hasta
-        reactivar con soporte.
-      </Message>
       <!-- Stepper compacto: el estado va en ícono + estilo (sin Tag de texto).
            Grid que envuelve (sin scroll lateral): 5 cols en móvil/desktop
            medio, 10 en xl. En móvil, etiqueta corta bajo el ícono. -->

@@ -11,6 +11,23 @@ Cambios recientes: **SSE dashboard/residente eliminados → polling** (`3efab9e`
 Frontend `feature/cambios-sse` (`d7f0f0b`) ya migrado a `useDashboardMetrics`/`useResidenteMetrics`.
 Histórico V57-V61 conservado abajo.
 
+## Frontend — Suscripción SaaS (✅ implementado, QA pendiente)
+- **Backend:** BE #89 / PR #90 (`4ca9235`) — `GET /condominios/{id}/suscripcion/estado`,
+  avisos `POR_VENCER`/`EN_GRACIA`/`SUSPENDIDO`, `accesoOperativo`/`statusPago` en
+  `/me/condominios`, gracia con escritura (`permitir-escritura-en-gracia=true`) y
+  suspensión con allowlist solo para contactos de facturación.
+- **Frontend:** `suscripcionService` + `useEstadoSuscripcion` (solo contactos de
+  facturación: rol ADMINISTRADOR o cargo ADMINISTRADOR/PRESIDENTE/TESORERO; 403
+  silencioso), `AvisoSuscripcion` (banner con CTA "Contactar soporte" y
+  `VITE_SUPPORT_EMAIL` opcional) en `MainLayout`, shell `SuscripcionSuspendida`
+  (bloquea vistas operativas; `Perfil` y logout accesibles), `authStore` expone
+  `statusPago`/`accesoOperativo`/`esContactoFacturacion`, retirado el banner temporal
+  de gracia y sus helpers, catálogo de reglas con `SUSCRIPCION_*` y
+  `CONTACTOS_FACTURACION`.
+- **QA pendiente:** probar en vivo `ATRASADO` (banner warn + escritura OK),
+  `SUSPENDIDO` (shell + `GET estado` solo contacto + `Perfil` accesible) y `PAGADO`
+  (sin banner); configurar `VITE_SUPPORT_EMAIL` para el CTA.
+
 ## Pendientes de implementación (backend)
 
 ### [ ] P1. Auditoría de "desactivar plan" (NUEVO)

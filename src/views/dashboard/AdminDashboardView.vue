@@ -16,7 +16,6 @@ import Skeleton from "primevue/skeleton";
 import { useSetupConfiguracion, hidratarGuardados } from "@/composables/useSetupConfiguracion";
 import { espaciosService } from "@/services/espaciosService";
 import { encomiendasService } from "@/services/encomiendasService";
-import { enGracia } from "@/utils/errores";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -26,8 +25,6 @@ const error = ref(null);
 
 const { pasos, configuraciónCompleta, sincronizarTotales, totalEspacios, totalAccesos } =
   useSetupConfiguracion();
-
-const condominioEnGracia = computed(() => enGracia(auth.condominioActualId));
 
 const pasosPendientes = computed(() =>
   pasos.value.filter((p) => !p.completado && !p.oculto),
@@ -124,11 +121,6 @@ onMounted(cargar);
     </template>
 
     <template v-else-if="dashboard">
-      <Message v-if="condominioEnGracia" severity="warn" :closable="false">
-        El condominio está en período de gracia por pago pendiente: solo se
-        permite consultar información. Contacta al soporte para reactivar la
-        edición.
-      </Message>
       <Card>
         <template #content>
           <div class="flex items-center gap-3">
