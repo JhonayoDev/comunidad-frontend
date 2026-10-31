@@ -15,6 +15,10 @@ export const REGLAS_CATALOGO = [
   { tipo: "DEUDA_VENCIDA", audiencia: "UNIDAD", canales: ["IN_APP", "EMAIL", "PUSH"], prioridad: "CRITICA", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: true, visibleUsuario: true },
   { tipo: "ANUNCIO_GENERAL_PUBLICADO", audiencia: "TODOS", canales: ["IN_APP", "EMAIL", "PUSH"], prioridad: "NORMAL", esObligatoriaInapp: false, esObligatoriaEmail: false, esObligatoriaPush: false, visibleUsuario: true },
   { tipo: "DOCUMENTO_PUBLICADO", audiencia: "TODOS", canales: ["IN_APP"], prioridad: "BAJA", esObligatoriaInapp: false, esObligatoriaEmail: false, esObligatoriaPush: false, visibleUsuario: true },
+  { tipo: "SUSCRIPCION_POR_VENCER", audiencia: "CONTACTOS_FACTURACION", canales: ["IN_APP", "EMAIL"], prioridad: "NORMAL", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: true },
+  { tipo: "SUSCRIPCION_VENCIDA", audiencia: "CONTACTOS_FACTURACION", canales: ["IN_APP", "EMAIL"], prioridad: "ALTA", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: true },
+  { tipo: "SUSCRIPCION_SUSPENDIDA", audiencia: "CONTACTOS_FACTURACION", canales: ["IN_APP", "EMAIL"], prioridad: "CRITICA", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: true },
+  { tipo: "SUSCRIPCION_REACTIVADA", audiencia: "CONTACTOS_FACTURACION", canales: ["IN_APP", "EMAIL"], prioridad: "NORMAL", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: true },
 ];
 
 export const AUDIENCIA_LABELS = {
@@ -28,6 +32,7 @@ export const AUDIENCIA_LABELS = {
   ADMINISTRADORES: "Administradores",
   PROPIETARIOS: "Propietarios",
   RESIDENTES: "Residentes",
+  CONTACTOS_FACTURACION: "Contactos de facturación",
   TODOS: "Todos",
 };
 
@@ -42,6 +47,7 @@ export const AUDIENCIA_DESC = {
   ADMINISTRADORES: "Los administradores del condominio (cargo ADMINISTRADOR activo).",
   PROPIETARIOS: "Solo propietarios con vínculo activo y notificaciones habilitadas en alguna unidad.",
   RESIDENTES: "Todos los ocupantes del condominio (quienes viven en sus unidades y tienen notificaciones habilitadas).",
+  CONTACTOS_FACTURACION: "Contactos de facturación del condominio: rol ADMINISTRADOR global y cargos ADMINISTRADOR, PRESIDENTE o TESORERO activos.",
   TODOS: "Todos los miembros del condominio: vínculos activos + miembros con cargo activo.",
 };
 
@@ -56,7 +62,7 @@ export const PRIORIDAD_DESC = {
   BAJA: "Informativa. Sin obligatoriedad por defecto. En reintentos de entrega se procesa al final (última en cola).",
   NORMAL: "Habitual. Se reintenta después de ALTA. Es la prioridad por defecto de la mayoría de avisos.",
   ALTA: "Importante. Reintento prioritario tras CRITICA. Usada para avisos que deben llegar pronto (ej. visita, reclamo, gasto común).",
-  CRITICA: "Máxima prioridad. Reserva 50 cupos diarios de email (Brevo 300/día) aun con cuota agotada y se reintenta primero. Solo DEUDA_VENCIDA la usa.",
+  CRITICA: "Máxima prioridad. Reserva 50 cupos diarios de email (Brevo 300/día) aun con cuota agotada y se reintenta primero. La usan DEUDA_VENCIDA y SUSCRIPCION_SUSPENDIDA.",
 };
 
 export const CANAL_LABELS = {

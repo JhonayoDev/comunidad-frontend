@@ -2099,7 +2099,7 @@
   {
     "component": "Button",
     "file": "src/views/dashboard/AdminDashboardView.vue",
-    "line": 139,
+    "line": 165,
     "signature": "icon-pos=\"right\" icon=\"pi pi-arrow-right\" size=\"small\"",
     "classes": "",
     "legacyProp": false,

@@ -105,6 +105,12 @@ export function reiniciarGuardados() {
   pasosGuardados.value.clear();
 }
 
+// Se exporta para que el dashboard hidrate la misma fuente que el wizard
+// sin refetchear todo (ver AdminDashboardView): lee los flags persistidos.
+export function hidratarGuardados(cid) {
+  cargarGuardados(cid);
+}
+
 function cargarGuardados(cid) {
   if (!cid) return;
   try {

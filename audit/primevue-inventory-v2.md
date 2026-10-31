@@ -1,6 +1,6 @@
 # Inventario PrimeVue (v2)
 
-Generado: 2026-10-09T04:41:55.677Z
+Generado: 2026-10-29T06:29:00.374Z
 
 Total de usos: **402**
 
@@ -316,7 +316,7 @@ icon="pi pi-sign-out" severity="warn"
 icon-pos="right" icon="pi pi-arrow-right" size="small"
 ```
 
-- src/views/dashboard/AdminDashboardView.vue:139
+- src/views/dashboard/AdminDashboardView.vue:165
 - src/views/setup/SetupEntidadesView.vue:1186
 - src/views/setup/SetupLayout.vue:155
 - src/views/setup/SetupUnidadesView.vue:1083

@@ -24,7 +24,7 @@
       class="relative z-10 flex flex-col"
       :class="mostrarBottomNav ? 'flex-1 min-h-0' : 'min-h-screen'"
     >
-      <AppHeader />
+      <AppHeader :suspendido="suspendido" />
       <main
         ref="mainRef"
         class="flex-1"
@@ -32,9 +32,20 @@
           mostrarBottomNav ? 'min-h-0 overflow-y-auto pb-24' : 'overflow-y-auto'
         "
       >
-        <RouterView />
+        <div
+          v-if="avisoPrincipal && (!suspendido || permiteEnSuspension)"
+          class="px-3 pt-3 sm:px-4"
+        >
+          <AvisoSuscripcion :aviso="avisoPrincipal" />
+        </div>
+        <SuscripcionSuspendida
+          v-if="suspendido && !permiteEnSuspension"
+          :aviso="avisoPrincipal"
+          :estado="estadoSuscripcion"
+        />
+        <RouterView v-else />
       </main>
-      <BottomNavigation v-if="mostrarBottomNav" />
+      <BottomNavigation v-if="mostrarBottomNav && !suspendido" />
       <AppFooter v-else />
     </div>
 
@@ -44,15 +55,26 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, watch, watchEffect, ref, nextTick } from "vue";
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  watch,
+  watchEffect,
+  ref,
+  nextTick,
+} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import fondoweb from "@/assets/fondoweb.webp";
 import AppHeader from "@/components/layout/AppHeader.vue";
 import AppFooter from "@/components/layout/AppFooter.vue";
 import BottomNavigation from "@/components/layout/BottomNavigation.vue";
 import NotificationBanner from "@/components/NotificationBanner.vue";
+import AvisoSuscripcion from "@/components/suscripcion/AvisoSuscripcion.vue";
+import SuscripcionSuspendida from "@/components/suscripcion/SuscripcionSuspendida.vue";
 import { useAuthStore } from "@/stores/authStore";
 import { usePwaStandalone } from "@/composables/usePwaStandalone";
+import { useEstadoSuscripcion } from "@/composables/useEstadoSuscripcion";
 import {
   iniciarStreamNotificaciones,
   detenerStreamNotificaciones,
@@ -63,6 +85,33 @@ const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
 const { mostrar: mostrarBottomNav } = usePwaStandalone();
+const {
+  avisoPrincipal,
+  estado: estadoSuscripcion,
+  suspendido: suspendidoApi,
+  habilitado: suscripcionHabilitada,
+  recargar: recargarSuscripcion,
+} = useEstadoSuscripcion();
+
+// La API manda cuando ya cargó; antes de la primera respuesta se usa el
+// resumen de /me/condominios (accesoOperativo=false en suspendidos).
+const suspendido = computed(() => {
+  if (estadoSuscripcion.value) return suspendidoApi.value;
+  return !auth.condominioActualAccesoOperativo;
+});
+
+// Refresco suave al navegar (además del polling de 5 min): una lectura por
+// cambio de vista, sin refetch en cambios de query de la misma vista.
+watch(
+  () => route.name,
+  () => {
+    if (suscripcionHabilitada.value) recargarSuscripcion();
+  },
+);
+
+// El perfil usa /me (no interceptado por el filtro de suspensión): se deja
+// accesible para que el contacto pueda revisar sus datos y cerrar sesión.
+const permiteEnSuspension = computed(() => route.name === "Perfil");
 
 const mainRef = ref(null);
 
@@ -95,7 +144,7 @@ watchEffect(() => {
     (cod) => cod === "NOTIFICACION_VER",
   );
 
-  if (cid && tienePermisoNotificaciones) {
+  if (cid && tienePermisoNotificaciones && !suspendido.value) {
     iniciarStreamNotificaciones(cid);
   } else {
     detenerStreamNotificaciones();

@@ -45,6 +45,24 @@ export const useAuthStore = defineStore("auth", () => {
   const condominioActualCargo = computed(
     () => condominioActual.value?.cargo || null,
   );
+  const condominioActualStatusPago = computed(
+    () => condominioActual.value?.statusPago || null,
+  );
+  // false solo cuando el backend marca el condominio como suspendido. null
+  // (versiones previas del resumen) se trata como operativo.
+  const condominioActualAccesoOperativo = computed(
+    () => condominioActual.value?.accesoOperativo !== false,
+  );
+  // Mismo criterio que ContactoFacturacionService del backend: rol
+  // ADMINISTRADOR global o cargo ADMINISTRADOR/PRESIDENTE/TESORERO activo.
+  const esContactoFacturacion = computed(() => {
+    const rol = condominioActual.value?.rolAcceso;
+    const cargo = condominioActual.value?.cargo;
+    return (
+      rol === "ADMINISTRADOR" ||
+      ["ADMINISTRADOR", "PRESIDENTE", "TESORERO"].includes(cargo)
+    );
+  });
 
   // M3 (backend): un usuario es "solo-RESIDENTE" si tiene rol RESIDENTE y NO
   // tiene ninguno de los roles staff/admin (SUPER_ADMIN, SOPORTE, ADMINISTRADOR,
@@ -148,6 +166,19 @@ export const useAuthStore = defineStore("auth", () => {
     const { data } = await condominiosService.getCondominios();
     condominios.value = data;
     localStorage.setItem("condominios", JSON.stringify(data));
+
+    // Mantiene sincronizado el condominio activo con los campos nuevos del
+    // resumen (statusPago/accesoOperativo), sin cambiar la selección.
+    const actual = data.find((c) => c.id === condominioActual.value?.id);
+    if (actual) {
+      condominioActual.value = actual;
+      localStorage.setItem("condominioActual", JSON.stringify(actual));
+    } else if (condominioActual.value) {
+      condominioActual.value = null;
+      permisos.value = [];
+      permisosRol.value = null;
+      localStorage.removeItem("condominioActual");
+    }
   }
 
   function setActiveContext(ctx) {
@@ -224,6 +255,9 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActualNombre,
     condominioActualRol,
     condominioActualCargo,
+    condominioActualStatusPago,
+    condominioActualAccesoOperativo,
+    esContactoFacturacion,
     esSoloResidente,
     permisos,
     permisosRol,

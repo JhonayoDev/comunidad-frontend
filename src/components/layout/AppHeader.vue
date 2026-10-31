@@ -36,7 +36,7 @@
         rounded
         @click="toggleTema"
       />
-      <NotificacionPopover />
+      <NotificacionPopover v-if="!suspendido" />
       <Button variant="text"
         class="btn-no-bg header-btn"
         icon="pi pi-bars"
@@ -106,6 +106,10 @@ import Button from "primevue/button";
 import Select from "primevue/select";
 import Badge from "primevue/badge";
 
+defineProps({
+  suspendido: { type: Boolean, default: false },
+});
+
 const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
@@ -144,6 +148,10 @@ function goHome() {
   const roles = auth.user?.roles || [];
   if (roles.includes("SUPER_ADMIN")) {
     router.push({ name: "SuperAdminDashboard" });
+    return;
+  }
+  if (roles.includes("SOPORTE")) {
+    router.push({ name: "SaasAuditoria" });
     return;
   }
 
