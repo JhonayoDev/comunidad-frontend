@@ -17,7 +17,9 @@ const permisosDetalle = computed(() => {
 });
 
 const sinCatalogo = computed(() => {
-  return permisosEfectivos.value.filter((cod) => !PERMISOS.some((p) => p.codigo === cod));
+  return permisosEfectivos.value.filter(
+    (cod) => !PERMISOS.some((p) => p.codigo === cod),
+  );
 });
 
 const agrupados = computed(() => {
@@ -42,22 +44,36 @@ const totalPropios = computed(() => permisosEfectivos.value.length);
         <div class="flex flex-wrap gap-3 items-center">
           <div>
             <span class="text-sm text-text-muted">Rol:</span>
-            <Tag :value="auth.condominioActualRol || auth.user?.roles?.[0] || '—'" severity="info" class="ml-1" />
+            <Tag
+              :value="auth.condominioActualRol || auth.user?.roles?.[0] || '—'"
+              severity="info"
+              class="ml-1"
+            />
           </div>
           <div v-if="auth.condominioActualCargo">
             <span class="text-sm text-text-muted">Cargo:</span>
-            <Tag :value="auth.condominioActualCargo" severity="warn" class="ml-1" />
+            <Tag
+              :value="auth.condominioActualCargo"
+              severity="warn"
+              class="ml-1"
+            />
           </div>
           <div class="text-sm text-text-subprincipal ml-auto">
-            {{ totalPropios }} de {{ totalPermisos }} permisos
+            {{ totalPropios }} permisos
           </div>
         </div>
       </template>
     </Card>
 
-    <div v-for="(permisos, modulo) in agrupados" :key="modulo" class="bg-surface border border-border p-3 border-round">
+    <div
+      v-for="(permisos, modulo) in agrupados"
+      :key="modulo"
+      class="bg-surface border border-border p-3 border-round"
+    >
       <div class="flex items-center gap-2 mb-2">
-        <span class="font-bold text-text">{{ MODULOS.find((m) => m.codigo === modulo)?.nombre || modulo }}</span>
+        <span class="font-bold text-text">{{
+          MODULOS.find((m) => m.codigo === modulo)?.nombre || modulo
+        }}</span>
         <Tag :value="permisos.length" severity="info" size="small" />
       </div>
       <div class="flex flex-wrap gap-2">
@@ -73,7 +89,10 @@ const totalPropios = computed(() => permisosEfectivos.value.length);
       </div>
     </div>
 
-    <div v-if="sinCatalogo.length" class="bg-surface border border-border p-3 border-round">
+    <div
+      v-if="sinCatalogo.length"
+      class="bg-surface border border-border p-3 border-round"
+    >
       <div class="flex items-center gap-2 mb-2">
         <span class="font-bold text-text">Permisos sin catalogar</span>
         <Tag :value="sinCatalogo.length" severity="warn" size="small" />
@@ -91,7 +110,10 @@ const totalPropios = computed(() => permisosEfectivos.value.length);
       </div>
     </div>
 
-    <div v-if="!permisosDetalle.length" class="text-center text-text-subprincipal py-8">
+    <div
+      v-if="!permisosDetalle.length"
+      class="text-center text-text-subprincipal py-8"
+    >
       No hay permisos asignados
     </div>
   </div>
