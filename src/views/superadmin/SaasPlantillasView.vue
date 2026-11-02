@@ -51,7 +51,20 @@ const canalOptions = [
 
 const canalSeverity = { IN_APP: "info", EMAIL: "warn", PUSH: "success" };
 
-const variables = ["{{nombre}}", "{{unidad}}", "{{condominio}}", "{{fecha}}", "{{extra}}", "{{imagen_url}}", "{{link}}", "{{logo_url}}"];
+const variables = [
+  "{{nombre}}",
+  "{{unidad}}",
+  "{{condominio}}",
+  "{{fecha}}",
+  "{{extra}}",
+  "{{imagen_url}}",
+  "{{link}}",
+  "{{logo_url}}",
+  "{{email_anterior}}",
+  "{{email_nuevo}}",
+  "{{motivo}}",
+  "{{actor}}",
+];
 const copiada = ref("");
 
 const ejemplo = {
@@ -60,8 +73,17 @@ const ejemplo = {
   condominio: "Condominio Los Robles",
   fecha: "12 ago 2026",
   extra: "Encomienda #123",
-  link: "https://comunidad.briku.cl/auth/setup-password?token=abc123",
+  link: "https://comunidad.briku.cl/auth/confirmar-cambio-email?token=abc123",
   logo_url: "https://comunidad.briku.cl/logo.png",
+  email_anterior: "maria@correo.cl",
+  email_nuevo: "maria.nueva@correo.cl",
+  motivo: "Correo mal ingresado en la planilla",
+  actor: "Administración Los Robles",
+};
+
+const etiquetasCodigo = {
+  SISTEMA_CAMBIO_EMAIL: "Confirmación de cambio de email",
+  SISTEMA_CAMBIO_EMAIL_ANTERIOR: "Aviso de cambio de email (anterior)",
 };
 
 const plantillasFiltradas = computed(() => {
@@ -202,6 +224,7 @@ async function reactivar(p) {
 }
 
 function codigoLabel(codigo) {
+  if (etiquetasCodigo[codigo]) return etiquetasCodigo[codigo];
   return codigo.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -238,7 +261,11 @@ function interpolar(texto) {
     .replace(/\{\{extra\}\}/g, ejemplo.extra)
     .replace(/\{\{imagen_url\}\}/g, "https://ejemplo.cl/imagen.png")
     .replace(/\{\{link\}\}/g, ejemplo.link)
-    .replace(/\{\{logo_url\}\}/g, ejemplo.logo_url);
+    .replace(/\{\{logo_url\}\}/g, ejemplo.logo_url)
+    .replace(/\{\{email_anterior\}\}/g, ejemplo.email_anterior)
+    .replace(/\{\{email_nuevo\}\}/g, ejemplo.email_nuevo)
+    .replace(/\{\{motivo\}\}/g, ejemplo.motivo)
+    .replace(/\{\{actor\}\}/g, ejemplo.actor);
 }
 
 function abrirPreview(p) {
