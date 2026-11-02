@@ -14,6 +14,8 @@ const routes = [
       { path: "/recuperar-password", name: "ForgotPassword",  alias: "/auth/recuperar-password", component: () => import("../views/auth/ForgotPasswordView.vue") },
       { path: "/reset-password",     name: "ResetPassword",   alias: "/auth/reset-password",     component: () => import("../views/auth/ResetPasswordView.vue") },
       { path: "/setup-password",     name: "SetupPassword",   alias: "/auth/setup-password",     component: () => import("../views/auth/SetupPasswordView.vue") },
+      { path: "/confirmar-cambio-email", name: "ConfirmarCambioEmail", alias: "/auth/confirmar-cambio-email", component: () => import("../views/auth/ConfirmarCambioEmailView.vue") },
+      { path: "/me/verificar-email", name: "VerificarCambioEmail", component: () => import("../views/auth/VerificarCambioEmailView.vue") },
     ],
   },
 
@@ -519,6 +521,22 @@ function rutaInicial(auth) {
   return { name: "Menu" };
 }
 
+function mismoDestino(to, destino) {
+  if (!destino) return false;
+  if (destino.name && to.name) return destino.name === to.name;
+  if (destino.path && to.path) return destino.path === to.path;
+  return false;
+}
+
+// Evita que un guard redirija siempre a la misma ruta (Vue Router aborta
+// tras 30 redirecciones encadenadas). Menu no tiene restricciones, por lo
+// que es el fallback seguro cuando el destino inicial ya es el actual.
+function redirigirInicio(auth, to) {
+  const inicio = rutaInicial(auth);
+  if (!mismoDestino(to, inicio)) return inicio;
+  return to.name === "Menu" ? undefined : { name: "Menu" };
+}
+
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
 
@@ -541,17 +559,17 @@ router.beforeEach(async (to) => {
   }
 
   if (to.name === "Login" && auth.isAuthenticated) {
-    return rutaInicial(auth);
+    return redirigirInicio(auth, to);
   }
 
   if (to.path === "/" && auth.isAuthenticated) {
-    return rutaInicial(auth);
+    return redirigirInicio(auth, to);
   }
 
   // Si está autenticado pero sin datos de usuario (ej: sesión restaurada
   // via cookie), mostrar menú como fallback seguro
   if (auth.isAuthenticated && !auth.user?.roles?.length && !to.meta.public) {
-    return { name: "Menu" };
+    return to.name === "Menu" ? undefined : { name: "Menu" };
   }
 
   const userRoles = auth.user?.roles || [];
@@ -571,7 +589,7 @@ router.beforeEach(async (to) => {
     const hasPermiso = routePermiso
       ? userPermisos.includes(routePermiso)
       : routePermisos.some((p) => userPermisos.includes(p));
-    if (!hasPermiso) return rutaInicial(auth);
+    if (!hasPermiso) return redirigirInicio(auth, to);
     if (!necesitaRol && !necesitaCargo) return;
   }
 
@@ -586,7 +604,7 @@ router.beforeEach(async (to) => {
   if (cumpleCargo) return;
   if (cumpleRol) return;
 
-  return rutaInicial(auth);
+  return redirigirInicio(auth, to);
 });
 
 export default router;

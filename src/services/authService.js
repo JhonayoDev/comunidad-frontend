@@ -46,4 +46,12 @@ export const authService = {
       passwordNuevaConfirmacion: confirmPassword,
     });
   },
+
+  confirmarCambioEmail({ token, newPassword, confirmPassword }) {
+    return authHttp.post("/auth/confirmar-cambio-email", {
+      token,
+      passwordNueva: newPassword,
+      passwordNuevaConfirmacion: confirmPassword,
+    });
+  },
 };

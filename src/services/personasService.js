@@ -21,6 +21,14 @@ export const personasService = {
     return api.put(`/condominios/${cid}/personas/${id}`, data);
   },
 
+  cambiarEmail(cid, id, data) {
+    return api.patch(`/condominios/${cid}/personas/${id}/email`, data);
+  },
+
+  reenviarVerificacionEmail(cid, id) {
+    return api.post(`/condominios/${cid}/personas/${id}/email/reenviar`);
+  },
+
   desactivar(cid, id) {
     return api.patch(`/condominios/${cid}/personas/${id}/desactivar`);
   },

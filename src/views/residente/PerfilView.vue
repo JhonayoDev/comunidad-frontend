@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 import { perfilService } from "../../services/perfilService";
+import { emailValido, normalizarEmail } from "../../utils/validadoresChile";
 
 import Card from "primevue/card";
 import Avatar from "primevue/avatar";
@@ -181,15 +182,20 @@ async function solicitarEmail() {
   mensajeEmail.value = "";
   errorEmail.value = false;
 
-  if (!emailForm.value.nuevo) {
+  const emailNuevo = normalizarEmail(emailForm.value.nuevo);
+  if (!emailNuevo) {
     erroresEmail.value.nuevo = "Campo obligatorio";
+    return;
+  }
+  if (!emailValido(emailNuevo)) {
+    erroresEmail.value.nuevo = "Ingresa un email válido";
     return;
   }
 
   loadingEmail.value = true;
   try {
-    await perfilService.solicitarCambioEmail(emailForm.value.nuevo);
-    mensajeEmail.value = `Te enviamos un link de verificación a ${emailForm.value.nuevo}`;
+    await perfilService.solicitarCambioEmail(emailNuevo);
+    mensajeEmail.value = `Te enviamos un enlace de verificación a ${emailNuevo}. Inicia sesión con tu cuenta actual para confirmarlo.`;
     emailForm.value.nuevo = "";
   } catch (e) {
     console.error("Error al solicitar cambio de email", e);
@@ -365,7 +371,9 @@ async function solicitarEmail() {
         <template v-if="seccionActiva === 'email'" #content>
           <div class="flex flex-col gap-3 pt-2">
             <p class="text-sm text-text-muted">
-              Te enviaremos un link de verificación al nuevo email. El cambio se aplicará al confirmar.
+              Te enviaremos un enlace de verificación al nuevo email. Deberás
+              iniciar sesión con tu cuenta actual para confirmarlo; después
+              ingresa con el nuevo correo.
             </p>
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold">Nuevo email</label>

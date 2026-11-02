@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 
 import Card from "primevue/card";
@@ -9,6 +9,7 @@ import Password from "primevue/password";
 import Button from "primevue/button";
 import Message from "primevue/message";
 
+const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 
@@ -36,6 +37,12 @@ async function handleLogin(event) {
 
   try {
     await auth.login(email.value, password.value);
+
+    const redirect = String(route.query.redirect || "");
+    if (redirect.startsWith("/") && !redirect.startsWith("//")) {
+      await router.push(redirect);
+      return;
+    }
 
     const roles = auth.user?.roles || [];
     if (roles.includes("SUPER_ADMIN")) {

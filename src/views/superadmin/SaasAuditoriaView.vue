@@ -36,6 +36,9 @@ const ACCIONES = [
   { value: "PLANTILLA_EDITAR", label: "Editar plantilla", severity: "info" },
   { value: "PLANTILLA_DESACTIVAR", label: "Desactivar plantilla", severity: "danger" },
   { value: "PLANTILLA_REACTIVAR", label: "Reactivar plantilla", severity: "success" },
+  { value: "PERSONA_EMAIL_CAMBIAR", label: "Cambiar email de persona", severity: "info" },
+  { value: "PERSONA_EMAIL_CONFIRMAR", label: "Confirmar cambio de email", severity: "success" },
+  { value: "PERSONA_EMAIL_REENVIAR", label: "Reenviar verificación de email", severity: "warn" },
   { value: "ACCESO_CONDOMINIO", label: "Acceso a condominio", severity: "warn" },
 ];
 

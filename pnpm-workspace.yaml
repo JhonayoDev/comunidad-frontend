@@ -7,3 +7,5 @@ onlyBuiltDependencies:
   - esbuild
   - workerd
   - vue-demi
+patchedDependencies:
+  primevue@4.5.5: patches/primevue@4.5.5.patch

@@ -157,7 +157,7 @@ function cancelarEdicion() {
 }
 
 async function agregarFilaYSaltar() {
-  p.agregarFila();
+  p.value.agregarFila();
   // La fila nace al final: limpiar filtro e ir a su página (si no, parece
   // que no pasa nada). Tras nextTick para que el reset del watcher no pise.
   filtroCasa.value = "";
