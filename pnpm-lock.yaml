@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  primevue@4.5.5: c47a36a0c5e384d566aa807789cdaf980294cc95e22919aecf82ae68ae55591f
+
 importers:
 
   .:
@@ -28,7 +31,7 @@ importers:
         version: 7.0.0
       primevue:
         specifier: ^4.5.5
-        version: 4.5.5(vue@3.5.34)
+        version: 4.5.5(patch_hash=c47a36a0c5e384d566aa807789cdaf980294cc95e22919aecf82ae68ae55591f)(vue@3.5.34)
       tailwindcss-primeui:
         specifier: ^0.6.1
         version: 0.6.1(tailwindcss@4.3.0)
@@ -5662,7 +5665,7 @@ snapshots:
 
   primeicons@7.0.0: {}
 
-  primevue@4.5.5(vue@3.5.34):
+  primevue@4.5.5(patch_hash=c47a36a0c5e384d566aa807789cdaf980294cc95e22919aecf82ae68ae55591f)(vue@3.5.34):
     dependencies:
       '@primeuix/styled': 0.7.4
       '@primeuix/styles': 2.0.3

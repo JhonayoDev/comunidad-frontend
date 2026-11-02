@@ -1,0 +1,12 @@
+diff --git a/focustrap/index.mjs b/focustrap/index.mjs
+index 5503308b95677c67fa149c9ef05fe1e042665e78..54a6909178329cbd86a43ade4996947b0e3d6ab6 100644
+--- a/focustrap/index.mjs
++++ b/focustrap/index.mjs
+@@ -46,6 +46,7 @@ var FocusTrap = BaseFocusTrap.extend('focustrap', {
+         mutationList.forEach(function (mutation) {
+           if (mutation.type === 'childList' && !el.contains(document.activeElement)) {
+             var _findNextFocusableElement = function findNextFocusableElement(_el) {
++              if (!_el) return null;
+               var focusableElement = isFocusableElement(_el) ? isFocusableElement(_el, _this.getComputedSelector(el.$_pfocustrap_focusableselector)) ? _el : getFirstFocusableElement(el, _this.getComputedSelector(el.$_pfocustrap_focusableselector)) : getFirstFocusableElement(_el);
+               return isNotEmpty(focusableElement) ? focusableElement : _el.nextSibling && _findNextFocusableElement(_el.nextSibling);
+             };
