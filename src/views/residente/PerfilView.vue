@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 import { perfilService } from "../../services/perfilService";
-import { emailValido, normalizarEmail } from "../../utils/validadoresChile";
+import { emailValido, normalizarEmail, formatearRutCompleto } from "../../utils/validadoresChile";
 
 import Card from "primevue/card";
 import Avatar from "primevue/avatar";
@@ -29,6 +29,12 @@ const preferencias = ref([]);
 const loadingPref = ref(false);
 const guardandoPref = ref({});
 
+// Para navegación a solicitud de corrección RUT
+function irACorreccionRut() {
+  // MisSolicitudesView abre el formulario de CORRECCION_RUT al recibir ?nueva=
+  router.push({ name: "MisSolicitudes", query: { nueva: "CORRECCION_RUT" } });
+}
+
 const tipoLabels = {
   VISITA_PREAUTORIZADA: "Visita preautorizada",
   VISITA_INGRESADA: "Visita ingresada",
@@ -46,6 +52,10 @@ const tipoLabels = {
   DEUDA_VENCIDA: "Deuda vencida",
   ANUNCIO_GENERAL_PUBLICADO: "Anuncio publicado",
   DOCUMENTO_PUBLICADO: "Documento publicado",
+  SOLICITUD_CREADA: "Solicitud creada",
+  SOLICITUD_RESPONDIDA: "Solicitud respondida",
+  SOLICITUD_CERRADA: "Solicitud cerrada",
+  RUT_CORREGIDO: "RUT corregido",
 };
 
 async function cargarPreferencias() {
@@ -89,6 +99,10 @@ const iniciales = computed(() => {
     .toUpperCase()
     .slice(0, 2);
 });
+
+const rutFormateado = computed(() =>
+  me.value?.rut ? formatearRutCompleto(me.value.rut) : "",
+);
 
 onMounted(async () => {
   try {
@@ -275,6 +289,26 @@ async function solicitarEmail() {
               <InputText
                 v-model="datoForm.telefono"
                 placeholder="+56 9 XXXX XXXX"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold">RUT</label>
+              <InputText
+                :value="rutFormateado || 'Sin RUT registrado'"
+                readonly
+                class="bg-inset"
+              />
+              <p class="text-xs text-text-muted m-0 mt-1">
+                El RUT es información oficial. Si hay un error, puedes solicitar su corrección.
+              </p>
+              <Button
+                v-if="me?.rut"
+                label="Solicitar corrección de RUT"
+                icon="pi pi-id-card"
+                severity="secondary"
+                variant="outlined"
+                size="small"
+                @click="irACorreccionRut"
               />
             </div>
             <Message v-if="mensajeDatos" :severity="errorDatos ? 'error' : 'success'" :closable="false">

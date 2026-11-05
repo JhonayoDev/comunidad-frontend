@@ -39,6 +39,10 @@ function iconoPorTipo(tipo) {
     RESERVA_CREADA: "pi pi-calendar-plus",
     RESERVA_APROBADA: "pi pi-check-circle",
     RESERVA_RECHAZADA: "pi pi-times-circle",
+    SOLICITUD_CREADA: "pi pi-inbox",
+    SOLICITUD_RESPONDIDA: "pi pi-comment",
+    SOLICITUD_CERRADA: "pi pi-check-circle",
+    RUT_CORREGIDO: "pi pi-id-card",
   };
   return iconos[tipo] || "pi pi-bell";
 }

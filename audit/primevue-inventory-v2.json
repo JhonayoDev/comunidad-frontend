@@ -437,7 +437,7 @@
   {
     "component": "Button",
     "file": "src/components/layout/NotificacionPopover.vue",
-    "line": 65,
+    "line": 69,
     "signature": "icon=\"pi pi-bell\" rounded severity=\"secondary\" variant=\"text\"",
     "classes": "btn-no-bg header-btn",
     "legacyProp": false,
@@ -454,7 +454,7 @@
   {
     "component": "Button",
     "file": "src/components/layout/NotificacionPopover.vue",
-    "line": 91,
+    "line": 95,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2087,6 +2087,239 @@
   },
   {
     "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 668,
+    "signature": "icon=\"pi pi-filter-slash\" severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Limpiar",
+      "icon": "pi pi-filter-slash",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "limpiarFiltros"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 869,
+    "signature": "icon=\"pi pi-save\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Guardar gestión",
+      "icon": "pi pi-save",
+      ":loading": "guardandoGestion",
+      ":disabled": "!hayCambiosGestion",
+      "@click": "guardarGestion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 886,
+    "signature": "icon=\"pi pi-times\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Desvincular",
+      "icon": "pi pi-times",
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
+      "@click": "desvincularCaso"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 897,
+    "signature": "icon=\"pi pi-link\" severity=\"secondary\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Vincular a caso",
+      "icon": "pi pi-link",
+      "severity": "secondary",
+      "@click": "abrirVincularCaso"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 903,
+    "signature": "icon=\"pi pi-plus\" severity=\"secondary\" size=\"small\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Crear caso",
+      "icon": "pi pi-plus",
+      "severity": "secondary",
+      "size": "small",
+      "@click": "abrirCrearCaso"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 966,
+    "signature": "icon=\"pi pi-send\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Enviar",
+      "icon": "pi pi-send",
+      ":loading": "enviandoSeguimiento",
+      ":disabled": "!nuevoSeguimiento.trim()",
+      "@click": "agregarSeguimiento"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 981,
+    "signature": "icon=\"pi pi-id-card\" severity=\"success\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "esCorreccionRut",
+      "label": "Aprobar corrección de RUT",
+      "icon": "pi pi-id-card",
+      "severity": "success",
+      "@click": "abrirResolucion('RESUELTA')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 988,
+    "signature": "icon=\"pi pi-check\" severity=\"success\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-else": true,
+      "label": "Resolver",
+      "icon": "pi pi-check",
+      "severity": "success",
+      "@click": "abrirResolucion('RESUELTA')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 995,
+    "signature": "icon=\"pi pi-times\" severity=\"danger\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Rechazar",
+      "icon": "pi pi-times",
+      "severity": "danger",
+      "@click": "abrirResolucion('RECHAZADA')"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 1006,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cerrar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showDetalle = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 1075,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showResolver = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 1081,
+    "signature": ":severity=\"resolverData.resultado === 'RECHAZADA' ? 'danger' : 'success'\" icon=\"pi pi-check\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Confirmar",
+      "icon": "pi pi-check",
+      ":severity": "resolverData.resultado === 'RECHAZADA' ? 'danger' : 'success'",
+      ":loading": "guardandoResolver",
+      ":disabled": "!resolverData.motivo.trim()",
+      "@click": "confirmarResolucion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 1120,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showVincularCaso = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 1126,
+    "signature": "icon=\"pi pi-link\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Vincular",
+      "icon": "pi pi-link",
+      ":disabled": "!casoSeleccionado",
+      "@click": "vincularCaso"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 1162,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showCrearCaso = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/SolicitudesAdminView.vue",
+    "line": 1168,
+    "signature": "icon=\"pi pi-plus\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Crear caso",
+      "icon": "pi pi-plus",
+      "@click": "crearCasoDesdeSolicitud"
+    }
+  },
+  {
+    "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
     "line": 253,
     "signature": "icon=\"pi pi-plus\" size=\"small\"",
@@ -3097,7 +3330,36 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 254,
+    "line": 341,
+    "signature": "icon=\"pi pi-filter-slash\" severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Limpiar",
+      "icon": "pi pi-filter-slash",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "limpiarFiltros"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 498,
+    "signature": "icon=\"pi pi-link\" severity=\"secondary\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Vincular solicitudes",
+      "icon": "pi pi-link",
+      "severity": "secondary",
+      "@click": "abrirVincularSolicitudes"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 631,
     "signature": "icon=\"pi pi-comment\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -3112,26 +3374,43 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 261,
-    "signature": "icon=\"pi pi-check\"",
+    "line": 638,
+    "signature": "icon=\"pi pi-check\" severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "v-if": "detalle && detalle.estado !== 'CERRADO'",
       "label": "Cerrar caso",
       "icon": "pi pi-check",
-      "@click": "showCerrar = true"
+      "severity": "danger",
+      "@click": "abrirCerrar"
     }
   },
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 289,
-    "signature": "severity=\"secondary\"",
+    "line": 645,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-else": true,
+      "label": "Cerrar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showDetalle = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 680,
+    "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "severity": "secondary",
+      "variant": "text",
       "label": "Cancelar",
       "@click": "showSeguimiento = false"
     }
@@ -3139,25 +3418,56 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 290,
+    "line": 686,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "label": "Guardar",
       ":loading": "enviando",
+      ":disabled": "!formSeguimiento.comentario.trim()",
       "@click": "agregarSeguimiento"
     }
   },
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 303,
-    "signature": "severity=\"secondary\"",
+    "line": 729,
+    "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
       "severity": "secondary",
+      "variant": "text",
+      "label": "Cancelar",
+      "@click": "showVincular = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 735,
+    "signature": "icon=\"pi pi-link\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Vincular seleccionadas",
+      "icon": "pi pi-link",
+      ":loading": "enviando",
+      ":disabled": "!seleccionadas.length",
+      "@click": "vincularSeleccionadas"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/CasosAdminView.vue",
+    "line": 767,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "severity": "secondary",
+      "variant": "text",
       "label": "Cancelar",
       "@click": "showCerrar = false"
     }
@@ -3165,7 +3475,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 304,
+    "line": 773,
     "signature": "severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -3173,6 +3483,7 @@
       "label": "Cerrar caso",
       "severity": "danger",
       ":loading": "enviando",
+      ":disabled": "!resumenCierre.trim()",
       "@click": "cerrarCaso"
     }
   },
@@ -3462,7 +3773,7 @@
   {
     "component": "Button",
     "file": "src/views/notificaciones/NotificacionesView.vue",
-    "line": 80,
+    "line": 84,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -3532,16 +3843,30 @@
   {
     "component": "Button",
     "file": "src/views/residente/GestionesView.vue",
-    "line": 192,
-    "signature": "size=\"small\"",
+    "line": 149,
+    "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Enviar caso",
+      "label": "Crear solicitud",
+      "icon": "pi pi-plus",
+      "@click": "irAMisSolicitudes"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/GestionesView.vue",
+    "line": 175,
+    "signature": "icon=\"pi pi-arrow-right\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Ver todas",
+      "icon": "pi pi-arrow-right",
       "size": "small",
-      ":loading": "enviando",
-      ":disabled": "!form.titulo.trim()",
-      "@click": "enviarCaso"
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "irAMisSolicitudes"
     }
   },
   {
@@ -3636,8 +3961,124 @@
   },
   {
     "component": "Button",
+    "file": "src/views/residente/MisSolicitudesView.vue",
+    "line": 329,
+    "signature": "icon=\"pi pi-plus\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Nueva solicitud",
+      "icon": "pi pi-plus",
+      "@click": "abrirNueva()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisSolicitudesView.vue",
+    "line": 388,
+    "signature": "icon=\"pi pi-filter-slash\" severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Limpiar",
+      "icon": "pi pi-filter-slash",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "limpiarFiltros"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisSolicitudesView.vue",
+    "line": 575,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showNueva = false"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisSolicitudesView.vue",
+    "line": 581,
+    "signature": "icon=\"pi pi-send\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Crear solicitud",
+      "icon": "pi pi-send",
+      ":loading": "enviando",
+      "@click": "crearSolicitud"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisSolicitudesView.vue",
+    "line": 719,
+    "signature": "icon=\"pi pi-send\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Enviar respuesta",
+      "icon": "pi pi-send",
+      ":loading": "enviandoSeguimiento",
+      ":disabled": "!nuevoSeguimiento.trim()",
+      "@click": "agregarSeguimiento"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisSolicitudesView.vue",
+    "line": 733,
+    "signature": "icon=\"pi pi-times\" severity=\"danger\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cancelar solicitud",
+      "icon": "pi pi-times",
+      "severity": "danger",
+      "@click": "confirmarCancelar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/MisSolicitudesView.vue",
+    "line": 744,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cerrar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "showDetalle = false"
+    }
+  },
+  {
+    "component": "Button",
     "file": "src/views/residente/PerfilView.vue",
-    "line": 283,
+    "line": 304,
+    "signature": "icon=\"pi pi-id-card\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "me?.rut",
+      "label": "Solicitar corrección de RUT",
+      "icon": "pi pi-id-card",
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
+      "@click": "irACorreccionRut"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/residente/PerfilView.vue",
+    "line": 317,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -3651,7 +4092,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/PerfilView.vue",
-    "line": 344,
+    "line": 378,
     "signature": "icon=\"pi pi-key\"",
     "classes": "",
     "legacyProp": false,
@@ -3665,7 +4106,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/PerfilView.vue",
-    "line": 391,
+    "line": 425,
     "signature": "icon=\"pi pi-send\"",
     "classes": "",
     "legacyProp": false,
@@ -4902,7 +5343,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasAuditoriaView.vue",
-    "line": 210,
+    "line": 218,
     "signature": ":severity=\"busquedaVisible ? 'primary' : 'secondary'\" icon=\"pi pi-search\" size=\"small\" variant=\"outlined\"",
     "classes": "rounded-lg shrink-0",
     "legacyProp": false,
@@ -4920,7 +5361,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasAuditoriaView.vue",
-    "line": 291,
+    "line": 299,
     "signature": "icon=\"pi pi-search\" severity=\"secondary\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -4935,7 +5376,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasAuditoriaView.vue",
-    "line": 292,
+    "line": 300,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -5311,7 +5752,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
-    "line": 285,
+    "line": 289,
     "signature": "icon=\"pi pi-arrow-left\" severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -5325,7 +5766,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
-    "line": 351,
+    "line": 355,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -5339,7 +5780,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
-    "line": 352,
+    "line": 356,
     "signature": "icon=\"pi pi-bolt\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -5354,7 +5795,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
-    "line": 353,
+    "line": 357,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
@@ -5371,7 +5812,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
-    "line": 367,
+    "line": 371,
     "signature": "icon=\"pi pi-plus\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -5385,7 +5826,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
-    "line": 391,
+    "line": 395,
     "signature": "icon=\"pi pi-pencil\" severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -5400,7 +5841,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
-    "line": 417,
+    "line": 421,
     "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -5413,7 +5854,7 @@
   {
     "component": "Button",
     "file": "src/views/superadmin/SaasEmailConfigView.vue",
-    "line": 418,
+    "line": 422,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,

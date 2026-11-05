@@ -19,6 +19,10 @@ export const REGLAS_CATALOGO = [
   { tipo: "SUSCRIPCION_VENCIDA", audiencia: "CONTACTOS_FACTURACION", canales: ["IN_APP", "EMAIL"], prioridad: "ALTA", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: true },
   { tipo: "SUSCRIPCION_SUSPENDIDA", audiencia: "CONTACTOS_FACTURACION", canales: ["IN_APP", "EMAIL"], prioridad: "CRITICA", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: true },
   { tipo: "SUSCRIPCION_REACTIVADA", audiencia: "CONTACTOS_FACTURACION", canales: ["IN_APP", "EMAIL"], prioridad: "NORMAL", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: true },
+  { tipo: "SOLICITUD_CREADA", audiencia: "ADMINISTRACION", canales: ["IN_APP", "EMAIL"], prioridad: "ALTA", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: false },
+  { tipo: "SOLICITUD_RESPONDIDA", audiencia: "PERSONA", canales: ["IN_APP", "EMAIL"], prioridad: "NORMAL", esObligatoriaInapp: false, esObligatoriaEmail: false, esObligatoriaPush: false, visibleUsuario: true },
+  { tipo: "SOLICITUD_CERRADA", audiencia: "PERSONA", canales: ["IN_APP", "EMAIL"], prioridad: "NORMAL", esObligatoriaInapp: false, esObligatoriaEmail: false, esObligatoriaPush: false, visibleUsuario: true },
+  { tipo: "RUT_CORREGIDO", audiencia: "ADMINISTRACION", canales: ["IN_APP", "EMAIL"], prioridad: "ALTA", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: false },
 ];
 
 export const AUDIENCIA_LABELS = {
@@ -30,6 +34,7 @@ export const AUDIENCIA_LABELS = {
   GUARDIAS: "Guardias",
   GUARDIAS_EN_TURNO: "Guardias en turno",
   ADMINISTRADORES: "Administradores",
+  ADMINISTRACION: "Administración",
   PROPIETARIOS: "Propietarios",
   RESIDENTES: "Residentes",
   CONTACTOS_FACTURACION: "Contactos de facturación",
@@ -45,6 +50,7 @@ export const AUDIENCIA_DESC = {
   GUARDIAS: "Personal de portería y seguridad: guardias y conserjes del condominio.",
   GUARDIAS_EN_TURNO: "Solo los guardias/conserjes que están efectivamente en turno según la bitácora. Si ninguno está, se notifica a todos los guardias para no perder avisos críticos.",
   ADMINISTRADORES: "Los administradores del condominio (cargo ADMINISTRADOR activo).",
+  ADMINISTRACION: "Quienes gestionan el condominio: cargo ADMINISTRADOR, PRESIDENTE o SECRETARIO activo. Es la audiencia de las solicitudes y reclamos, que no son visibles para el resto de los residentes.",
   PROPIETARIOS: "Solo propietarios con vínculo activo y notificaciones habilitadas en alguna unidad.",
   RESIDENTES: "Todos los ocupantes del condominio (quienes viven en sus unidades y tienen notificaciones habilitadas).",
   CONTACTOS_FACTURACION: "Contactos de facturación del condominio: rol ADMINISTRADOR global y cargos ADMINISTRADOR, PRESIDENTE o TESORERO activos.",
