@@ -20,6 +20,7 @@ import {
   construirPayload,
 } from "@/data/solicitudTipos";
 import { formatearRut, formatearRutCompleto } from "@/utils/validadoresChile";
+import { correccionRutHabilitada } from "@/utils/correccionRut";
 import { mensajeError } from "@/utils/errores";
 
 import Card from "primevue/card";
@@ -65,6 +66,7 @@ const unidadSeleccionada = ref("");
 const form = ref({});
 const erroresForm = ref({});
 const tipoInfo = computed(() => getTipoSolicitud(tipoSeleccionado.value));
+const rutHabilitacion = computed(() => correccionRutHabilitada(perfil.value));
 
 // Detalle
 const showDetalle = ref(false);
@@ -193,6 +195,12 @@ function prefill(tipoValue) {
 }
 
 function abrirNueva(tipoValue = "SOLICITUD") {
+  // La corrección de RUT no se ofrece por el alta genérica: solo se abre si la
+  // administración habilitó a la persona por una ventana vigente. Sin
+  // habilitación ignoramos el intento (no anunciamos la opción).
+  if (tipoValue === "CORRECCION_RUT" && !rutHabilitacion.value.habilitada) {
+    return;
+  }
   const tipo =
     getTipoSolicitud(tipoValue) || getTipoSolicitud("SOLICITUD") || null;
   tipoSeleccionado.value = tipo?.value || "SOLICITUD";
@@ -231,6 +239,7 @@ async function crearSolicitud() {
   if (!cid) return;
   enviando.value = true;
   error.value = null;
+  const eraCorreccionRut = tipoSeleccionado.value === "CORRECCION_RUT";
   try {
     const payload = construirPayload(tipoSeleccionado.value, form.value, {
       unidadId: unidadSeleccionada.value || null,
@@ -241,6 +250,9 @@ async function crearSolicitud() {
     exito.value = "Solicitud creada. Puedes seguir su estado en la lista.";
     paginacion.value.page = 0;
     await cargar();
+    // La habilitación es de un solo uso: refrescamos /me para que la acción
+    // desaparezca del perfil si el backend ya la marcó como consumida.
+    if (eraCorreccionRut) await cargarPerfil();
   } catch (e) {
     console.error("Error al crear solicitud", e);
     error.value = mensajeError(e, "Error al crear la solicitud");
@@ -507,7 +519,23 @@ onMounted(async () => {
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm font-medium">Tipo de solicitud</label>
+          <template v-if="tipoSeleccionado === 'CORRECCION_RUT'">
+            <div class="flex items-center gap-2 flex-wrap">
+              <Tag
+                :value="labelTipoSolicitud('CORRECCION_RUT')"
+                severity="info"
+              />
+              <small
+                v-if="rutHabilitacion.habilitada"
+                class="text-xs text-text-muted"
+              >
+                Habilitada por la administración hasta el
+                {{ formatearFechaHora(rutHabilitacion.hasta.toISOString()) }}
+              </small>
+            </div>
+          </template>
           <Select
+            v-else
             v-model="tipoSeleccionado"
             :options="TIPOS_SOLICITUD_ALTA"
             optionLabel="label"

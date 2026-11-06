@@ -249,6 +249,20 @@ Histórico V57-V61 conservado abajo.
 - **Frontend (gap):** `useDashboardMetrics.js`/`useResidenteMetrics.js` hacen polling incondicional. Si módulo no contratado → 403 en loop cada 30s/60s. Pendiente F2: guard por `listarModulos` o catch 403 → pausar query + mensaje "Módulo no contratado".
 - **SSE conservados:** `NotificacionController.java:103` (`/notificaciones/stream`, `NOTIFICACION_VER`, scoped persona) y `AdminMetricsStreamController.java:37` (`/admin/metrics/stream`, `SUPER_ADMIN|SOPORTE`) siguen vigentes.
 
+### [ ] P19. Habilitación temporal de corrección de RUT (issue #99)
+- **Solicitud:** `SOLICITUD_HABILITACION_TEMPORAL_CORRECCION_RUT.md` — backend JhonayoDev/briku#99
+- **Qué falta (backend):** tabla `rut_correccion_habilitaciones` (persona + condominio, estados
+  `VIGENTE`/`CONSUMIDA`/`REVOCADA`/`EXPIRADA`, motivo, `habilitada_por`, `consumida_en`,
+  `solicitud_id`); `POST/PATCH .../personas/{id}/correccion-rut/habilitar|revocar` (permiso
+  `PERSONA_RUT_CORREGIR`); `rutCorreccionHabilitadaHasta` en `/me`; `correccionRut` en
+  `PersonaDetalleResponse`; enforcement en `SolicitudService.crear` (`403` sin habilitación,
+  `409` con solicitud abierta, consumo único al crear); notificación
+  `RUT_CORRECCION_HABILITADA` y auditoría `PERSONA_RUT_CORRECCION_HABILITAR/REVOCAR`.
+- **Frontend (✅ preparado):** `PerfilView` solo muestra la acción si `rutCorreccionHabilitadaHasta`
+  está vigente; `TIPOS_SOLICITUD_ALTA` excluye `CORRECCION_RUT`; `MisSolicitudesView` ignora el
+  deep link sin habilitación. Al existir el endpoint: acción habilitar/revocar en
+  `ResidentesView` (24 h/72 h/7 días + motivo + `ConfirmDialog`) y QA en vivo.
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod

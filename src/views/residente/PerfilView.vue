@@ -4,6 +4,8 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 import { perfilService } from "../../services/perfilService";
 import { emailValido, normalizarEmail, formatearRutCompleto } from "../../utils/validadoresChile";
+import { correccionRutHabilitada } from "../../utils/correccionRut";
+import { formatearFecha } from "../../utils/fechas";
 
 import Card from "primevue/card";
 import Avatar from "primevue/avatar";
@@ -103,6 +105,11 @@ const iniciales = computed(() => {
 const rutFormateado = computed(() =>
   me.value?.rut ? formatearRutCompleto(me.value.rut) : "",
 );
+
+// Solo se muestra la acción mientras la administración tenga habilitada la
+// corrección. Sin habilitación no se anuncia nada: el residente contacta a la
+// administración si detecta un error.
+const rutHabilitacion = computed(() => correccionRutHabilitada(me.value));
 
 onMounted(async () => {
   try {
@@ -298,18 +305,21 @@ async function solicitarEmail() {
                 readonly
                 class="bg-inset"
               />
-              <p class="text-xs text-text-muted m-0 mt-1">
-                El RUT es información oficial. Si hay un error, puedes solicitar su corrección.
-              </p>
-              <Button
-                v-if="me?.rut"
-                label="Solicitar corrección de RUT"
-                icon="pi pi-id-card"
-                severity="secondary"
-                variant="outlined"
-                size="small"
-                @click="irACorreccionRut"
-              />
+              <template v-if="rutHabilitacion.habilitada">
+                <Message severity="info" :closable="false">
+                  La administración habilitó la corrección de tu RUT hasta el
+                  {{ formatearFecha(rutHabilitacion.hasta.toISOString()) }}.
+                  Podrás solicitarla una sola vez.
+                </Message>
+                <Button
+                  label="Solicitar corrección de RUT"
+                  icon="pi pi-id-card"
+                  severity="secondary"
+                  variant="outlined"
+                  size="small"
+                  @click="irACorreccionRut"
+                />
+              </template>
             </div>
             <Message v-if="mensajeDatos" :severity="errorDatos ? 'error' : 'success'" :closable="false">
               {{ mensajeDatos }}

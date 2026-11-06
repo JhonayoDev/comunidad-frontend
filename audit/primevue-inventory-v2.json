@@ -3962,7 +3962,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 338,
+    "line": 350,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -3975,7 +3975,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 407,
+    "line": 419,
     "signature": "icon=\"pi pi-filter-slash\" severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3990,7 +3990,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 601,
+    "line": 629,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4004,7 +4004,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 607,
+    "line": 635,
     "signature": "icon=\"pi pi-send\"",
     "classes": "",
     "legacyProp": false,
@@ -4018,7 +4018,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 768,
+    "line": 796,
     "signature": "icon=\"pi pi-send\"",
     "classes": "",
     "legacyProp": false,
@@ -4033,7 +4033,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 782,
+    "line": 810,
     "signature": "icon=\"pi pi-times\" severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -4047,7 +4047,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 793,
+    "line": 821,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4061,12 +4061,11 @@
   {
     "component": "Button",
     "file": "src/views/residente/PerfilView.vue",
-    "line": 304,
+    "line": 314,
     "signature": "icon=\"pi pi-id-card\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "v-if": "me?.rut",
       "label": "Solicitar corrección de RUT",
       "icon": "pi pi-id-card",
       "severity": "secondary",
@@ -4078,7 +4077,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/PerfilView.vue",
-    "line": 317,
+    "line": 327,
     "signature": "icon=\"pi pi-save\"",
     "classes": "",
     "legacyProp": false,
@@ -4092,7 +4091,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/PerfilView.vue",
-    "line": 378,
+    "line": 388,
     "signature": "icon=\"pi pi-key\"",
     "classes": "",
     "legacyProp": false,
@@ -4106,7 +4105,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/PerfilView.vue",
-    "line": 425,
+    "line": 435,
     "signature": "icon=\"pi pi-send\"",
     "classes": "",
     "legacyProp": false,

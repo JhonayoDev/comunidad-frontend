@@ -41,14 +41,21 @@ describe("solicitudTipos · registro", () => {
     ]);
   });
 
-  it("ofrece todos los tipos del catálogo en el alta", () => {
+  it("ofrece en el alta los tipos genéricos y de mantención", () => {
     expect(TIPOS_SOLICITUD_ALTA.map((t) => t.value)).toEqual([
       "SOLICITUD",
       "RECLAMO",
-      "CORRECCION_RUT",
       "SOLICITUD_MANTENCION",
       "RECLAMO_RUIDOS",
     ]);
+  });
+
+  it("mantiene CORRECCION_RUT en el catálogo y en los filtros, pero no en el alta", () => {
+    expect(TIPOS_SOLICITUD.some((t) => t.value === "CORRECCION_RUT")).toBe(true);
+    expect(TIPOS_SOLICITUD_API.map((t) => t.value)).toContain("CORRECCION_RUT");
+    expect(TIPOS_SOLICITUD_ALTA.map((t) => t.value)).not.toContain(
+      "CORRECCION_RUT",
+    );
   });
 
   it("no resuelve códigos legados retirados del backend", () => {

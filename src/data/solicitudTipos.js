@@ -312,9 +312,14 @@ export const TIPOS_SOLICITUD = [
 ];
 
 /**
- * Tipos disponibles para crear una solicitud.
+ * Tipos disponibles en el alta genérica. `CORRECCION_RUT` queda fuera: solo se
+ * ofrece cuando la administración habilita a la persona por una ventana de
+ * tiempo (ver `perfil.rutCorreccionHabilitadaHasta`). El backend rechaza el
+ * alta sin habilitación vigente.
  */
-export const TIPOS_SOLICITUD_ALTA = TIPOS_SOLICITUD;
+export const TIPOS_SOLICITUD_ALTA = TIPOS_SOLICITUD.filter(
+  (t) => t.value !== "CORRECCION_RUT",
+);
 
 /**
  * Tipos con los códigos exactos del enum `TipoSolicitud` del backend, para
