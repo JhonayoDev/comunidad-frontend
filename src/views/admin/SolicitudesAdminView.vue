@@ -7,7 +7,7 @@ import { unidadesService } from "@/services/unidadesService";
 import { personasService } from "@/services/personasService";
 import { personalService } from "@/services/personalService";
 import {
-  TIPOS_SOLICITUD,
+  TIPOS_SOLICITUD_API,
   CATEGORIAS_SOLICITUD,
   GRUPOS_ESTADO_SOLICITUD,
   ESTADOS_SOLICITUD,
@@ -573,7 +573,7 @@ onMounted(async () => {
             <label class="text-sm font-medium">Tipo</label>
             <Select
               v-model="filtroTipo"
-              :options="TIPOS_SOLICITUD"
+              :options="TIPOS_SOLICITUD_API"
               optionLabel="label"
               optionValue="value"
               class="w-full md:w-52"

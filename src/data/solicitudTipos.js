@@ -20,11 +20,84 @@ import {
 
 export const MOTIVOS_CORRECCION_RUT = [
   { label: "Error de tipeo", value: "ERROR_TIPEO" },
-  { label: "Cambio legal de RUT", value: "CAMBIO_LEGAL" },
   { label: "Otro", value: "OTRO" },
 ];
 
 export const TIPOS_SOLICITUD = [
+  {
+    value: "SOLICITUD",
+    label: "Solicitud",
+    icon: "pi pi-file",
+    categoria: "SOLICITUD",
+    descripcion: "Para cualquier solicitud",
+    campos: [
+      {
+        key: "titulo",
+        label: "Título",
+        type: "text",
+        required: true,
+        ayuda: "Resume tu solicitud en una frase",
+      },
+      {
+        key: "descripcion",
+        label: "Descripción",
+        type: "textarea",
+        required: true,
+        ayuda: "Explica con detalle lo que necesitas",
+      },
+    ],
+    prefill: () => ({}),
+    validacion: (datos) => {
+      const errores = {};
+      if (!String(datos.titulo || "").trim()) {
+        errores.titulo = "El título es obligatorio";
+      }
+      if (!String(datos.descripcion || "").trim()) {
+        errores.descripcion = "La descripción es obligatoria";
+      }
+      return errores;
+    },
+    generarTitulo: (datos) => datos.titulo,
+    generarDescripcion: (datos) => datos.descripcion,
+    generarPrioridad: () => "NORMAL",
+  },
+  {
+    value: "RECLAMO",
+    label: "Reclamo",
+    icon: "pi pi-file",
+    categoria: "RECLAMO",
+    descripcion: "Para reclamos",
+    campos: [
+      {
+        key: "titulo",
+        label: "Título",
+        type: "text",
+        required: true,
+        ayuda: "Resume el reclamo en una linea",
+      },
+      {
+        key: "descripcion",
+        label: "Descripción",
+        type: "textarea",
+        required: true,
+        ayuda: "Explica con detalle el motivo del reclamo",
+      },
+    ],
+    prefill: () => ({}),
+    validacion: (datos) => {
+      const errores = {};
+      if (!String(datos.titulo || "").trim()) {
+        errores.titulo = "El título es obligatorio";
+      }
+      if (!String(datos.descripcion || "").trim()) {
+        errores.descripcion = "La descripción es obligatoria";
+      }
+      return errores;
+    },
+    generarTitulo: (datos) => datos.titulo,
+    generarDescripcion: (datos) => datos.descripcion,
+    generarPrioridad: () => "NORMAL",
+  },
   {
     value: "CORRECCION_RUT",
     label: "Corrección de RUT",
@@ -69,7 +142,8 @@ export const TIPOS_SOLICITUD = [
         label: "URL de evidencia (opcional)",
         type: "url",
         required: false,
-        ayuda: "Enlace a un documento que respalde la corrección (certificado, escritura, etc.)",
+        ayuda:
+          "Enlace a un documento que respalde la corrección (certificado, escritura, etc.)",
       },
     ],
     prefill: (perfil) => ({
@@ -98,8 +172,11 @@ export const TIPOS_SOLICITUD = [
       return `Corrección de RUT${rut}`;
     },
     generarDescripcion: (datos) => {
-      const motivo = MOTIVOS_CORRECCION_RUT.find((m) => m.value === datos.motivo);
-      const detalle = datos.motivo === "OTRO" ? datos.motivoOtro : motivo?.label;
+      const motivo = MOTIVOS_CORRECCION_RUT.find(
+        (m) => m.value === datos.motivo,
+      );
+      const detalle =
+        datos.motivo === "OTRO" ? datos.motivoOtro : motivo?.label;
       const partes = [`Motivo: ${detalle || "No especificado"}`];
       if (datos.evidenciaUrl) partes.push(`Evidencia: ${datos.evidenciaUrl}`);
       return partes.join("\n");
@@ -107,55 +184,10 @@ export const TIPOS_SOLICITUD = [
     generarPrioridad: () => "NORMAL",
   },
   {
-    value: "INSTALACION_FOCO",
-    label: "Instalación de foco / iluminación",
-    icon: "pi pi-lightbulb",
-    categoria: "SOLICITUD",
-    descripcion:
-      "Solicita la instalación o reparación de luminarias en áreas comunes.",
-    campos: [
-      {
-        key: "ubicacion",
-        label: "Ubicación",
-        type: "text",
-        required: true,
-        ayuda: "Sector, pasillo, escalera o área común específica",
-      },
-      {
-        key: "descripcion",
-        label: "Descripción",
-        type: "textarea",
-        required: true,
-        ayuda: "Detalla qué se necesita (cambio de foco, nueva instalación, reparación)",
-      },
-      {
-        key: "urgente",
-        label: "Es urgente (riesgo de seguridad)",
-        type: "boolean",
-        required: false,
-        ayuda: "Marca si existe riesgo para las personas mientras no se repara",
-      },
-    ],
-    prefill: () => ({}),
-    validacion: (datos) => {
-      const errores = {};
-      if (!String(datos.ubicacion || "").trim()) {
-        errores.ubicacion = "La ubicación es obligatoria";
-      }
-      if (!String(datos.descripcion || "").trim()) {
-        errores.descripcion = "La descripción es obligatoria";
-      }
-      return errores;
-    },
-    generarTitulo: (datos) => `Instalación de foco · ${datos.ubicacion}`,
-    generarDescripcion: (datos) => datos.descripcion,
-    generarPrioridad: (datos) => (datos.urgente ? "URGENTE" : "NORMAL"),
-  },
-  {
-    value: "RECLAMO_MANTENCION",
-    label: "Reclamo por mantención",
+    value: "SOLICITUD_MANTENCION",
+    label: "Solicitud de mantención",
     icon: "pi pi-wrench",
-    categoria: "RECLAMO",
+    categoria: "SOLICITUD",
     descripcion:
       "Reporta una falla o necesidad de mantención en áreas comunes o infraestructura.",
     campos: [
@@ -177,7 +209,7 @@ export const TIPOS_SOLICITUD = [
           { label: "Ascensor / montacargas", value: "ASCENSOR" },
           { label: "Portería / acceso", value: "PORTERIA" },
           { label: "Jardín / áreas verdes", value: "JARDIN" },
-          { label: "Piscina / quincho", value: "RECREACION" },
+          //{ label: "Piscina / quincho", value: "RECREACION" },
           { label: "Otro", value: "OTRO" },
         ],
       },
@@ -186,7 +218,8 @@ export const TIPOS_SOLICITUD = [
         label: "Descripción detallada",
         type: "textarea",
         required: true,
-        ayuda: "Describe el problema, cuándo comenzó y cualquier detalle relevante",
+        ayuda:
+          "Describe el problema, cuándo comenzó y cualquier detalle relevante",
       },
       {
         key: "afectaSeguridad",
@@ -202,13 +235,14 @@ export const TIPOS_SOLICITUD = [
       if (!String(datos.ubicacion || "").trim()) {
         errores.ubicacion = "La ubicación es obligatoria";
       }
-      if (!datos.tipoFalla) errores.tipoFalla = "El tipo de falla es obligatorio";
+      if (!datos.tipoFalla)
+        errores.tipoFalla = "El tipo de falla es obligatorio";
       if (!String(datos.descripcion || "").trim()) {
         errores.descripcion = "La descripción es obligatoria";
       }
       return errores;
     },
-    generarTitulo: (datos) => `Reclamo por mantención · ${datos.ubicacion}`,
+    generarTitulo: (datos) => `Solicitud de mantención · ${datos.ubicacion}`,
     generarDescripcion: (datos) => datos.descripcion,
     generarPrioridad: (datos) => (datos.afectaSeguridad ? "URGENTE" : "NORMAL"),
   },
@@ -217,8 +251,7 @@ export const TIPOS_SOLICITUD = [
     label: "Reclamo por ruidos molestos",
     icon: "pi pi-volume-up",
     categoria: "RECLAMO",
-    descripcion:
-      "Reporta ruidos que perturban la tranquilidad del condominio.",
+    descripcion: "Reporta ruidos que perturban la tranquilidad del condominio.",
     campos: [
       {
         key: "origen",
@@ -260,7 +293,10 @@ export const TIPOS_SOLICITUD = [
     validacion: (datos) => {
       const errores = {};
       if (!datos.origen) errores.origen = "El origen es obligatorio";
-      if (datos.origen === "UNIDAD_VECINA" && !String(datos.unidadOrigen || "").trim()) {
+      if (
+        datos.origen === "UNIDAD_VECINA" &&
+        !String(datos.unidadOrigen || "").trim()
+      ) {
         errores.unidadOrigen = "Indica la unidad de origen";
       }
       if (!String(datos.descripcion || "").trim()) {
@@ -268,49 +304,26 @@ export const TIPOS_SOLICITUD = [
       }
       return errores;
     },
-    generarTitulo: (datos) => `Reclamo por ruidos · ${labelOrigenRuido(datos.origen)}`,
-    generarDescripcion: (datos) => datos.descripcion,
-    generarPrioridad: () => "NORMAL",
-  },
-  {
-    value: "OTRO",
-    label: "Otro tipo de solicitud o reclamo",
-    icon: "pi pi-file",
-    categoria: "SOLICITUD",
-    descripcion:
-      "Para cualquier solicitud o reclamo que no encaje en las categorías anteriores.",
-    campos: [
-      {
-        key: "titulo",
-        label: "Título",
-        type: "text",
-        required: true,
-        ayuda: "Resume tu solicitud en una frase",
-      },
-      {
-        key: "descripcion",
-        label: "Descripción",
-        type: "textarea",
-        required: true,
-        ayuda: "Explica con detalle lo que necesitas",
-      },
-    ],
-    prefill: () => ({}),
-    validacion: (datos) => {
-      const errores = {};
-      if (!String(datos.titulo || "").trim()) {
-        errores.titulo = "El título es obligatorio";
-      }
-      if (!String(datos.descripcion || "").trim()) {
-        errores.descripcion = "La descripción es obligatoria";
-      }
-      return errores;
-    },
-    generarTitulo: (datos) => datos.titulo,
+    generarTitulo: (datos) =>
+      `Reclamo por ruidos · ${labelOrigenRuido(datos.origen)}`,
     generarDescripcion: (datos) => datos.descripcion,
     generarPrioridad: () => "NORMAL",
   },
 ];
+
+/**
+ * Tipos disponibles para crear una solicitud.
+ */
+export const TIPOS_SOLICITUD_ALTA = TIPOS_SOLICITUD;
+
+/**
+ * Tipos con los códigos exactos del enum `TipoSolicitud` del backend, para
+ * filtros server-side (`?tipo=`).
+ */
+export const TIPOS_SOLICITUD_API = TIPOS_SOLICITUD.map(({ value, label }) => ({
+  label,
+  value,
+}));
 
 export const CATEGORIAS_SOLICITUD = [
   { label: "Solicitud", value: "SOLICITUD" },
@@ -372,7 +385,11 @@ export function labelOrigenRuido(value) {
   const opciones = getTipoSolicitud("RECLAMO_RUIDOS")?.campos.find(
     (c) => c.key === "origen",
   )?.options;
-  return opciones?.find((o) => o.value === value)?.label || value || "Sin especificar";
+  return (
+    opciones?.find((o) => o.value === value)?.label ||
+    value ||
+    "Sin especificar"
+  );
 }
 
 export function etiquetaCampo(tipo, key) {
@@ -438,7 +455,11 @@ export function construirDatos(tipoValue, form = {}) {
  * El backend fuerza persona y creador desde el token; aquí solo viajan los
  * datos de la plantilla, la unidad opcional y el resumen plano.
  */
-export function construirPayload(tipoValue, form = {}, { unidadId = null } = {}) {
+export function construirPayload(
+  tipoValue,
+  form = {},
+  { unidadId = null } = {},
+) {
   const tipo = getTipoSolicitud(tipoValue);
   if (!tipo) throw new Error(`Tipo de solicitud desconocido: ${tipoValue}`);
 
@@ -454,9 +475,7 @@ export function construirPayload(tipoValue, form = {}, { unidadId = null } = {})
     tipo: tipo.value,
     titulo: String(titulo).slice(0, 255),
     descripcion: descripcion ? String(descripcion) : null,
-    prioridad: tipo.generarPrioridad
-      ? tipo.generarPrioridad(datos)
-      : "NORMAL",
+    prioridad: tipo.generarPrioridad ? tipo.generarPrioridad(datos) : "NORMAL",
     unidadId: unidadId || null,
     datos,
   };

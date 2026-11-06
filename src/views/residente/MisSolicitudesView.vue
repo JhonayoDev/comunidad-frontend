@@ -5,7 +5,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { solicitudesService } from "@/services/solicitudesService";
 import { perfilService } from "@/services/perfilService";
 import {
-  TIPOS_SOLICITUD,
+  TIPOS_SOLICITUD_ALTA,
+  TIPOS_SOLICITUD_API,
   GRUPOS_ESTADO_SOLICITUD,
   ESTADOS_SOLICITUD,
   getTipoSolicitud,
@@ -59,7 +60,7 @@ const filtroQ = ref("");
 // Formulario nueva solicitud
 const showNueva = ref(false);
 const enviando = ref(false);
-const tipoSeleccionado = ref("CORRECCION_RUT");
+const tipoSeleccionado = ref("SOLICITUD");
 const unidadSeleccionada = ref("");
 const form = ref({});
 const erroresForm = ref({});
@@ -191,8 +192,10 @@ function prefill(tipoValue) {
     : {};
 }
 
-function abrirNueva(tipoValue = "CORRECCION_RUT") {
-  tipoSeleccionado.value = getTipoSolicitud(tipoValue) ? tipoValue : "OTRO";
+function abrirNueva(tipoValue = "SOLICITUD") {
+  const tipo =
+    getTipoSolicitud(tipoValue) || getTipoSolicitud("SOLICITUD") || null;
+  tipoSeleccionado.value = tipo?.value || "SOLICITUD";
   unidadSeleccionada.value = "";
   form.value = prefill(tipoSeleccionado.value);
   erroresForm.value = {};
@@ -206,12 +209,14 @@ function onTipoChange() {
 }
 
 function onRutInput(campoKey) {
-  if (form.value[campoKey]) form.value[campoKey] = formatearRut(form.value[campoKey]);
+  if (form.value[campoKey])
+    form.value[campoKey] = formatearRut(form.value[campoKey]);
   delete erroresForm.value[campoKey];
 }
 
 function onRutBlur(campoKey) {
-  if (form.value[campoKey]) form.value[campoKey] = formatearRutCompleto(form.value[campoKey]);
+  if (form.value[campoKey])
+    form.value[campoKey] = formatearRutCompleto(form.value[campoKey]);
 }
 
 function validarForm() {
@@ -309,7 +314,11 @@ async function cancelarSolicitud() {
 }
 
 function valorDato(campo) {
-  return valorLegibleCampo(detalle.value?.tipo, campo, detalle.value?.datos?.[campo.key]);
+  return valorLegibleCampo(
+    detalle.value?.tipo,
+    campo,
+    detalle.value?.datos?.[campo.key],
+  );
 }
 
 onMounted(async () => {
@@ -329,10 +338,20 @@ onMounted(async () => {
       <Button label="Nueva solicitud" icon="pi pi-plus" @click="abrirNueva()" />
     </div>
 
-    <Message v-if="error" severity="error" :closable="false" @close="error = null">
+    <Message
+      v-if="error"
+      severity="error"
+      :closable="false"
+      @close="error = null"
+    >
       {{ error }}
     </Message>
-    <Message v-if="exito" severity="success" :closable="true" @close="exito = null">
+    <Message
+      v-if="exito"
+      severity="success"
+      :closable="true"
+      @close="exito = null"
+    >
       {{ exito }}
     </Message>
 
@@ -368,7 +387,7 @@ onMounted(async () => {
             <label class="text-sm font-medium">Tipo</label>
             <Select
               v-model="filtroTipo"
-              :options="TIPOS_SOLICITUD"
+              :options="TIPOS_SOLICITUD_API"
               optionLabel="label"
               optionValue="value"
               class="w-full md:w-56"
@@ -403,7 +422,9 @@ onMounted(async () => {
       <template #content>
         <div class="flex flex-col items-center gap-2 py-8">
           <i class="pi pi-inbox text-4xl text-text-subtle"></i>
-          <p class="text-text-subprincipal m-0">No tienes solicitudes en este grupo</p>
+          <p class="text-text-subprincipal m-0">
+            No tienes solicitudes en este grupo
+          </p>
           <p class="text-sm text-text-muted m-0">
             Usa "Nueva solicitud" para crear una
           </p>
@@ -423,7 +444,9 @@ onMounted(async () => {
             <div class="flex items-start justify-between gap-3">
               <div class="flex flex-col gap-1 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-xs text-text-subprincipal">#{{ s.numero }}</span>
+                  <span class="text-xs text-text-subprincipal"
+                    >#{{ s.numero }}</span
+                  >
                   <span class="font-semibold">{{ s.titulo }}</span>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
@@ -486,7 +509,7 @@ onMounted(async () => {
           <label class="text-sm font-medium">Tipo de solicitud</label>
           <Select
             v-model="tipoSeleccionado"
-            :options="TIPOS_SOLICITUD"
+            :options="TIPOS_SOLICITUD_ALTA"
             optionLabel="label"
             optionValue="value"
             @change="onTipoChange"
@@ -497,7 +520,7 @@ onMounted(async () => {
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium">Unidad (opcional)</label>
+          <label class="text-sm font-medium">Casa (opcional)</label>
           <Select
             v-model="unidadSeleccionada"
             :options="unidades"
@@ -548,7 +571,10 @@ onMounted(async () => {
               :autoResize="true"
               :class="{ 'p-invalid': erroresForm[campo.key] }"
             />
-            <div v-else-if="campo.type === 'boolean'" class="flex items-center gap-2">
+            <div
+              v-else-if="campo.type === 'boolean'"
+              class="flex items-center gap-2"
+            >
               <InputSwitch v-model="form[campo.key]" />
               <span class="text-sm text-text-muted">{{ campo.ayuda }}</span>
             </div>
@@ -602,7 +628,11 @@ onMounted(async () => {
         <div class="flex flex-col gap-1">
           <span class="font-bold text-lg">{{ detalle.titulo }}</span>
           <div class="flex items-center gap-2 flex-wrap">
-            <Tag :value="labelTipoSolicitud(detalle.tipo)" size="small" severity="info" />
+            <Tag
+              :value="labelTipoSolicitud(detalle.tipo)"
+              size="small"
+              severity="info"
+            />
             <Tag
               :value="labelCategoriaSolicitud(detalle.categoria)"
               size="small"
@@ -632,37 +662,54 @@ onMounted(async () => {
         </p>
 
         <Message
-          v-if="detalle.tipo === 'CORRECCION_RUT' && detalle.estado === 'RESUELTA'"
+          v-if="
+            detalle.tipo === 'CORRECCION_RUT' && detalle.estado === 'RESUELTA'
+          "
           severity="success"
           :closable="false"
         >
-          Tu corrección de RUT fue aprobada. Revisa los documentos emitidos con
-          el RUT anterior.
+          Tu corrección de RUT fue aprobada.
         </Message>
 
         <Divider v-if="camposDetalle.length" align="left">
-          <span class="text-xs font-semibold text-text-muted">Datos de la solicitud</span>
+          <span class="text-xs font-semibold text-text-muted"
+            >Datos de la solicitud</span
+          >
         </Divider>
         <div v-if="camposDetalle.length" class="flex flex-col gap-1 text-sm">
-          <div v-for="campo in camposDetalle" :key="campo.key" class="flex gap-2">
-            <span class="text-text-muted min-w-[150px]">{{ campo.label }}:</span>
+          <div
+            v-for="campo in camposDetalle"
+            :key="campo.key"
+            class="flex gap-2"
+          >
+            <span class="text-text-muted min-w-[150px]"
+              >{{ campo.label }}:</span
+            >
             <span class="whitespace-pre-wrap">{{ valorDato(campo) }}</span>
           </div>
         </div>
 
         <template v-if="detalle.casoNumero">
           <Divider align="left">
-            <span class="text-xs font-semibold text-text-muted">Caso vinculado</span>
+            <span class="text-xs font-semibold text-text-muted"
+              >Caso vinculado</span
+            >
           </Divider>
-          <div class="p-2 bg-inset rounded-border text-sm flex items-center gap-2">
+          <div
+            class="p-2 bg-inset rounded-border text-sm flex items-center gap-2"
+          >
             <i class="pi pi-folder text-primary" />
             <span class="font-medium">Caso #{{ detalle.casoNumero }}</span>
           </div>
         </template>
 
-        <template v-if="detalle.estado === 'RECHAZADA' || detalle.estado === 'RESUELTA'">
+        <template
+          v-if="detalle.estado === 'RECHAZADA' || detalle.estado === 'RESUELTA'"
+        >
           <Divider align="left">
-            <span class="text-xs font-semibold text-text-muted">Resolución</span>
+            <span class="text-xs font-semibold text-text-muted"
+              >Resolución</span
+            >
           </Divider>
           <div class="p-2 bg-inset rounded-border text-sm flex flex-col gap-1">
             <span v-if="detalle.resueltoPorNombre">
@@ -679,7 +726,9 @@ onMounted(async () => {
 
         <template v-if="detalle.seguimientos?.length">
           <Divider align="left">
-            <span class="text-xs font-semibold text-text-muted">Seguimiento</span>
+            <span class="text-xs font-semibold text-text-muted"
+              >Seguimiento</span
+            >
           </Divider>
           <div class="flex flex-col gap-2">
             <div
@@ -741,7 +790,12 @@ onMounted(async () => {
       </div>
 
       <template #footer>
-        <Button label="Cerrar" severity="secondary" variant="text" @click="showDetalle = false" />
+        <Button
+          label="Cerrar"
+          severity="secondary"
+          variant="text"
+          @click="showDetalle = false"
+        />
       </template>
     </Dialog>
   </div>

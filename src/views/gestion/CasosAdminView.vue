@@ -473,7 +473,11 @@ onMounted(cargar);
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-xs text-text-subprincipal">#{{ s.numero }}</span>
               <span class="font-medium">{{ s.titulo }}</span>
-              <Tag :value="labelTipoSolicitud(s.tipo)" size="small" severity="info" />
+              <Tag
+                :value="labelTipoSolicitud(s.tipo)"
+                size="small"
+                severity="info"
+              />
               <Tag
                 :value="labelCategoriaSolicitud(s.categoria)"
                 size="small"
@@ -716,7 +720,11 @@ onMounted(cargar);
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-xs text-text-subprincipal">#{{ s.numero }}</span>
               <span class="text-sm font-medium">{{ s.titulo }}</span>
-              <Tag :value="labelTipoSolicitud(s.tipo)" size="small" severity="info" />
+              <Tag
+                :value="labelTipoSolicitud(s.tipo)"
+                size="small"
+                severity="info"
+              />
             </div>
             <span class="text-xs text-text-muted">
               {{ s.personaNombre || "—" }}

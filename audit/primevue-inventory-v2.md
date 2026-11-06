@@ -1,6 +1,6 @@
 # Inventario PrimeVue (v2)
 
-Generado: 2026-11-05T03:04:39.547Z
+Generado: 2026-11-06T06:19:24.678Z
 
 Total de usos: **452**
 
@@ -205,11 +205,11 @@ severity="secondary" variant="text"
 - src/views/admin/SolicitudesAdminView.vue:1075
 - src/views/admin/SolicitudesAdminView.vue:1120
 - src/views/admin/SolicitudesAdminView.vue:1162
-- src/views/gestion/CasosAdminView.vue:645
-- src/views/gestion/CasosAdminView.vue:680
-- src/views/gestion/CasosAdminView.vue:729
-- src/views/gestion/CasosAdminView.vue:767
-- src/views/residente/MisSolicitudesView.vue:575
+- src/views/gestion/CasosAdminView.vue:649
+- src/views/gestion/CasosAdminView.vue:684
+- src/views/gestion/CasosAdminView.vue:737
+- src/views/gestion/CasosAdminView.vue:775
+- src/views/residente/MisSolicitudesView.vue:601
 - … y 1 más
 
 ### Button · V8 — 14 usos
@@ -283,7 +283,7 @@ icon="pi pi-plus"
 - src/views/admin/SolicitudesAdminView.vue:1168
 - src/views/guardia/ChecklistTemplatesView.vue:142
 - src/views/residente/GestionesView.vue:149
-- src/views/residente/MisSolicitudesView.vue:329
+- src/views/residente/MisSolicitudesView.vue:338
 
 ### Button · V12 — 7 usos
 
@@ -373,8 +373,8 @@ icon="pi pi-send"
 ```
 
 - src/views/admin/SolicitudesAdminView.vue:966
-- src/views/residente/MisSolicitudesView.vue:581
-- src/views/residente/MisSolicitudesView.vue:719
+- src/views/residente/MisSolicitudesView.vue:607
+- src/views/residente/MisSolicitudesView.vue:768
 - src/views/residente/PerfilView.vue:425
 
 ### Button · V19 — 4 usos
@@ -407,7 +407,7 @@ severity="danger"
 
 - src/views/finanzas/CargosAdicionalesView.vue:270
 - src/views/finanzas/GastosView.vue:323
-- src/views/gestion/CasosAdminView.vue:773
+- src/views/gestion/CasosAdminView.vue:781
 - src/views/superadmin/SaasCondominioDetailView.vue:688
 
 ### Button · V22 — 4 usos
@@ -504,7 +504,7 @@ icon="pi pi-filter-slash" severity="secondary" variant="text"
 
 - src/views/admin/SolicitudesAdminView.vue:668
 - src/views/gestion/CasosAdminView.vue:341
-- src/views/residente/MisSolicitudesView.vue:388
+- src/views/residente/MisSolicitudesView.vue:407
 
 ### Button · V31 — 3 usos
 
@@ -689,7 +689,7 @@ icon="pi pi-link" severity="secondary"
 ```
 
 - src/views/admin/SolicitudesAdminView.vue:897
-- src/views/gestion/CasosAdminView.vue:498
+- src/views/gestion/CasosAdminView.vue:502
 
 ### Button · V51 — 2 usos
 
@@ -707,7 +707,7 @@ icon="pi pi-times" severity="danger"
 ```
 
 - src/views/admin/SolicitudesAdminView.vue:995
-- src/views/residente/MisSolicitudesView.vue:733
+- src/views/residente/MisSolicitudesView.vue:782
 
 ### Button · V53 — 2 usos
 
@@ -716,7 +716,7 @@ icon="pi pi-link"
 ```
 
 - src/views/admin/SolicitudesAdminView.vue:1126
-- src/views/gestion/CasosAdminView.vue:735
+- src/views/gestion/CasosAdminView.vue:743
 
 ### Button · V54 — 2 usos
 
@@ -1060,7 +1060,7 @@ icon="pi pi-filter" severity="secondary" size="small"
 icon="pi pi-comment" severity="secondary"
 ```
 
-- src/views/gestion/CasosAdminView.vue:631
+- src/views/gestion/CasosAdminView.vue:635
 
 ### Button · V93 — 1 usos
 
@@ -1068,7 +1068,7 @@ icon="pi pi-comment" severity="secondary"
 icon="pi pi-check" severity="danger"
 ```
 
-- src/views/gestion/CasosAdminView.vue:638
+- src/views/gestion/CasosAdminView.vue:642
 
 ### Button · V94 — 1 usos
 

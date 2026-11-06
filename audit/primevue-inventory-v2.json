@@ -3345,7 +3345,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 498,
+    "line": 502,
     "signature": "icon=\"pi pi-link\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -3359,7 +3359,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 631,
+    "line": 635,
     "signature": "icon=\"pi pi-comment\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -3374,7 +3374,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 638,
+    "line": 642,
     "signature": "icon=\"pi pi-check\" severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -3389,7 +3389,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 645,
+    "line": 649,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3404,7 +3404,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 680,
+    "line": 684,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3418,7 +3418,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 686,
+    "line": 690,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -3432,7 +3432,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 729,
+    "line": 737,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3446,7 +3446,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 735,
+    "line": 743,
     "signature": "icon=\"pi pi-link\"",
     "classes": "",
     "legacyProp": false,
@@ -3461,7 +3461,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 767,
+    "line": 775,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3475,7 +3475,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/CasosAdminView.vue",
-    "line": 773,
+    "line": 781,
     "signature": "severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -3962,7 +3962,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 329,
+    "line": 338,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -3975,7 +3975,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 388,
+    "line": 407,
     "signature": "icon=\"pi pi-filter-slash\" severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3990,7 +3990,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 575,
+    "line": 601,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -4004,7 +4004,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 581,
+    "line": 607,
     "signature": "icon=\"pi pi-send\"",
     "classes": "",
     "legacyProp": false,
@@ -4018,7 +4018,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 719,
+    "line": 768,
     "signature": "icon=\"pi pi-send\"",
     "classes": "",
     "legacyProp": false,
@@ -4033,7 +4033,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 733,
+    "line": 782,
     "signature": "icon=\"pi pi-times\" severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -4047,7 +4047,7 @@
   {
     "component": "Button",
     "file": "src/views/residente/MisSolicitudesView.vue",
-    "line": 744,
+    "line": 793,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,

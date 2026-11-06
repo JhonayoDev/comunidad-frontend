@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   TIPOS_SOLICITUD,
+  TIPOS_SOLICITUD_ALTA,
+  TIPOS_SOLICITUD_API,
   getTipoSolicitud,
   getTiposPorCategoria,
   labelTipoSolicitud,
@@ -17,26 +19,42 @@ import {
 } from "@/data/solicitudTipos";
 
 describe("solicitudTipos · registro", () => {
-  it("expone exactamente los tipos del enum del backend", () => {
-    expect(TIPOS_SOLICITUD.map((t) => t.value)).toEqual([
+  it("cubre todos los códigos del enum TipoSolicitud del backend", () => {
+    expect(TIPOS_SOLICITUD_API.map((t) => t.value)).toEqual([
+      "SOLICITUD",
+      "RECLAMO",
       "CORRECCION_RUT",
-      "INSTALACION_FOCO",
-      "RECLAMO_MANTENCION",
+      "SOLICITUD_MANTENCION",
       "RECLAMO_RUIDOS",
-      "OTRO",
     ]);
   });
 
   it("separa solicitudes de reclamos por categoría", () => {
     expect(getTiposPorCategoria("SOLICITUD").map((t) => t.value)).toEqual([
+      "SOLICITUD",
       "CORRECCION_RUT",
-      "INSTALACION_FOCO",
-      "OTRO",
+      "SOLICITUD_MANTENCION",
     ]);
     expect(getTiposPorCategoria("RECLAMO").map((t) => t.value)).toEqual([
-      "RECLAMO_MANTENCION",
+      "RECLAMO",
       "RECLAMO_RUIDOS",
     ]);
+  });
+
+  it("ofrece todos los tipos del catálogo en el alta", () => {
+    expect(TIPOS_SOLICITUD_ALTA.map((t) => t.value)).toEqual([
+      "SOLICITUD",
+      "RECLAMO",
+      "CORRECCION_RUT",
+      "SOLICITUD_MANTENCION",
+      "RECLAMO_RUIDOS",
+    ]);
+  });
+
+  it("no resuelve códigos legados retirados del backend", () => {
+    expect(getTipoSolicitud("OTRO")).toBeNull();
+    expect(getTipoSolicitud("RECLAMO_MANTENCION")).toBeNull();
+    expect(getTipoSolicitud("INSTALACION_FOCO")).toBeNull();
   });
 
   it("devuelve null para un tipo desconocido", () => {
@@ -47,6 +65,11 @@ describe("solicitudTipos · registro", () => {
 describe("solicitudTipos · etiquetas", () => {
   it("traduce los enums del backend y cae al valor crudo", () => {
     expect(labelTipoSolicitud("CORRECCION_RUT")).toBe("Corrección de RUT");
+    expect(labelTipoSolicitud("SOLICITUD")).toBe("Solicitud");
+    expect(labelTipoSolicitud("RECLAMO")).toBe("Reclamo");
+    expect(labelTipoSolicitud("SOLICITUD_MANTENCION")).toBe(
+      "Solicitud de mantención",
+    );
     expect(labelTipoSolicitud("DESCONOCIDO")).toBe("DESCONOCIDO");
 
     expect(labelEstadoSolicitud("EN_REVISION")).toBe("En revisión");
@@ -77,16 +100,20 @@ describe("solicitudTipos · campos condicionales y valores legibles", () => {
   });
 
   it("los campos sin showWhen siempre son visibles", () => {
-    const campoSimple = getTipoSolicitud("OTRO").campos[0];
+    const campoSimple = getTipoSolicitud("SOLICITUD").campos[0];
     expect(esCampoVisible(campoSimple, {})).toBe(true);
   });
 
   it("legibiliza booleanos y selects", () => {
-    const campoUrgente = getTipoSolicitud("INSTALACION_FOCO").campos.find(
-      (c) => c.key === "urgente",
+    const campoAfecta = getTipoSolicitud("SOLICITUD_MANTENCION").campos.find(
+      (c) => c.key === "afectaSeguridad",
     );
-    expect(valorLegibleCampo("INSTALACION_FOCO", campoUrgente, true)).toBe("Sí");
-    expect(valorLegibleCampo("INSTALACION_FOCO", campoUrgente, false)).toBe("No");
+    expect(
+      valorLegibleCampo("SOLICITUD_MANTENCION", campoAfecta, true),
+    ).toBe("Sí");
+    expect(
+      valorLegibleCampo("SOLICITUD_MANTENCION", campoAfecta, false),
+    ).toBe("No");
 
     const campoOrigen = getTipoSolicitud("RECLAMO_RUIDOS").campos.find(
       (c) => c.key === "origen",
@@ -190,25 +217,26 @@ describe("solicitudTipos · construcción del payload", () => {
   });
 
   it("eleva la prioridad a URGENTE cuando hay riesgo", () => {
-    const foco = construirPayload("INSTALACION_FOCO", {
-      ubicacion: "Pasillo 2",
-      descripcion: "Foco quemado",
-      urgente: true,
+    const urgente = construirPayload("SOLICITUD_MANTENCION", {
+      ubicacion: "Torre A",
+      tipoFalla: "ELECTRICO",
+      descripcion: "Corto circuito",
+      afectaSeguridad: true,
     });
-    expect(foco.categoria).toBe("SOLICITUD");
-    expect(foco.titulo).toBe("Instalación de foco · Pasillo 2");
-    expect(foco.prioridad).toBe("URGENTE");
-    expect(foco.datos.urgente).toBe(true);
+    expect(urgente.categoria).toBe("SOLICITUD");
+    expect(urgente.tipo).toBe("SOLICITUD_MANTENCION");
+    expect(urgente.titulo).toBe("Solicitud de mantención · Torre A");
+    expect(urgente.prioridad).toBe("URGENTE");
+    expect(urgente.datos.afectaSeguridad).toBe(true);
 
-    const mantencion = construirPayload("RECLAMO_MANTENCION", {
+    const normal = construirPayload("SOLICITUD_MANTENCION", {
       ubicacion: "Torre A",
       tipoFalla: "ELECTRICO",
       descripcion: "Corto circuito",
       afectaSeguridad: false,
     });
-    expect(mantencion.categoria).toBe("RECLAMO");
-    expect(mantencion.prioridad).toBe("NORMAL");
-    expect(mantencion.datos.afectaSeguridad).toBe(false);
+    expect(normal.prioridad).toBe("NORMAL");
+    expect(normal.datos.afectaSeguridad).toBe(false);
   });
 
   it("resume el reclamo de ruidos con el origen legible", () => {
@@ -224,7 +252,7 @@ describe("solicitudTipos · construcción del payload", () => {
   });
 
   it("recorta espacios y omite valores vacíos del JSON", () => {
-    const datos = construirDatos("OTRO", {
+    const datos = construirDatos("SOLICITUD", {
       titulo: "  Consulta  ",
       descripcion: "   ",
     });
@@ -234,12 +262,40 @@ describe("solicitudTipos · construcción del payload", () => {
 
   it("propaga la unidad opcional en el payload", () => {
     const payload = construirPayload(
-      "OTRO",
+      "SOLICITUD",
       { titulo: "Consulta", descripcion: "Detalle" },
       { unidadId: "u-9" },
     );
     expect(payload.unidadId).toBe("u-9");
     expect(payload.prioridad).toBe("NORMAL");
+  });
+
+  it("envía los códigos canónicos para solicitud y reclamo genéricos", () => {
+    const solicitud = construirPayload("SOLICITUD", {
+      titulo: "Consulta",
+      descripcion: "Detalle",
+    });
+    expect(solicitud.categoria).toBe("SOLICITUD");
+    expect(solicitud.tipo).toBe("SOLICITUD");
+    expect(solicitud.titulo).toBe("Consulta");
+
+    const reclamo = construirPayload("RECLAMO", {
+      titulo: "Ruido",
+      descripcion: "Detalle",
+    });
+    expect(reclamo.categoria).toBe("RECLAMO");
+    expect(reclamo.tipo).toBe("RECLAMO");
+  });
+
+  it("envía SOLICITUD_MANTENCION con su propio código", () => {
+    const payload = construirPayload("SOLICITUD_MANTENCION", {
+      ubicacion: "Torre A",
+      tipoFalla: "ELECTRICO",
+      descripcion: "Corto circuito",
+    });
+    expect(payload.categoria).toBe("SOLICITUD");
+    expect(payload.tipo).toBe("SOLICITUD_MANTENCION");
+    expect(payload.titulo).toBe("Solicitud de mantención · Torre A");
   });
 
   it("lanza si el tipo no existe", () => {
