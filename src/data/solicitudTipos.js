@@ -138,12 +138,12 @@ export const TIPOS_SOLICITUD = [
         ayuda: "Describe el motivo si seleccionaste 'Otro'",
       },
       {
-        key: "evidenciaUrl",
-        label: "URL de evidencia (opcional)",
-        type: "url",
+        key: "evidenciaArchivoId",
+        label: "Evidencia (opcional)",
+        type: "file",
         required: false,
         ayuda:
-          "Enlace a un documento que respalde la corrección (certificado, escritura, etc.)",
+          "Adjunta una foto de tu cédula o un documento PDF que respalde la corrección (máx. 10 MB).",
       },
     ],
     prefill: (perfil) => ({
@@ -178,7 +178,7 @@ export const TIPOS_SOLICITUD = [
       const detalle =
         datos.motivo === "OTRO" ? datos.motivoOtro : motivo?.label;
       const partes = [`Motivo: ${detalle || "No especificado"}`];
-      if (datos.evidenciaUrl) partes.push(`Evidencia: ${datos.evidenciaUrl}`);
+      if (datos.evidenciaArchivoId) partes.push("Evidencia adjunta");
       return partes.join("\n");
     },
     generarPrioridad: () => "NORMAL",
@@ -349,6 +349,15 @@ export const ESTADOS_SOLICITUD = [
   { label: "Cancelada", value: "CANCELADA" },
 ];
 
+/**
+ * Para el residente, `RECIBIDA` es su última acción: la solicitud fue enviada.
+ * La administración conserva "Recibida" porque es la acción que ejecutó al
+ * recepcionarla.
+ */
+export const ESTADOS_SOLICITUD_RESIDENTE = ESTADOS_SOLICITUD.map((estado) =>
+  estado.value === "RECIBIDA" ? { ...estado, label: "Enviada" } : estado,
+);
+
 export const ESTADOS_ABIERTOS = ["RECIBIDA", "EN_REVISION", "OBSERVADA"];
 
 export const PRIORIDADES_SOLICITUD = [
@@ -372,6 +381,13 @@ export function labelTipoSolicitud(value) {
 
 export function labelEstadoSolicitud(value) {
   return ESTADOS_SOLICITUD.find((e) => e.value === value)?.label || value;
+}
+
+/** Etiqueta de estado para la vista del residente (`RECIBIDA` → "Enviada"). */
+export function labelEstadoSolicitudResidente(value) {
+  return (
+    ESTADOS_SOLICITUD_RESIDENTE.find((e) => e.value === value)?.label || value
+  );
 }
 
 export function labelGrupoEstadoSolicitud(value) {

@@ -6,6 +6,7 @@ import { casosService } from "@/services/casosService";
 import { unidadesService } from "@/services/unidadesService";
 import { personasService } from "@/services/personasService";
 import { personalService } from "@/services/personalService";
+import { archivosService } from "@/services/archivosService";
 import {
   TIPOS_SOLICITUD_API,
   CATEGORIAS_SOLICITUD,
@@ -21,6 +22,7 @@ import {
   esCampoVisible,
   valorLegibleCampo,
 } from "@/data/solicitudTipos";
+import { labelCargo } from "@/data/cargos";
 import { mensajeError } from "@/utils/errores";
 
 import Card from "primevue/card";
@@ -73,11 +75,13 @@ const showDetalle = ref(false);
 const solicitudActual = ref(null);
 const detalle = ref(null);
 const loadingDetalle = ref(false);
+const cargandoEvidencia = ref(false);
+const errorEvidencia = ref(null);
 
 const detalleTipo = computed(() => getTipoSolicitud(detalle.value?.tipo));
 const camposDetalle = computed(() =>
-  (detalleTipo.value?.campos || []).filter((c) =>
-    esCampoVisible(c, detalle.value?.datos),
+  (detalleTipo.value?.campos || []).filter(
+    (c) => c.type !== "file" && esCampoVisible(c, detalle.value?.datos),
   ),
 );
 const esCorreccionRut = computed(() => detalle.value?.tipo === "CORRECCION_RUT");
@@ -283,6 +287,8 @@ async function verDetalle(s) {
   showDetalle.value = true;
   nuevoSeguimiento.value = "";
   visibleResidente.value = true;
+  errorEvidencia.value = null;
+  cargandoEvidencia.value = false;
   try {
     const res = await solicitudesService.obtener(cid, s.id);
     detalle.value = res.data;
@@ -491,22 +497,91 @@ const casosDisponibles = computed(() =>
   opcionesCasos.value.filter((c) => c.estado !== "CERRADO"),
 );
 
+// El backend expone solo `asignadoANombre`; el cargo vive en la persona. Se
+// cruza personal (usuarioId → personaId) con personas (id → cargo) para
+// mostrar "Nombre · Cargo" en vez del rol global (p. ej. "RESIDENTE").
+const cargoPorPersonaId = computed(() => {
+  const mapa = new Map();
+  for (const persona of opcionesPersonas.value) {
+    if (persona?.id && persona.cargo) mapa.set(persona.id, persona.cargo);
+  }
+  return mapa;
+});
+
+const cargoPorUsuarioId = computed(() => {
+  const mapa = new Map();
+  for (const miembro of asignables.value) {
+    if (miembro?.usuarioId && miembro?.personaId) {
+      mapa.set(miembro.usuarioId, miembro.personaId);
+    }
+  }
+  return mapa;
+});
+
+function etiquetaCargo(cargo, rol) {
+  if (cargo) return labelCargo(cargo);
+  if (rol && rol !== "RESIDENTE") return labelCargo(rol);
+  return "";
+}
+
+function nombreAsignado(asignadoAId, asignadoANombre) {
+  if (!asignadoANombre) return "";
+  const miembro = asignables.value.find((m) => m.usuarioId === asignadoAId);
+  const personaId =
+    miembro?.personaId || cargoPorUsuarioId.value.get(asignadoAId);
+  const cargo = personaId ? cargoPorPersonaId.value.get(personaId) : null;
+  const etiqueta = etiquetaCargo(cargo, miembro?.rolEnCondominio);
+  return etiqueta ? `${asignadoANombre} · ${etiqueta}` : asignadoANombre;
+}
+
 const opcionesAsignables = computed(() => {
-  const base = asignables.value.map((p) => ({
-    label: `${p.nombre}${p.rolEnCondominio ? ` · ${p.rolEnCondominio}` : ""}`,
-    value: p.usuarioId,
-  }));
+  const base = asignables.value.map((p) => {
+    const cargo = cargoPorPersonaId.value.get(p.personaId);
+    const etiqueta = etiquetaCargo(cargo, p.rolEnCondominio);
+    return {
+      label: etiqueta ? `${p.nombre} · ${etiqueta}` : p.nombre,
+      value: p.usuarioId,
+    };
+  });
   if (
     detalle.value?.asignadoAId &&
     !base.some((o) => o.value === detalle.value.asignadoAId)
   ) {
+    const actual = nombreAsignado(
+      detalle.value.asignadoAId,
+      detalle.value.asignadoANombre || "Asignado actual",
+    );
     base.push({
-      label: detalle.value.asignadoANombre || "Asignado actual",
+      label: actual,
       value: detalle.value.asignadoAId,
     });
   }
   return base;
 });
+
+async function verEvidencia() {
+  const cid = auth.condominioActualId;
+  const archivoId = detalle.value?.datos?.evidenciaArchivoId;
+  if (!cid || !archivoId) return;
+
+  cargandoEvidencia.value = true;
+  errorEvidencia.value = null;
+  try {
+    const { data } = await archivosService.listar(cid, "DOCUMENTO");
+    const archivo = (data || []).find((a) => a.id === archivoId);
+    if (!archivo?.urlDescarga) {
+      errorEvidencia.value =
+        "No se encontró la evidencia o no está disponible para descarga.";
+      return;
+    }
+    window.open(archivo.urlDescarga, "_blank", "noopener");
+  } catch (e) {
+    console.error("Error al abrir la evidencia", e);
+    errorEvidencia.value = mensajeError(e, "No se pudo abrir la evidencia");
+  } finally {
+    cargandoEvidencia.value = false;
+  }
+}
 
 onMounted(async () => {
   await cargarOpciones();
@@ -734,7 +809,7 @@ onMounted(async () => {
                   v-if="s.asignadoANombre"
                   class="text-xs text-text-subprincipal"
                 >
-                  Asignada a {{ s.asignadoANombre }}
+                  Asignada a {{ nombreAsignado(s.asignadoAId, s.asignadoANombre) }}
                 </span>
               </div>
             </div>
@@ -822,12 +897,38 @@ onMounted(async () => {
           </div>
           <div class="flex gap-2">
             <span class="text-text-muted min-w-[140px]">Asignada a:</span>
-            <span>{{ detalle.asignadoANombre || "Sin asignar" }}</span>
+            <span>{{
+              nombreAsignado(detalle.asignadoAId, detalle.asignadoANombre) ||
+              "Sin asignar"
+            }}</span>
           </div>
           <div v-for="campo in camposDetalle" :key="campo.key" class="flex gap-2">
             <span class="text-text-muted min-w-[140px]">{{ campo.label }}:</span>
             <span class="whitespace-pre-wrap">{{ valorDato(campo) }}</span>
           </div>
+          <div
+            v-if="detalle.datos?.evidenciaArchivoId"
+            class="flex gap-2 items-center"
+          >
+            <span class="text-text-muted min-w-[140px]">Evidencia:</span>
+            <Button
+              label="Ver evidencia"
+              icon="pi pi-paperclip"
+              severity="secondary"
+              variant="outlined"
+              size="small"
+              :loading="cargandoEvidencia"
+              @click="verEvidencia"
+            />
+          </div>
+          <Message
+            v-if="errorEvidencia"
+            severity="error"
+            :closable="false"
+            class="mt-1"
+          >
+            {{ errorEvidencia }}
+          </Message>
         </div>
 
         <!-- Gestión -->

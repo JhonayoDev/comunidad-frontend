@@ -7,6 +7,9 @@ import {
   getTiposPorCategoria,
   labelTipoSolicitud,
   labelEstadoSolicitud,
+  labelEstadoSolicitudResidente,
+  ESTADOS_SOLICITUD,
+  ESTADOS_SOLICITUD_RESIDENTE,
   labelGrupoEstadoSolicitud,
   labelCategoriaSolicitud,
   labelPrioridadSolicitud,
@@ -81,6 +84,14 @@ describe("solicitudTipos · etiquetas", () => {
 
     expect(labelEstadoSolicitud("EN_REVISION")).toBe("En revisión");
     expect(labelEstadoSolicitud("CANCELADA")).toBe("Cancelada");
+
+    // El residente ve "Enviada" donde la administración ve "Recibida".
+    expect(labelEstadoSolicitudResidente("RECIBIDA")).toBe("Enviada");
+    expect(labelEstadoSolicitudResidente("EN_REVISION")).toBe("En revisión");
+    expect(labelEstadoSolicitud("RECIBIDA")).toBe("Recibida");
+    expect(ESTADOS_SOLICITUD_RESIDENTE).toHaveLength(
+      ESTADOS_SOLICITUD.length,
+    );
 
     expect(labelGrupoEstadoSolicitud("ABIERTA")).toBe("Abiertas");
     expect(labelGrupoEstadoSolicitud("CERRADA")).toBe("Cerradas");
@@ -214,12 +225,13 @@ describe("solicitudTipos · construcción del payload", () => {
       rutNuevo: "11.111.111-1",
       motivo: "OTRO",
       motivoOtro: "Trámite pendiente",
-      evidenciaUrl: "https://example.com/cert.pdf",
+      evidenciaArchivoId: "archivo-123",
     });
 
     expect(payload.descripcion).toBe(
-      "Motivo: Trámite pendiente\nEvidencia: https://example.com/cert.pdf",
+      "Motivo: Trámite pendiente\nEvidencia adjunta",
     );
+    expect(payload.datos.evidenciaArchivoId).toBe("archivo-123");
     expect(payload.unidadId).toBeNull();
   });
 

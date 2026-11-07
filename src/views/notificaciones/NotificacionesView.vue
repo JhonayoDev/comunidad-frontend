@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import { useNotificaciones } from "@/composables/useNotificaciones";
 import Card from "primevue/card";
 import Button from "primevue/button";
@@ -13,9 +14,15 @@ const {
   marcarLeida, marcarTodas,
 } = useNotificaciones();
 
+const router = useRouter();
+
 const expandedId = ref(null);
 const pagina = ref(0);
 const tamano = ref(10);
+
+function irACorreccionRut() {
+  router.push({ name: "Perfil", query: { seccion: "datos" } });
+}
 
 function toggleExpand(id) {
   expandedId.value = expandedId.value === id ? null : id;
@@ -158,6 +165,24 @@ function handleMarcarLeida(n) {
               </p>
               <div v-if="expandedId === notif.id" class="mt-2 pt-2 border-t border-border-soft">
                 <p class="text-sm text-text-muted">{{ notif.mensaje }}</p>
+                <div
+                  v-if="notif.tipo === 'RUT_CORRECCION_HABILITADA'"
+                  class="mt-2 flex flex-col gap-2"
+                >
+                  <Message severity="info" :closable="false">
+                    Ve a <strong>Perfil → Mis datos</strong> y presiona
+                    <strong>“Solicitar corrección de RUT”</strong>. Podrás
+                    hacerlo una sola vez mientras la ventana esté vigente.
+                  </Message>
+                  <Button
+                    label="Ir a Mis datos"
+                    icon="pi pi-id-card"
+                    severity="secondary"
+                    variant="text"
+                    size="small"
+                    @click.stop="irACorreccionRut"
+                  />
+                </div>
               </div>
               <div v-else class="mt-1">
                 <p class="text-sm text-text-muted truncate">{{ notif.mensaje }}</p>

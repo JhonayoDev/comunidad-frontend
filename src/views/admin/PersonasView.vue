@@ -6,6 +6,7 @@ import { unidadesService } from "@/services/unidadesService";
 import { useValidacionChile } from "@/composables/useValidacionChile";
 import { mensajeError } from "@/utils/errores";
 import { estadoCorreccionRut } from "@/utils/correccionRut";
+import { labelCargo as cargoLabel } from "@/data/cargos";
 import {
   esPreActivacionPersona,
   estadoUsuarioPersona,
@@ -23,6 +24,7 @@ import Checkbox from "primevue/checkbox";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
+import Divider from "primevue/divider";
 import Paginator from "primevue/paginator";
 import { useConfirm } from "primevue/useconfirm";
 import ConfirmDialog from "primevue/confirmdialog";
@@ -55,6 +57,9 @@ const vinculos = ref([]);
 const cargandoVinculos = ref(false);
 const errorVinculos = ref(null);
 const exitoVinculos = ref(null);
+const exitoRut = ref(null);
+const errorRut = ref(null);
+const cargandoRutEdicion = ref(false);
 const enviando = ref(false);
 
 const formPersona = ref({ nombre: "", email: "", rut: "", telefono: "" });
@@ -142,18 +147,6 @@ const vigenciasRut = [
 const tipoVinculoLabels = Object.fromEntries(
   tiposVinculo.map((tipo) => [tipo.value, tipo.label]),
 );
-
-const cargoLabels = {
-  ADMINISTRADOR: "Administrador",
-  PRESIDENTE: "Presidente",
-  TESORERO: "Tesorero",
-  SECRETARIO: "Secretario",
-  DELEGADO: "Delegado",
-  CONSERJE: "Conserje",
-  GUARDIA: "Guardia",
-  MANTENCION: "Mantención",
-  JARDINERO: "Jardinero",
-};
 
 const puedeCrear = computed(() => auth.permisos.includes("PERSONA_CREAR"));
 const puedeEditar = computed(() => auth.permisos.includes("PERSONA_EDITAR"));
@@ -284,11 +277,6 @@ function aplicarErroresBackend(error, destino) {
   return true;
 }
 
-function cargoLabel(cargo) {
-  if (!cargo) return "";
-  return cargoLabels[cargo] || cargo;
-}
-
 function tipoVinculoLabel(tipo) {
   if (!tipo) return "";
   return tipoVinculoLabels[tipo] || tipo;
@@ -400,7 +388,7 @@ async function crearPersona() {
   }
 }
 
-function abrirEditar(persona) {
+async function abrirEditar(persona) {
   if (!puedeEditar.value) return;
   personaSeleccionada.value = persona;
   formEditarPersona.value = {
@@ -409,14 +397,51 @@ function abrirEditar(persona) {
   };
   erroresEdicion.value = {};
   errorFormEditar.value = null;
+  exitoRut.value = null;
+  errorRut.value = null;
+  personaDetalle.value = null;
+  cargandoRutEdicion.value = false;
   showEditarPersona.value = true;
+
+  // El detalle trae el estado de la habilitación de corrección de RUT, que
+  // ahora se gestiona desde este mismo diálogo.
+  if (puedeHabilitarRut.value) {
+    cargandoRutEdicion.value = true;
+    try {
+      const { data } = await personasService.obtener(
+        auth.condominioActualId,
+        persona.id,
+      );
+      if (personaSeleccionada.value?.id === persona.id) {
+        personaDetalle.value = data;
+      }
+    } catch (e) {
+      console.error("Error al cargar el detalle de la persona", e);
+      if (personaSeleccionada.value?.id === persona.id) {
+        errorRut.value = mensajeError(
+          e,
+          "No se pudo cargar el estado de la corrección de RUT",
+        );
+      }
+    } finally {
+      if (personaSeleccionada.value?.id === persona.id) {
+        cargandoRutEdicion.value = false;
+      }
+    }
+  }
 }
 
 function cerrarEditarPersona() {
   showEditarPersona.value = false;
+  showHabilitarRut.value = false;
   personaSeleccionada.value = null;
+  personaDetalle.value = null;
   errorFormEditar.value = null;
   erroresEdicion.value = {};
+  exitoRut.value = null;
+  errorRut.value = null;
+  errorFormHabilitarRut.value = null;
+  cargandoRutEdicion.value = false;
 }
 
 async function editarPersona() {
@@ -446,7 +471,11 @@ async function editarPersona() {
         : "",
     });
     showEditarPersona.value = false;
+    showHabilitarRut.value = false;
     personaSeleccionada.value = null;
+    personaDetalle.value = null;
+    exitoRut.value = null;
+    errorRut.value = null;
     exito.value = "Persona actualizada correctamente.";
     await cargar();
   } catch (e) {
@@ -679,7 +708,7 @@ async function recargarDetallePersona() {
     vinculos.value = data?.vinculos || [];
   } catch (e) {
     console.error("Error al recargar el detalle de la persona", e);
-    errorVinculos.value = mensajeError(
+    errorRut.value = mensajeError(
       e,
       "No se pudo recargar el detalle de la persona",
     );
@@ -724,8 +753,8 @@ async function ejecutarHabilitarRut() {
       },
     );
     showHabilitarRut.value = false;
-    errorVinculos.value = null;
-    exitoVinculos.value = `Corrección de RUT habilitada hasta el ${formatearFechaHora(
+    errorRut.value = null;
+    exitoRut.value = `Corrección de RUT habilitada hasta el ${formatearFechaHora(
       data.habilitadaHasta,
     )}.`;
     await recargarDetallePersona();
@@ -761,12 +790,12 @@ async function revocarRut() {
       cid,
       personaSeleccionada.value.id,
     );
-    errorVinculos.value = null;
-    exitoVinculos.value = "Habilitación de corrección de RUT revocada.";
+    errorRut.value = null;
+    exitoRut.value = "Habilitación de corrección de RUT revocada.";
     await recargarDetallePersona();
   } catch (e) {
     console.error("Error al revocar la corrección de RUT", e);
-    errorVinculos.value = mensajeError(
+    errorRut.value = mensajeError(
       e,
       "No se pudo revocar la habilitación",
     );
@@ -1372,6 +1401,81 @@ async function crearUsuario() {
           email".
         </small>
 
+        <template v-if="puedeHabilitarRut">
+          <Divider align="left">
+            <span class="text-xs font-semibold text-text-muted"
+              >Corrección de RUT</span
+            >
+          </Divider>
+
+          <Skeleton v-if="cargandoRutEdicion" width="100%" height="4rem" />
+
+          <div
+            v-else-if="personaDetalle"
+            class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <i class="pi pi-id-card text-primary-400" />
+                <span class="font-medium">Corrección de RUT</span>
+                <Tag
+                  :value="estadoRut.label"
+                  :severity="estadoRut.severity"
+                  size="small"
+                />
+              </div>
+              <Button
+                v-if="!correccionRutVigente"
+                label="Habilitar"
+                icon="pi pi-check"
+                size="small"
+                @click="abrirHabilitarRut"
+              />
+              <Button
+                v-else
+                label="Revocar"
+                icon="pi pi-ban"
+                severity="danger"
+                variant="text"
+                size="small"
+                :loading="enviandoRut"
+                @click="confirmarRevocarRut"
+              />
+            </div>
+            <template v-if="correccionRut">
+              <p class="text-xs text-text-muted m-0">
+                Habilitada hasta el
+                {{ formatearFechaHora(correccionRut.habilitadaHasta) }}
+                <template v-if="correccionRut.habilitadaPorNombre">
+                  · por {{ correccionRut.habilitadaPorNombre }}
+                </template>
+              </p>
+              <p v-if="correccionRut.motivo" class="text-xs text-text-muted m-0">
+                Motivo: {{ correccionRut.motivo }}
+              </p>
+            </template>
+            <p v-else class="text-xs text-text-muted m-0">
+              Sin habilitación vigente. La persona no puede solicitar
+              corrección de RUT.
+            </p>
+            <Message
+              v-if="exitoRut"
+              severity="success"
+              :closable="true"
+              @close="exitoRut = null"
+            >
+              {{ exitoRut }}
+            </Message>
+            <Message v-if="errorRut" severity="error" :closable="false">
+              {{ errorRut }}
+            </Message>
+          </div>
+
+          <Message v-else-if="errorRut" severity="error" :closable="false">
+            {{ errorRut }}
+          </Message>
+        </template>
+
         <div class="flex flex-col gap-1">
           <label for="editar-persona-nombre" class="text-sm">
             Nombre <span class="text-danger">*</span>
@@ -1481,56 +1585,6 @@ async function crearUsuario() {
         <Message v-if="errorVinculos" severity="error" :closable="false">
           {{ errorVinculos }}
         </Message>
-
-        <div
-          v-if="puedeHabilitarRut && personaDetalle"
-          class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
-        >
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <i class="pi pi-id-card text-primary-400" />
-              <span class="font-medium">Corrección de RUT</span>
-              <Tag
-                :value="estadoRut.label"
-                :severity="estadoRut.severity"
-                size="small"
-              />
-            </div>
-            <Button
-              v-if="!correccionRutVigente"
-              label="Habilitar"
-              icon="pi pi-check"
-              size="small"
-              @click="abrirHabilitarRut"
-            />
-            <Button
-              v-else
-              label="Revocar"
-              icon="pi pi-ban"
-              severity="danger"
-              variant="text"
-              size="small"
-              :loading="enviandoRut"
-              @click="confirmarRevocarRut"
-            />
-          </div>
-          <template v-if="correccionRut">
-            <p class="text-xs text-text-muted m-0">
-              Habilitada hasta el
-              {{ formatearFechaHora(correccionRut.habilitadaHasta) }}
-              <template v-if="correccionRut.habilitadaPorNombre">
-                · por {{ correccionRut.habilitadaPorNombre }}
-              </template>
-            </p>
-            <p v-if="correccionRut.motivo" class="text-xs text-text-muted m-0">
-              Motivo: {{ correccionRut.motivo }}
-            </p>
-          </template>
-          <p v-else class="text-xs text-text-muted m-0">
-            Sin habilitación vigente. La persona no puede solicitar corrección
-            de RUT.
-          </p>
-        </div>
 
         <Skeleton v-if="cargandoVinculos" width="100%" height="6rem" />
         <div

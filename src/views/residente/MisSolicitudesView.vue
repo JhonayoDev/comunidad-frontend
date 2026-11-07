@@ -4,14 +4,15 @@ import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { solicitudesService } from "@/services/solicitudesService";
 import { perfilService } from "@/services/perfilService";
+import { archivosService } from "@/services/archivosService";
 import {
   TIPOS_SOLICITUD_ALTA,
   TIPOS_SOLICITUD_API,
   GRUPOS_ESTADO_SOLICITUD,
-  ESTADOS_SOLICITUD,
+  ESTADOS_SOLICITUD_RESIDENTE,
   getTipoSolicitud,
   labelTipoSolicitud,
-  labelEstadoSolicitud,
+  labelEstadoSolicitudResidente,
   labelGrupoEstadoSolicitud,
   labelCategoriaSolicitud,
   labelPrioridadSolicitud,
@@ -78,8 +79,8 @@ const enviandoSeguimiento = ref(false);
 
 const tipoDetalle = computed(() => getTipoSolicitud(detalle.value?.tipo));
 const camposDetalle = computed(() =>
-  (tipoDetalle.value?.campos || []).filter((c) =>
-    esCampoVisible(c, detalle.value?.datos),
+  (tipoDetalle.value?.campos || []).filter(
+    (c) => c.type !== "file" && esCampoVisible(c, detalle.value?.datos),
   ),
 );
 
@@ -207,6 +208,9 @@ function abrirNueva(tipoValue = "SOLICITUD") {
   unidadSeleccionada.value = "";
   form.value = prefill(tipoSeleccionado.value);
   erroresForm.value = {};
+  errorEvidencia.value = null;
+  nombreEvidencia.value = "";
+  subiendoEvidencia.value = false;
   exito.value = null;
   showNueva.value = true;
 }
@@ -214,6 +218,9 @@ function abrirNueva(tipoValue = "SOLICITUD") {
 function onTipoChange() {
   form.value = prefill(tipoSeleccionado.value);
   erroresForm.value = {};
+  errorEvidencia.value = null;
+  nombreEvidencia.value = "";
+  subiendoEvidencia.value = false;
 }
 
 function onRutInput(campoKey) {
@@ -225,6 +232,91 @@ function onRutInput(campoKey) {
 function onRutBlur(campoKey) {
   if (form.value[campoKey])
     form.value[campoKey] = formatearRutCompleto(form.value[campoKey]);
+}
+
+// Evidencia: se sube con el flujo existente de archivos. Solo se ofrece a
+// perfiles con ARCHIVO_SUBIR (hoy RESIDENTE no lo tiene; ver
+// docs/solicitudes-backend/ACCIONES_PENDIENTES.md).
+const puedeSubirEvidencia = computed(() =>
+  auth.permisos.includes("ARCHIVO_SUBIR"),
+);
+const subiendoEvidencia = ref(false);
+const errorEvidencia = ref(null);
+const nombreEvidencia = ref("");
+
+async function onEvidenciaChange(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+
+  errorEvidencia.value = null;
+  const tipoPermitido =
+    file.type === "application/pdf" || file.type.startsWith("image/");
+  if (!tipoPermitido) {
+    errorEvidencia.value = "Solo se permiten imágenes o archivos PDF.";
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    errorEvidencia.value = "La evidencia no puede superar los 10 MB.";
+    return;
+  }
+
+  const cid = auth.condominioActualId;
+  if (!cid) {
+    errorEvidencia.value = "No hay un condominio activo.";
+    return;
+  }
+
+  subiendoEvidencia.value = true;
+  try {
+    const { data: solicitud } = await archivosService.solicitarUrl(cid, {
+      categoria: "DOCUMENTO",
+      nombreArchivo: file.name,
+      contentType: file.type || "application/octet-stream",
+      recursoTipo: "SOLICITUD",
+      recursoId: null,
+    });
+
+    let archivo;
+    if (solicitud.proveedor === "GOOGLE_DRIVE") {
+      const res = await archivosService.driveUpload(
+        cid,
+        solicitud.fileId,
+        file,
+      );
+      archivo = res.data;
+    } else {
+      await fetch(solicitud.uploadUrl, {
+        method: solicitud.method,
+        body: file,
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+        },
+      });
+      const res = await archivosService.confirmar(cid, {
+        fileId: solicitud.fileId,
+        tamanoBytes: file.size,
+      });
+      archivo = res.data;
+    }
+
+    form.value.evidenciaArchivoId = archivo.id;
+    nombreEvidencia.value = file.name;
+  } catch (e) {
+    console.error("Error al subir la evidencia", e);
+    errorEvidencia.value = mensajeError(
+      e,
+      "No se pudo subir la evidencia. Puedes enviar la solicitud sin adjuntarla.",
+    );
+  } finally {
+    subiendoEvidencia.value = false;
+  }
+}
+
+function quitarEvidencia() {
+  form.value.evidenciaArchivoId = "";
+  nombreEvidencia.value = "";
+  errorEvidencia.value = null;
 }
 
 function validarForm() {
@@ -386,7 +478,7 @@ onMounted(async () => {
             <label class="text-sm font-medium">Estado</label>
             <Select
               v-model="filtroEstado"
-              :options="ESTADOS_SOLICITUD"
+              :options="ESTADOS_SOLICITUD_RESIDENTE"
               optionLabel="label"
               optionValue="value"
               class="w-full md:w-44"
@@ -412,7 +504,7 @@ onMounted(async () => {
             <label class="text-sm font-medium">Buscar</label>
             <InputText
               v-model="filtroQ"
-              placeholder="Título, número de solicitud o caso"
+              placeholder="Título o número de solicitud"
               @keydown.enter="aplicarFiltros"
             />
           </div>
@@ -483,12 +575,11 @@ onMounted(async () => {
                 </div>
                 <p class="text-xs text-text-muted m-0">
                   Creada {{ formatearFechaHora(s.creadoEn) }}
-                  <span v-if="s.casoNumero"> · Caso #{{ s.casoNumero }}</span>
                 </p>
               </div>
               <div class="flex flex-col items-end gap-1">
                 <Tag
-                  :value="labelEstadoSolicitud(s.estado)"
+                  :value="labelEstadoSolicitudResidente(s.estado)"
                   :severity="severityEstado(s.estado)"
                 />
                 <span class="text-xs text-text-subprincipal">
@@ -582,6 +673,56 @@ onMounted(async () => {
               :placeholder="campo.ayuda"
               :class="{ 'p-invalid': erroresForm[campo.key] }"
             />
+            <div v-else-if="campo.type === 'file'" class="flex flex-col gap-2">
+              <template v-if="puedeSubirEvidencia">
+                <input
+                  type="file"
+                  accept="application/pdf,image/*"
+                  class="block w-full text-sm text-text-muted file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-primary-600"
+                  :disabled="subiendoEvidencia"
+                  @change="onEvidenciaChange"
+                />
+                <div
+                  v-if="subiendoEvidencia"
+                  class="flex items-center gap-2 text-xs text-text-muted"
+                >
+                  <i class="pi pi-spin pi-spinner" />
+                  Subiendo evidencia…
+                </div>
+                <div
+                  v-else-if="nombreEvidencia"
+                  class="flex items-center gap-2 text-xs text-text-muted"
+                >
+                  <i class="pi pi-paperclip" />
+                  <span class="truncate">{{ nombreEvidencia }}</span>
+                  <Button
+                    icon="pi pi-times"
+                    severity="secondary"
+                    variant="text"
+                    size="small"
+                    rounded
+                    aria-label="Quitar evidencia"
+                    @click="quitarEvidencia"
+                  />
+                </div>
+              </template>
+              <div
+                v-else
+                class="p-2 bg-inset rounded-border text-xs text-text-muted"
+              >
+                <i class="pi pi-info-circle" />
+                La carga de archivos aún no está habilitada para tu perfil.
+                Puedes enviar la solicitud sin evidencia; la administración te
+                contactará si necesita el documento.
+              </div>
+              <Message
+                v-if="errorEvidencia"
+                severity="error"
+                :closable="false"
+              >
+                {{ errorEvidencia }}
+              </Message>
+            </div>
             <Select
               v-else-if="campo.type === 'select'"
               v-model="form[campo.key]"
@@ -636,6 +777,7 @@ onMounted(async () => {
           label="Crear solicitud"
           icon="pi pi-send"
           :loading="enviando"
+          :disabled="subiendoEvidencia"
           @click="crearSolicitud"
         />
       </template>
@@ -672,7 +814,7 @@ onMounted(async () => {
               size="small"
             />
             <Tag
-              :value="labelEstadoSolicitud(detalle.estado)"
+              :value="labelEstadoSolicitudResidente(detalle.estado)"
               :severity="severityEstado(detalle.estado)"
               size="small"
             />
@@ -717,17 +859,15 @@ onMounted(async () => {
           </div>
         </div>
 
-        <template v-if="detalle.casoNumero">
+        <template v-if="detalle.datos?.evidenciaArchivoId">
           <Divider align="left">
             <span class="text-xs font-semibold text-text-muted"
-              >Caso vinculado</span
+              >Evidencia</span
             >
           </Divider>
-          <div
-            class="p-2 bg-inset rounded-border text-sm flex items-center gap-2"
-          >
-            <i class="pi pi-folder text-primary" />
-            <span class="font-medium">Caso #{{ detalle.casoNumero }}</span>
+          <div class="p-2 bg-inset rounded-border text-sm flex items-center gap-2">
+            <i class="pi pi-paperclip text-primary" />
+            <span class="font-medium">Evidencia adjunta</span>
           </div>
         </template>
 
@@ -768,7 +908,7 @@ onMounted(async () => {
                 <span class="font-medium">{{ s.realizadoPorNombre }}</span>
                 <Tag
                   v-if="s.estadoResultante"
-                  :value="labelEstadoSolicitud(s.estadoResultante)"
+                  :value="labelEstadoSolicitudResidente(s.estadoResultante)"
                   :severity="severityEstado(s.estadoResultante)"
                   size="small"
                 />
