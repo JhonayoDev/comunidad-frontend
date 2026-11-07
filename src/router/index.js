@@ -324,7 +324,10 @@ const routes = [
         path: "casos-admin",
         name: "CasosAdmin",
         component: () => import("../views/gestion/CasosAdminView.vue"),
-        meta: { cargos: ["PRESIDENTE", "SECRETARIO"] },
+        meta: {
+          roles: ["ADMINISTRADOR"],
+          cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
+        },
       },
       // ── Personal ────────────────────────────────────
       {
@@ -467,9 +470,9 @@ const routes = [
         meta: { roles: ["RESIDENTE"] },
       },
       {
-        path: "mis-casos",
-        name: "MisCasos",
-        component: () => import("../views/residente/CasosView.vue"),
+        path: "mis-solicitudes",
+        name: "MisSolicitudes",
+        component: () => import("../views/residente/MisSolicitudesView.vue"),
         meta: { roles: ["RESIDENTE"] },
       },
       {

@@ -1,9 +1,19 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 import { perfilService } from "../../services/perfilService";
-import { emailValido, normalizarEmail } from "../../utils/validadoresChile";
+import {
+  emailValido,
+  normalizarEmail,
+  formatearRutCompleto,
+  formatearTelefono,
+  normalizarTelefono,
+  telefonoChileValido,
+  nombreValido,
+} from "../../utils/validadoresChile";
+import { correccionRutHabilitada } from "../../utils/correccionRut";
+import { formatearFecha } from "../../utils/fechas";
 
 import Card from "primevue/card";
 import Avatar from "primevue/avatar";
@@ -17,17 +27,24 @@ import Skeleton from "primevue/skeleton";
 import InputSwitch from "primevue/inputswitch";
 
 const router = useRouter();
+const route = useRoute();
 const auth = useAuthStore();
 
 const me = ref(null);
 const loading = ref(true);
 const error = ref(null);
 
-const seccionActiva = ref(null);
+const seccionActiva = ref(route.query.seccion === "datos" ? "datos" : null);
 
 const preferencias = ref([]);
 const loadingPref = ref(false);
 const guardandoPref = ref({});
+
+// Para navegación a solicitud de corrección RUT
+function irACorreccionRut() {
+  // MisSolicitudesView abre el formulario de CORRECCION_RUT al recibir ?nueva=
+  router.push({ name: "MisSolicitudes", query: { nueva: "CORRECCION_RUT" } });
+}
 
 const tipoLabels = {
   VISITA_PREAUTORIZADA: "Visita preautorizada",
@@ -46,6 +63,11 @@ const tipoLabels = {
   DEUDA_VENCIDA: "Deuda vencida",
   ANUNCIO_GENERAL_PUBLICADO: "Anuncio publicado",
   DOCUMENTO_PUBLICADO: "Documento publicado",
+  SOLICITUD_CREADA: "Solicitud creada",
+  SOLICITUD_RESPONDIDA: "Solicitud respondida",
+  SOLICITUD_CERRADA: "Solicitud cerrada",
+  RUT_CORREGIDO: "RUT corregido",
+  RUT_CORRECCION_HABILITADA: "Corrección de RUT habilitada",
 };
 
 async function cargarPreferencias() {
@@ -90,11 +112,25 @@ const iniciales = computed(() => {
     .slice(0, 2);
 });
 
+const rutFormateado = computed(() =>
+  me.value?.rut ? formatearRutCompleto(me.value.rut) : "",
+);
+
+// Solo se muestra la acción mientras la administración tenga habilitada la
+// corrección. Sin habilitación no se anuncia nada: el residente contacta a la
+// administración si detecta un error.
+const rutHabilitacion = computed(() => correccionRutHabilitada(me.value));
+
 onMounted(async () => {
   try {
     const res = await perfilService.getMiPerfil();
     me.value = res.data;
     datoForm.value.nombre = res.data.nombre;
+    // `MeResponse` aún no expone el teléfono; se deja preparado para cuando
+    // el backend lo agregue.
+    datoForm.value.telefono = res.data.telefono
+      ? formatearTelefono(res.data.telefono)
+      : "";
   } catch (e) {
     console.error("Error al cargar perfil", e);
     error.value = "Error al cargar perfil";
@@ -106,17 +142,49 @@ onMounted(async () => {
 
 // Mis datos
 const datoForm = ref({ nombre: "", telefono: "" });
+const erroresDatos = ref({});
 const loadingDatos = ref(false);
 const mensajeDatos = ref("");
 const errorDatos = ref(false);
 
+function validarDatosPerfil() {
+  erroresDatos.value = {};
+  if (!nombreValido(datoForm.value.nombre)) {
+    erroresDatos.value.nombre = "Ingresa tu nombre completo";
+  }
+  const telefono = String(datoForm.value.telefono || "").trim();
+  if (telefono && !telefonoChileValido(telefono)) {
+    erroresDatos.value.telefono =
+      "Ingresa un teléfono chileno válido (ej: +56 9 1234 5678)";
+  }
+  return Object.keys(erroresDatos.value).length === 0;
+}
+
 async function guardarDatos() {
-  loadingDatos.value = true;
   mensajeDatos.value = "";
   errorDatos.value = false;
+  if (!validarDatosPerfil()) {
+    mensajeDatos.value = "Revisa los datos ingresados";
+    errorDatos.value = true;
+    return;
+  }
+
+  loadingDatos.value = true;
   try {
-    const res = await perfilService.actualizarMe(datoForm.value);
+    const payload = {
+      nombre: datoForm.value.nombre.trim(),
+      telefono: datoForm.value.telefono
+        ? normalizarTelefono(datoForm.value.telefono)
+        : "",
+    };
+    const res = await perfilService.actualizarMe(payload);
     me.value = res.data;
+    datoForm.value = {
+      nombre: res.data.nombre,
+      telefono: res.data.telefono
+        ? formatearTelefono(res.data.telefono)
+        : formatearTelefono(payload.telefono),
+    };
     mensajeDatos.value = "Cambios guardados correctamente";
   } catch (e) {
     console.error("Error al guardar datos", e);
@@ -268,14 +336,56 @@ async function solicitarEmail() {
           <div class="flex flex-col gap-3 pt-2">
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold">Nombre</label>
-              <InputText v-model="datoForm.nombre" placeholder="Tu nombre completo" />
+              <InputText
+                v-model="datoForm.nombre"
+                placeholder="Tu nombre completo"
+                :class="{ 'p-invalid': erroresDatos.nombre }"
+              />
+              <small v-if="erroresDatos.nombre" class="text-danger">
+                {{ erroresDatos.nombre }}
+              </small>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold">Teléfono</label>
               <InputText
                 v-model="datoForm.telefono"
-                placeholder="+56 9 XXXX XXXX"
+                placeholder="+56 9 1234 5678"
+                maxlength="16"
+                :class="{ 'p-invalid': erroresDatos.telefono }"
+                @blur="datoForm.telefono = formatearTelefono(datoForm.telefono)"
               />
+              <small v-if="erroresDatos.telefono" class="text-danger">
+                {{ erroresDatos.telefono }}
+              </small>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold">RUT</label>
+              <div
+                class="flex items-center justify-between gap-2 p-2 bg-inset border border-border-soft rounded-lg select-none cursor-default"
+                aria-readonly="true"
+              >
+                <span class="text-sm">{{ rutFormateado || "Sin RUT registrado" }}</span>
+                <i
+                  class="pi pi-lock text-xs text-text-subtle"
+                  title="El RUT solo se corrige mediante una solicitud"
+                ></i>
+              </div>
+              <template v-if="rutHabilitacion.habilitada">
+                <Message severity="info" :closable="false">
+                  La administración habilitó la corrección de tu RUT hasta el
+                  {{ formatearFecha(rutHabilitacion.hasta.toISOString()) }}.
+                  Completa el formulario con el botón "Solicitar corrección de
+                  RUT"; podrás hacerlo una sola vez.
+                </Message>
+                <Button
+                  label="Solicitar corrección de RUT"
+                  icon="pi pi-id-card"
+                  severity="secondary"
+                  variant="outlined"
+                  size="small"
+                  @click="irACorreccionRut"
+                />
+              </template>
             </div>
             <Message v-if="mensajeDatos" :severity="errorDatos ? 'error' : 'success'" :closable="false">
               {{ mensajeDatos }}

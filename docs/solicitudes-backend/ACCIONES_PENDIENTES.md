@@ -249,6 +249,62 @@ Histórico V57-V61 conservado abajo.
 - **Frontend (gap):** `useDashboardMetrics.js`/`useResidenteMetrics.js` hacen polling incondicional. Si módulo no contratado → 403 en loop cada 30s/60s. Pendiente F2: guard por `listarModulos` o catch 403 → pausar query + mensaje "Módulo no contratado".
 - **SSE conservados:** `NotificacionController.java:103` (`/notificaciones/stream`, `NOTIFICACION_VER`, scoped persona) y `AdminMetricsStreamController.java:37` (`/admin/metrics/stream`, `SUPER_ADMIN|SOPORTE`) siguen vigentes.
 
+### [x] P19. Habilitación temporal de corrección de RUT (issue #99) — backend implementado, frontend completo, QA pendiente
+- **Solicitud:** `SOLICITUD_HABILITACION_TEMPORAL_CORRECCION_RUT.md` — backend JhonayoDev/briku#99 (merge `21549da`).
+- **Backend (✅):** `V84__rut_correccion_habilitaciones.sql` + `RutCorreccionHabilitacionService`;
+  `POST/PATCH .../personas/{id}/correccion-rut/habilitar|revocar` (permiso `PERSONA_RUT_CORREGIR`);
+  `rutCorreccionHabilitadaHasta` en `/me`; `correccionRut` en `PersonaDetalleResponse`;
+  enforcement en `SolicitudService.crear` (`403` sin habilitación, `409` con solicitud abierta,
+  consumo único al crear); notificación `RUT_CORRECCION_HABILITADA`; auditoría
+  `PERSONA_RUT_CORRECCION_HABILITAR/REVOCAR`.
+- **Frontend (✅):** `PerfilView` solo muestra la acción si `rutCorreccionHabilitadaHasta` está
+  vigente (sin texto permanente); `TIPOS_SOLICITUD_ALTA` excluye `CORRECCION_RUT`;
+  `MisSolicitudesView` ignora el deep link sin habilitación y refresca `/me` al crear;
+  `PersonasView` (Vínculos) muestra el estado (`Vigente`/`Usada`/`Revocada`/`Expirada`), permite
+  **Habilitar** (24 h/72 h/7 días + motivo obligatorio) y **Revocar** con `ConfirmDialog`;
+  catálogo de notificaciones, iconos, preferencias, routing de email y acciones de auditoría
+  actualizados.
+- **Ajustes tras QA en vivo (frontend, ✅):**
+  - `PerfilView`: el RUT es solo-lectura y no seleccionable (`select-none` + candado), sin input.
+    El teléfono se formatea al perder foco (`+56 9 XXXX XXXX`), se valida/normaliza antes de
+    guardar y se precarga desde `GET /me` cuando el backend lo exponga.
+  - `PersonasView`: **Habilitar/Revocar** corrección de RUT se movió del bloque "Vínculos" al
+    diálogo **Editar persona** (carga `GET /personas/{id}` para el estado); el mensaje de éxito
+    ya no se pierde al cerrar el diálogo.
+  - `NotificacionesView`: al expandir la notificación `RUT_CORRECCION_HABILITADA` muestra el paso
+    a paso "Perfil → Mis datos → Solicitar corrección de RUT" + botón directo.
+  - `MisSolicitudesView`: estado `RECIBIDA` se muestra como **"Enviada"** para el residente
+    (`ESTADOS_SOLICITUD_RESIDENTE`); no se muestra `casoNumero` (dato interno); la evidencia se
+    adjunta como archivo (`evidenciaArchivoId`, PDF/imagen) en lugar de una URL.
+  - `SolicitudesAdminView`: el responsable asignado muestra **Nombre · Cargo** (cruce
+    `personalService` → `personasService`) en vez del rol "RESIDENTE"; la evidencia se abre con
+    "Ver evidencia" vía `archivosService.listar(cid, "DOCUMENTO")` → `urlDescarga`.
+- **Qué falta (QA en vivo):** residente no ve nada hasta que administración habilite → aparece
+  banner/acción; crear la solicitud consume la ventana; aprobar actualiza el RUT y rechazar
+  permite rehabilitar; revocar oculta la acción; `409` por solicitud abierta/duplicada; subida
+  de evidencia (con un perfil que tenga `ARCHIVO_SUBIR`); guardado del teléfono en perfil.
+
+### [ ] P20. Gaps del backend detectados en QA de corrección de RUT / solicitudes
+- **`MeResponse` sin `telefono`:** `MeService.actualizarMe` guarda el teléfono, pero `GET /me`
+  no lo devuelve, por lo que el residente siempre ve el campo vacío al recargar. Agregar
+  `telefono` a `MeResponse` (y al mapper de `MeService`).
+- **Residente sin `ARCHIVO_SUBIR`:** el rol `RESIDENTE` solo tiene `ARCHIVO_VER` (V22) y
+  `POST /archivos/solicitar-url` exige `ARCHIVO_SUBIR`; además no existe categoría de archivo
+  ligada a solicitudes. Hoy la UI esconde la carga de evidencia para el residente y explica el
+  motivo. Definir permiso/categoría `SOLICITUD` para evidencia del residente (o un endpoint
+  dedicado acotado a su propia solicitud).
+- **DTO de residente con datos internos:** `SolicitudResumenResponse`/`SolicitudDetalleResponse`
+  exponen `casoId`/`casoNumero` (y el nombre del asignado). El frontend los oculta en
+  `MisSolicitudesView`, pero lo correcto es un DTO de residente sin campos de caso/asignación.
+- **Cargo del responsable en solicitudes:** los DTOs solo traen `asignadoANombre`, sin cargo ni
+  personaId. El frontend lo cruza con `/personal` + `/personas`; conviene incluir
+  `asignadoACargo` (o `asignadoAPersonaId`) para evitar el cruce y el fallback.
+- **Plantilla global `RUT_CORRECCION_HABILITADA`:** el texto seed (V84) dice "abre la solicitud
+  de corrección de RUT"; la UI ahora guía por Perfil. Cambiar el seed requiere backend; mientras
+  tanto se puede sobrescribir por condominio en `PlantillasNotificacionView`.
+- **Sin notificación de caso:** no existe tipo/handler `CASO_*`; abrir o vincular un caso no
+  publica una notificación dedicada al residente.
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod

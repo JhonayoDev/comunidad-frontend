@@ -2,15 +2,11 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
-import { casosService } from "@/services/casosService";
+import { solicitudesService } from "@/services/solicitudesService";
+import { labelEstadoSolicitud } from "@/data/solicitudTipos";
 
 import Card from "primevue/card";
-import Select from "primevue/select";
-import InputText from "primevue/inputtext";
-import Textarea from "primevue/textarea";
-import Message from "primevue/message";
 import Button from "primevue/button";
-import Divider from "primevue/divider";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 
@@ -18,86 +14,52 @@ const router = useRouter();
 const auth = useAuthStore();
 
 const seccionActiva = ref(null);
-const casos = ref([]);
-const loadingCasos = ref(false);
-const enviando = ref(false);
-const error = ref(null);
-const exito = ref(null);
-
-const prioridades = [
-  { label: "Informativo", value: "INFO" },
-  { label: "Normal", value: "NORMAL" },
-  { label: "Urgente", value: "URGENTE" },
-  { label: "Emergencia", value: "EMERGENCIA" },
-];
-
-const form = ref({
-  titulo: "",
-  descripcion: "",
-  prioridad: "NORMAL",
-});
-
-function severityPrioridad(p) {
-  if (p === "EMERGENCIA") return "danger";
-  if (p === "URGENTE") return "warn";
-  if (p === "NORMAL") return "success";
-  return "info";
-}
+const solicitudes = ref([]);
+const loadingSolicitudes = ref(false);
 
 function severityEstado(e) {
-  if (e === "ABIERTO") return "info";
-  if (e === "EN_GESTION") return "warn";
-  if (e === "RESUELTO") return "success";
-  if (e === "CERRADO") return "contrast";
-  return "info";
+  if (e === "RECIBIDA") return "info";
+  if (e === "EN_REVISION" || e === "OBSERVADA") return "warn";
+  if (e === "RESUELTA") return "success";
+  if (e === "RECHAZADA") return "danger";
+  return "contrast";
 }
 
 function formatearFecha(iso) {
   if (!iso) return "";
-  return new Date(iso).toLocaleDateString("es-CL", {
-    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("es-CL", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
-async function cargarCasos() {
+async function cargarSolicitudes() {
   const cid = auth.condominioActualId;
   if (!cid) return;
-  loadingCasos.value = true;
+  loadingSolicitudes.value = true;
   try {
-    const { data } = await casosService.listar(cid);
-    casos.value = data;
-  } catch (e) {
-    console.error("Error al cargar casos", e);
-  } finally {
-    loadingCasos.value = false;
-  }
-}
-
-async function enviarCaso() {
-  if (!form.value.titulo.trim()) return;
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  enviando.value = true;
-  error.value = null;
-  exito.value = null;
-  try {
-    await casosService.abrir(cid, {
-      titulo: form.value.titulo,
-      descripcion: form.value.descripcion || null,
-      prioridad: form.value.prioridad,
+    const { data } = await solicitudesService.listarMis(cid, {
+      page: 0,
+      size: 5,
+      grupoEstado: "ABIERTA",
     });
-    form.value = { titulo: "", descripcion: "", prioridad: "NORMAL" };
-    exito.value = "Caso creado correctamente";
-    await cargarCasos();
+    solicitudes.value = data?.content || [];
   } catch (e) {
-    console.error("Error al crear caso", e);
-    error.value = e.response?.data?.message || "Error al crear el caso";
+    console.error("Error al cargar solicitudes propias", e);
   } finally {
-    enviando.value = false;
+    loadingSolicitudes.value = false;
   }
 }
 
-onMounted(cargarCasos);
+function irAMisSolicitudes() {
+  router.push({ name: "MisSolicitudes" });
+}
+
+onMounted(cargarSolicitudes);
 </script>
 
 <template>
@@ -107,7 +69,7 @@ onMounted(cargarCasos);
     <Card>
       <template #content>
         <div
-          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:surface-hover"
+          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-emphasis"
           @click="seccionActiva = seccionActiva === 'visita' ? null : 'visita'"
         >
           <div class="flex items-center gap-3">
@@ -134,7 +96,7 @@ onMounted(cargarCasos);
     <Card>
       <template #content>
         <div
-          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:surface-hover"
+          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-emphasis"
           @click="seccionActiva = seccionActiva === 'reserva' ? null : 'reserva'"
         >
           <div class="flex items-center gap-3">
@@ -161,61 +123,64 @@ onMounted(cargarCasos);
     <Card>
       <template #content>
         <div
-          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:surface-hover"
-          @click="seccionActiva = seccionActiva === 'reclamo' ? null : 'reclamo'"
+          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-emphasis"
+          @click="irAMisSolicitudes"
         >
           <div class="flex items-center gap-3">
             <span class="text-xl">📝</span>
             <div>
-              <p class="font-medium">Reclamos y casos</p>
-              <p class="text-xs text-text-subprincipal">Reclamos, sugerencias y solicitudes</p>
+              <p class="font-medium">Solicitudes y reclamos</p>
+              <p class="text-xs text-text-subprincipal">
+                Crea y sigue el estado de tus solicitudes
+              </p>
             </div>
           </div>
-          <span class="text-text-subprincipal">{{ seccionActiva === "reclamo" ? "∨" : "›" }}</span>
+          <span class="text-text-subprincipal">›</span>
         </div>
-        <div v-if="seccionActiva === 'reclamo'" class="px-4 pb-4 border-t border-border-soft">
-          <div class="flex flex-col gap-3 pt-3">
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold">Título *</label>
-              <InputText v-model="form.titulo" placeholder="Resume tu reclamo o solicitud" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold">Prioridad</label>
-              <Select v-model="form.prioridad" :options="prioridades" optionLabel="label" optionValue="value" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold">Descripción</label>
-              <Textarea v-model="form.descripcion" placeholder="Describe tu caso en detalle" rows="3" :autoResize="true" />
-            </div>
-            <Message v-if="error" severity="error" :closable="false">{{ error }}</Message>
-            <Message v-if="exito" severity="success" :closable="false">{{ exito }}</Message>
-            <Button label="Enviar caso" size="small" :loading="enviando" :disabled="!form.titulo.trim()" @click="enviarCaso" />
 
-            <Divider class="text-xs">Casos anteriores</Divider>
-            <Skeleton v-if="loadingCasos" width="100%" height="80px" />
-            <div v-else-if="!casos.length" class="flex flex-col items-center py-4 gap-2">
-              <span class="text-3xl">📭</span>
-              <p class="text-sm text-text-muted">No tienes casos anteriores</p>
-            </div>
-            <div v-else class="flex flex-col gap-2">
-              <div
-                v-for="c in casos.slice(0, 5)"
-                :key="c.id"
-                class="surface-50 p-2 border-round cursor-pointer hover:surface-100"
-                @click="router.push({ name: 'MisCasos' })"
-              >
-                <div class="flex items-center gap-2">
-                  <span class="text-xs text-text-subprincipal">#{{ c.numero }}</span>
-                  <span class="text-sm font-medium">{{ c.titulo }}</span>
-                  <Tag :value="c.prioridad" :severity="severityPrioridad(c.prioridad)" size="small" />
-                </div>
-                <div class="text-xs text-text-subprincipal flex items-center gap-2 mt-1">
-                  <Tag :value="c.estado" :severity="severityEstado(c.estado)" size="small" />
-                  <span>{{ formatearFecha(c.abiertoEn) }}</span>
-                </div>
+        <div class="px-4 pb-4 flex flex-col gap-2">
+          <Skeleton v-if="loadingSolicitudes" width="100%" height="60px" />
+          <div
+            v-else-if="!solicitudes.length"
+            class="flex flex-col items-center py-4 gap-2"
+          >
+            <span class="text-3xl">📭</span>
+            <p class="text-sm text-text-muted m-0">No tienes solicitudes abiertas</p>
+            <Button
+              label="Crear solicitud"
+              icon="pi pi-plus"
+              @click="irAMisSolicitudes"
+            />
+          </div>
+          <template v-else>
+            <div
+              v-for="s in solicitudes"
+              :key="s.id"
+              class="p-2 bg-inset rounded-border cursor-pointer"
+              @click="irAMisSolicitudes"
+            >
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs text-text-subprincipal">#{{ s.numero }}</span>
+                <span class="text-sm font-medium">{{ s.titulo }}</span>
+                <Tag
+                  :value="labelEstadoSolicitud(s.estado)"
+                  :severity="severityEstado(s.estado)"
+                  size="small"
+                />
+              </div>
+              <div class="text-xs text-text-subprincipal mt-1">
+                {{ formatearFecha(s.creadoEn) }}
               </div>
             </div>
-          </div>
+            <Button
+              label="Ver todas"
+              icon="pi pi-arrow-right"
+              size="small"
+              severity="secondary"
+              variant="text"
+              @click="irAMisSolicitudes"
+            />
+          </template>
         </div>
       </template>
     </Card>
@@ -223,7 +188,7 @@ onMounted(cargarCasos);
     <Card>
       <template #content>
         <div
-          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:surface-hover"
+          class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-emphasis"
           @click="router.push({ name: 'MisEncomiendas' })"
         >
           <div class="flex items-center gap-3">
