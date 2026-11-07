@@ -4,6 +4,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { personasService } from "@/services/personasService";
 import { unidadesService } from "@/services/unidadesService";
 import { useValidacionChile } from "@/composables/useValidacionChile";
+import { useBusquedaPersona } from "@/composables/useBusquedaPersona";
+import { emailValido } from "@/utils/validadoresChile";
 import { mensajeError } from "@/utils/errores";
 import { estadoCorreccionRut } from "@/utils/correccionRut";
 import { labelCargo as cargoLabel } from "@/data/cargos";
@@ -50,6 +52,11 @@ const showVinculos = ref(false);
 const showCrearVinculo = ref(false);
 const showCrearUsuario = ref(false);
 const showHabilitarRut = ref(false);
+const showBuscarPersona = ref(false);
+const emailBuscarPersona = ref("");
+const errorEmailBuscarPersona = ref(null);
+const esConflictoPersona = ref(false);
+const vinculoDesdeDetalle = ref(false);
 const personaSeleccionada = ref(null);
 const personaCambioEmail = ref(null);
 const personaDetalle = ref(null);
@@ -127,6 +134,31 @@ const {
   normalizarTelefono: normalizarTelefonoEdicion,
 } = useValidacionChile();
 
+// Verificación del email en el alta: si la persona ya existe, se ofrece
+// vincularla en vez de crear (y el backend responde 409 si se intenta igual).
+const {
+  buscando: verificandoEmailAlta,
+  persona: personaEmailDuplicado,
+  consultado: emailAltaConsultado,
+  noEncontrada: emailAltaDisponible,
+  error: errorBusquedaAlta,
+  limpiar: limpiarBusquedaAlta,
+  buscarPorEmail: buscarEmailAlta,
+  crearOReutilizar,
+} = useBusquedaPersona();
+
+// Recuperación de personas huérfanas (sin vínculo ni cargo), que el listado
+// del condominio no devuelve.
+const {
+  buscando: buscandoPersona,
+  persona: personaBuscada,
+  consultado: busquedaPersonaConsultada,
+  noEncontrada: personaNoEncontrada,
+  error: errorBusquedaPersona,
+  limpiar: limpiarBusquedaPersona,
+  buscarPorEmail: buscarPersonaPorEmail,
+} = useBusquedaPersona();
+
 const tiposVinculo = [
   { label: "Propietario", value: "PROPIETARIO" },
   { label: "Arrendatario", value: "ARRENDATARIO" },
@@ -149,6 +181,7 @@ const tipoVinculoLabels = Object.fromEntries(
 );
 
 const puedeCrear = computed(() => auth.permisos.includes("PERSONA_CREAR"));
+const puedeVerPersonas = computed(() => auth.permisos.includes("PERSONA_VER"));
 const puedeEditar = computed(() => auth.permisos.includes("PERSONA_EDITAR"));
 const puedeDesactivar = computed(() =>
   auth.permisos.includes("PERSONA_ELIMINAR"),
@@ -176,6 +209,30 @@ const correccionRutVigente = computed(
   () => correccionRut.value?.estado === "VIGENTE",
 );
 const estadoRut = computed(() => estadoCorreccionRut(correccionRut.value));
+
+const mensajeErrorBusquedaAlta = computed(() =>
+  errorBusquedaAlta.value
+    ? mensajeError(errorBusquedaAlta.value, "No se pudo verificar el email")
+    : null,
+);
+const mensajeErrorBusquedaPersona = computed(() =>
+  errorBusquedaPersona.value
+    ? mensajeError(
+        errorBusquedaPersona.value,
+        "No se pudo buscar la persona por email",
+      )
+    : null,
+);
+const personaBuscadaEnListado = computed(
+  () =>
+    !!personaBuscada.value &&
+    personas.value.some((p) => p.id === personaBuscada.value.id),
+);
+const conflictoPersonaPorRut = computed(
+  () =>
+    esConflictoPersona.value &&
+    /\bRUT\b/i.test(String(errorFormPersona.value || "")),
+);
 
 const personasFiltradas = computed(() => {
   const q = busqueda.value.trim().toLowerCase();
@@ -331,6 +388,8 @@ function abrirCrear() {
   formPersona.value = { nombre: "", email: "", rut: "", telefono: "" };
   erroresPersona.value = {};
   errorFormPersona.value = null;
+  esConflictoPersona.value = false;
+  limpiarBusquedaAlta();
   showCrearPersona.value = true;
 }
 
@@ -338,6 +397,8 @@ function cerrarCrearPersona() {
   showCrearPersona.value = false;
   errorFormPersona.value = null;
   erroresPersona.value = {};
+  esConflictoPersona.value = false;
+  limpiarBusquedaAlta();
 }
 
 function validarFormularioPersona() {
@@ -349,43 +410,181 @@ function validarFormularioPersona() {
   return Object.keys(erroresPersona.value).length === 0;
 }
 
-async function crearPersona() {
+function validarYEnfocarPersona() {
+  if (validarFormularioPersona()) return true;
+  focusPrimerError([
+    ["nombre", nombreCrearRef],
+    ["email", emailCrearRef],
+    ["rut", rutCrearRef],
+    ["telefono", telefonoCrearRef],
+  ]);
+  return false;
+}
+
+function payloadPersona() {
+  return {
+    nombre: formPersona.value.nombre.trim(),
+    email: normalizarEmail(formPersona.value.email),
+    rut: formPersona.value.rut ? normalizarRut(formPersona.value.rut) : null,
+    telefono: formPersona.value.telefono
+      ? normalizarTelefono(formPersona.value.telefono)
+      : null,
+  };
+}
+
+function alCambiarEmailAlta() {
+  limpiarBusquedaAlta();
+  esConflictoPersona.value = false;
+}
+
+async function verificarEmailAlta() {
+  if (!puedeVerPersonas.value) return;
   const cid = auth.condominioActualId;
-  if (!cid) return;
-  if (!validarFormularioPersona()) {
-    focusPrimerError([
-      ["nombre", nombreCrearRef],
-      ["email", emailCrearRef],
-      ["rut", rutCrearRef],
-      ["telefono", telefonoCrearRef],
-    ]);
+  const email = normalizarEmail(formPersona.value.email);
+  if (!cid || !emailValido(email)) {
+    limpiarBusquedaAlta();
     return;
   }
+  await buscarEmailAlta(cid, email);
+}
+
+function vincularEmailDuplicado() {
+  const persona = personaEmailDuplicado.value;
+  if (!persona || !puedeCrearVinculo.value || !persona.activo) return;
+  showCrearPersona.value = false;
+  limpiarBusquedaAlta();
+  vinculoDesdeDetalle.value = false;
+  abrirCrearVinculoConPersona(persona);
+}
+
+function crearPersonaYVincular() {
+  if (personaEmailDuplicado.value) {
+    vincularEmailDuplicado();
+    return;
+  }
+  if (!validarYEnfocarPersona()) return;
+  crearPersona({ vincular: true });
+}
+
+function confirmarCrearSinVinculo() {
+  if (!validarYEnfocarPersona()) return;
+  confirm.require({
+    message:
+      "La persona quedará registrada, pero no aparecerá en el listado hasta que tenga un vínculo con una unidad o un cargo en este condominio. ¿Crear sin vincular?",
+    header: "Crear sin vincular",
+    acceptLabel: "Crear sin vincular",
+    rejectLabel: "Cancelar",
+    accept: () => crearPersona({ vincular: false }),
+  });
+}
+
+function crearSoloPersona() {
+  crearPersona({ vincular: false });
+}
+
+async function crearPersona({ vincular = true } = {}) {
+  const cid = auth.condominioActualId;
+  if (!cid) return;
+  if (!validarYEnfocarPersona()) return;
 
   enviando.value = true;
   errorFormPersona.value = null;
+  esConflictoPersona.value = false;
 
   try {
-    await personasService.crear(cid, {
-      nombre: formPersona.value.nombre.trim(),
-      email: normalizarEmail(formPersona.value.email),
-      rut: formPersona.value.rut
-        ? normalizarRut(formPersona.value.rut)
-        : null,
-      telefono: formPersona.value.telefono
-        ? normalizarTelefono(formPersona.value.telefono)
-        : null,
-    });
+    // Si el email ya existe, el backend responde 409 y el composable
+    // recupera la persona para reutilizarla en vez de dejar el alta huérfana.
+    const { persona, reutilizada } = await crearOReutilizar(
+      cid,
+      payloadPersona(),
+    );
+
+    if (vincular && puedeCrearVinculo.value && persona?.activo) {
+      showCrearPersona.value = false;
+      limpiarBusquedaAlta();
+      exito.value = reutilizada
+        ? "La persona ya existía. Completa el vínculo para verla en el listado."
+        : "Persona creada. Completa el vínculo para verla en el listado.";
+      vinculoDesdeDetalle.value = false;
+      abrirCrearVinculoConPersona(persona);
+      return;
+    }
+
     showCrearPersona.value = false;
-    exito.value = "Persona creada correctamente.";
+    limpiarBusquedaAlta();
+    exito.value = reutilizada
+      ? "La persona ya existía. Para verla en el listado, vincúlala a una unidad o asígnale un cargo."
+      : "Persona creada sin vínculo. No aparecerá en el listado hasta que la vincules a una unidad o le asignes un cargo.";
     await cargar();
   } catch (e) {
     console.error("Error al crear persona", e);
+    esConflictoPersona.value = e?.response?.status === 409;
     errorFormPersona.value = mensajeError(e, "Error al crear persona");
     aplicarErroresBackend(e, erroresPersona);
   } finally {
     enviando.value = false;
   }
+}
+
+function resolverConflictoPersona() {
+  const email = normalizarEmail(formPersona.value.email);
+  showCrearPersona.value = false;
+  limpiarBusquedaAlta();
+  abrirBuscarPersona(email);
+}
+
+function abrirBuscarPersona(email = "") {
+  if (!puedeVerPersonas.value) return;
+  const emailInicial = typeof email === "string" ? email : "";
+  limpiarBusquedaPersona();
+  emailBuscarPersona.value = emailInicial;
+  errorEmailBuscarPersona.value = null;
+  showBuscarPersona.value = true;
+  if (emailInicial && emailValido(emailInicial)) {
+    ejecutarBusquedaPersona();
+  }
+}
+
+function cerrarBuscarPersona() {
+  showBuscarPersona.value = false;
+  emailBuscarPersona.value = "";
+  errorEmailBuscarPersona.value = null;
+  limpiarBusquedaPersona();
+}
+
+async function ejecutarBusquedaPersona() {
+  const cid = auth.condominioActualId;
+  const email = normalizarEmail(emailBuscarPersona.value);
+  errorEmailBuscarPersona.value = null;
+  if (!cid) return;
+  if (!emailValido(email)) {
+    errorEmailBuscarPersona.value =
+      "Ingresa un email válido (ej: nombre@dominio.cl)";
+    return;
+  }
+  await buscarPersonaPorEmail(cid, email);
+}
+
+function vincularPersonaBuscada() {
+  const persona = personaBuscada.value;
+  if (!persona || !puedeCrearVinculo.value || !persona.activo) return;
+  showBuscarPersona.value = false;
+  vinculoDesdeDetalle.value = false;
+  abrirCrearVinculoConPersona(persona);
+}
+
+function verVinculosPersonaBuscada() {
+  const persona = personaBuscada.value;
+  if (!persona) return;
+  showBuscarPersona.value = false;
+  verVinculos(persona);
+}
+
+function crearDesdeBusqueda() {
+  const email = emailBuscarPersona.value;
+  cerrarBuscarPersona();
+  abrirCrear();
+  formPersona.value.email = email;
 }
 
 async function abrirEditar(persona) {
@@ -804,10 +1003,12 @@ async function revocarRut() {
   }
 }
 
-function abrirCrearVinculo() {
-  if (!puedeCrearVinculo.value || !personaSeleccionada.value) return;
+function abrirCrearVinculoConPersona(persona) {
+  if (!puedeCrearVinculo.value || !persona) return;
+  personaSeleccionada.value = persona;
+  personaDetalle.value = null;
   formVinculo.value = {
-    personaId: personaSeleccionada.value.id,
+    personaId: persona.id,
     unidadId: null,
     tipo: null,
     fechaInicio: fechaLocalISO(),
@@ -820,11 +1021,22 @@ function abrirCrearVinculo() {
   showCrearVinculo.value = true;
 }
 
+function abrirCrearVinculo() {
+  if (!puedeCrearVinculo.value || !personaSeleccionada.value) return;
+  vinculoDesdeDetalle.value = true;
+  abrirCrearVinculoConPersona(personaSeleccionada.value);
+}
+
 function cerrarCrearVinculo() {
   showCrearVinculo.value = false;
   errorFormVinculo.value = null;
   erroresVinculo.value = {};
-  if (personaSeleccionada.value) showVinculos.value = true;
+  showVinculos.value = vinculoDesdeDetalle.value && !!personaSeleccionada.value;
+  if (!showVinculos.value) {
+    personaSeleccionada.value = null;
+    personaDetalle.value = null;
+  }
+  vinculoDesdeDetalle.value = false;
 }
 
 async function crearVinculo() {
@@ -860,8 +1072,13 @@ async function crearVinculo() {
       recibeNotificaciones: formVinculo.value.recibeNotificaciones,
     });
     showCrearVinculo.value = false;
+    vinculoDesdeDetalle.value = false;
     await verVinculos(persona);
     exitoVinculos.value = "Vínculo creado correctamente.";
+    // El listado del condominio solo devuelve personas con vínculo o cargo:
+    // refrescar para que la persona recién vinculada aparezca.
+    await cargar();
+    exito.value = "Persona vinculada. Ya aparece en el listado.";
   } catch (e) {
     console.error("Error al crear vínculo", e);
     errorFormVinculo.value = mensajeError(e, "Error al crear vínculo");
@@ -894,6 +1111,8 @@ async function desvincularVinculo(vinculo) {
     await personasService.desactivarVinculo(cid, vinculo.vinculoId);
     await verVinculos(persona);
     exitoVinculos.value = "Vínculo desactivado correctamente.";
+    // Si era el último vínculo/cargo, la persona deja de aparecer en el listado.
+    await cargar();
   } catch (e) {
     console.error("Error al desvincular vínculo", e);
     errorVinculos.value = mensajeError(e, "Error al desvincular vínculo");
@@ -949,12 +1168,21 @@ async function crearUsuario() {
           severity="secondary"
         />
       </div>
-      <Button
-        v-if="puedeCrear"
-        label="Nueva persona"
-        icon="pi pi-plus"
-        @click="abrirCrear"
-      />
+      <div class="flex flex-wrap items-center gap-2">
+        <Button
+          v-if="puedeVerPersonas"
+          label="Buscar persona"
+          icon="pi pi-search"
+          severity="secondary"
+          @click="abrirBuscarPersona()"
+        />
+        <Button
+          v-if="puedeCrear"
+          label="Nueva persona"
+          icon="pi pi-plus"
+          @click="abrirCrear"
+        />
+      </div>
     </div>
 
     <Message
@@ -1292,7 +1520,23 @@ async function crearUsuario() {
     >
       <div class="flex flex-col gap-3">
         <Message v-if="errorFormPersona" severity="error" :closable="false">
-          {{ errorFormPersona }}
+          <div class="flex flex-col gap-2">
+            <span>{{ errorFormPersona }}</span>
+            <Button
+              v-if="
+                esConflictoPersona &&
+                puedeVerPersonas &&
+                !conflictoPersonaPorRut
+              "
+              label="Buscar y vincular"
+              icon="pi pi-search"
+              @click="resolverConflictoPersona"
+            />
+            <small v-else-if="conflictoPersonaPorRut" class="text-xs">
+              El RUT ya pertenece a otra persona y no se puede recuperar por
+              email desde aquí.
+            </small>
+          </div>
         </Message>
 
         <div class="flex flex-col gap-1">
@@ -1321,11 +1565,79 @@ async function crearUsuario() {
             type="email"
             maxlength="255"
             :class="{ 'p-invalid': erroresPersona.email }"
+            @input="alCambiarEmailAlta"
+            @blur="verificarEmailAlta"
           />
           <small v-if="erroresPersona.email" class="text-danger">
             {{ erroresPersona.email }}
           </small>
+          <div
+            v-if="verificandoEmailAlta"
+            class="flex items-center gap-2 text-xs text-text-muted"
+          >
+            <i class="pi pi-spin pi-spinner" />
+            <span>Verificando email...</span>
+          </div>
         </div>
+
+        <div
+          v-if="emailAltaConsultado && personaEmailDuplicado"
+          class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <i class="pi pi-user text-primary-400" />
+            <span class="font-medium">{{ personaEmailDuplicado.nombre }}</span>
+            <Tag
+              v-if="!personaEmailDuplicado.activo"
+              value="Inactiva"
+              severity="warn"
+              size="small"
+            />
+          </div>
+          <span class="text-sm text-text-muted truncate">
+            {{ personaEmailDuplicado.email }}
+          </span>
+          <span class="text-xs text-text-muted">
+            Este email ya está registrado. Vinculala a una unidad para que
+            aparezca en el listado; no se creará de nuevo.
+          </span>
+          <span
+            v-if="!personaEmailDuplicado.activo"
+            class="text-xs text-text-muted"
+          >
+            La persona está inactiva; no aparecerá en el listado hasta que se
+            reactive.
+          </span>
+          <span
+            v-else-if="!puedeCrearVinculo"
+            class="text-xs text-text-muted"
+          >
+            No tienes permiso para vincular personas en este condominio.
+          </span>
+          <Button
+            v-if="puedeCrearVinculo && personaEmailDuplicado.activo"
+            label="Vincular a una unidad"
+            icon="pi pi-link"
+            @click="vincularEmailDuplicado"
+          />
+        </div>
+
+        <Message
+          v-else-if="mensajeErrorBusquedaAlta"
+          severity="warn"
+          :closable="false"
+        >
+          {{ mensajeErrorBusquedaAlta }}. Puedes continuar; si el email ya
+          existe, se reutilizará la persona.
+        </Message>
+
+        <Message
+          v-else-if="emailAltaConsultado && emailAltaDisponible"
+          severity="success"
+          :closable="false"
+        >
+          Email disponible para crear.
+        </Message>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="flex flex-col gap-1">
@@ -1371,10 +1683,180 @@ async function crearUsuario() {
           variant="text"
           @click="cerrarCrearPersona"
         />
+        <template v-if="emailAltaConsultado && personaEmailDuplicado">
+          <Button
+            v-if="puedeCrearVinculo && personaEmailDuplicado.activo"
+            label="Vincular a una unidad"
+            icon="pi pi-link"
+            @click="vincularEmailDuplicado"
+          />
+        </template>
+        <template v-else>
+          <Button
+            v-if="puedeCrearVinculo"
+            label="Crear sin vincular"
+            severity="secondary"
+            variant="text"
+            :loading="enviando"
+            @click="confirmarCrearSinVinculo"
+          />
+          <Button
+            v-if="puedeCrearVinculo"
+            label="Crear y vincular"
+            :loading="enviando"
+            @click="crearPersonaYVincular"
+          />
+          <Button
+            v-else
+            label="Crear persona"
+            :loading="enviando"
+            @click="crearSoloPersona"
+          />
+        </template>
+      </template>
+    </Dialog>
+
+    <Dialog
+      v-model:visible="showBuscarPersona"
+      header="Buscar persona por email"
+      modal
+      :style="{ width: '95%', maxWidth: '480px' }"
+    >
+      <div class="flex flex-col gap-3">
+        <p class="text-sm text-text-muted m-0">
+          Recupera personas que no aparecen en el listado porque aún no tienen
+          un vínculo ni un cargo activo en este condominio.
+        </p>
+
+        <form
+          class="flex flex-col gap-2 sm:flex-row sm:items-start"
+          @submit.prevent="ejecutarBusquedaPersona"
+        >
+          <div class="flex flex-col gap-1 flex-1">
+            <label for="buscar-persona-email" class="text-sm">Email</label>
+            <InputText
+              id="buscar-persona-email"
+              v-model="emailBuscarPersona"
+              type="email"
+              maxlength="255"
+              placeholder="nombre@dominio.cl"
+              :class="{ 'p-invalid': errorEmailBuscarPersona }"
+            />
+            <small v-if="errorEmailBuscarPersona" class="text-danger">
+              {{ errorEmailBuscarPersona }}
+            </small>
+          </div>
+          <div class="flex items-end sm:pt-6">
+            <Button
+              type="submit"
+              label="Buscar"
+              icon="pi pi-search"
+              severity="secondary"
+              :loading="buscandoPersona"
+            />
+          </div>
+        </form>
+
+        <Message
+          v-if="mensajeErrorBusquedaPersona"
+          severity="error"
+          :closable="false"
+        >
+          {{ mensajeErrorBusquedaPersona }}
+        </Message>
+
+        <div
+          v-if="personaBuscada"
+          class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-medium">{{ personaBuscada.nombre }}</span>
+            <Tag
+              :value="estadoUsuarioPersona(personaBuscada).label"
+              :severity="estadoUsuarioPersona(personaBuscada).severity"
+              size="small"
+            />
+            <Tag
+              v-if="!personaBuscada.activo"
+              value="Inactiva"
+              severity="warn"
+              size="small"
+            />
+          </div>
+
+          <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+            <span class="text-text-muted">Email:</span>
+            <span class="truncate">{{ personaBuscada.email || "—" }}</span>
+            <span class="text-text-muted">RUT:</span>
+            <span>{{ personaBuscada.rut || "—" }}</span>
+            <span class="text-text-muted">Teléfono:</span>
+            <span>{{ personaBuscada.telefono || "—" }}</span>
+          </div>
+
+          <Message
+            v-if="!personaBuscadaEnListado"
+            severity="info"
+            :closable="false"
+          >
+            No figura en el listado del condominio porque no tiene vínculo ni
+            cargo activo.
+          </Message>
+          <Message v-else severity="success" :closable="false">
+            Ya aparece en el listado del condominio.
+          </Message>
+          <Message
+            v-if="!personaBuscada.activo"
+            severity="warn"
+            :closable="false"
+          >
+            La persona está inactiva. No aparecerá en el listado hasta que se
+            reactive.
+          </Message>
+          <Message
+            v-else-if="!puedeCrearVinculo"
+            severity="warn"
+            :closable="false"
+          >
+            No tienes permiso para vincular personas en este condominio.
+          </Message>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <Button
+              v-if="puedeCrearVinculo && personaBuscada.activo"
+              label="Vincular a una unidad"
+              icon="pi pi-link"
+              @click="vincularPersonaBuscada"
+            />
+            <Button
+              v-if="puedeVerVinculos"
+              label="Ver vínculos"
+              icon="pi pi-link"
+              severity="secondary"
+              @click="verVinculosPersonaBuscada"
+            />
+          </div>
+        </div>
+
+        <div
+          v-else-if="busquedaPersonaConsultada && personaNoEncontrada"
+          class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
+        >
+          <p class="m-0 text-sm">No existe una persona con ese email.</p>
+          <Button
+            v-if="puedeCrear"
+            label="Crear persona"
+            icon="pi pi-plus"
+            @click="crearDesdeBusqueda"
+          />
+        </div>
+      </div>
+
+      <template #footer>
         <Button
-          label="Crear persona"
-          :loading="enviando"
-          @click="crearPersona"
+          label="Cerrar"
+          severity="secondary"
+          variant="text"
+          @click="cerrarBuscarPersona"
         />
       </template>
     </Dialog>

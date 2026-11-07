@@ -305,6 +305,20 @@ Histórico V57-V61 conservado abajo.
 - **Sin notificación de caso:** no existe tipo/handler `CASO_*`; abrir o vincular un caso no
   publica una notificación dedicada al residente.
 
+### [ ] P21. Alta de persona: 409 con `personaId` y búsqueda por RUT (issue #42)
+- **Solicitud:** `SOLICITUD_409_PERSONA_ID.md`
+- **Contexto:** `POST /condominios/{cid}/personas` crea una persona global sin vínculo/cargo y
+  `GET /personas` solo lista personas con vínculo o cargo activo; la persona recién creada queda
+  invisible (caso real `cintya@gmail.com`). El frontend ya implementó el flujo "crear o reutilizar
+  → vincular" (issue #42, opción A) usando `GET /personas/buscar?email=`, pero depende del email.
+- **Qué falta (backend):**
+  1. En el `409` de email/RUT duplicado, devolver `personaId` (y `conflicto: EMAIL|RUT`). Hoy
+     `IllegalStateException` → `ErrorResponse` sin el ID, aunque el controller documenta lo
+     contrario.
+  2. Extender `GET /personas/buscar` para aceptar `rut` además de `email` (o un
+     `GET /personas/buscar?rut=`), porque un 409 por RUT con email distinto no se puede resolver
+     desde la UI (la búsqueda por email no lo encuentra).
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod
