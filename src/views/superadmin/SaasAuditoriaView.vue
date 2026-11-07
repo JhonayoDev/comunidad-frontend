@@ -40,6 +40,8 @@ const ACCIONES = [
   { value: "PERSONA_EMAIL_CONFIRMAR", label: "Confirmar cambio de email", severity: "success" },
   { value: "PERSONA_EMAIL_REENVIAR", label: "Reenviar verificación de email", severity: "warn" },
   { value: "PERSONA_RUT_CORREGIR", label: "Corregir RUT de persona", severity: "warn" },
+  { value: "PERSONA_RUT_CORRECCION_HABILITAR", label: "Habilitar corrección de RUT", severity: "info" },
+  { value: "PERSONA_RUT_CORRECCION_REVOCAR", label: "Revocar corrección de RUT", severity: "danger" },
   { value: "SOLICITUD_CREADA", label: "Solicitud creada", severity: "info" },
   { value: "SOLICITUD_RESPONDIDA", label: "Solicitud respondida", severity: "success" },
   { value: "SOLICITUD_ESTADO_CAMBIADO", label: "Estado de solicitud cambiado", severity: "info" },

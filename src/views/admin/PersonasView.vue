@@ -5,6 +5,7 @@ import { personasService } from "@/services/personasService";
 import { unidadesService } from "@/services/unidadesService";
 import { useValidacionChile } from "@/composables/useValidacionChile";
 import { mensajeError } from "@/utils/errores";
+import { estadoCorreccionRut } from "@/utils/correccionRut";
 import {
   esPreActivacionPersona,
   estadoUsuarioPersona,
@@ -46,6 +47,7 @@ const showCambiarEmail = ref(false);
 const showVinculos = ref(false);
 const showCrearVinculo = ref(false);
 const showCrearUsuario = ref(false);
+const showHabilitarRut = ref(false);
 const personaSeleccionada = ref(null);
 const personaCambioEmail = ref(null);
 const personaDetalle = ref(null);
@@ -67,12 +69,15 @@ const formVinculo = ref({
   recibeNotificaciones: true,
 });
 const formUsuario = ref({ rol: "RESIDENTE" });
+const formHabilitarRut = ref({ vigenciaHoras: 72, motivo: "" });
+const enviandoRut = ref(false);
 
 const errorFormPersona = ref(null);
 const errorFormEditar = ref(null);
 const errorFormCambioEmail = ref(null);
 const errorFormVinculo = ref(null);
 const errorFormUsuario = ref(null);
+const errorFormHabilitarRut = ref(null);
 const erroresVinculo = ref({});
 
 const nombreCrearRef = ref(null);
@@ -128,6 +133,12 @@ const rolesUsuario = [
   { label: "Guardia", value: "GUARDIA" },
 ];
 
+const vigenciasRut = [
+  { label: "24 horas", value: 24 },
+  { label: "72 horas", value: 72 },
+  { label: "7 días", value: 168 },
+];
+
 const tipoVinculoLabels = Object.fromEntries(
   tiposVinculo.map((tipo) => [tipo.value, tipo.label]),
 );
@@ -161,6 +172,17 @@ const puedeDesvincular = computed(() =>
 const puedeGestionarUsuario = computed(() =>
   auth.permisos.includes("USUARIO_GESTIONAR"),
 );
+const puedeHabilitarRut = computed(() =>
+  auth.permisos.includes("PERSONA_RUT_CORREGIR"),
+);
+
+const correccionRut = computed(
+  () => personaDetalle.value?.correccionRut || null,
+);
+const correccionRutVigente = computed(
+  () => correccionRut.value?.estado === "VIGENTE",
+);
+const estadoRut = computed(() => estadoCorreccionRut(correccionRut.value));
 
 const personasFiltradas = computed(() => {
   const q = busqueda.value.trim().toLowerCase();
@@ -278,6 +300,19 @@ function formatearFecha(valor) {
   const [anio, mes, dia] = texto.split("-");
   if (!anio || !mes || !dia) return texto;
   return `${dia}/${mes}/${anio}`;
+}
+
+function formatearFechaHora(valor) {
+  if (!valor) return "—";
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return "—";
+  return fecha.toLocaleString("es-CL", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function fechaLocalISO() {
@@ -593,6 +628,8 @@ async function verVinculos(persona) {
   vinculos.value = [];
   errorVinculos.value = null;
   exitoVinculos.value = null;
+  showHabilitarRut.value = false;
+  errorFormHabilitarRut.value = null;
   cargandoVinculos.value = true;
   showVinculos.value = true;
 
@@ -615,11 +652,127 @@ async function verVinculos(persona) {
 
 function cerrarVinculos() {
   showVinculos.value = false;
+  showHabilitarRut.value = false;
   personaSeleccionada.value = null;
   personaDetalle.value = null;
   vinculos.value = [];
   errorVinculos.value = null;
   exitoVinculos.value = null;
+  errorFormHabilitarRut.value = null;
+}
+
+function abrirHabilitarRut() {
+  if (!puedeHabilitarRut.value || !personaSeleccionada.value) return;
+  formHabilitarRut.value = { vigenciaHoras: 72, motivo: "" };
+  errorFormHabilitarRut.value = null;
+  showHabilitarRut.value = true;
+}
+
+async function recargarDetallePersona() {
+  const cid = auth.condominioActualId;
+  const persona = personaSeleccionada.value;
+  if (!cid || !persona) return;
+  try {
+    const { data } = await personasService.obtener(cid, persona.id);
+    if (personaSeleccionada.value?.id !== persona.id) return;
+    personaDetalle.value = data;
+    vinculos.value = data?.vinculos || [];
+  } catch (e) {
+    console.error("Error al recargar el detalle de la persona", e);
+    errorVinculos.value = mensajeError(
+      e,
+      "No se pudo recargar el detalle de la persona",
+    );
+  }
+}
+
+function habilitarRut() {
+  const cid = auth.condominioActualId;
+  const motivo = formHabilitarRut.value.motivo.trim();
+  if (!cid || !personaSeleccionada.value) return;
+  if (!motivo) {
+    errorFormHabilitarRut.value = "El motivo es obligatorio.";
+    return;
+  }
+  errorFormHabilitarRut.value = null;
+  const vigencia = vigenciasRut.find(
+    (v) => v.value === formHabilitarRut.value.vigenciaHoras,
+  );
+  confirm.require({
+    message: `¿Habilitar la corrección de RUT de ${personaSeleccionada.value.nombre} por ${vigencia?.label || formHabilitarRut.value.vigenciaHoras + " horas"}? La persona podrá enviar una única solicitud y recibirá una notificación.`,
+    header: "Habilitar corrección de RUT",
+    acceptLabel: "Habilitar",
+    rejectLabel: "Cancelar",
+    accept: () => ejecutarHabilitarRut(),
+  });
+}
+
+async function ejecutarHabilitarRut() {
+  const cid = auth.condominioActualId;
+  const motivo = formHabilitarRut.value.motivo.trim();
+  if (!cid || !personaSeleccionada.value || !motivo) return;
+
+  enviandoRut.value = true;
+  errorFormHabilitarRut.value = null;
+  try {
+    const { data } = await personasService.habilitarCorreccionRut(
+      cid,
+      personaSeleccionada.value.id,
+      {
+        vigenciaHoras: formHabilitarRut.value.vigenciaHoras,
+        motivo,
+      },
+    );
+    showHabilitarRut.value = false;
+    errorVinculos.value = null;
+    exitoVinculos.value = `Corrección de RUT habilitada hasta el ${formatearFechaHora(
+      data.habilitadaHasta,
+    )}.`;
+    await recargarDetallePersona();
+  } catch (e) {
+    console.error("Error al habilitar la corrección de RUT", e);
+    errorFormHabilitarRut.value = mensajeError(
+      e,
+      "No se pudo habilitar la corrección de RUT",
+    );
+  } finally {
+    enviandoRut.value = false;
+  }
+}
+
+function confirmarRevocarRut() {
+  if (!puedeHabilitarRut.value || !personaSeleccionada.value) return;
+  confirm.require({
+    message: `¿Revocar la habilitación de corrección de RUT de ${personaSeleccionada.value.nombre}? La persona ya no podrá solicitarla.`,
+    header: "Revocar habilitación",
+    acceptLabel: "Revocar",
+    rejectLabel: "Cancelar",
+    acceptClass: "p-button-danger",
+    accept: () => revocarRut(),
+  });
+}
+
+async function revocarRut() {
+  const cid = auth.condominioActualId;
+  if (!cid || !personaSeleccionada.value) return;
+  enviandoRut.value = true;
+  try {
+    await personasService.revocarCorreccionRut(
+      cid,
+      personaSeleccionada.value.id,
+    );
+    errorVinculos.value = null;
+    exitoVinculos.value = "Habilitación de corrección de RUT revocada.";
+    await recargarDetallePersona();
+  } catch (e) {
+    console.error("Error al revocar la corrección de RUT", e);
+    errorVinculos.value = mensajeError(
+      e,
+      "No se pudo revocar la habilitación",
+    );
+  } finally {
+    enviandoRut.value = false;
+  }
 }
 
 function abrirCrearVinculo() {
@@ -1329,6 +1482,56 @@ async function crearUsuario() {
           {{ errorVinculos }}
         </Message>
 
+        <div
+          v-if="puedeHabilitarRut && personaDetalle"
+          class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <i class="pi pi-id-card text-primary-400" />
+              <span class="font-medium">Corrección de RUT</span>
+              <Tag
+                :value="estadoRut.label"
+                :severity="estadoRut.severity"
+                size="small"
+              />
+            </div>
+            <Button
+              v-if="!correccionRutVigente"
+              label="Habilitar"
+              icon="pi pi-check"
+              size="small"
+              @click="abrirHabilitarRut"
+            />
+            <Button
+              v-else
+              label="Revocar"
+              icon="pi pi-ban"
+              severity="danger"
+              variant="text"
+              size="small"
+              :loading="enviandoRut"
+              @click="confirmarRevocarRut"
+            />
+          </div>
+          <template v-if="correccionRut">
+            <p class="text-xs text-text-muted m-0">
+              Habilitada hasta el
+              {{ formatearFechaHora(correccionRut.habilitadaHasta) }}
+              <template v-if="correccionRut.habilitadaPorNombre">
+                · por {{ correccionRut.habilitadaPorNombre }}
+              </template>
+            </p>
+            <p v-if="correccionRut.motivo" class="text-xs text-text-muted m-0">
+              Motivo: {{ correccionRut.motivo }}
+            </p>
+          </template>
+          <p v-else class="text-xs text-text-muted m-0">
+            Sin habilitación vigente. La persona no puede solicitar corrección
+            de RUT.
+          </p>
+        </div>
+
         <Skeleton v-if="cargandoVinculos" width="100%" height="6rem" />
         <div
           v-else-if="!vinculos.length"
@@ -1382,6 +1585,66 @@ async function crearUsuario() {
           severity="secondary"
           variant="text"
           @click="cerrarVinculos"
+        />
+      </template>
+    </Dialog>
+
+    <Dialog
+      v-model:visible="showHabilitarRut"
+      header="Habilitar corrección de RUT"
+      modal
+      :style="{ width: '95%', maxWidth: '440px' }"
+    >
+      <div class="flex flex-col gap-3">
+        <Message v-if="errorFormHabilitarRut" severity="error" :closable="false">
+          {{ errorFormHabilitarRut }}
+        </Message>
+
+        <p class="text-sm text-text-muted m-0">
+          Se habilitará una única solicitud de corrección de RUT para
+          {{ personaSeleccionada?.nombre }}. La persona verá la opción en su
+          perfil hasta que la use o venza el plazo.
+        </p>
+
+        <div class="flex flex-col gap-1">
+          <label for="rut-vigencia" class="text-sm">Vigencia</label>
+          <Select
+            id="rut-vigencia"
+            v-model="formHabilitarRut.vigenciaHoras"
+            :options="vigenciasRut"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="rut-motivo" class="text-sm">
+            Motivo <span class="text-danger">*</span>
+          </label>
+          <Textarea
+            id="rut-motivo"
+            v-model="formHabilitarRut.motivo"
+            rows="3"
+            autoResize
+            maxlength="500"
+            placeholder="Ej: RUT mal ingresado en la planilla inicial"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          @click="showHabilitarRut = false"
+        />
+        <Button
+          label="Habilitar"
+          :loading="enviandoRut"
+          :disabled="!formHabilitarRut.motivo.trim()"
+          @click="habilitarRut"
         />
       </template>
     </Dialog>

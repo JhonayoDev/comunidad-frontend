@@ -3,8 +3,8 @@
 **Versión:** 1.0
 **Fecha:** 2026-11-06
 **Audiencia:** Equipo backend (Spring Boot)
-**Estado:** Pendiente de implementación — frontend preparado con degradación segura
-**Relacionado:** frontend JhonayoDev/comunidad-frontend#41 · backend JhonayoDev/briku#95 · `V82__solicitudes_reclamos_y_rut_normalizado.sql` · `V83__tipos_solicitud_bff.sql` · `SolicitudService` · `RutCorreccionService`
+**Estado:** Implementado en backend (`V84`, merge `21549da`) y en frontend — QA en vivo pendiente
+**Relacionado:** frontend JhonayoDev/comunidad-frontend#41 · backend JhonayoDev/briku#95 · `V82__solicitudes_reclamos_y_rut_normalizado.sql` · `V83__tipos_solicitud_bff.sql` · `V84__rut_correccion_habilitaciones.sql` · `SolicitudService` · `RutCorreccionService`
 
 > **MIGRADO A ISSUE — Project `Gestion Comunidad Briku` (`PVT_kwHOBkcviM4Bb6yo`):** [JhonayoDev/briku#99](https://github.com/JhonayoDev/briku/issues/99). Este documento se conserva como contexto de la solicitud.
 

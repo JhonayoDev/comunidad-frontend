@@ -23,6 +23,7 @@ export const REGLAS_CATALOGO = [
   { tipo: "SOLICITUD_RESPONDIDA", audiencia: "PERSONA", canales: ["IN_APP", "EMAIL"], prioridad: "NORMAL", esObligatoriaInapp: false, esObligatoriaEmail: false, esObligatoriaPush: false, visibleUsuario: true },
   { tipo: "SOLICITUD_CERRADA", audiencia: "PERSONA", canales: ["IN_APP", "EMAIL"], prioridad: "NORMAL", esObligatoriaInapp: false, esObligatoriaEmail: false, esObligatoriaPush: false, visibleUsuario: true },
   { tipo: "RUT_CORREGIDO", audiencia: "ADMINISTRACION", canales: ["IN_APP", "EMAIL"], prioridad: "ALTA", esObligatoriaInapp: true, esObligatoriaEmail: true, esObligatoriaPush: false, visibleUsuario: false },
+  { tipo: "RUT_CORRECCION_HABILITADA", audiencia: "PERSONA", canales: ["IN_APP", "EMAIL"], prioridad: "NORMAL", esObligatoriaInapp: false, esObligatoriaEmail: false, esObligatoriaPush: false, visibleUsuario: true },
 ];
 
 export const AUDIENCIA_LABELS = {

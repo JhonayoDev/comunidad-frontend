@@ -16,3 +16,23 @@ export function correccionRutHabilitada(me, ahora = new Date()) {
 
   return { habilitada: fecha.getTime() > ahora.getTime(), hasta: fecha };
 }
+
+const ESTADOS_CORRECCION_RUT = {
+  VIGENTE: { label: "Vigente", severity: "success" },
+  CONSUMIDA: { label: "Usada", severity: "info" },
+  REVOCADA: { label: "Revocada", severity: "danger" },
+  EXPIRADA: { label: "Expirada", severity: "secondary" },
+};
+
+/**
+ * Presentación del estado de la última habilitación en la vista de
+ * administración (`PersonaDetalleResponse.correccionRut`).
+ */
+export function estadoCorreccionRut(correccionRut) {
+  return (
+    ESTADOS_CORRECCION_RUT[correccionRut?.estado] || {
+      label: "Sin habilitación",
+      severity: "secondary",
+    }
+  );
+}

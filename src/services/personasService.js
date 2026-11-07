@@ -33,6 +33,19 @@ export const personasService = {
     return api.patch(`/condominios/${cid}/personas/${id}/desactivar`);
   },
 
+  habilitarCorreccionRut(cid, personaId, data) {
+    return api.post(
+      `/condominios/${cid}/personas/${personaId}/correccion-rut/habilitar`,
+      data,
+    );
+  },
+
+  revocarCorreccionRut(cid, personaId) {
+    return api.patch(
+      `/condominios/${cid}/personas/${personaId}/correccion-rut/revocar`,
+    );
+  },
+
   vinculosUnidad(cid, unidadId) {
     return api.get(`/condominios/${cid}/unidades/${unidadId}/vinculos`);
   },

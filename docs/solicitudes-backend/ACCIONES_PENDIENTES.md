@@ -249,19 +249,24 @@ Histórico V57-V61 conservado abajo.
 - **Frontend (gap):** `useDashboardMetrics.js`/`useResidenteMetrics.js` hacen polling incondicional. Si módulo no contratado → 403 en loop cada 30s/60s. Pendiente F2: guard por `listarModulos` o catch 403 → pausar query + mensaje "Módulo no contratado".
 - **SSE conservados:** `NotificacionController.java:103` (`/notificaciones/stream`, `NOTIFICACION_VER`, scoped persona) y `AdminMetricsStreamController.java:37` (`/admin/metrics/stream`, `SUPER_ADMIN|SOPORTE`) siguen vigentes.
 
-### [ ] P19. Habilitación temporal de corrección de RUT (issue #99)
-- **Solicitud:** `SOLICITUD_HABILITACION_TEMPORAL_CORRECCION_RUT.md` — backend JhonayoDev/briku#99
-- **Qué falta (backend):** tabla `rut_correccion_habilitaciones` (persona + condominio, estados
-  `VIGENTE`/`CONSUMIDA`/`REVOCADA`/`EXPIRADA`, motivo, `habilitada_por`, `consumida_en`,
-  `solicitud_id`); `POST/PATCH .../personas/{id}/correccion-rut/habilitar|revocar` (permiso
-  `PERSONA_RUT_CORREGIR`); `rutCorreccionHabilitadaHasta` en `/me`; `correccionRut` en
-  `PersonaDetalleResponse`; enforcement en `SolicitudService.crear` (`403` sin habilitación,
-  `409` con solicitud abierta, consumo único al crear); notificación
-  `RUT_CORRECCION_HABILITADA` y auditoría `PERSONA_RUT_CORRECCION_HABILITAR/REVOCAR`.
-- **Frontend (✅ preparado):** `PerfilView` solo muestra la acción si `rutCorreccionHabilitadaHasta`
-  está vigente; `TIPOS_SOLICITUD_ALTA` excluye `CORRECCION_RUT`; `MisSolicitudesView` ignora el
-  deep link sin habilitación. Al existir el endpoint: acción habilitar/revocar en
-  `ResidentesView` (24 h/72 h/7 días + motivo + `ConfirmDialog`) y QA en vivo.
+### [x] P19. Habilitación temporal de corrección de RUT (issue #99) — backend implementado, frontend completo, QA pendiente
+- **Solicitud:** `SOLICITUD_HABILITACION_TEMPORAL_CORRECCION_RUT.md` — backend JhonayoDev/briku#99 (merge `21549da`).
+- **Backend (✅):** `V84__rut_correccion_habilitaciones.sql` + `RutCorreccionHabilitacionService`;
+  `POST/PATCH .../personas/{id}/correccion-rut/habilitar|revocar` (permiso `PERSONA_RUT_CORREGIR`);
+  `rutCorreccionHabilitadaHasta` en `/me`; `correccionRut` en `PersonaDetalleResponse`;
+  enforcement en `SolicitudService.crear` (`403` sin habilitación, `409` con solicitud abierta,
+  consumo único al crear); notificación `RUT_CORRECCION_HABILITADA`; auditoría
+  `PERSONA_RUT_CORRECCION_HABILITAR/REVOCAR`.
+- **Frontend (✅):** `PerfilView` solo muestra la acción si `rutCorreccionHabilitadaHasta` está
+  vigente (sin texto permanente); `TIPOS_SOLICITUD_ALTA` excluye `CORRECCION_RUT`;
+  `MisSolicitudesView` ignora el deep link sin habilitación y refresca `/me` al crear;
+  `PersonasView` (Vínculos) muestra el estado (`Vigente`/`Usada`/`Revocada`/`Expirada`), permite
+  **Habilitar** (24 h/72 h/7 días + motivo obligatorio) y **Revocar** con `ConfirmDialog`;
+  catálogo de notificaciones, iconos, preferencias, routing de email y acciones de auditoría
+  actualizados.
+- **Qué falta (QA en vivo):** residente no ve nada hasta que administración habilite → aparece
+  banner/acción; crear la solicitud consume la ventana; aprobar actualiza el RUT y rechazar
+  permite rehabilitar; revocar oculta la acción; `409` por solicitud abierta/duplicada.
 
 ## Pendientes de verificación (QA)
 

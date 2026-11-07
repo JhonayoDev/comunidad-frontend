@@ -43,6 +43,7 @@ function iconoPorTipo(tipo) {
     SOLICITUD_RESPONDIDA: "pi pi-comment",
     SOLICITUD_CERRADA: "pi pi-check-circle",
     RUT_CORREGIDO: "pi pi-id-card",
+    RUT_CORRECCION_HABILITADA: "pi pi-unlock",
   };
   return iconos[tipo] || "pi pi-bell";
 }

@@ -58,6 +58,7 @@ const tipoLabels = {
   SOLICITUD_RESPONDIDA: "Solicitud respondida",
   SOLICITUD_CERRADA: "Solicitud cerrada",
   RUT_CORREGIDO: "RUT corregido",
+  RUT_CORRECCION_HABILITADA: "Corrección de RUT habilitada",
 };
 
 async function cargarPreferencias() {
