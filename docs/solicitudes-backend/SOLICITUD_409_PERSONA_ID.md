@@ -1,5 +1,9 @@
 # Solicitud Backend — Alta de persona: 409 con `personaId` y búsqueda por RUT
 
+> MIGRADO A ISSUE — Project "Gestion Comunidad Briku".
+> Absorbido por https://github.com/JhonayoDev/briku/issues/101 (P22).
+> Épica frontend: https://github.com/JhonayoDev/comunidad-frontend/issues/44
+
 ## Estado: PENDIENTE (backend)
 
 Referencia: `JhonayoDev/comunidad-frontend#42` (BUG: persona creada desde Personas queda invisible).
