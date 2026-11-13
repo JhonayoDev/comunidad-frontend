@@ -412,6 +412,20 @@ Histórico V57-V61 conservado abajo.
     idempotente y un reintento automático podría duplicar si el primer intento commiteó).
 - **Impacto:** wizard de estacionamientos/bodegas (fase 5) y wizard paso 1 de unidades (batch).
 
+### [ ] F5. Comunicados vs notificaciones y gating de navegación (decisión pendiente)
+- `COMUNICADO_VER` ya existe en el catálogo backend (V86) y en `permisosCatalogo.js`, pero
+  **ningún endpoint lo consume**: `AnuncioController.listarActivos` exige `NOTIFICACION_VER`, que
+  los roles `TRABAJADOR`/`PROVEEDOR` no tienen. En el portal staff el card de comunicados muestra
+  "No hay comunicados vigentes" aunque existan, y el ítem de nav "Notificaciones" se ve pero la API
+  responde `403`.
+- **Decisión pendiente:** (a) ocultar el card/ítem sin `NOTIFICACION_VER`, (b) mostrar un aviso
+  "canal en construcción", o (c) pedir al backend que `listarActivos` acepte `COMUNICADO_VER` y
+  separar el envío de comunicados (feature futura con filtros por audiencia). No crear una vista
+  nueva hasta que exista el contrato.
+- **Relacionado (Ley 21.719):** al listar `estado=TODOS` aparecen membresías `INACTIVO` sin
+  vínculo; hoy se marcan con Tag **"Sin vínculo"**. Falta definir la anonimización/expurgo de
+  personas que dejan el condominio (no hay endpoint de anonimización).
+
 ## Implementadas (referencia)
 
 | Ítem | Estado |
