@@ -9,6 +9,7 @@
 
 export const MODULOS = [
   { codigo: "GESTION", nombre: "Gestión" },
+  { codigo: "PERFIL", nombre: "Perfil" },
   { codigo: "ACCESOS", nombre: "Accesos y Seguridad" },
   { codigo: "CASOS", nombre: "Casos" },
   { codigo: "RESERVAS", nombre: "Reservas" },
@@ -51,6 +52,9 @@ export const PERMISOS = [
   { codigo: "PISO_EDITAR", nombre: "Editar pisos", modulo: "GESTION", descripcion: "Modificar datos de pisos existentes." },
   { codigo: "PISO_ELIMINAR", nombre: "Eliminar pisos", modulo: "GESTION", descripcion: "Desactivar pisos del condominio (soft delete)." },
   { codigo: "IMPORTACION_DATOS", nombre: "Importar datos", modulo: "GESTION", descripcion: "Cargar la planilla de integrantes del condominio (preview/ejecutar/plantilla)." },
+  // ── PERFIL ──
+  { codigo: "MI_PERFIL_VER", nombre: "Ver mi perfil", modulo: "PERFIL", descripcion: "Consultar los datos del perfil propio (portal trabajador/proveedor)." },
+  { codigo: "MI_PERFIL_EDITAR", nombre: "Editar mi perfil", modulo: "PERFIL", descripcion: "Actualizar los datos del perfil propio (portal trabajador/proveedor)." },
   // ── ACCESOS Y SEGURIDAD ──
   { codigo: "ACCESO_VER", nombre: "Ver accesos", modulo: "ACCESOS", descripcion: "Consultar registros de ingreso y salida." },
   { codigo: "ACCESO_REGISTRAR_INGRESO", nombre: "Registrar ingreso", modulo: "ACCESOS", descripcion: "Registrar el ingreso de un visitante al condominio." },
@@ -96,6 +100,7 @@ export const PERMISOS = [
   { codigo: "MIS_DEUDAS_VER", nombre: "Ver mis deudas", modulo: "FINANZAS", descripcion: "Consultar sus propias cuotas de gasto común y cargos pendientes." },
   // ── COMUNICACIÓN ──
   { codigo: "NOTIFICACION_VER", nombre: "Ver notificaciones", modulo: "COMUNICACION", descripcion: "Consultar notificaciones del sistema." },
+  { codigo: "COMUNICADO_VER", nombre: "Ver comunicados", modulo: "COMUNICACION", descripcion: "Consultar comunicados publicados (funcionalidad en construcción; por ahora se leen con NOTIFICACION_VER)." },
   { codigo: "NOTIFICACION_ENVIAR", nombre: "Enviar notificaciones", modulo: "COMUNICACION", descripcion: "Enviar notificaciones manuales a residentes." },
   { codigo: "PLANTILLA_NOTIF_VER", nombre: "Ver plantillas notif.", modulo: "COMUNICACION", descripcion: "Consultar plantillas de notificación." },
   { codigo: "PLANTILLA_NOTIF_GESTIONAR", nombre: "Gestionar plantillas notif.", modulo: "COMUNICACION", descripcion: "Crear y editar plantillas de notificación." },
