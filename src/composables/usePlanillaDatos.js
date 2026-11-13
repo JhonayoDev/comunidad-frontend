@@ -247,7 +247,7 @@ export function usePlanillaDatos({ condominioId, cargarExistentes = true } = {})
     try {
       const [uniRes, perRes, vehRes, estRes, bodRes] = await Promise.allSettled([
         unidadesService.getUnidades(cid),
-        personasService.listar(cid),
+        personasService.listar(cid, { estado: "TODOS" }),
         vehiculosService.listar(cid),
         estacionamientosService.getEstacionamientos(cid),
         bodegasService.getBodegas(cid),

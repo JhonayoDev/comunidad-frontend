@@ -305,6 +305,54 @@ Histórico V57-V61 conservado abajo.
 - **Sin notificación de caso:** no existe tipo/handler `CASO_*`; abrir o vincular un caso no
   publica una notificación dedicada al residente.
 
+### [x] P21. Alta de persona: 409 con `personaId` y búsqueda por RUT (issue #42)
+- **Solicitud:** `SOLICITUD_409_PERSONA_ID.md`
+- **Estado:** ✅ absorbido por P22 e implementado (backend PR #104, issue #101 cerrado).
+- **Backend:** `409` devuelve `PersonaConflictoResponse` (`personaId`, `conflicto: EMAIL|RUT`) y
+  `GET /personas/buscar` acepta `email` **o** `rut`.
+- **Frontend:** `useBusquedaPersona` busca por email y RUT; el alta reintenta reutilizando
+  `personaId` desde el `409` (`datosConflicto` en `src/utils/altaPersona.js`).
+
+### [x] P22. Membresía persona-condominio y alta atómica (issue #42 / épica #44)
+- **Solicitud:** `SOLICITUD_MEMBRESIA_PERSONA_CONDOMINIO.md`
+- **Backend:** ✅ https://github.com/JhonayoDev/briku/issues/101 (cerrado, PR #104 fusionado)
+  — `V85__personas_condominios.sql`, `PersonaCondominioService`/`MembresiaService`, `POST
+  /personas` atómico, `GET /personas?estado&tipoParticipacion&q`, `PATCH .../membresia`,
+  `POST .../asociaciones`.
+- **Frontend (épica):** ✅ https://github.com/JhonayoDev/comunidad-frontend/issues/44 —
+  `PersonasView` con alta unificada (identidad + asociación `UNIDAD`/`CARGO`/`PROVEEDOR`),
+  reutilización por email/RUT, `409` recuperable, filtros por `estado`/`tipoParticipacion`,
+  badges `tiposParticipacion` y baja/reactivación local. Helpers `src/data/membresia.js` y
+  `src/utils/altaPersona.js`.
+- **QA pendiente (en vivo):** alta atómica de residente/trabajador/proveedor, reutilización por
+  email y por RUT, `409` con reintento, `PENDIENTE` visible en el filtro, alta desde
+  `MiembrosView` con `?nueva=CARGO`.
+
+### [x] P23. Baja de persona por condominio (bug multi-condominio)
+- **Solicitud:** `SOLICITUD_BAJA_PERSONA_POR_CONDOMINIO.md`
+- **Backend:** ✅ https://github.com/JhonayoDev/briku/issues/102 (cerrado, PR #104 fusionado)
+  — `desactivar` local (membresía, vínculos, cargos y `usuario_condominios` del condominio) sin
+  tocar `persona.activo`/`usuario.activo`, `PATCH .../reactivar` local y auditoría.
+- **Frontend:** ✅ `personasService.desactivar` envía `{motivo}` y `reactivar` está disponible en
+  el detalle y en la búsqueda global (`PersonasView`).
+- **QA pendiente (en vivo):** baja en A no rompe el acceso en B; reactivación recupera vínculos y
+  cargo; el motivo queda en auditoría.
+
+### [x] P24. Rol contextual por condominio y portal trabajador
+- **Solicitud:** `SOLICITUD_ROL_CONTEXTUAL_POR_CONDOMINIO.md`
+- **Backend:** ✅ https://github.com/JhonayoDev/briku/issues/103 (cerrado, PR #104 fusionado)
+  — `V86__rol_contextual_por_condominio.sql` (roles `TRABAJADOR`/`PROVEEDOR`, permisos
+  `MI_PERFIL_*`/`COMUNICADO_VER`, backfill de `usuario_condominios.rol_id`),
+  `resolverRolContextual` sin fallback al rol global salvo `SUPER_ADMIN`/`SOPORTE`,
+  `tiposParticipacion`/`rolContextual` en `/me/condominios`.
+- **Frontend:** ✅ `authStore` (`condominioActualRolContextual`, `condominioActualTiposParticipacion`,
+  `esParticipacionResidencial`, contextos `trabajador`/`proveedor`), `useNavigation` (nav por
+  portal y `puedeAcceder` contextual), guard del router, `AppHeader`/`LoginView` y los dashboards
+  `TrabajadorDashboardView`/`ProveedorDashboardView`.
+- **QA pendiente (en vivo):** jardinero/mantención solo ven su portal (sin datos de unidades);
+  administrador de A que es residente en B no hereda permisos de administrador en B; un residente
+  con cargo operativo conserva ambos contextos.
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod
@@ -363,6 +411,20 @@ Histórico V57-V61 conservado abajo.
   - ¿Política global de timeouts/retry en `api.js`? (NO auto-reintento del batch: no es
     idempotente y un reintento automático podría duplicar si el primer intento commiteó).
 - **Impacto:** wizard de estacionamientos/bodegas (fase 5) y wizard paso 1 de unidades (batch).
+
+### [ ] F5. Comunicados vs notificaciones y gating de navegación (decisión pendiente)
+- `COMUNICADO_VER` ya existe en el catálogo backend (V86) y en `permisosCatalogo.js`, pero
+  **ningún endpoint lo consume**: `AnuncioController.listarActivos` exige `NOTIFICACION_VER`, que
+  los roles `TRABAJADOR`/`PROVEEDOR` no tienen. En el portal staff el card de comunicados muestra
+  "No hay comunicados vigentes" aunque existan, y el ítem de nav "Notificaciones" se ve pero la API
+  responde `403`.
+- **Decisión pendiente:** (a) ocultar el card/ítem sin `NOTIFICACION_VER`, (b) mostrar un aviso
+  "canal en construcción", o (c) pedir al backend que `listarActivos` acepte `COMUNICADO_VER` y
+  separar el envío de comunicados (feature futura con filtros por audiencia). No crear una vista
+  nueva hasta que exista el contrato.
+- **Relacionado (Ley 21.719):** al listar `estado=TODOS` aparecen membresías `INACTIVO` sin
+  vínculo; hoy se marcan con Tag **"Sin vínculo"**. Falta definir la anonimización/expurgo de
+  personas que dejan el condominio (no hay endpoint de anonimización).
 
 ## Implementadas (referencia)
 

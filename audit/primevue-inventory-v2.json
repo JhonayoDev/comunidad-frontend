@@ -1567,7 +1567,22 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 952,
+    "line": 1397,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeVerPersonas",
+      "label": "Buscar persona",
+      "icon": "pi pi-search",
+      "severity": "secondary",
+      "@click": "abrirBuscarPersona()"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 1404,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -1575,13 +1590,13 @@
       "v-if": "puedeCrear",
       "label": "Nueva persona",
       "icon": "pi pi-plus",
-      "@click": "abrirCrear"
+      "@click": "abrirCrear()"
     }
   },
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1047,
+    "line": 1541,
     "signature": "icon=\"pi pi-link\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1600,7 +1615,45 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1058,
+    "line": 1552,
+    "signature": "icon=\"pi pi-plus-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeEditar && p.estadoMembresia !== 'INACTIVO'",
+      "icon": "pi pi-plus-circle",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "rounded": true,
+      ":title": "`Agregar asociación a ${p.nombre}`",
+      ":aria-label": "`Agregar asociación a ${p.nombre}`",
+      "@click": "abrirAsociarPersona(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 1563,
+    "signature": "icon=\"pi pi-replay\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeEditar && p.estadoMembresia === 'INACTIVO'",
+      "icon": "pi pi-replay",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "rounded": true,
+      ":title": "`Reactivar a ${p.nombre}`",
+      ":aria-label": "`Reactivar a ${p.nombre}`",
+      "@click": "confirmarReactivar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 1574,
     "signature": "icon=\"pi pi-user-plus\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1619,7 +1672,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1069,
+    "line": 1585,
     "signature": "icon=\"pi pi-send\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1638,7 +1691,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1080,
+    "line": 1596,
     "signature": "icon=\"pi pi-refresh\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1657,7 +1710,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1091,
+    "line": 1607,
     "signature": "icon=\"pi pi-envelope\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1676,7 +1729,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1102,
+    "line": 1618,
     "signature": "icon=\"pi pi-pencil\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1695,26 +1748,26 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1113,
-    "signature": "icon=\"pi pi-trash\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
+    "line": 1629,
+    "signature": "icon=\"pi pi-user-minus\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "v-if": "puedeDesactivar",
-      "icon": "pi pi-trash",
+      "v-if": "puedeDesactivar && p.estadoMembresia !== 'INACTIVO'",
+      "icon": "pi pi-user-minus",
       "severity": "danger",
       "variant": "text",
       "size": "small",
       "rounded": true,
-      ":title": "`Desactivar a ${p.nombre}`",
-      ":aria-label": "`Desactivar a ${p.nombre}`",
-      "@click": "confirmarDesactivar(p)"
+      ":title": "`Quitar a ${p.nombre} del condominio`",
+      ":aria-label": "`Quitar a ${p.nombre} del condominio`",
+      "@click": "abrirDesactivar(p)"
     }
   },
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1188,
+    "line": 1743,
     "signature": "icon=\"pi pi-link\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1733,7 +1786,45 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1199,
+    "line": 1754,
+    "signature": "icon=\"pi pi-plus-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeEditar && p.estadoMembresia !== 'INACTIVO'",
+      "icon": "pi pi-plus-circle",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "rounded": true,
+      ":title": "`Agregar asociación a ${p.nombre}`",
+      ":aria-label": "`Agregar asociación a ${p.nombre}`",
+      "@click": "abrirAsociarPersona(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 1765,
+    "signature": "icon=\"pi pi-replay\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeEditar && p.estadoMembresia === 'INACTIVO'",
+      "icon": "pi pi-replay",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "rounded": true,
+      ":title": "`Reactivar a ${p.nombre}`",
+      ":aria-label": "`Reactivar a ${p.nombre}`",
+      "@click": "confirmarReactivar(p)"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 1776,
     "signature": "icon=\"pi pi-user-plus\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1752,7 +1843,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1210,
+    "line": 1787,
     "signature": "icon=\"pi pi-send\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1771,7 +1862,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1221,
+    "line": 1798,
     "signature": "icon=\"pi pi-refresh\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1790,7 +1881,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1232,
+    "line": 1809,
     "signature": "icon=\"pi pi-envelope\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1809,7 +1900,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1243,
+    "line": 1820,
     "signature": "icon=\"pi pi-pencil\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1828,26 +1919,57 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1254,
-    "signature": "icon=\"pi pi-trash\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
+    "line": 1831,
+    "signature": "icon=\"pi pi-user-minus\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "v-if": "puedeDesactivar",
-      "icon": "pi pi-trash",
+      "v-if": "puedeDesactivar && p.estadoMembresia !== 'INACTIVO'",
+      "icon": "pi pi-user-minus",
       "severity": "danger",
       "variant": "text",
       "size": "small",
       "rounded": true,
-      ":title": "`Desactivar a ${p.nombre}`",
-      ":aria-label": "`Desactivar a ${p.nombre}`",
-      "@click": "confirmarDesactivar(p)"
+      ":title": "`Quitar a ${p.nombre} del condominio`",
+      ":aria-label": "`Quitar a ${p.nombre} del condominio`",
+      "@click": "abrirDesactivar(p)"
     }
   },
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1368,
+    "line": 1872,
+    "signature": "icon=\"pi pi-replay\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "conflictoAlta?.personaId",
+      "label": "Reintentar reutilizando la persona",
+      "icon": "pi pi-replay",
+      ":loading": "enviando",
+      "@click": "reintentarAlta"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 1898,
+    "signature": "icon=\"pi pi-times\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Usar otra persona",
+      "icon": "pi pi-times",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "@click": "usarPersonaNueva"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2208,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1861,20 +1983,178 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1374,
-    "signature": "(default)",
+    "line": 2214,
+    "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "label": "Crear persona",
+      "label": "Registrar persona",
+      "icon": "pi pi-check",
       ":loading": "enviando",
-      "@click": "crearPersona"
+      "@click": "guardarPersona"
     }
   },
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1427,
+    "line": 2275,
+    "signature": "icon=\"pi pi-search\" severity=\"secondary\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "type": "submit",
+      "label": "Buscar",
+      "icon": "pi pi-search",
+      "severity": "secondary",
+      ":loading": "buscandoPersona"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2388,
+    "signature": "icon=\"pi pi-plus-circle\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeEditar",
+      "label": "Asociar a este condominio",
+      "icon": "pi pi-plus-circle",
+      "@click": "\n                  cerrarBuscarPersona();\n                  abrirAsociarPersona(personaBuscada);\n                "
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2401,
+    "signature": "icon=\"pi pi-replay\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeEditar",
+      "label": "Reactivar en este condominio",
+      "icon": "pi pi-replay",
+      "@click": "\n                  cerrarBuscarPersona();\n                  confirmarReactivar(personaBuscada);\n                "
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2412,
+    "signature": "icon=\"pi pi-plus-circle\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeEditar",
+      "label": "Agregar asociación",
+      "icon": "pi pi-plus-circle",
+      "@click": "\n                  cerrarBuscarPersona();\n                  abrirAsociarPersona(personaBuscada);\n                "
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2421,
+    "signature": "icon=\"pi pi-link\" severity=\"secondary\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeVerVinculos",
+      "label": "Ver vínculos",
+      "icon": "pi pi-link",
+      "severity": "secondary",
+      "@click": "\n                  cerrarBuscarPersona();\n                  verVinculos(personaBuscada);\n                "
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2452,
+    "signature": "icon=\"pi pi-plus\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "v-if": "puedeCrear",
+      "label": "Registrar persona",
+      "icon": "pi pi-plus",
+      "@click": "crearDesdeBusqueda"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2462,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cerrar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "cerrarBuscarPersona"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2643,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "cerrarAsociarPersona"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2649,
+    "signature": "icon=\"pi pi-check\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Asociar",
+      "icon": "pi pi-check",
+      ":loading": "enviando",
+      "@click": "guardarAsociacion"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2695,
+    "signature": "severity=\"secondary\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Cancelar",
+      "severity": "secondary",
+      "variant": "text",
+      "@click": "cerrarDesactivar"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2701,
+    "signature": "icon=\"pi pi-user-minus\" severity=\"danger\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Quitar del condominio",
+      "icon": "pi pi-user-minus",
+      "severity": "danger",
+      ":loading": "enviando",
+      "@click": "desactivarPersona"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/admin/PersonasView.vue",
+    "line": 2757,
     "signature": "icon=\"pi pi-check\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -1889,7 +2169,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1434,
+    "line": 2764,
     "signature": "icon=\"pi pi-ban\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1907,7 +2187,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1523,
+    "line": 2853,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1921,7 +2201,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1529,
+    "line": 2859,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -1934,7 +2214,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1569,
+    "line": 2909,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -1948,7 +2228,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1621,
+    "line": 2961,
     "signature": "icon=\"pi pi-user-minus\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1967,7 +2247,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1637,
+    "line": 2977,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1981,7 +2261,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1691,
+    "line": 3032,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1995,7 +2275,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1697,
+    "line": 3038,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2009,7 +2289,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1811,
+    "line": 3149,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2023,7 +2303,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1817,
+    "line": 3155,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2037,7 +2317,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1856,
+    "line": 3195,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2051,7 +2331,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1862,
+    "line": 3201,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2064,7 +2344,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1953,
+    "line": 3293,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2078,7 +2358,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1959,
+    "line": 3299,
     "signature": "icon=\"pi pi-envelope\"",
     "classes": "",
     "legacyProp": false,
@@ -2606,7 +2886,7 @@
   {
     "component": "Button",
     "file": "src/views/auth/LoginView.vue",
-    "line": 138,
+    "line": 142,
     "signature": "fluid icon=\"pi pi-sign-in\"",
     "classes": "",
     "legacyProp": false,
@@ -2785,6 +3065,39 @@
   },
   {
     "component": "Button",
+    "file": "src/views/dashboard/ProveedorDashboardView.vue",
+    "line": 120,
+    "signature": "icon=\"pi pi-user\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Ver mi perfil",
+      "icon": "pi pi-user",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "@click": "router.push({ name: 'Perfil' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/dashboard/ProveedorDashboardView.vue",
+    "line": 144,
+    "signature": "icon=\"pi pi-bell\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Ver notificaciones",
+      "icon": "pi pi-bell",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      ":disabled": "!puedeVerNotificaciones",
+      "@click": "router.push({ name: 'Notificaciones' })"
+    }
+  },
+  {
+    "component": "Button",
     "file": "src/views/dashboard/ResidenteDashboardView.vue",
     "line": 105,
     "signature": ":severity=\"unidadActiva === u.id ? 'primary' : 'secondary'\" :variant=\"unidadActiva === u.id ? 'solid' : 'outlined'\" size=\"small\"",
@@ -2797,6 +3110,55 @@
       ":severity": "unidadActiva === u.id ? 'primary' : 'secondary'",
       ":variant": "unidadActiva === u.id ? 'solid' : 'outlined'",
       "@click": "unidadActiva = u.id"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/dashboard/TrabajadorDashboardView.vue",
+    "line": 118,
+    "signature": "icon=\"pi pi-user\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Ver mi perfil",
+      "icon": "pi pi-user",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "@click": "router.push({ name: 'Perfil' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/dashboard/TrabajadorDashboardView.vue",
+    "line": 142,
+    "signature": "icon=\"pi pi-bell\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Ver notificaciones",
+      "icon": "pi pi-bell",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      ":disabled": "!puedeVerNotificaciones",
+      "@click": "router.push({ name: 'Notificaciones' })"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/dashboard/TrabajadorDashboardView.vue",
+    "line": 206,
+    "signature": "icon=\"pi pi-shield\" severity=\"secondary\" size=\"small\" variant=\"text\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Mis permisos",
+      "icon": "pi pi-shield",
+      "severity": "secondary",
+      "variant": "text",
+      "size": "small",
+      "@click": "router.push({ name: 'MisPermisos' })"
     }
   },
   {
@@ -3568,7 +3930,23 @@
   {
     "component": "Button",
     "file": "src/views/gestion/MiembrosView.vue",
-    "line": 155,
+    "line": 197,
+    "signature": "icon=\"pi pi-briefcase\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
+    "classes": "",
+    "legacyProp": false,
+    "attrs": {
+      "label": "Nuevo trabajador",
+      "icon": "pi pi-briefcase",
+      "severity": "secondary",
+      "variant": "outlined",
+      "size": "small",
+      "@click": "irANuevoTrabajador"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/MiembrosView.vue",
+    "line": 205,
     "signature": "icon=\"pi pi-plus\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3582,7 +3960,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/MiembrosView.vue",
-    "line": 181,
+    "line": 264,
     "signature": "icon=\"pi pi-trash\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3592,13 +3970,28 @@
       "severity": "danger",
       "variant": "text",
       "size": "small",
+      ":title": "`Desactivar cargo de ${m.personaNombre}`",
+      ":aria-label": "`Desactivar cargo de ${m.personaNombre}`",
       "@click": "confirmarDesactivar(m)"
     }
   },
   {
     "component": "Button",
     "file": "src/views/gestion/MiembrosView.vue",
-    "line": 226,
+    "line": 317,
+    "signature": "(default)",
+    "classes": "text-primary-400 underline cursor-pointer bg-transparent border-none p-0",
+    "legacyProp": false,
+    "attrs": {
+      "type": "button",
+      "class": "text-primary-400 underline cursor-pointer bg-transparent border-none p-0",
+      "@click": "irANuevoTrabajador"
+    }
+  },
+  {
+    "component": "Button",
+    "file": "src/views/gestion/MiembrosView.vue",
+    "line": 351,
     "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -3611,7 +4004,7 @@
   {
     "component": "Button",
     "file": "src/views/gestion/MiembrosView.vue",
-    "line": 227,
+    "line": 356,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
