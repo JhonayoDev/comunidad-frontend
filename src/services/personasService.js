@@ -1,18 +1,46 @@
 import api from "./api";
 
 export const personasService = {
-  listar(cid) {
-    return api.get(`/condominios/${cid}/personas`);
+  /**
+   * Lista personas por membresía en el condominio.
+   *
+   * @param {string} cid
+   * @param {object} [params] `estado` (ACTIVO|PENDIENTE|INACTIVO|TODOS),
+   *   `tipoParticipacion` (PROPIETARIO|ARRENDATARIO|DEPENDIENTE|TRABAJADOR|
+   *   ADMINISTRACION|PROVEEDOR) y `q` (nombre/email/RUT).
+   */
+  listar(cid, params = {}) {
+    return api.get(`/condominios/${cid}/personas`, { params });
   },
 
   obtener(cid, id) {
     return api.get(`/condominios/${cid}/personas/${id}`);
   },
 
-  buscarPorEmail(cid, email) {
-    return api.get(`/condominios/${cid}/personas/buscar`, { params: { email } });
+  /**
+   * Búsqueda global por email o RUT. El backend exige exactamente uno de los
+   * dos y devuelve las membresías de la persona en todos los condominios.
+   */
+  buscar(cid, params) {
+    return api.get(`/condominios/${cid}/personas/buscar`, { params });
   },
 
+  buscarPorEmail(cid, email) {
+    return api.get(`/condominios/${cid}/personas/buscar`, {
+      params: { email },
+    });
+  },
+
+  buscarPorRut(cid, rut) {
+    return api.get(`/condominios/${cid}/personas/buscar`, {
+      params: { rut },
+    });
+  },
+
+  /**
+   * Alta atómica: `{ persona }` o `{ personaId }` + `asociacion`.
+   * Un 409 de email/RUT devuelve `personaId` y `conflicto` para reintentar.
+   */
   crear(cid, data) {
     return api.post(`/condominios/${cid}/personas`, data);
   },
@@ -21,16 +49,42 @@ export const personasService = {
     return api.put(`/condominios/${cid}/personas/${id}`, data);
   },
 
+  actualizarMembresia(cid, id, data) {
+    return api.patch(`/condominios/${cid}/personas/${id}/membresia`, data);
+  },
+
+  /**
+   * Agrega un vínculo/cargo/proveedor a una membresía existente. Si estaba
+   * PENDIENTE, el backend la activa.
+   */
+  agregarAsociacion(cid, id, asociacion) {
+    return api.post(
+      `/condominios/${cid}/personas/${id}/asociaciones`,
+      asociacion,
+    );
+  },
+
+  reactivar(cid, id) {
+    return api.patch(`/condominios/${cid}/personas/${id}/reactivar`);
+  },
+
+  /**
+   * Baja LOCAL del condominio: no desactiva la identidad global ni la cuenta
+   * en otros condominios.
+   */
+  desactivar(cid, id, data) {
+    return api.patch(
+      `/condominios/${cid}/personas/${id}/desactivar`,
+      data || {},
+    );
+  },
+
   cambiarEmail(cid, id, data) {
     return api.patch(`/condominios/${cid}/personas/${id}/email`, data);
   },
 
   reenviarVerificacionEmail(cid, id) {
     return api.post(`/condominios/${cid}/personas/${id}/email/reenviar`);
-  },
-
-  desactivar(cid, id) {
-    return api.patch(`/condominios/${cid}/personas/${id}/desactivar`);
   },
 
   habilitarCorreccionRut(cid, personaId, data) {

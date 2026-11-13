@@ -45,6 +45,22 @@ export const useAuthStore = defineStore("auth", () => {
   const condominioActualCargo = computed(
     () => condominioActual.value?.cargo || null,
   );
+  // Rol contextual del condominio (usuario_condominios o derivado del cargo),
+  // distinto del rol global del JWT (`rolAcceso`). Es la fuente para elegir el
+  // portal de trabajador/proveedor.
+  const condominioActualRolContextual = computed(
+    () => condominioActual.value?.rolContextual || null,
+  );
+  // Tipos de participación efectivos (PROPIETARIO, ARRENDATARIO,
+  // DEPENDIENTE, TRABAJADOR, ADMINISTRACION, PROVEEDOR).
+  const condominioActualTiposParticipacion = computed(
+    () => condominioActual.value?.tiposParticipacion || [],
+  );
+  const esParticipacionResidencial = computed(() =>
+    condominioActualTiposParticipacion.value.some((tipo) =>
+      ["PROPIETARIO", "ARRENDATARIO", "DEPENDIENTE"].includes(tipo),
+    ),
+  );
   const condominioActualStatusPago = computed(
     () => condominioActual.value?.statusPago || null,
   );
@@ -91,16 +107,43 @@ export const useAuthStore = defineStore("auth", () => {
     secretario: "Dashboard",
     delegado: "Dashboard",
     administrador: "Dashboard",
+    trabajador: "TrabajadorDashboard",
+    proveedor: "ProveedorDashboard",
   };
 
   const activeContext = ref("residente");
 
+  /**
+   * Contextos de participación disponibles. Un usuario puede ser residente y
+   * trabajador a la vez; el portal de trabajador/proveedor solo aparece cuando
+   * la API lo deriva (`rolContextual`) o la membresía lo indica.
+   */
   const contextos = computed(() => {
-    const list = [{ key: "residente", label: "Residente" }];
+    const list = [];
+    const tipos = condominioActualTiposParticipacion.value;
     const cargo = condominioActualCargo.value;
+    const rolContextual = condominioActualRolContextual.value;
+
+    const esTrabajador = rolContextual === "TRABAJADOR";
+    const esProveedor =
+      rolContextual === "PROVEEDOR" || tipos.includes("PROVEEDOR");
+
+    if (
+      esParticipacionResidencial.value ||
+      (!esTrabajador && !esProveedor && !cargo)
+    ) {
+      list.push({ key: "residente", label: "Residente" });
+    }
     if (cargo && CARGO_LABELS[cargo]) {
       list.push({ key: cargo.toLowerCase(), label: CARGO_LABELS[cargo] });
     }
+    if (esTrabajador) {
+      list.push({ key: "trabajador", label: "Trabajador" });
+    }
+    if (esProveedor) {
+      list.push({ key: "proveedor", label: "Proveedor" });
+    }
+    if (!list.length) list.push({ key: "residente", label: "Residente" });
     return list;
   });
 
@@ -206,7 +249,20 @@ export const useAuthStore = defineStore("auth", () => {
     const encontrado = condominios.value.find((c) => c.id === id);
     if (!encontrado) return;
     condominioActual.value = encontrado;
-    activeContext.value = "residente";
+    // Portal inicial: trabajador/proveedor solo si no hay participación
+    // residencial; en caso contrario el usuario entra como residente y puede
+    // cambiar de contexto desde el header.
+    const tipos = encontrado.tiposParticipacion || [];
+    const residencial = tipos.some((tipo) =>
+      ["PROPIETARIO", "ARRENDATARIO", "DEPENDIENTE"].includes(tipo),
+    );
+    if (!residencial && encontrado.rolContextual === "TRABAJADOR") {
+      activeContext.value = "trabajador";
+    } else if (!residencial && encontrado.rolContextual === "PROVEEDOR") {
+      activeContext.value = "proveedor";
+    } else {
+      activeContext.value = "residente";
+    }
     localStorage.setItem("condominioActual", JSON.stringify(encontrado));
 
     fetchPermisos(encontrado.id);
@@ -254,6 +310,9 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActualId,
     condominioActualNombre,
     condominioActualRol,
+    condominioActualRolContextual,
+    condominioActualTiposParticipacion,
+    esParticipacionResidencial,
     condominioActualCargo,
     condominioActualStatusPago,
     condominioActualAccesoOperativo,

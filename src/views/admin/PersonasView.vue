@@ -1,14 +1,37 @@
 <script setup>
 import { ref, computed, watch } from "vue";
+import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { personasService } from "@/services/personasService";
 import { unidadesService } from "@/services/unidadesService";
 import { useValidacionChile } from "@/composables/useValidacionChile";
 import { useBusquedaPersona } from "@/composables/useBusquedaPersona";
-import { emailValido } from "@/utils/validadoresChile";
+import { emailValido, rutValido } from "@/utils/validadoresChile";
 import { mensajeError } from "@/utils/errores";
 import { estadoCorreccionRut } from "@/utils/correccionRut";
 import { labelCargo as cargoLabel } from "@/data/cargos";
+import {
+  ESTADOS_MEMBRESIA,
+  TIPOS_PARTICIPACION,
+  TIPOS_ASOCIACION,
+  CARGOS_ASOCIABLES,
+  TIPOS_VINCULO_UNIDAD,
+  labelTipoParticipacion,
+  severityTipoParticipacion,
+  labelEstadoMembresia,
+  severityEstadoMembresia,
+  labelTipoAlta,
+} from "@/data/membresia";
+import {
+  ASOCIACION_UNIDAD,
+  ASOCIACION_CARGO,
+  ASOCIACION_PROVEEDOR,
+  construirAsociacion,
+  validarAsociacion,
+  construirPayloadAlta,
+  datosConflicto,
+  mensajeAlta,
+} from "@/utils/altaPersona";
 import {
   esPreActivacionPersona,
   estadoUsuarioPersona,
@@ -32,6 +55,7 @@ import { useConfirm } from "primevue/useconfirm";
 import ConfirmDialog from "primevue/confirmdialog";
 
 const auth = useAuthStore();
+const route = useRoute();
 const confirm = useConfirm();
 
 const TAMANO_PAGINA = 25;
@@ -44,6 +68,8 @@ const personas = ref([]);
 const unidades = ref([]);
 const busqueda = ref("");
 const pagina = ref(0);
+const estadoFiltro = ref("ACTIVO");
+const tipoFiltro = ref(null);
 
 const showCrearPersona = ref(false);
 const showEditarPersona = ref(false);
@@ -53,13 +79,19 @@ const showCrearVinculo = ref(false);
 const showCrearUsuario = ref(false);
 const showHabilitarRut = ref(false);
 const showBuscarPersona = ref(false);
-const emailBuscarPersona = ref("");
-const errorEmailBuscarPersona = ref(null);
-const esConflictoPersona = ref(false);
+const showAsociarPersona = ref(false);
+const showDesactivar = ref(false);
+const busquedaModo = ref("email");
+const valorBusquedaPersona = ref("");
+const errorValorBusquedaPersona = ref(null);
+const personaReutilizada = ref(null);
+const conflictoAlta = ref(null);
 const vinculoDesdeDetalle = ref(false);
 const personaSeleccionada = ref(null);
 const personaCambioEmail = ref(null);
 const personaDetalle = ref(null);
+const personaAsociar = ref(null);
+const personaDesactivar = ref(null);
 const vinculos = ref([]);
 const cargandoVinculos = ref(false);
 const errorVinculos = ref(null);
@@ -68,8 +100,25 @@ const exitoRut = ref(null);
 const errorRut = ref(null);
 const cargandoRutEdicion = ref(false);
 const enviando = ref(false);
+const altaDesdeQuery = ref(false);
 
-const formPersona = ref({ nombre: "", email: "", rut: "", telefono: "" });
+const formPersona = ref({
+  nombre: "",
+  email: "",
+  rut: "",
+  telefono: "",
+  asociacionTipo: ASOCIACION_UNIDAD,
+  unidadId: null,
+  tipoVinculo: null,
+  fechaInicio: "",
+  esOcupante: false,
+  recibeNotificaciones: true,
+  esResponsable: false,
+  cargo: null,
+  empresa: "",
+  rubro: "",
+  contactoProveedor: "",
+});
 const formEditarPersona = ref({ nombre: "", telefono: "" });
 const formCambioEmail = ref({ emailNuevo: "", motivo: "" });
 const formVinculo = ref({
@@ -80,6 +129,20 @@ const formVinculo = ref({
   esOcupante: false,
   recibeNotificaciones: true,
 });
+const formAsociar = ref({
+  asociacionTipo: ASOCIACION_UNIDAD,
+  unidadId: null,
+  tipoVinculo: null,
+  fechaInicio: "",
+  esOcupante: false,
+  recibeNotificaciones: true,
+  esResponsable: false,
+  cargo: null,
+  empresa: "",
+  rubro: "",
+  contactoProveedor: "",
+});
+const formDesactivar = ref({ motivo: "" });
 const formUsuario = ref({ rol: "RESIDENTE" });
 const formHabilitarRut = ref({ vigenciaHoras: 72, motivo: "" });
 const enviandoRut = ref(false);
@@ -88,9 +151,12 @@ const errorFormPersona = ref(null);
 const errorFormEditar = ref(null);
 const errorFormCambioEmail = ref(null);
 const errorFormVinculo = ref(null);
+const errorFormAsociar = ref(null);
 const errorFormUsuario = ref(null);
 const errorFormHabilitarRut = ref(null);
 const erroresVinculo = ref({});
+const erroresAsociacion = ref({});
+const erroresAsociar = ref({});
 
 const nombreCrearRef = ref(null);
 const emailCrearRef = ref(null);
@@ -134,21 +200,18 @@ const {
   normalizarTelefono: normalizarTelefonoEdicion,
 } = useValidacionChile();
 
-// Verificación del email en el alta: si la persona ya existe, se ofrece
-// vincularla en vez de crear (y el backend responde 409 si se intenta igual).
+// Verificación del email en el alta: si la persona ya existe se reutiliza su
+// identidad (`personaId`) y solo se agrega la asociación en este condominio.
 const {
   buscando: verificandoEmailAlta,
-  persona: personaEmailDuplicado,
   consultado: emailAltaConsultado,
   noEncontrada: emailAltaDisponible,
   error: errorBusquedaAlta,
   limpiar: limpiarBusquedaAlta,
   buscarPorEmail: buscarEmailAlta,
-  crearOReutilizar,
 } = useBusquedaPersona();
 
-// Recuperación de personas huérfanas (sin vínculo ni cargo), que el listado
-// del condominio no devuelve.
+// Búsqueda global (email o RUT) desde el diálogo "Buscar persona".
 const {
   buscando: buscandoPersona,
   persona: personaBuscada,
@@ -156,18 +219,14 @@ const {
   noEncontrada: personaNoEncontrada,
   error: errorBusquedaPersona,
   limpiar: limpiarBusquedaPersona,
-  buscarPorEmail: buscarPersonaPorEmail,
+  buscar: buscarPersona,
 } = useBusquedaPersona();
-
-const tiposVinculo = [
-  { label: "Propietario", value: "PROPIETARIO" },
-  { label: "Arrendatario", value: "ARRENDATARIO" },
-  { label: "Residente adicional", value: "RESIDENTE_ADICIONAL" },
-];
 
 const rolesUsuario = [
   { label: "Residente", value: "RESIDENTE" },
   { label: "Guardia", value: "GUARDIA" },
+  { label: "Trabajador", value: "TRABAJADOR" },
+  { label: "Proveedor", value: "PROVEEDOR" },
 ];
 
 const vigenciasRut = [
@@ -176,8 +235,18 @@ const vigenciasRut = [
   { label: "7 días", value: 168 },
 ];
 
+const estadosFiltro = [
+  { value: "TODOS", label: "Todas las membresías" },
+  ...ESTADOS_MEMBRESIA,
+];
+
+const tiposFiltro = [
+  { value: null, label: "Todas las participaciones" },
+  ...TIPOS_PARTICIPACION,
+];
+
 const tipoVinculoLabels = Object.fromEntries(
-  tiposVinculo.map((tipo) => [tipo.value, tipo.label]),
+  TIPOS_VINCULO_UNIDAD.map((tipo) => [tipo.value, tipo.label]),
 );
 
 const puedeCrear = computed(() => auth.permisos.includes("PERSONA_CREAR"));
@@ -219,29 +288,44 @@ const mensajeErrorBusquedaPersona = computed(() =>
   errorBusquedaPersona.value
     ? mensajeError(
         errorBusquedaPersona.value,
-        "No se pudo buscar la persona por email",
+        "No se pudo buscar la persona",
       )
     : null,
 );
+
+/**
+ * Membresía de la persona buscada en el condominio actual. `null` si aún no
+ * pertenece a este condominio.
+ */
+const membresiaActualBuscada = computed(() => {
+  const cid = auth.condominioActualId;
+  const membresias = personaBuscada.value?.membresias || [];
+  if (!cid) return null;
+  return membresias.find((m) => m.condominioId === cid) || null;
+});
+
+const otrasMembresiasBuscada = computed(() => {
+  const cid = auth.condominioActualId;
+  return (personaBuscada.value?.membresias || []).filter(
+    (m) => m.condominioId !== cid,
+  );
+});
+
 const personaBuscadaEnListado = computed(
   () =>
     !!personaBuscada.value &&
     personas.value.some((p) => p.id === personaBuscada.value.id),
-);
-const conflictoPersonaPorRut = computed(
-  () =>
-    esConflictoPersona.value &&
-    /\bRUT\b/i.test(String(errorFormPersona.value || "")),
 );
 
 const personasFiltradas = computed(() => {
   const q = busqueda.value.trim().toLowerCase();
   if (!q) return personas.value;
   return personas.value.filter((p) =>
-    [p.nombre, p.email, p.rut, p.telefono, p.cargo].some((valor) =>
-      String(valor || "")
-        .toLowerCase()
-        .includes(q),
+    [p.nombre, p.email, p.rut, p.telefono, p.cargo, p.unidadPrincipal].some(
+      (valor) =>
+        String(valor || "")
+          .toLowerCase()
+          .includes(q),
     ),
   );
 });
@@ -252,6 +336,8 @@ const personasPagina = computed(() => {
 });
 
 const primerRegistro = computed(() => pagina.value * TAMANO_PAGINA);
+
+const hayUnidades = computed(() => unidades.value.length > 0);
 
 let tokenCarga = 0;
 
@@ -267,7 +353,10 @@ async function cargar() {
   errorCarga.value = null;
 
   try {
-    const { data } = await personasService.listar(cid);
+    const params = { estado: estadoFiltro.value };
+    if (tipoFiltro.value) params.tipoParticipacion = tipoFiltro.value;
+
+    const { data } = await personasService.listar(cid, params);
     if (token !== tokenCarga) return;
     personas.value = Array.isArray(data) ? data : [];
 
@@ -284,10 +373,7 @@ async function cargar() {
   } catch (e) {
     if (token !== tokenCarga) return;
     console.error("Error al cargar personas", e);
-    errorCarga.value = mensajeError(
-      e,
-      "No se pudieron cargar las personas",
-    );
+    errorCarga.value = mensajeError(e, "No se pudieron cargar las personas");
     personas.value = [];
     unidades.value = [];
   } finally {
@@ -314,6 +400,11 @@ watch(
   { immediate: true },
 );
 
+watch([estadoFiltro, tipoFiltro], () => {
+  pagina.value = 0;
+  cargar();
+});
+
 watch(busqueda, () => {
   pagina.value = 0;
 });
@@ -322,6 +413,20 @@ watch(personasFiltradas, (lista) => {
   const maxPagina = Math.max(0, Math.ceil(lista.length / TAMANO_PAGINA) - 1);
   if (pagina.value > maxPagina) pagina.value = maxPagina;
 });
+
+// Alta de trabajador desde "Miembros" (`?nueva=CARGO`) o de residente
+// (`?nueva=UNIDAD`). Solo se procesa una vez.
+watch(
+  () => route.query.nueva,
+  (nueva) => {
+    if (altaDesdeQuery.value || !nueva) return;
+    if (nueva !== "CARGO" && nueva !== "UNIDAD") return;
+    altaDesdeQuery.value = true;
+    if (!puedeCrear.value) return;
+    abrirCrear(nueva === "CARGO" ? ASOCIACION_CARGO : ASOCIACION_UNIDAD);
+  },
+  { immediate: true },
+);
 
 function aplicarErroresBackend(error, destino) {
   const fields = error?.response?.data?.fields;
@@ -376,20 +481,42 @@ function tieneAcciones(persona) {
   return (
     puedeVerVinculos.value ||
     puedeEditar.value ||
-    puedeDesactivar.value ||
+    (puedeDesactivar.value && persona.estadoMembresia !== "INACTIVO") ||
     (puedeGestionarUsuario.value &&
       (!persona.tieneUsuario ||
         (persona.tieneUsuario && !persona.passwordSetAt)))
   );
 }
 
-function abrirCrear() {
-  if (!puedeCrear.value) return;
-  formPersona.value = { nombre: "", email: "", rut: "", telefono: "" };
+function resetFormAlta(asociacionTipo = ASOCIACION_UNIDAD) {
+  formPersona.value = {
+    nombre: "",
+    email: "",
+    rut: "",
+    telefono: "",
+    asociacionTipo,
+    unidadId: null,
+    tipoVinculo: null,
+    fechaInicio: fechaLocalISO(),
+    esOcupante: false,
+    recibeNotificaciones: true,
+    esResponsable: false,
+    cargo: null,
+    empresa: "",
+    rubro: "",
+    contactoProveedor: "",
+  };
+  personaReutilizada.value = null;
+  conflictoAlta.value = null;
   erroresPersona.value = {};
+  erroresAsociacion.value = {};
   errorFormPersona.value = null;
-  esConflictoPersona.value = false;
   limpiarBusquedaAlta();
+}
+
+function abrirCrear(asociacionTipo = ASOCIACION_UNIDAD) {
+  if (!puedeCrear.value) return;
+  resetFormAlta(asociacionTipo);
   showCrearPersona.value = true;
 }
 
@@ -397,27 +524,37 @@ function cerrarCrearPersona() {
   showCrearPersona.value = false;
   errorFormPersona.value = null;
   erroresPersona.value = {};
-  esConflictoPersona.value = false;
+  erroresAsociacion.value = {};
+  conflictoAlta.value = null;
+  personaReutilizada.value = null;
   limpiarBusquedaAlta();
 }
 
 function validarFormularioPersona() {
   erroresPersona.value = {};
-  validarNombre(formPersona.value.nombre);
-  validarEmail(formPersona.value.email);
-  validarRut(formPersona.value.rut);
-  validarTelefono(formPersona.value.telefono);
-  return Object.keys(erroresPersona.value).length === 0;
+  if (!personaReutilizada.value) {
+    validarNombre(formPersona.value.nombre);
+    validarEmail(formPersona.value.email);
+    validarRut(formPersona.value.rut);
+    validarTelefono(formPersona.value.telefono);
+  }
+  erroresAsociacion.value = validarAsociacion(formPersona.value);
+  return (
+    Object.keys(erroresPersona.value).length === 0 &&
+    Object.keys(erroresAsociacion.value).length === 0
+  );
 }
 
 function validarYEnfocarPersona() {
   if (validarFormularioPersona()) return true;
-  focusPrimerError([
-    ["nombre", nombreCrearRef],
-    ["email", emailCrearRef],
-    ["rut", rutCrearRef],
-    ["telefono", telefonoCrearRef],
-  ]);
+  if (!personaReutilizada.value) {
+    focusPrimerError([
+      ["nombre", nombreCrearRef],
+      ["email", emailCrearRef],
+      ["rut", rutCrearRef],
+      ["telefono", telefonoCrearRef],
+    ]);
+  }
   return false;
 }
 
@@ -434,7 +571,8 @@ function payloadPersona() {
 
 function alCambiarEmailAlta() {
   limpiarBusquedaAlta();
-  esConflictoPersona.value = false;
+  personaReutilizada.value = null;
+  conflictoAlta.value = null;
 }
 
 async function verificarEmailAlta() {
@@ -445,147 +583,271 @@ async function verificarEmailAlta() {
     limpiarBusquedaAlta();
     return;
   }
-  await buscarEmailAlta(cid, email);
-}
-
-function vincularEmailDuplicado() {
-  const persona = personaEmailDuplicado.value;
-  if (!persona || !puedeCrearVinculo.value || !persona.activo) return;
-  showCrearPersona.value = false;
-  limpiarBusquedaAlta();
-  vinculoDesdeDetalle.value = false;
-  abrirCrearVinculoConPersona(persona);
-}
-
-function crearPersonaYVincular() {
-  if (personaEmailDuplicado.value) {
-    vincularEmailDuplicado();
-    return;
+  const encontrada = await buscarEmailAlta(cid, email);
+  if (encontrada) {
+    personaReutilizada.value = encontrada;
+    conflictoAlta.value = null;
   }
-  if (!validarYEnfocarPersona()) return;
-  crearPersona({ vincular: true });
 }
 
-function confirmarCrearSinVinculo() {
-  if (!validarYEnfocarPersona()) return;
-  confirm.require({
-    message:
-      "La persona quedará registrada, pero no aparecerá en el listado hasta que tenga un vínculo con una unidad o un cargo en este condominio. ¿Crear sin vincular?",
-    header: "Crear sin vincular",
-    acceptLabel: "Crear sin vincular",
-    rejectLabel: "Cancelar",
-    accept: () => crearPersona({ vincular: false }),
-  });
+function usarPersonaNueva() {
+  personaReutilizada.value = null;
+  conflictoAlta.value = null;
+  limpiarBusquedaAlta();
 }
 
-function crearSoloPersona() {
-  crearPersona({ vincular: false });
-}
-
-async function crearPersona({ vincular = true } = {}) {
+/**
+ * Alta atómica: identidad (`persona` o `personaId`) + asociación.
+ * Si el backend responde 409 de email/RUT, guarda `personaId` y permite
+ * reintentar reutilizando la identidad existente.
+ */
+async function guardarPersona() {
   const cid = auth.condominioActualId;
   if (!cid) return;
   if (!validarYEnfocarPersona()) return;
 
   enviando.value = true;
   errorFormPersona.value = null;
-  esConflictoPersona.value = false;
+
+  const personaId = personaReutilizada.value?.id || null;
+  const asociacion = construirAsociacion(formPersona.value);
+  const payload = construirPayloadAlta({
+    persona: personaId ? null : payloadPersona(),
+    personaId,
+    asociacion,
+  });
 
   try {
-    // Si el email ya existe, el backend responde 409 y el composable
-    // recupera la persona para reutilizarla en vez de dejar el alta huérfana.
-    const { persona, reutilizada } = await crearOReutilizar(
-      cid,
-      payloadPersona(),
-    );
-
-    if (vincular && puedeCrearVinculo.value && persona?.activo) {
-      showCrearPersona.value = false;
-      limpiarBusquedaAlta();
-      exito.value = reutilizada
-        ? "La persona ya existía. Completa el vínculo para verla en el listado."
-        : "Persona creada. Completa el vínculo para verla en el listado.";
-      vinculoDesdeDetalle.value = false;
-      abrirCrearVinculoConPersona(persona);
-      return;
-    }
-
+    const { data } = await personasService.crear(cid, payload);
     showCrearPersona.value = false;
     limpiarBusquedaAlta();
-    exito.value = reutilizada
-      ? "La persona ya existía. Para verla en el listado, vincúlala a una unidad o asígnale un cargo."
-      : "Persona creada sin vínculo. No aparecerá en el listado hasta que la vincules a una unidad o le asignes un cargo.";
+    personaReutilizada.value = null;
+    conflictoAlta.value = null;
+    exito.value = mensajeAlta(data);
     await cargar();
   } catch (e) {
-    console.error("Error al crear persona", e);
-    esConflictoPersona.value = e?.response?.status === 409;
-    errorFormPersona.value = mensajeError(e, "Error al crear persona");
+    console.error("Error al registrar persona", e);
+    const conflicto = datosConflicto(e);
+    if (conflicto?.personaId) {
+      conflictoAlta.value = conflicto;
+      personaReutilizada.value = {
+        id: conflicto.personaId,
+        nombre: formPersona.value.nombre || "Persona existente",
+        email: formPersona.value.email,
+        rut: formPersona.value.rut,
+        telefono: formPersona.value.telefono,
+      };
+      errorFormPersona.value = `${conflicto.message} Se reutilizará la persona existente al reintentar.`;
+      return;
+    }
+    errorFormPersona.value = mensajeError(e, "Error al registrar persona");
     aplicarErroresBackend(e, erroresPersona);
   } finally {
     enviando.value = false;
   }
 }
 
-function resolverConflictoPersona() {
-  const email = normalizarEmail(formPersona.value.email);
-  showCrearPersona.value = false;
-  limpiarBusquedaAlta();
-  abrirBuscarPersona(email);
+function reintentarAlta() {
+  if (!personaReutilizada.value?.id) return;
+  conflictoAlta.value = null;
+  errorFormPersona.value = null;
+  guardarPersona();
 }
 
-function abrirBuscarPersona(email = "") {
+// ─── Buscar persona ──────────────────────────────────────────
+
+function abrirBuscarPersona(valor = "") {
   if (!puedeVerPersonas.value) return;
-  const emailInicial = typeof email === "string" ? email : "";
   limpiarBusquedaPersona();
-  emailBuscarPersona.value = emailInicial;
-  errorEmailBuscarPersona.value = null;
+  busquedaModo.value = "email";
+  valorBusquedaPersona.value = typeof valor === "string" ? valor : "";
+  errorValorBusquedaPersona.value = null;
   showBuscarPersona.value = true;
-  if (emailInicial && emailValido(emailInicial)) {
-    ejecutarBusquedaPersona();
-  }
 }
 
 function cerrarBuscarPersona() {
   showBuscarPersona.value = false;
-  emailBuscarPersona.value = "";
-  errorEmailBuscarPersona.value = null;
+  valorBusquedaPersona.value = "";
+  errorValorBusquedaPersona.value = null;
   limpiarBusquedaPersona();
 }
 
 async function ejecutarBusquedaPersona() {
   const cid = auth.condominioActualId;
-  const email = normalizarEmail(emailBuscarPersona.value);
-  errorEmailBuscarPersona.value = null;
+  errorValorBusquedaPersona.value = null;
   if (!cid) return;
-  if (!emailValido(email)) {
-    errorEmailBuscarPersona.value =
+
+  const valor = String(valorBusquedaPersona.value || "").trim();
+  if (!valor) {
+    errorValorBusquedaPersona.value =
+      busquedaModo.value === "email"
+        ? "Ingresa un email"
+        : "Ingresa un RUT";
+    return;
+  }
+  if (busquedaModo.value === "email" && !emailValido(valor)) {
+    errorValorBusquedaPersona.value =
       "Ingresa un email válido (ej: nombre@dominio.cl)";
     return;
   }
-  await buscarPersonaPorEmail(cid, email);
-}
+  if (busquedaModo.value === "rut" && !rutValido(valor)) {
+    errorValorBusquedaPersona.value = "Ingresa un RUT válido";
+    return;
+  }
 
-function vincularPersonaBuscada() {
-  const persona = personaBuscada.value;
-  if (!persona || !puedeCrearVinculo.value || !persona.activo) return;
-  showBuscarPersona.value = false;
-  vinculoDesdeDetalle.value = false;
-  abrirCrearVinculoConPersona(persona);
-}
-
-function verVinculosPersonaBuscada() {
-  const persona = personaBuscada.value;
-  if (!persona) return;
-  showBuscarPersona.value = false;
-  verVinculos(persona);
+  const params =
+    busquedaModo.value === "email"
+      ? { email: normalizarEmail(valor) }
+      : { rut: normalizarRut(valor) };
+  await buscarPersona(cid, params);
 }
 
 function crearDesdeBusqueda() {
-  const email = emailBuscarPersona.value;
+  const valor = valorBusquedaPersona.value;
+  const modo = busquedaModo.value;
   cerrarBuscarPersona();
-  abrirCrear();
-  formPersona.value.email = email;
+  abrirCrear(ASOCIACION_UNIDAD);
+  if (modo === "email") formPersona.value.email = valor;
+  else formPersona.value.rut = valor;
 }
+
+// ─── Asociar persona existente ───────────────────────────────
+
+function abrirAsociarPersona(persona) {
+  if (!puedeEditar.value || !persona) return;
+  personaAsociar.value = persona;
+  formAsociar.value = {
+    asociacionTipo: ASOCIACION_UNIDAD,
+    unidadId: null,
+    tipoVinculo: null,
+    fechaInicio: fechaLocalISO(),
+    esOcupante: false,
+    recibeNotificaciones: true,
+    esResponsable: false,
+    cargo: null,
+    empresa: "",
+    rubro: "",
+    contactoProveedor: "",
+  };
+  erroresAsociar.value = {};
+  errorFormAsociar.value = null;
+  showAsociarPersona.value = true;
+}
+
+function cerrarAsociarPersona() {
+  showAsociarPersona.value = false;
+  personaAsociar.value = null;
+  erroresAsociar.value = {};
+  errorFormAsociar.value = null;
+}
+
+function validarFormularioAsociar() {
+  erroresAsociar.value = validarAsociacion(formAsociar.value);
+  return Object.keys(erroresAsociar.value).length === 0;
+}
+
+async function guardarAsociacion() {
+  const cid = auth.condominioActualId;
+  const persona = personaAsociar.value;
+  if (!cid || !persona) return;
+  if (!validarFormularioAsociar()) return;
+
+  enviando.value = true;
+  errorFormAsociar.value = null;
+
+  try {
+    const { data } = await personasService.agregarAsociacion(
+      cid,
+      persona.id,
+      construirAsociacion(formAsociar.value),
+    );
+    showAsociarPersona.value = false;
+    personaAsociar.value = null;
+    exito.value = mensajeAlta(data);
+    await cargar();
+  } catch (e) {
+    console.error("Error al asociar persona", e);
+    errorFormAsociar.value = mensajeError(e, "Error al asociar la persona");
+    aplicarErroresBackend(e, erroresAsociar);
+  } finally {
+    enviando.value = false;
+  }
+}
+
+function confirmarReactivar(persona) {
+  if (!puedeEditar.value || !persona) return;
+  confirm.require({
+    message: `¿Reactivar a ${persona.nombre} en este condominio? Deberás volver a asociarla a una unidad o cargo.`,
+    header: "Reactivar persona",
+    acceptLabel: "Reactivar",
+    rejectLabel: "Cancelar",
+    accept: () => reactivarPersona(persona),
+  });
+}
+
+async function reactivarPersona(persona) {
+  const cid = auth.condominioActualId;
+  if (!cid || !persona) return;
+  errorAccion.value = null;
+  exito.value = null;
+  try {
+    await personasService.reactivar(cid, persona.id);
+    exito.value = `${persona.nombre} fue reactivada en este condominio.`;
+    await cargar();
+  } catch (e) {
+    console.error("Error al reactivar persona", e);
+    errorAccion.value = mensajeError(e, "No se pudo reactivar la persona");
+  }
+}
+
+// ─── Baja local ──────────────────────────────────────────────
+
+function abrirDesactivar(persona) {
+  if (!puedeDesactivar.value || !persona) return;
+  personaDesactivar.value = persona;
+  formDesactivar.value = { motivo: "" };
+  errorAccion.value = null;
+  showDesactivar.value = true;
+}
+
+function cerrarDesactivar() {
+  showDesactivar.value = false;
+  personaDesactivar.value = null;
+  formDesactivar.value = { motivo: "" };
+}
+
+async function desactivarPersona() {
+  const cid = auth.condominioActualId;
+  const persona = personaDesactivar.value;
+  if (!cid || !persona) return;
+
+  enviando.value = true;
+  errorAccion.value = null;
+  exito.value = null;
+
+  try {
+    const motivo = formDesactivar.value.motivo.trim();
+    await personasService.desactivar(cid, persona.id, motivo ? { motivo } : {});
+    cerrarDesactivar();
+    if (personaSeleccionada.value?.id === persona.id) {
+      personaSeleccionada.value = null;
+      personaDetalle.value = null;
+      vinculos.value = [];
+    }
+    exito.value = `${persona.nombre} fue quitada de este condominio. Su cuenta sigue activa en otros condominios.`;
+    await cargar();
+  } catch (e) {
+    console.error("Error al desactivar persona", e);
+    errorAccion.value = mensajeError(
+      e,
+      "No se pudo quitar a la persona del condominio",
+    );
+  } finally {
+    enviando.value = false;
+  }
+}
+
+// ─── Edición / email / usuario / vínculos ────────────────────
 
 async function abrirEditar(persona) {
   if (!puedeEditar.value) return;
@@ -602,8 +864,6 @@ async function abrirEditar(persona) {
   cargandoRutEdicion.value = false;
   showEditarPersona.value = true;
 
-  // El detalle trae el estado de la habilitación de corrección de RUT, que
-  // ahora se gestiona desde este mismo diálogo.
   if (puedeHabilitarRut.value) {
     cargandoRutEdicion.value = true;
     try {
@@ -768,15 +1028,11 @@ async function reenviarVerificacion(persona) {
       persona.id,
     );
     exito.value =
-      data?.mensaje ||
-      "Se reenvió el correo de verificación al nuevo email.";
+      data?.mensaje || "Se reenvió el correo de verificación al nuevo email.";
     await cargar();
   } catch (e) {
     console.error("Error al reenviar verificación", e);
-    errorAccion.value = mensajeError(
-      e,
-      "No se pudo reenviar la verificación",
-    );
+    errorAccion.value = mensajeError(e, "No se pudo reenviar la verificación");
   }
 }
 
@@ -809,40 +1065,6 @@ async function reenviarSetup(persona) {
       e,
       "No se pudo reenviar el correo de configuración",
     );
-  }
-}
-
-function confirmarDesactivar(persona) {
-  if (!puedeDesactivar.value) return;
-  confirm.require({
-    message: `¿Desactivar a ${persona.nombre}? También se desactivarán sus vínculos, cargos y usuario en este condominio.`,
-    header: "Confirmar desactivación",
-    acceptLabel: "Desactivar",
-    rejectLabel: "Cancelar",
-    acceptClass: "p-button-danger",
-    accept: () => desactivarPersona(persona),
-  });
-}
-
-async function desactivarPersona(persona) {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-
-  errorAccion.value = null;
-  exito.value = null;
-
-  try {
-    await personasService.desactivar(cid, persona.id);
-    exito.value = "Persona desactivada correctamente.";
-    if (personaSeleccionada.value?.id === persona.id) {
-      personaSeleccionada.value = null;
-      personaDetalle.value = null;
-      vinculos.value = [];
-    }
-    await cargar();
-  } catch (e) {
-    console.error("Error al desactivar persona", e);
-    errorAccion.value = mensajeError(e, "Error al desactivar persona");
   }
 }
 
@@ -994,10 +1216,7 @@ async function revocarRut() {
     await recargarDetallePersona();
   } catch (e) {
     console.error("Error al revocar la corrección de RUT", e);
-    errorRut.value = mensajeError(
-      e,
-      "No se pudo revocar la habilitación",
-    );
+    errorRut.value = mensajeError(e, "No se pudo revocar la habilitación");
   } finally {
     enviandoRut.value = false;
   }
@@ -1075,8 +1294,6 @@ async function crearVinculo() {
     vinculoDesdeDetalle.value = false;
     await verVinculos(persona);
     exitoVinculos.value = "Vínculo creado correctamente.";
-    // El listado del condominio solo devuelve personas con vínculo o cargo:
-    // refrescar para que la persona recién vinculada aparezca.
     await cargar();
     exito.value = "Persona vinculada. Ya aparece en el listado.";
   } catch (e) {
@@ -1111,7 +1328,6 @@ async function desvincularVinculo(vinculo) {
     await personasService.desactivarVinculo(cid, vinculo.vinculoId);
     await verVinculos(persona);
     exitoVinculos.value = "Vínculo desactivado correctamente.";
-    // Si era el último vínculo/cargo, la persona deja de aparecer en el listado.
     await cargar();
   } catch (e) {
     console.error("Error al desvincular vínculo", e);
@@ -1180,7 +1396,7 @@ async function crearUsuario() {
           v-if="puedeCrear"
           label="Nueva persona"
           icon="pi pi-plus"
-          @click="abrirCrear"
+          @click="abrirCrear()"
         />
       </div>
     </div>
@@ -1204,12 +1420,30 @@ async function crearUsuario() {
 
     <Card>
       <template #content>
-        <InputText
-          v-model="busqueda"
-          placeholder="Buscar por nombre, email o RUT..."
-          aria-label="Buscar personas"
-          class="w-full"
-        />
+        <div class="flex flex-col gap-2 md:flex-row md:items-center">
+          <InputText
+            v-model="busqueda"
+            placeholder="Buscar por nombre, email o RUT..."
+            aria-label="Buscar personas"
+            class="w-full md:flex-1"
+          />
+          <Select
+            v-model="estadoFiltro"
+            :options="estadosFiltro"
+            optionLabel="label"
+            optionValue="value"
+            aria-label="Filtrar por estado de membresía"
+            class="w-full md:w-14rem"
+          />
+          <Select
+            v-model="tipoFiltro"
+            :options="tiposFiltro"
+            optionLabel="label"
+            optionValue="value"
+            aria-label="Filtrar por tipo de participación"
+            class="w-full md:w-15rem"
+          />
+        </div>
       </template>
     </Card>
 
@@ -1219,11 +1453,8 @@ async function crearUsuario() {
     </Message>
 
     <template v-else>
-      <div
-        v-if="!personas.length"
-        class="text-center text-text-muted py-8"
-      >
-        No hay personas registradas
+      <div v-if="!personas.length" class="text-center text-text-muted py-8">
+        No hay personas con este filtro
       </div>
       <div
         v-else-if="!personasFiltradas.length"
@@ -1243,17 +1474,13 @@ async function crearUsuario() {
               class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"
             >
               <div class="min-w-0 flex flex-col gap-1">
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-wrap items-center gap-1">
                   <span class="font-medium truncate">{{ p.nombre }}</span>
                   <Tag
-                    v-if="p.cargo"
-                    :value="cargoLabel(p.cargo)"
-                    severity="secondary"
-                    size="small"
-                  />
-                  <Tag
-                    :value="estadoUsuarioPersona(p).label"
-                    :severity="estadoUsuarioPersona(p).severity"
+                    v-for="t in p.tiposParticipacion || []"
+                    :key="t"
+                    :value="labelTipoParticipacion(t)"
+                    :severity="severityTipoParticipacion(t)"
                     size="small"
                   />
                 </div>
@@ -1261,11 +1488,35 @@ async function crearUsuario() {
                   {{ p.email || "Sin email" }}
                 </span>
                 <span
+                  v-if="p.unidadPrincipal"
+                  class="text-xs text-text-muted"
+                >
+                  Unidad {{ p.unidadPrincipal }}
+                </span>
+                <span
                   v-if="p.emailCambioPendiente"
                   class="text-xs text-text-muted truncate"
                 >
                   Pendiente: {{ p.emailCambioPendiente }}
                 </span>
+                <div class="flex flex-wrap items-center gap-1 mt-1">
+                  <Tag
+                    :value="labelEstadoMembresia(p.estadoMembresia)"
+                    :severity="severityEstadoMembresia(p.estadoMembresia)"
+                    size="small"
+                  />
+                  <Tag
+                    :value="estadoUsuarioPersona(p).label"
+                    :severity="estadoUsuarioPersona(p).severity"
+                    size="small"
+                  />
+                  <Tag
+                    v-if="p.cargo"
+                    :value="cargoLabel(p.cargo)"
+                    severity="secondary"
+                    size="small"
+                  />
+                </div>
               </div>
 
               <div
@@ -1282,6 +1533,28 @@ async function crearUsuario() {
                   :title="`Ver vínculos de ${p.nombre}`"
                   :aria-label="`Ver vínculos de ${p.nombre}`"
                   @click="verVinculos(p)"
+                />
+                <Button
+                  v-if="puedeEditar && p.estadoMembresia !== 'INACTIVO'"
+                  icon="pi pi-plus-circle"
+                  severity="secondary"
+                  variant="text"
+                  size="small"
+                  rounded
+                  :title="`Agregar asociación a ${p.nombre}`"
+                  :aria-label="`Agregar asociación a ${p.nombre}`"
+                  @click="abrirAsociarPersona(p)"
+                />
+                <Button
+                  v-if="puedeEditar && p.estadoMembresia === 'INACTIVO'"
+                  icon="pi pi-replay"
+                  severity="secondary"
+                  variant="text"
+                  size="small"
+                  rounded
+                  :title="`Reactivar a ${p.nombre}`"
+                  :aria-label="`Reactivar a ${p.nombre}`"
+                  @click="confirmarReactivar(p)"
                 />
                 <Button
                   v-if="puedeGestionarUsuario && !p.tieneUsuario"
@@ -1339,26 +1612,26 @@ async function crearUsuario() {
                   @click="abrirEditar(p)"
                 />
                 <Button
-                  v-if="puedeDesactivar"
-                  icon="pi pi-trash"
+                  v-if="puedeDesactivar && p.estadoMembresia !== 'INACTIVO'"
+                  icon="pi pi-user-minus"
                   severity="danger"
                   variant="text"
                   size="small"
                   rounded
-                  :title="`Desactivar a ${p.nombre}`"
-                  :aria-label="`Desactivar a ${p.nombre}`"
-                  @click="confirmarDesactivar(p)"
+                  :title="`Quitar a ${p.nombre} del condominio`"
+                  :aria-label="`Quitar a ${p.nombre} del condominio`"
+                  @click="abrirDesactivar(p)"
                 />
               </div>
             </div>
 
-            <div
-              class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm mt-3"
-            >
+            <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm mt-3">
               <span class="text-text-muted">RUT:</span>
               <span>{{ p.rut || "—" }}</span>
               <span class="text-text-muted">Teléfono:</span>
               <span>{{ p.telefono || "—" }}</span>
+              <span class="text-text-muted">Alta:</span>
+              <span>{{ labelTipoAlta(p.tipoAlta) || "—" }}</span>
             </div>
           </div>
         </div>
@@ -1371,15 +1644,23 @@ async function crearUsuario() {
                 <th>RUT</th>
                 <th>Email</th>
                 <th>Teléfono</th>
-                <th>Estado</th>
-                <th>Cargo</th>
+                <th>Participación</th>
+                <th>Membresía</th>
                 <th class="text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="p in personasPagina" :key="p.id">
                 <td>
-                  <span class="font-medium">{{ p.nombre }}</span>
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ p.nombre }}</span>
+                    <span
+                      v-if="p.unidadPrincipal"
+                      class="text-xs text-text-muted"
+                    >
+                      Unidad {{ p.unidadPrincipal }}
+                    </span>
+                  </div>
                 </td>
                 <td class="whitespace-nowrap">{{ p.rut || "—" }}</td>
                 <td class="truncado">
@@ -1396,20 +1677,41 @@ async function crearUsuario() {
                 </td>
                 <td class="whitespace-nowrap">{{ p.telefono || "—" }}</td>
                 <td>
-                  <Tag
-                    :value="estadoUsuarioPersona(p).label"
-                    :severity="estadoUsuarioPersona(p).severity"
-                    size="small"
-                  />
+                  <div class="flex flex-wrap gap-1">
+                    <Tag
+                      v-for="t in p.tiposParticipacion || []"
+                      :key="t"
+                      :value="labelTipoParticipacion(t)"
+                      :severity="severityTipoParticipacion(t)"
+                      size="small"
+                    />
+                    <Tag
+                      v-if="p.cargo"
+                      :value="cargoLabel(p.cargo)"
+                      severity="secondary"
+                      size="small"
+                    />
+                    <span
+                      v-if="!(p.tiposParticipacion || []).length && !p.cargo"
+                      class="text-text-muted"
+                    >
+                      —
+                    </span>
+                  </div>
                 </td>
                 <td>
-                  <Tag
-                    v-if="p.cargo"
-                    :value="cargoLabel(p.cargo)"
-                    severity="secondary"
-                    size="small"
-                  />
-                  <span v-else class="text-text-muted">—</span>
+                  <div class="flex flex-col gap-1">
+                    <Tag
+                      :value="labelEstadoMembresia(p.estadoMembresia)"
+                      :severity="severityEstadoMembresia(p.estadoMembresia)"
+                      size="small"
+                    />
+                    <Tag
+                      :value="estadoUsuarioPersona(p).label"
+                      :severity="estadoUsuarioPersona(p).severity"
+                      size="small"
+                    />
+                  </div>
                 </td>
                 <td>
                   <div class="flex items-center justify-end gap-1">
@@ -1423,6 +1725,28 @@ async function crearUsuario() {
                       :title="`Ver vínculos de ${p.nombre}`"
                       :aria-label="`Ver vínculos de ${p.nombre}`"
                       @click="verVinculos(p)"
+                    />
+                    <Button
+                      v-if="puedeEditar && p.estadoMembresia !== 'INACTIVO'"
+                      icon="pi pi-plus-circle"
+                      severity="secondary"
+                      variant="text"
+                      size="small"
+                      rounded
+                      :title="`Agregar asociación a ${p.nombre}`"
+                      :aria-label="`Agregar asociación a ${p.nombre}`"
+                      @click="abrirAsociarPersona(p)"
+                    />
+                    <Button
+                      v-if="puedeEditar && p.estadoMembresia === 'INACTIVO'"
+                      icon="pi pi-replay"
+                      severity="secondary"
+                      variant="text"
+                      size="small"
+                      rounded
+                      :title="`Reactivar a ${p.nombre}`"
+                      :aria-label="`Reactivar a ${p.nombre}`"
+                      @click="confirmarReactivar(p)"
                     />
                     <Button
                       v-if="puedeGestionarUsuario && !p.tieneUsuario"
@@ -1480,20 +1804,17 @@ async function crearUsuario() {
                       @click="abrirEditar(p)"
                     />
                     <Button
-                      v-if="puedeDesactivar"
-                      icon="pi pi-trash"
+                      v-if="puedeDesactivar && p.estadoMembresia !== 'INACTIVO'"
+                      icon="pi pi-user-minus"
                       severity="danger"
                       variant="text"
                       size="small"
                       rounded
-                      :title="`Desactivar a ${p.nombre}`"
-                      :aria-label="`Desactivar a ${p.nombre}`"
-                      @click="confirmarDesactivar(p)"
+                      :title="`Quitar a ${p.nombre} del condominio`"
+                      :aria-label="`Quitar a ${p.nombre} del condominio`"
+                      @click="abrirDesactivar(p)"
                     />
-                    <span
-                      v-if="!tieneAcciones(p)"
-                      class="text-text-muted"
-                    >
+                    <span v-if="!tieneAcciones(p)" class="text-text-muted">
                       —
                     </span>
                   </div>
@@ -1512,168 +1833,350 @@ async function crearUsuario() {
       </template>
     </template>
 
+    <!-- ─── Alta unificada: identidad + asociación ─── -->
     <Dialog
       v-model:visible="showCrearPersona"
       header="Nueva persona"
       modal
-      :style="{ width: '95%', maxWidth: '440px' }"
+      :style="{ width: '95%', maxWidth: '520px' }"
     >
       <div class="flex flex-col gap-3">
         <Message v-if="errorFormPersona" severity="error" :closable="false">
           <div class="flex flex-col gap-2">
             <span>{{ errorFormPersona }}</span>
             <Button
-              v-if="
-                esConflictoPersona &&
-                puedeVerPersonas &&
-                !conflictoPersonaPorRut
-              "
-              label="Buscar y vincular"
-              icon="pi pi-search"
-              @click="resolverConflictoPersona"
+              v-if="conflictoAlta?.personaId"
+              label="Reintentar reutilizando la persona"
+              icon="pi pi-replay"
+              :loading="enviando"
+              @click="reintentarAlta"
             />
-            <small v-else-if="conflictoPersonaPorRut" class="text-xs">
-              El RUT ya pertenece a otra persona y no se puede recuperar por
-              email desde aquí.
-            </small>
           </div>
         </Message>
 
-        <div class="flex flex-col gap-1">
-          <label for="persona-nombre" class="text-sm">
-            Nombre <span class="text-danger">*</span>
-          </label>
-          <InputText
-            id="persona-nombre"
-            ref="nombreCrearRef"
-            v-model="formPersona.nombre"
-            :class="{ 'p-invalid': erroresPersona.nombre }"
-          />
-          <small v-if="erroresPersona.nombre" class="text-danger">
-            {{ erroresPersona.nombre }}
-          </small>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="persona-email" class="text-sm">
-            Email <span class="text-danger">*</span>
-          </label>
-          <InputText
-            id="persona-email"
-            ref="emailCrearRef"
-            v-model="formPersona.email"
-            type="email"
-            maxlength="255"
-            :class="{ 'p-invalid': erroresPersona.email }"
-            @input="alCambiarEmailAlta"
-            @blur="verificarEmailAlta"
-          />
-          <small v-if="erroresPersona.email" class="text-danger">
-            {{ erroresPersona.email }}
-          </small>
-          <div
-            v-if="verificandoEmailAlta"
-            class="flex items-center gap-2 text-xs text-text-muted"
-          >
-            <i class="pi pi-spin pi-spinner" />
-            <span>Verificando email...</span>
-          </div>
-        </div>
-
         <div
-          v-if="emailAltaConsultado && personaEmailDuplicado"
+          v-if="personaReutilizada"
           class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
         >
           <div class="flex flex-wrap items-center gap-2">
             <i class="pi pi-user text-primary-400" />
-            <span class="font-medium">{{ personaEmailDuplicado.nombre }}</span>
-            <Tag
-              v-if="!personaEmailDuplicado.activo"
-              value="Inactiva"
-              severity="warn"
-              size="small"
-            />
+            <span class="font-medium">{{ personaReutilizada.nombre }}</span>
+            <Tag value="Persona existente" severity="info" size="small" />
           </div>
           <span class="text-sm text-text-muted truncate">
-            {{ personaEmailDuplicado.email }}
+            {{ personaReutilizada.email || "Sin email" }}
           </span>
           <span class="text-xs text-text-muted">
-            Este email ya está registrado. Vinculala a una unidad para que
-            aparezca en el listado; no se creará de nuevo.
-          </span>
-          <span
-            v-if="!personaEmailDuplicado.activo"
-            class="text-xs text-text-muted"
-          >
-            La persona está inactiva; no aparecerá en el listado hasta que se
-            reactive.
-          </span>
-          <span
-            v-else-if="!puedeCrearVinculo"
-            class="text-xs text-text-muted"
-          >
-            No tienes permiso para vincular personas en este condominio.
+            Se reutilizará su identidad y solo se agregará la asociación en
+            este condominio. No se creará una persona nueva.
           </span>
           <Button
-            v-if="puedeCrearVinculo && personaEmailDuplicado.activo"
-            label="Vincular a una unidad"
-            icon="pi pi-link"
-            @click="vincularEmailDuplicado"
+            label="Usar otra persona"
+            icon="pi pi-times"
+            severity="secondary"
+            variant="text"
+            size="small"
+            @click="usarPersonaNueva"
           />
         </div>
 
-        <Message
-          v-else-if="mensajeErrorBusquedaAlta"
-          severity="warn"
-          :closable="false"
-        >
-          {{ mensajeErrorBusquedaAlta }}. Puedes continuar; si el email ya
-          existe, se reutilizará la persona.
-        </Message>
-
-        <Message
-          v-else-if="emailAltaConsultado && emailAltaDisponible"
-          severity="success"
-          :closable="false"
-        >
-          Email disponible para crear.
-        </Message>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <template v-else>
           <div class="flex flex-col gap-1">
-            <label for="persona-rut" class="text-sm">RUT</label>
+            <label for="persona-nombre" class="text-sm">
+              Nombre <span class="text-danger">*</span>
+            </label>
             <InputText
-              id="persona-rut"
-              ref="rutCrearRef"
-              v-model="formPersona.rut"
-              placeholder="Ej: 12.345.678-9"
-              maxlength="12"
-              :class="{ 'p-invalid': erroresPersona.rut }"
-              @input="formPersona.rut = onRutInput(formPersona.rut)"
-              @blur="formPersona.rut = onRutBlur(formPersona.rut)"
+              id="persona-nombre"
+              ref="nombreCrearRef"
+              v-model="formPersona.nombre"
+              :class="{ 'p-invalid': erroresPersona.nombre }"
             />
-            <small v-if="erroresPersona.rut" class="text-danger">
-              {{ erroresPersona.rut }}
+            <small v-if="erroresPersona.nombre" class="text-danger">
+              {{ erroresPersona.nombre }}
             </small>
           </div>
 
           <div class="flex flex-col gap-1">
-            <label for="persona-telefono" class="text-sm">Teléfono</label>
+            <label for="persona-email" class="text-sm">
+              Email <span class="text-danger">*</span>
+            </label>
             <InputText
-              id="persona-telefono"
-              ref="telefonoCrearRef"
-              v-model="formPersona.telefono"
-              placeholder="Ej: +56 9 1234 5678"
-              maxlength="16"
-              :class="{ 'p-invalid': erroresPersona.telefono }"
-              @input="formPersona.telefono = onTelefonoInput(formPersona.telefono)"
-              @blur="formPersona.telefono = onTelefonoBlur(formPersona.telefono)"
+              id="persona-email"
+              ref="emailCrearRef"
+              v-model="formPersona.email"
+              type="email"
+              maxlength="255"
+              :class="{ 'p-invalid': erroresPersona.email }"
+              @input="alCambiarEmailAlta"
+              @blur="verificarEmailAlta"
             />
-            <small v-if="erroresPersona.telefono" class="text-danger">
-              {{ erroresPersona.telefono }}
+            <small v-if="erroresPersona.email" class="text-danger">
+              {{ erroresPersona.email }}
             </small>
+            <div
+              v-if="verificandoEmailAlta"
+              class="flex items-center gap-2 text-xs text-text-muted"
+            >
+              <i class="pi pi-spin pi-spinner" />
+              <span>Verificando email...</span>
+            </div>
           </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label for="persona-rut" class="text-sm">RUT</label>
+              <InputText
+                id="persona-rut"
+                ref="rutCrearRef"
+                v-model="formPersona.rut"
+                placeholder="Ej: 12.345.678-9"
+                maxlength="12"
+                :class="{ 'p-invalid': erroresPersona.rut }"
+                @input="formPersona.rut = onRutInput(formPersona.rut)"
+                @blur="formPersona.rut = onRutBlur(formPersona.rut)"
+              />
+              <small v-if="erroresPersona.rut" class="text-danger">
+                {{ erroresPersona.rut }}
+              </small>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label for="persona-telefono" class="text-sm">Teléfono</label>
+              <InputText
+                id="persona-telefono"
+                ref="telefonoCrearRef"
+                v-model="formPersona.telefono"
+                placeholder="Ej: +56 9 1234 5678"
+                maxlength="16"
+                :class="{ 'p-invalid': erroresPersona.telefono }"
+                @input="
+                  formPersona.telefono = onTelefonoInput(formPersona.telefono)
+                "
+                @blur="
+                  formPersona.telefono = onTelefonoBlur(formPersona.telefono)
+                "
+              />
+              <small v-if="erroresPersona.telefono" class="text-danger">
+                {{ erroresPersona.telefono }}
+              </small>
+            </div>
+          </div>
+
+          <Message
+            v-if="mensajeErrorBusquedaAlta"
+            severity="warn"
+            :closable="false"
+          >
+            {{ mensajeErrorBusquedaAlta }}. Puedes continuar; si el email ya
+            existe, se reutilizará la persona.
+          </Message>
+          <Message
+            v-else-if="emailAltaConsultado && emailAltaDisponible"
+            severity="success"
+            :closable="false"
+          >
+            Email disponible para crear.
+          </Message>
+        </template>
+
+        <Divider align="left">
+          <span class="text-xs font-semibold text-text-muted">
+            Asociación en el condominio
+          </span>
+        </Divider>
+
+        <div class="flex flex-col gap-1">
+          <label for="alta-asociacion-tipo" class="text-sm">
+            ¿Cómo se incorpora? <span class="text-danger">*</span>
+          </label>
+          <Select
+            id="alta-asociacion-tipo"
+            v-model="formPersona.asociacionTipo"
+            :options="TIPOS_ASOCIACION"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            :class="{ 'p-invalid': erroresAsociacion.asociacionTipo }"
+          />
+          <small
+            v-if="erroresAsociacion.asociacionTipo"
+            class="text-danger"
+          >
+            {{ erroresAsociacion.asociacionTipo }}
+          </small>
+          <small
+            v-else
+            class="text-xs text-text-muted"
+          >
+            {{
+              TIPOS_ASOCIACION.find(
+                (t) => t.value === formPersona.asociacionTipo,
+              )?.descripcion
+            }}
+          </small>
         </div>
+
+        <template v-if="formPersona.asociacionTipo === ASOCIACION_UNIDAD">
+          <Message v-if="!hayUnidades" severity="warn" :closable="false">
+            No hay unidades creadas. Crea unidades antes de asociar residentes.
+          </Message>
+
+          <div class="flex flex-col gap-1">
+            <label for="alta-unidad" class="text-sm">
+              Unidad <span class="text-danger">*</span>
+            </label>
+            <Select
+              id="alta-unidad"
+              v-model="formPersona.unidadId"
+              :options="unidades"
+              optionLabel="numero"
+              optionValue="id"
+              placeholder="Seleccionar unidad"
+              filter
+              class="w-full"
+              :class="{ 'p-invalid': erroresAsociacion.unidadId }"
+            />
+            <small v-if="erroresAsociacion.unidadId" class="text-danger">
+              {{ erroresAsociacion.unidadId }}
+            </small>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="alta-tipo-vinculo" class="text-sm">
+              Tipo de vínculo <span class="text-danger">*</span>
+            </label>
+            <Select
+              id="alta-tipo-vinculo"
+              v-model="formPersona.tipoVinculo"
+              :options="TIPOS_VINCULO_UNIDAD"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar tipo"
+              class="w-full"
+              :class="{ 'p-invalid': erroresAsociacion.tipoVinculo }"
+            />
+            <small v-if="erroresAsociacion.tipoVinculo" class="text-danger">
+              {{ erroresAsociacion.tipoVinculo }}
+            </small>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="alta-fecha" class="text-sm">
+              Fecha de inicio <span class="text-danger">*</span>
+            </label>
+            <InputText
+              id="alta-fecha"
+              v-model="formPersona.fechaInicio"
+              type="date"
+              :class="{ 'p-invalid': erroresAsociacion.fechaInicio }"
+            />
+            <small v-if="erroresAsociacion.fechaInicio" class="text-danger">
+              {{ erroresAsociacion.fechaInicio }}
+            </small>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <Checkbox
+                v-model="formPersona.esOcupante"
+                binary
+                inputId="alta-ocupante"
+              />
+              <label for="alta-ocupante" class="text-sm">
+                Ocupante de la unidad
+              </label>
+            </div>
+            <div class="flex items-center gap-2">
+              <Checkbox
+                v-model="formPersona.recibeNotificaciones"
+                binary
+                inputId="alta-notificaciones"
+              />
+              <label for="alta-notificaciones" class="text-sm">
+                Recibe notificaciones de la unidad
+              </label>
+            </div>
+            <div class="flex items-center gap-2">
+              <Checkbox
+                v-model="formPersona.esResponsable"
+                binary
+                inputId="alta-responsable"
+              />
+              <label for="alta-responsable" class="text-sm">
+                Responsable de la unidad
+              </label>
+            </div>
+          </div>
+        </template>
+
+        <template v-else-if="formPersona.asociacionTipo === ASOCIACION_CARGO">
+          <div class="flex flex-col gap-1">
+            <label for="alta-cargo" class="text-sm">
+              Cargo <span class="text-danger">*</span>
+            </label>
+            <Select
+              id="alta-cargo"
+              v-model="formPersona.cargo"
+              :options="CARGOS_ASOCIABLES"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar cargo"
+              class="w-full"
+              :class="{ 'p-invalid': erroresAsociacion.cargo }"
+            />
+            <small v-if="erroresAsociacion.cargo" class="text-danger">
+              {{ erroresAsociacion.cargo }}
+            </small>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="alta-fecha-cargo" class="text-sm">
+              Fecha de inicio <span class="text-danger">*</span>
+            </label>
+            <InputText
+              id="alta-fecha-cargo"
+              v-model="formPersona.fechaInicio"
+              type="date"
+              :class="{ 'p-invalid': erroresAsociacion.fechaInicio }"
+            />
+            <small v-if="erroresAsociacion.fechaInicio" class="text-danger">
+              {{ erroresAsociacion.fechaInicio }}
+            </small>
+          </div>
+        </template>
+
+        <template v-else-if="formPersona.asociacionTipo === ASOCIACION_PROVEEDOR">
+          <Message severity="info" :closable="false">
+            El proveedor quedará registrado como membresía del condominio. Los
+            datos de la empresa aún no se persisten en el backend.
+          </Message>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label for="alta-empresa" class="text-sm">Empresa</label>
+              <InputText
+                id="alta-empresa"
+                v-model="formPersona.empresa"
+                maxlength="120"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label for="alta-rubro" class="text-sm">Rubro</label>
+              <InputText
+                id="alta-rubro"
+                v-model="formPersona.rubro"
+                maxlength="120"
+              />
+            </div>
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label for="alta-contacto" class="text-sm">Contacto</label>
+              <InputText
+                id="alta-contacto"
+                v-model="formPersona.contactoProveedor"
+                maxlength="160"
+              />
+            </div>
+          </div>
+        </template>
       </div>
 
       <template #footer>
@@ -1683,70 +2186,67 @@ async function crearUsuario() {
           variant="text"
           @click="cerrarCrearPersona"
         />
-        <template v-if="emailAltaConsultado && personaEmailDuplicado">
-          <Button
-            v-if="puedeCrearVinculo && personaEmailDuplicado.activo"
-            label="Vincular a una unidad"
-            icon="pi pi-link"
-            @click="vincularEmailDuplicado"
-          />
-        </template>
-        <template v-else>
-          <Button
-            v-if="puedeCrearVinculo"
-            label="Crear sin vincular"
-            severity="secondary"
-            variant="text"
-            :loading="enviando"
-            @click="confirmarCrearSinVinculo"
-          />
-          <Button
-            v-if="puedeCrearVinculo"
-            label="Crear y vincular"
-            :loading="enviando"
-            @click="crearPersonaYVincular"
-          />
-          <Button
-            v-else
-            label="Crear persona"
-            :loading="enviando"
-            @click="crearSoloPersona"
-          />
-        </template>
+        <Button
+          label="Registrar persona"
+          icon="pi pi-check"
+          :loading="enviando"
+          @click="guardarPersona"
+        />
       </template>
     </Dialog>
 
+    <!-- ─── Buscar persona global (email o RUT) ─── -->
     <Dialog
       v-model:visible="showBuscarPersona"
-      header="Buscar persona por email"
+      header="Buscar persona"
       modal
-      :style="{ width: '95%', maxWidth: '480px' }"
+      :style="{ width: '95%', maxWidth: '520px' }"
     >
       <div class="flex flex-col gap-3">
         <p class="text-sm text-text-muted m-0">
-          Recupera personas que no aparecen en el listado porque aún no tienen
-          un vínculo ni un cargo activo en este condominio.
+          Busca la identidad global de una persona. Si ya existe, puedes
+          asociarla a este condominio sin crear un duplicado.
         </p>
 
         <form
-          class="flex flex-col gap-2 sm:flex-row sm:items-start"
+          class="flex flex-col gap-2"
           @submit.prevent="ejecutarBusquedaPersona"
         >
-          <div class="flex flex-col gap-1 flex-1">
-            <label for="buscar-persona-email" class="text-sm">Email</label>
-            <InputText
-              id="buscar-persona-email"
-              v-model="emailBuscarPersona"
-              type="email"
-              maxlength="255"
-              placeholder="nombre@dominio.cl"
-              :class="{ 'p-invalid': errorEmailBuscarPersona }"
-            />
-            <small v-if="errorEmailBuscarPersona" class="text-danger">
-              {{ errorEmailBuscarPersona }}
-            </small>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-start">
+            <div class="flex flex-col gap-1 sm:w-9rem">
+              <label for="buscar-persona-modo" class="text-sm">Buscar por</label>
+              <Select
+                id="buscar-persona-modo"
+                v-model="busquedaModo"
+                :options="[
+                  { label: 'Email', value: 'email' },
+                  { label: 'RUT', value: 'rut' },
+                ]"
+                optionLabel="label"
+                optionValue="value"
+                class="w-full"
+              />
+            </div>
+            <div class="flex flex-col gap-1 flex-1">
+              <label for="buscar-persona-valor" class="text-sm">
+                {{ busquedaModo === "email" ? "Email" : "RUT" }}
+              </label>
+              <InputText
+                id="buscar-persona-valor"
+                v-model="valorBusquedaPersona"
+                :type="busquedaModo === 'email' ? 'email' : 'text'"
+                :placeholder="
+                  busquedaModo === 'email' ? 'nombre@dominio.cl' : '12.345.678-9'
+                "
+                :maxlength="busquedaModo === 'email' ? 255 : 12"
+                :class="{ 'p-invalid': errorValorBusquedaPersona }"
+              />
+              <small v-if="errorValorBusquedaPersona" class="text-danger">
+                {{ errorValorBusquedaPersona }}
+              </small>
+            </div>
           </div>
-          <div class="flex items-end sm:pt-6">
+          <div class="flex justify-end">
             <Button
               type="submit"
               label="Buscar"
@@ -1772,13 +2272,8 @@ async function crearUsuario() {
           <div class="flex flex-wrap items-center gap-2">
             <span class="font-medium">{{ personaBuscada.nombre }}</span>
             <Tag
-              :value="estadoUsuarioPersona(personaBuscada).label"
-              :severity="estadoUsuarioPersona(personaBuscada).severity"
-              size="small"
-            />
-            <Tag
               v-if="!personaBuscada.activo"
-              value="Inactiva"
+              value="Cuenta inactiva"
               severity="warn"
               size="small"
             />
@@ -1793,47 +2288,131 @@ async function crearUsuario() {
             <span>{{ personaBuscada.telefono || "—" }}</span>
           </div>
 
+          <div class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-text-muted">
+              Membresías
+            </span>
+            <div
+              v-if="!(personaBuscada.membresias || []).length"
+              class="text-sm text-text-muted"
+            >
+              No pertenece a ningún condominio todavía.
+            </div>
+            <div v-else class="flex flex-col gap-1">
+              <div
+                v-for="m in personaBuscada.membresias"
+                :key="m.condominioId"
+                class="flex flex-wrap items-center justify-between gap-2 text-sm"
+              >
+                <span class="truncate">
+                  {{ m.condominioNombre }}
+                  <Tag
+                    v-if="m.condominioId === auth.condominioActualId"
+                    value="Este condominio"
+                    severity="info"
+                    size="small"
+                    class="ml-1"
+                  />
+                </span>
+                <div class="flex flex-wrap items-center gap-1">
+                  <Tag
+                    :value="labelEstadoMembresia(m.estado)"
+                    :severity="severityEstadoMembresia(m.estado)"
+                    size="small"
+                  />
+                  <Tag
+                    :value="labelTipoAlta(m.tipoAlta)"
+                    severity="secondary"
+                    size="small"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <Message
-            v-if="!personaBuscadaEnListado"
+            v-if="!membresiaActualBuscada"
             severity="info"
             :closable="false"
           >
-            No figura en el listado del condominio porque no tiene vínculo ni
-            cargo activo.
+            No pertenece a este condominio. Puedes asociarla a una unidad, a un
+            cargo o registrarla como proveedor.
+          </Message>
+          <Message
+            v-else-if="membresiaActualBuscada.estado === 'INACTIVO'"
+            severity="warn"
+            :closable="false"
+          >
+            Su membresía en este condominio está inactiva. Reactívala antes de
+            volver a asociarla.
+          </Message>
+          <Message
+            v-else-if="membresiaActualBuscada.estado === 'PENDIENTE'"
+            severity="warn"
+            :closable="false"
+          >
+            Su membresía está pendiente de asociación en este condominio.
           </Message>
           <Message v-else severity="success" :closable="false">
-            Ya aparece en el listado del condominio.
-          </Message>
-          <Message
-            v-if="!personaBuscada.activo"
-            severity="warn"
-            :closable="false"
-          >
-            La persona está inactiva. No aparecerá en el listado hasta que se
-            reactive.
-          </Message>
-          <Message
-            v-else-if="!puedeCrearVinculo"
-            severity="warn"
-            :closable="false"
-          >
-            No tienes permiso para vincular personas en este condominio.
+            Ya pertenece a este condominio como
+            {{ labelTipoAlta(membresiaActualBuscada.tipoAlta) || "miembro" }}.
           </Message>
 
           <div class="flex flex-wrap items-center gap-2">
-            <Button
-              v-if="puedeCrearVinculo && personaBuscada.activo"
-              label="Vincular a una unidad"
-              icon="pi pi-link"
-              @click="vincularPersonaBuscada"
-            />
-            <Button
-              v-if="puedeVerVinculos"
-              label="Ver vínculos"
-              icon="pi pi-link"
-              severity="secondary"
-              @click="verVinculosPersonaBuscada"
-            />
+            <template v-if="!membresiaActualBuscada">
+              <Button
+                v-if="puedeEditar"
+                label="Asociar a este condominio"
+                icon="pi pi-plus-circle"
+                @click="
+                  cerrarBuscarPersona();
+                  abrirAsociarPersona(personaBuscada);
+                "
+              />
+            </template>
+            <template
+              v-else-if="membresiaActualBuscada.estado === 'INACTIVO'"
+            >
+              <Button
+                v-if="puedeEditar"
+                label="Reactivar en este condominio"
+                icon="pi pi-replay"
+                @click="
+                  cerrarBuscarPersona();
+                  confirmarReactivar(personaBuscada);
+                "
+              />
+            </template>
+            <template v-else>
+              <Button
+                v-if="puedeEditar"
+                label="Agregar asociación"
+                icon="pi pi-plus-circle"
+                @click="
+                  cerrarBuscarPersona();
+                  abrirAsociarPersona(personaBuscada);
+                "
+              />
+              <Button
+                v-if="puedeVerVinculos"
+                label="Ver vínculos"
+                icon="pi pi-link"
+                severity="secondary"
+                @click="
+                  cerrarBuscarPersona();
+                  verVinculos(personaBuscada);
+                "
+              />
+            </template>
+          </div>
+
+          <div
+            v-if="otrasMembresiasBuscada.length"
+            class="text-xs text-text-muted"
+          >
+            También pertenece a {{ otrasMembresiasBuscada.length }}
+            {{ otrasMembresiasBuscada.length === 1 ? "condominio" : "condominios" }}
+            más.
           </div>
         </div>
 
@@ -1841,10 +2420,13 @@ async function crearUsuario() {
           v-else-if="busquedaPersonaConsultada && personaNoEncontrada"
           class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
         >
-          <p class="m-0 text-sm">No existe una persona con ese email.</p>
+          <p class="m-0 text-sm">
+            No existe una persona con ese
+            {{ busquedaModo === "email" ? "email" : "RUT" }}.
+          </p>
           <Button
             v-if="puedeCrear"
-            label="Crear persona"
+            label="Registrar persona"
             icon="pi pi-plus"
             @click="crearDesdeBusqueda"
           />
@@ -1861,6 +2443,247 @@ async function crearUsuario() {
       </template>
     </Dialog>
 
+    <!-- ─── Asociar persona existente ─── -->
+    <Dialog
+      v-model:visible="showAsociarPersona"
+      header="Agregar asociación"
+      modal
+      :style="{ width: '95%', maxWidth: '480px' }"
+    >
+      <div class="flex flex-col gap-3">
+        <Message v-if="errorFormAsociar" severity="error" :closable="false">
+          {{ errorFormAsociar }}
+        </Message>
+
+        <div class="p-2 bg-inset border border-border-soft rounded-lg">
+          <p class="font-medium m-0 truncate">
+            {{ personaAsociar?.nombre }}
+          </p>
+          <p class="text-sm text-text-muted m-0 truncate">
+            {{ personaAsociar?.email || "Sin email" }}
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="asociar-tipo" class="text-sm">
+            ¿Cómo se incorpora? <span class="text-danger">*</span>
+          </label>
+          <Select
+            id="asociar-tipo"
+            v-model="formAsociar.asociacionTipo"
+            :options="TIPOS_ASOCIACION"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            :class="{ 'p-invalid': erroresAsociar.asociacionTipo }"
+          />
+          <small v-if="erroresAsociar.asociacionTipo" class="text-danger">
+            {{ erroresAsociar.asociacionTipo }}
+          </small>
+        </div>
+
+        <template v-if="formAsociar.asociacionTipo === ASOCIACION_UNIDAD">
+          <Message v-if="!hayUnidades" severity="warn" :closable="false">
+            No hay unidades creadas.
+          </Message>
+          <div class="flex flex-col gap-1">
+            <label for="asociar-unidad" class="text-sm">
+              Unidad <span class="text-danger">*</span>
+            </label>
+            <Select
+              id="asociar-unidad"
+              v-model="formAsociar.unidadId"
+              :options="unidades"
+              optionLabel="numero"
+              optionValue="id"
+              placeholder="Seleccionar unidad"
+              filter
+              class="w-full"
+              :class="{ 'p-invalid': erroresAsociar.unidadId }"
+            />
+            <small v-if="erroresAsociar.unidadId" class="text-danger">
+              {{ erroresAsociar.unidadId }}
+            </small>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label for="asociar-tipo-vinculo" class="text-sm">
+              Tipo de vínculo <span class="text-danger">*</span>
+            </label>
+            <Select
+              id="asociar-tipo-vinculo"
+              v-model="formAsociar.tipoVinculo"
+              :options="TIPOS_VINCULO_UNIDAD"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar tipo"
+              class="w-full"
+              :class="{ 'p-invalid': erroresAsociar.tipoVinculo }"
+            />
+            <small v-if="erroresAsociar.tipoVinculo" class="text-danger">
+              {{ erroresAsociar.tipoVinculo }}
+            </small>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label for="asociar-fecha" class="text-sm">
+              Fecha de inicio <span class="text-danger">*</span>
+            </label>
+            <InputText
+              id="asociar-fecha"
+              v-model="formAsociar.fechaInicio"
+              type="date"
+              :class="{ 'p-invalid': erroresAsociar.fechaInicio }"
+            />
+            <small v-if="erroresAsociar.fechaInicio" class="text-danger">
+              {{ erroresAsociar.fechaInicio }}
+            </small>
+          </div>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <Checkbox
+                v-model="formAsociar.esOcupante"
+                binary
+                inputId="asociar-ocupante"
+              />
+              <label for="asociar-ocupante" class="text-sm">
+                Ocupante de la unidad
+              </label>
+            </div>
+            <div class="flex items-center gap-2">
+              <Checkbox
+                v-model="formAsociar.recibeNotificaciones"
+                binary
+                inputId="asociar-notificaciones"
+              />
+              <label for="asociar-notificaciones" class="text-sm">
+                Recibe notificaciones de la unidad
+              </label>
+            </div>
+            <div class="flex items-center gap-2">
+              <Checkbox
+                v-model="formAsociar.esResponsable"
+                binary
+                inputId="asociar-responsable"
+              />
+              <label for="asociar-responsable" class="text-sm">
+                Responsable de la unidad
+              </label>
+            </div>
+          </div>
+        </template>
+
+        <template v-else-if="formAsociar.asociacionTipo === ASOCIACION_CARGO">
+          <div class="flex flex-col gap-1">
+            <label for="asociar-cargo" class="text-sm">
+              Cargo <span class="text-danger">*</span>
+            </label>
+            <Select
+              id="asociar-cargo"
+              v-model="formAsociar.cargo"
+              :options="CARGOS_ASOCIABLES"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar cargo"
+              class="w-full"
+              :class="{ 'p-invalid': erroresAsociar.cargo }"
+            />
+            <small v-if="erroresAsociar.cargo" class="text-danger">
+              {{ erroresAsociar.cargo }}
+            </small>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label for="asociar-fecha-cargo" class="text-sm">
+              Fecha de inicio <span class="text-danger">*</span>
+            </label>
+            <InputText
+              id="asociar-fecha-cargo"
+              v-model="formAsociar.fechaInicio"
+              type="date"
+              :class="{ 'p-invalid': erroresAsociar.fechaInicio }"
+            />
+            <small v-if="erroresAsociar.fechaInicio" class="text-danger">
+              {{ erroresAsociar.fechaInicio }}
+            </small>
+          </div>
+        </template>
+
+        <template v-else-if="formAsociar.asociacionTipo === ASOCIACION_PROVEEDOR">
+          <Message severity="info" :closable="false">
+            El proveedor quedará registrado como membresía del condominio. Los
+            datos de la empresa aún no se persisten en el backend.
+          </Message>
+        </template>
+      </div>
+
+      <template #footer>
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          @click="cerrarAsociarPersona"
+        />
+        <Button
+          label="Asociar"
+          icon="pi pi-check"
+          :loading="enviando"
+          @click="guardarAsociacion"
+        />
+      </template>
+    </Dialog>
+
+    <!-- ─── Baja local ─── -->
+    <Dialog
+      v-model:visible="showDesactivar"
+      header="Quitar del condominio"
+      modal
+      :style="{ width: '95%', maxWidth: '460px' }"
+    >
+      <div class="flex flex-col gap-3">
+        <Message severity="warn" :closable="false">
+          Esta es una baja local: se desactivan la membresía, los vínculos, los
+          cargos y el acceso a este condominio. La persona y su cuenta siguen
+          activas en otros condominios.
+        </Message>
+
+        <div class="p-2 bg-inset border border-border-soft rounded-lg">
+          <p class="font-medium m-0 truncate">
+            {{ personaDesactivar?.nombre }}
+          </p>
+          <p class="text-sm text-text-muted m-0 truncate">
+            {{ personaDesactivar?.email || "Sin email" }}
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="baja-motivo" class="text-sm">Motivo (opcional)</label>
+          <Textarea
+            id="baja-motivo"
+            v-model="formDesactivar.motivo"
+            rows="3"
+            maxlength="500"
+            auto-resize
+            placeholder="Ej: traslado a otro condominio, término de contrato…"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          @click="cerrarDesactivar"
+        />
+        <Button
+          label="Quitar del condominio"
+          icon="pi pi-user-minus"
+          severity="danger"
+          :loading="enviando"
+          @click="desactivarPersona"
+        />
+      </template>
+    </Dialog>
+
+    <!-- ─── Editar persona ─── -->
     <Dialog
       v-model:visible="showEditarPersona"
       header="Editar persona"
@@ -2016,6 +2839,7 @@ async function crearUsuario() {
       </template>
     </Dialog>
 
+    <!-- ─── Vínculos ─── -->
     <Dialog
       v-model:visible="showVinculos"
       header="Vínculos"
@@ -2034,6 +2858,15 @@ async function crearUsuario() {
               {{ personaSeleccionada?.email || "Sin email" }}
             </p>
             <div class="flex flex-wrap gap-1 mt-1">
+              <Tag
+                v-for="t in personaDetalle?.tiposParticipacion ||
+                  personaSeleccionada?.tiposParticipacion ||
+                  []"
+                :key="t"
+                :value="labelTipoParticipacion(t)"
+                :severity="severityTipoParticipacion(t)"
+                size="small"
+              />
               <Tag
                 v-if="personaSeleccionada?.cargo"
                 :value="cargoLabel(personaSeleccionada.cargo)"
@@ -2125,6 +2958,7 @@ async function crearUsuario() {
       </template>
     </Dialog>
 
+    <!-- ─── Habilitar corrección de RUT ─── -->
     <Dialog
       v-model:visible="showHabilitarRut"
       header="Habilitar corrección de RUT"
@@ -2185,6 +3019,7 @@ async function crearUsuario() {
       </template>
     </Dialog>
 
+    <!-- ─── Nuevo vínculo (detalle) ─── -->
     <Dialog
       v-model:visible="showCrearVinculo"
       header="Nuevo vínculo"
@@ -2205,11 +3040,7 @@ async function crearUsuario() {
           </p>
         </div>
 
-        <Message
-          v-if="!unidades.length"
-          severity="warn"
-          :closable="false"
-        >
+        <Message v-if="!unidades.length" severity="warn" :closable="false">
           No hay unidades disponibles para vincular.
         </Message>
 
@@ -2239,7 +3070,7 @@ async function crearUsuario() {
           <Select
             id="vinculo-tipo"
             v-model="formVinculo.tipo"
-            :options="tiposVinculo"
+            :options="TIPOS_VINCULO_UNIDAD"
             optionLabel="label"
             optionValue="value"
             placeholder="Seleccionar tipo"
@@ -2305,6 +3136,7 @@ async function crearUsuario() {
       </template>
     </Dialog>
 
+    <!-- ─── Crear usuario ─── -->
     <Dialog
       v-model:visible="showCrearUsuario"
       header="Crear usuario"
@@ -2349,6 +3181,7 @@ async function crearUsuario() {
       </template>
     </Dialog>
 
+    <!-- ─── Cambiar email ─── -->
     <Dialog
       v-model:visible="showCambiarEmail"
       header="Cambiar email"

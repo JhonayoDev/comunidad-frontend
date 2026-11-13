@@ -167,6 +167,20 @@ function goHome() {
     router.push({ name: "Dashboard" });
   } else if (rol === "GUARDIA") {
     router.push({ name: "GuardiaDashboard" });
+  } else if (rol === "TRABAJADOR") {
+    router.push({ name: "TrabajadorDashboard" });
+  } else if (rol === "PROVEEDOR") {
+    router.push({ name: "ProveedorDashboard" });
+  } else if (
+    auth.condominioActualRolContextual === "TRABAJADOR" &&
+    !auth.esParticipacionResidencial
+  ) {
+    router.push({ name: "TrabajadorDashboard" });
+  } else if (
+    auth.condominioActualRolContextual === "PROVEEDOR" &&
+    !auth.esParticipacionResidencial
+  ) {
+    router.push({ name: "ProveedorDashboard" });
   } else {
     router.push({ name: "Inicio" });
   }

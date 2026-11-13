@@ -2,12 +2,12 @@ import { ref } from "vue";
 import { personasService } from "@/services/personasService";
 
 /**
- * Búsqueda de personas por email y alta "crear o reutilizar".
+ * Búsqueda global de personas por email o RUT.
  *
- * El listado de personas del condominio solo devuelve personas con vínculo
- * activo o cargo, así que una persona creada sin vincular queda invisible.
- * Este composable permite recuperarla por email (`GET /personas/buscar`) y
- * reutilizarla cuando el alta responde 409 (email/RUT ya registrado).
+ * El backend (V85) devuelve la identidad global junto con sus membresías en
+ * todos los condominios. Eso permite resolver el alta sin crear personas
+ * huérfanas: si la persona ya existe, la UI reutiliza su `personaId` y solo
+ * agrega la asociación en el condominio actual.
  *
  * Se inyecta `service` para poder testear sin red.
  */
@@ -30,10 +30,11 @@ export function useBusquedaPersona({ service = personasService } = {}) {
   }
 
   /**
-   * Busca por email. Devuelve la persona, o `null` si no existe/no se pudo
-   * consultar. El estado queda expuesto en `persona`, `noEncontrada` y `error`.
+   * Busca por email o RUT. Devuelve la persona o `null` si no existe/no se
+   * pudo consultar. El estado queda expuesto en `persona`, `noEncontrada` y
+   * `error`.
    */
-  async function buscarPorEmail(cid, email) {
+  async function buscar(cid, { email, rut } = {}) {
     const token = ++tokenBusqueda;
     buscando.value = true;
     persona.value = null;
@@ -41,8 +42,12 @@ export function useBusquedaPersona({ service = personasService } = {}) {
     noEncontrada.value = false;
     error.value = null;
 
+    const params = {};
+    if (email) params.email = email;
+    if (rut) params.rut = rut;
+
     try {
-      const { data } = await service.buscarPorEmail(cid, email);
+      const { data } = await service.buscar(cid, params);
       if (token !== tokenBusqueda) return null;
       persona.value = data || null;
       noEncontrada.value = !data;
@@ -53,7 +58,7 @@ export function useBusquedaPersona({ service = personasService } = {}) {
         noEncontrada.value = true;
         return null;
       }
-      console.error("Error al buscar persona por email", e);
+      console.error("Error al buscar persona", e);
       error.value = e;
       return null;
     } finally {
@@ -64,23 +69,12 @@ export function useBusquedaPersona({ service = personasService } = {}) {
     }
   }
 
-  /**
-   * Crea la persona; si el backend responde 409 (email/RUT ya registrado)
-   * intenta recuperar la existente por email en vez de dejar el alta huérfana.
-   *
-   * Devuelve `{ persona, reutilizada }`. Si el 409 no se puede resolver por
-   * email, relanza el error original.
-   */
-  async function crearOReutilizar(cid, datos) {
-    try {
-      const { data } = await service.crear(cid, datos);
-      return { persona: data, reutilizada: false };
-    } catch (e) {
-      if (e?.response?.status !== 409) throw e;
-      const existente = await buscarPorEmail(cid, datos.email);
-      if (!existente) throw e;
-      return { persona: existente, reutilizada: true };
-    }
+  function buscarPorEmail(cid, email) {
+    return buscar(cid, { email });
+  }
+
+  function buscarPorRut(cid, rut) {
+    return buscar(cid, { rut });
   }
 
   return {
@@ -90,7 +84,8 @@ export function useBusquedaPersona({ service = personasService } = {}) {
     noEncontrada,
     error,
     limpiar,
+    buscar,
     buscarPorEmail,
-    crearOReutilizar,
+    buscarPorRut,
   };
 }

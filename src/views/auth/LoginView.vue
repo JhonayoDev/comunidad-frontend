@@ -62,8 +62,12 @@ async function handleLogin(event) {
       router.push({ name: "Dashboard" });
     } else if (auth.condominioActualRol === "GUARDIA") {
       router.push({ name: "GuardiaDashboard" });
+    } else if (auth.condominioActualRol === "TRABAJADOR") {
+      router.push({ name: "TrabajadorDashboard" });
+    } else if (auth.condominioActualRol === "PROVEEDOR") {
+      router.push({ name: "ProveedorDashboard" });
     } else {
-      router.push({ name: "Inicio" });
+      router.push({ name: auth.contextDashboard || "Inicio" });
     }
   } catch (e) {
     const status = e.response?.status;

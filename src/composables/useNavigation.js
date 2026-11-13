@@ -53,6 +53,18 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Solic.", icon: "pi pi-pencil", routeName: "Solicitudes" },
     { label: "Checklist", icon: "pi pi-check-square", routeName: "ChecklistTemplates" },
   ],
+  TRABAJADOR: [
+    { label: "Inicio", icon: "pi pi-home", routeName: "TrabajadorDashboard" },
+    { label: "Notificaciones", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
+  ],
+  PROVEEDOR: [
+    { label: "Inicio", icon: "pi pi-home", routeName: "ProveedorDashboard" },
+    { label: "Notificaciones", icon: "pi pi-bell", routeName: "Notificaciones" },
+    { label: "Perfil", icon: "pi pi-user", routeName: "Perfil" },
+    { label: "Mis Permisos", icon: "pi pi-shield", routeName: "MisPermisos" },
+  ],
 };
 
 const RESIDENTE_ITEMS = [
@@ -174,10 +186,12 @@ export function useNavigation() {
     const necesitaCargo = rCargos?.length > 0;
     if (!necesitaRol && !necesitaCargo) return true;
     const userRoles = auth.user?.roles || [];
-    const cumpleRol = necesitaRol && (
-      rRoles.some((r) => userRoles.includes(r)) ||
-      rRoles.includes(auth.condominioActualRol)
-    );
+    const cumpleRol =
+      necesitaRol &&
+      (rRoles.some((r) => userRoles.includes(r)) ||
+        rRoles.includes(auth.condominioActualRol) ||
+        rRoles.includes(auth.condominioActualRolContextual) ||
+        rRoles.includes((auth.activeContext || "").toUpperCase()));
     const cumpleCargo = necesitaCargo && rCargos.includes(auth.condominioActualCargo);
     return cumpleCargo || cumpleRol;
   }
@@ -186,13 +200,47 @@ export function useNavigation() {
     return items.filter((i) => puedeAcceder(i.routeName));
   }
 
+  /**
+   * Portal efectivo para un usuario con rol base RESIDENTE. El contexto
+   * activo (residente, cargo, trabajador, proveedor) manda; si el backend
+   * deriva TRABAJADOR/PROVEEDOR y no hay participación residencial, ese es el
+   * portal por defecto.
+   */
+  function portalResidente() {
+    if (auth.activeContext === "trabajador") return "TRABAJADOR";
+    if (auth.activeContext === "proveedor") return "PROVEEDOR";
+    if (auth.activeContext && auth.activeContext !== "residente") {
+      return "ADMINISTRADOR";
+    }
+    const contextual = auth.condominioActualRolContextual;
+    if (
+      contextual === "TRABAJADOR" &&
+      !auth.esParticipacionResidencial
+    ) {
+      return "TRABAJADOR";
+    }
+    if (contextual === "PROVEEDOR" && !auth.esParticipacionResidencial) {
+      return "PROVEEDOR";
+    }
+    return "RESIDENTE";
+  }
+
   const navItems = computed(() => {
     const rolesGlobales = auth.user?.roles || [];
-    const role = rolesGlobales.includes("SUPER_ADMIN")
-      ? "SUPER_ADMIN"
-      : auth.condominioActualRol || rolesGlobales[0] || "";
+    if (rolesGlobales.includes("SUPER_ADMIN")) {
+      return filtrar(NAV_ITEMS_BY_ROLE.SUPER_ADMIN);
+    }
+
+    const role = auth.condominioActualRol || rolesGlobales[0] || "";
 
     if (role === "RESIDENTE") {
+      const portal = portalResidente();
+      if (portal === "TRABAJADOR") {
+        return filtrar(NAV_ITEMS_BY_ROLE.TRABAJADOR);
+      }
+      if (portal === "PROVEEDOR") {
+        return filtrar(NAV_ITEMS_BY_ROLE.PROVEEDOR);
+      }
       if (auth.activeContext === "residente") {
         return filtrar(RESIDENTE_ITEMS);
       }
@@ -205,16 +253,39 @@ export function useNavigation() {
 
   const groupedNavItems = computed(() => {
     const rolesGlobales = auth.user?.roles || [];
-    const role = rolesGlobales.includes("SUPER_ADMIN")
-      ? "SUPER_ADMIN"
-      : auth.condominioActualRol || rolesGlobales[0] || "";
+    if (rolesGlobales.includes("SUPER_ADMIN")) {
+      return [
+        { label: "", items: filtrar(NAV_ITEMS_BY_ROLE.SUPER_ADMIN) },
+      ];
+    }
+
+    const role = auth.condominioActualRol || rolesGlobales[0] || "";
 
     if (role === "RESIDENTE") {
+      const portal = portalResidente();
+      if (portal === "TRABAJADOR" || portal === "PROVEEDOR") {
+        return [
+          {
+            label: "",
+            items: filtrar(NAV_ITEMS_BY_ROLE[portal]),
+          },
+        ];
+      }
+
       const groups = [{ label: "Residente", items: filtrar(RESIDENTE_ITEMS) }];
       const cargo = auth.condominioActualCargo;
       if (cargo && CARGO_NAV_ITEMS[cargo]) {
         const label = cargo.charAt(0) + cargo.slice(1).toLowerCase();
         groups.push({ label, items: filtrar(CARGO_NAV_ITEMS[cargo]) });
+      }
+      if (
+        auth.condominioActualRolContextual === "TRABAJADOR" &&
+        auth.esParticipacionResidencial
+      ) {
+        groups.push({
+          label: "Trabajador",
+          items: filtrar(NAV_ITEMS_BY_ROLE.TRABAJADOR),
+        });
       }
       return groups;
     }
@@ -238,6 +309,7 @@ export function useNavigation() {
     groupedNavItems,
     currentRoute,
     puedeAcceder,
+    portalResidente,
     goTo,
     switchContext,
   };

@@ -134,7 +134,13 @@ const routes = [
         name: "Perfil",
         component: () => import("../views/residente/PerfilView.vue"),
         meta: {
-          roles: ["RESIDENTE", "ADMINISTRADOR", "GUARDIA"],
+          roles: [
+            "RESIDENTE",
+            "ADMINISTRADOR",
+            "GUARDIA",
+            "TRABAJADOR",
+            "PROVEEDOR",
+          ],
         },
       },
       {
@@ -432,6 +438,21 @@ const routes = [
           cargos: ["PRESIDENTE", "SECRETARIO", "ADMINISTRADOR"],
         },
       },
+      // ── Portales contextuales (rol por condominio) ─
+      {
+        path: "trabajador",
+        name: "TrabajadorDashboard",
+        component: () =>
+          import("../views/dashboard/TrabajadorDashboardView.vue"),
+        meta: { roles: ["TRABAJADOR"] },
+      },
+      {
+        path: "proveedor",
+        name: "ProveedorDashboard",
+        component: () =>
+          import("../views/dashboard/ProveedorDashboardView.vue"),
+        meta: { roles: ["PROVEEDOR"] },
+      },
       // ── Residente ─────────────────────────────────
       {
         path: "inicio",
@@ -519,7 +540,20 @@ function rutaInicial(auth) {
   const rol = auth.condominioActualRol || rolesGlobales[0];
   if (rol === "ADMINISTRADOR") return { name: "Dashboard" };
   if (rol === "GUARDIA") return { name: "GuardiaDashboard" };
-  if (rol === "RESIDENTE") return { name: auth.contextDashboard };
+  if (rol === "TRABAJADOR") return { name: "TrabajadorDashboard" };
+  if (rol === "PROVEEDOR") return { name: "ProveedorDashboard" };
+  if (rol === "RESIDENTE") {
+    // Un residente puede tener además un cargo operativo: sin participación
+    // residencial el portal inicial es el de trabajador/proveedor.
+    const contextual = auth.condominioActualRolContextual;
+    if (contextual === "TRABAJADOR" && !auth.esParticipacionResidencial) {
+      return { name: "TrabajadorDashboard" };
+    }
+    if (contextual === "PROVEEDOR" && !auth.esParticipacionResidencial) {
+      return { name: "ProveedorDashboard" };
+    }
+    return { name: auth.contextDashboard };
+  }
   // Fallback seguro: Menu es accesible por todos los autenticados
   return { name: "Menu" };
 }
@@ -599,7 +633,9 @@ router.beforeEach(async (to) => {
   const cumpleRol =
     necesitaRol &&
     (routeRoles.some((r) => userRoles.includes(r)) ||
-      routeRoles.includes(auth.condominioActualRol));
+      routeRoles.includes(auth.condominioActualRol) ||
+      routeRoles.includes(auth.condominioActualRolContextual) ||
+      routeRoles.includes((auth.activeContext || "").toUpperCase()));
 
   const cumpleCargo =
     necesitaCargo && routeCargos.includes(auth.condominioActualCargo);

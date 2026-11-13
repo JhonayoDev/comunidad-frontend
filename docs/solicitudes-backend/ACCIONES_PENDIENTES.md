@@ -305,66 +305,53 @@ Histórico V57-V61 conservado abajo.
 - **Sin notificación de caso:** no existe tipo/handler `CASO_*`; abrir o vincular un caso no
   publica una notificación dedicada al residente.
 
-### [ ] P21. Alta de persona: 409 con `personaId` y búsqueda por RUT (issue #42)
+### [x] P21. Alta de persona: 409 con `personaId` y búsqueda por RUT (issue #42)
 - **Solicitud:** `SOLICITUD_409_PERSONA_ID.md`
-- **Estado:** absorbido por P22 → https://github.com/JhonayoDev/briku/issues/101
-- **Contexto:** `POST /condominios/{cid}/personas` crea una persona global sin vínculo/cargo y
-  `GET /personas` solo lista personas con vínculo o cargo activo; la persona recién creada queda
-  invisible (caso real `cintya@gmail.com`). El frontend ya implementó el flujo "crear o reutilizar
-  → vincular" (issue #42, opción A) usando `GET /personas/buscar?email=`, pero depende del email.
-- **Qué falta (backend):**
-  1. En el `409` de email/RUT duplicado, devolver `personaId` (y `conflicto: EMAIL|RUT`). Hoy
-     `IllegalStateException` → `ErrorResponse` sin el ID, aunque el controller documenta lo
-     contrario.
-  2. Extender `GET /personas/buscar` para aceptar `rut` además de `email` (o un
-     `GET /personas/buscar?rut=`), porque un 409 por RUT con email distinto no se puede resolver
-     desde la UI (la búsqueda por email no lo encuentra).
+- **Estado:** ✅ absorbido por P22 e implementado (backend PR #104, issue #101 cerrado).
+- **Backend:** `409` devuelve `PersonaConflictoResponse` (`personaId`, `conflicto: EMAIL|RUT`) y
+  `GET /personas/buscar` acepta `email` **o** `rut`.
+- **Frontend:** `useBusquedaPersona` busca por email y RUT; el alta reintenta reutilizando
+  `personaId` desde el `409` (`datosConflicto` en `src/utils/altaPersona.js`).
 
-### [ ] P22. Membresía persona-condominio y alta atómica (issue #42 / épica #44)
+### [x] P22. Membresía persona-condominio y alta atómica (issue #42 / épica #44)
 - **Solicitud:** `SOLICITUD_MEMBRESIA_PERSONA_CONDOMINIO.md`
-- **Backend:** https://github.com/JhonayoDev/briku/issues/101
-- **Frontend (épica):** https://github.com/JhonayoDev/comunidad-frontend/issues/44
-- **Contexto:** la visibilidad depende de vínculo/cargo; el alta en dos pasos deja personas
-  huérfanas al cancelar, perder conexión o fallar la asociación. Los trabajadores sin unidad no
-  tienen relación con el condominio.
-- **Qué falta (backend):**
-  1. Tabla `personas_condominios` (`ACTIVO`/`PENDIENTE`/`INACTIVO`, `tipo_alta`) + backfill.
-  2. `POST /personas` atómico (crear o reutilizar + vínculo/cargo/proveedor).
-  3. `GET /personas` por membresía + filtro `estado` y `tiposParticipacion`.
-  4. `PATCH .../membresia` y `POST .../asociaciones`.
-  5. P21: 409 con `personaId`/`conflicto` y búsqueda por RUT.
-  6. `/me/condominios` con `tiposParticipacion`/`rolContextual`.
-- **Frontend:** la Fase 0 ya puede hacerse sin backend (alta unificada con unidad/cargo, sin
-  "Crear sin vincular", reintento y búsqueda que asigna cargo). La Fase 3 (pendientes, badges y
-  contexto) espera este backend.
+- **Backend:** ✅ https://github.com/JhonayoDev/briku/issues/101 (cerrado, PR #104 fusionado)
+  — `V85__personas_condominios.sql`, `PersonaCondominioService`/`MembresiaService`, `POST
+  /personas` atómico, `GET /personas?estado&tipoParticipacion&q`, `PATCH .../membresia`,
+  `POST .../asociaciones`.
+- **Frontend (épica):** ✅ https://github.com/JhonayoDev/comunidad-frontend/issues/44 —
+  `PersonasView` con alta unificada (identidad + asociación `UNIDAD`/`CARGO`/`PROVEEDOR`),
+  reutilización por email/RUT, `409` recuperable, filtros por `estado`/`tipoParticipacion`,
+  badges `tiposParticipacion` y baja/reactivación local. Helpers `src/data/membresia.js` y
+  `src/utils/altaPersona.js`.
+- **QA pendiente (en vivo):** alta atómica de residente/trabajador/proveedor, reutilización por
+  email y por RUT, `409` con reintento, `PENDIENTE` visible en el filtro, alta desde
+  `MiembrosView` con `?nueva=CARGO`.
 
-### [ ] P23. Baja de persona por condominio (bug multi-condominio)
+### [x] P23. Baja de persona por condominio (bug multi-condominio)
 - **Solicitud:** `SOLICITUD_BAJA_PERSONA_POR_CONDOMINIO.md`
-- **Backend:** https://github.com/JhonayoDev/briku/issues/102
-- **Contexto:** `PersonaCondominioService.desactivar` setea `persona.activo=false` y
-  `usuario.activo=false` globalmente; la baja en A rompe B y quita el login en todos los
-  condominios.
-- **Qué falta (backend):**
-  1. `desactivar` local: membresía, vínculos, cargos y `usuario_condominios` del condominio.
-  2. No tocar `persona.activo` ni `usuario.activo`; desactivación global solo explícita/job.
-  3. `PATCH .../reactivar` local.
-  4. `GET /personas` por membresía, no por `persona.activo`.
-  5. Auditoría de baja/reactivación.
+- **Backend:** ✅ https://github.com/JhonayoDev/briku/issues/102 (cerrado, PR #104 fusionado)
+  — `desactivar` local (membresía, vínculos, cargos y `usuario_condominios` del condominio) sin
+  tocar `persona.activo`/`usuario.activo`, `PATCH .../reactivar` local y auditoría.
+- **Frontend:** ✅ `personasService.desactivar` envía `{motivo}` y `reactivar` está disponible en
+  el detalle y en la búsqueda global (`PersonasView`).
+- **QA pendiente (en vivo):** baja en A no rompe el acceso en B; reactivación recupera vínculos y
+  cargo; el motivo queda en auditoría.
 
-### [ ] P24. Rol contextual por condominio y portal trabajador
+### [x] P24. Rol contextual por condominio y portal trabajador
 - **Solicitud:** `SOLICITUD_ROL_CONTEXTUAL_POR_CONDOMINIO.md`
-- **Backend:** https://github.com/JhonayoDev/briku/issues/103
-- **Contexto:** `PermisosCondominioService` cae al rol global cuando no hay `rol_id` contextual;
-  `CargoService.asignar` crea `usuario_condominios` con `rolId = null`. Un administrador de A que
-  es residente en B obtiene permisos de administrador en B. `JARDINERO`/`MANTENCION` no tienen
-  rol ni portal.
-- **Qué falta (backend):**
-  1. Setear `usuario_condominios.rol_id` al asignar cargos con acceso.
-  2. `resolverPermisos` sin fallback al rol global para usuarios operativos.
-  3. Rol `TRABAJADOR` (y `PROVEEDOR` futuro) + permisos de portal staff.
-  4. `/me/condominios` con `tiposParticipacion`/`rolContextual`.
-  5. Tests de seguridad: jardinero no accede a datos de residentes.
-- **Frontend:** contexto `TRABAJADOR` (dashboard + nav + guard) en Fase 3.
+- **Backend:** ✅ https://github.com/JhonayoDev/briku/issues/103 (cerrado, PR #104 fusionado)
+  — `V86__rol_contextual_por_condominio.sql` (roles `TRABAJADOR`/`PROVEEDOR`, permisos
+  `MI_PERFIL_*`/`COMUNICADO_VER`, backfill de `usuario_condominios.rol_id`),
+  `resolverRolContextual` sin fallback al rol global salvo `SUPER_ADMIN`/`SOPORTE`,
+  `tiposParticipacion`/`rolContextual` en `/me/condominios`.
+- **Frontend:** ✅ `authStore` (`condominioActualRolContextual`, `condominioActualTiposParticipacion`,
+  `esParticipacionResidencial`, contextos `trabajador`/`proveedor`), `useNavigation` (nav por
+  portal y `puedeAcceder` contextual), guard del router, `AppHeader`/`LoginView` y los dashboards
+  `TrabajadorDashboardView`/`ProveedorDashboardView`.
+- **QA pendiente (en vivo):** jardinero/mantención solo ven su portal (sin datos de unidades);
+  administrador de A que es residente en B no hereda permisos de administrador en B; un residente
+  con cargo operativo conserva ambos contextos.
 
 ## Pendientes de verificación (QA)
 
