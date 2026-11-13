@@ -134,7 +134,7 @@ function initTema() {
 initTema();
 
 const showContextPills = computed(() => {
-  return auth.user?.roles?.includes("RESIDENTE") && auth.contextos.length > 1;
+  return auth.contextos.length > 1;
 });
 
 watch(

@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "../stores/authStore";
+import {
+  RUTAS_COMPARTIDAS,
+  contextosDeRuta,
+} from "../composables/useNavigation";
 import AuthLayout from "../layouts/AuthLayout.vue";
 
 const routes = [
@@ -607,6 +611,21 @@ router.beforeEach(async (to) => {
   // via cookie), mostrar menú como fallback seguro
   if (auth.isAuthenticated && !auth.user?.roles?.length && !to.meta.public) {
     return to.name === "Menu" ? undefined : { name: "Menu" };
+  }
+
+  // Espacios de trabajo separados (rol base RESIDENTE con cargo): con un
+  // contexto activo solo se accede a las rutas de ese contexto. Perfil,
+  // Notificaciones, MisPermisos y Menu quedan compartidos para no perder
+  // comunicaciones al cambiar de espacio.
+  if (
+    auth.condominioActualRol === "RESIDENTE" &&
+    !RUTAS_COMPARTIDAS.has(to.name)
+  ) {
+    const contextosRuta = contextosDeRuta(to.name);
+    const contextoActivo = auth.activeContext || "residente";
+    if (contextosRuta.length && !contextosRuta.includes(contextoActivo)) {
+      return redirigirInicio(auth, to);
+    }
   }
 
   const userRoles = auth.user?.roles || [];

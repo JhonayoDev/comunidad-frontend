@@ -249,16 +249,21 @@ export const useAuthStore = defineStore("auth", () => {
     const encontrado = condominios.value.find((c) => c.id === id);
     if (!encontrado) return;
     condominioActual.value = encontrado;
-    // Portal inicial: trabajador/proveedor solo si no hay participación
-    // residencial; en caso contrario el usuario entra como residente y puede
-    // cambiar de contexto desde el header.
+    // Portal inicial: si hay participación residencial el usuario entra como
+    // residente; si no, al primer contexto disponible (cargo, trabajador o
+    // proveedor). Los espacios de trabajo son separados y se cambian desde el
+    // header con las píldoras de contexto.
     const tipos = encontrado.tiposParticipacion || [];
     const residencial = tipos.some((tipo) =>
       ["PROPIETARIO", "ARRENDATARIO", "DEPENDIENTE"].includes(tipo),
     );
-    if (!residencial && encontrado.rolContextual === "TRABAJADOR") {
+    if (residencial) {
+      activeContext.value = "residente";
+    } else if (encontrado.cargo && CARGO_LABELS[encontrado.cargo]) {
+      activeContext.value = encontrado.cargo.toLowerCase();
+    } else if (encontrado.rolContextual === "TRABAJADOR") {
       activeContext.value = "trabajador";
-    } else if (!residencial && encontrado.rolContextual === "PROVEEDOR") {
+    } else if (encontrado.rolContextual === "PROVEEDOR") {
       activeContext.value = "proveedor";
     } else {
       activeContext.value = "residente";

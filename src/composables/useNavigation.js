@@ -164,6 +164,49 @@ const CARGO_NAV_ITEMS = {
   ],
 };
 
+/**
+ * Rutas compartidas entre espacios de trabajo: se pueden abrir con cualquier
+ * contexto activo (residente o un cargo). El header y las notificaciones son
+ * el punto de unión para no perder comunicaciones al cambiar de contexto.
+ */
+export const RUTAS_COMPARTIDAS = new Set([
+  "Menu",
+  "Perfil",
+  "Notificaciones",
+  "MisPermisos",
+]);
+
+function nombresDe(items) {
+  return (items || []).map((i) => i.routeName);
+}
+
+const RUTAS_RESIDENTE = new Set(nombresDe(RESIDENTE_ITEMS));
+const RUTAS_TRABAJADOR = new Set(nombresDe(NAV_ITEMS_BY_ROLE.TRABAJADOR));
+const RUTAS_PROVEEDOR = new Set(nombresDe(NAV_ITEMS_BY_ROLE.PROVEEDOR));
+const RUTAS_POR_CARGO = new Map(
+  Object.entries(CARGO_NAV_ITEMS).map(([cargo, items]) => [
+    cargo.toLowerCase(),
+    new Set(nombresDe(items)),
+  ]),
+);
+
+/**
+ * Contextos (en minúsculas) a los que pertenece una ruta según el menú de cada
+ * espacio de trabajo. Devuelve `[]` para rutas auxiliares (detalles, flujos de
+ * alta, etc.) que no viven en el menú y se alcanzan desde un contexto válido.
+ */
+export function contextosDeRuta(routeName) {
+  if (!routeName) return [];
+  const contextos = [];
+  if (RUTAS_RESIDENTE.has(routeName)) contextos.push("residente");
+  for (const [cargo, rutas] of RUTAS_POR_CARGO) {
+    if (rutas.has(routeName)) contextos.push(cargo);
+  }
+  if (RUTAS_TRABAJADOR.has(routeName)) contextos.push("trabajador");
+  if (RUTAS_PROVEEDOR.has(routeName)) contextos.push("proveedor");
+  return contextos;
+}
+
 export function useNavigation() {
   const router = useRouter();
   const route = useRoute();
@@ -272,22 +315,16 @@ export function useNavigation() {
         ];
       }
 
-      const groups = [{ label: "Residente", items: filtrar(RESIDENTE_ITEMS) }];
-      const cargo = auth.condominioActualCargo;
-      if (cargo && CARGO_NAV_ITEMS[cargo]) {
-        const label = cargo.charAt(0) + cargo.slice(1).toLowerCase();
-        groups.push({ label, items: filtrar(CARGO_NAV_ITEMS[cargo]) });
+      // Espacios de trabajo separados: el menú muestra solo el contexto activo
+      // (residente o el cargo seleccionado), nunca ambos a la vez.
+      if (auth.activeContext && auth.activeContext !== "residente") {
+        const cargoKey = auth.activeContext.toUpperCase();
+        if (CARGO_NAV_ITEMS[cargoKey]) {
+          return [{ label: "", items: filtrar(CARGO_NAV_ITEMS[cargoKey]) }];
+        }
       }
-      if (
-        auth.condominioActualRolContextual === "TRABAJADOR" &&
-        auth.esParticipacionResidencial
-      ) {
-        groups.push({
-          label: "Trabajador",
-          items: filtrar(NAV_ITEMS_BY_ROLE.TRABAJADOR),
-        });
-      }
-      return groups;
+
+      return [{ label: "", items: filtrar(RESIDENTE_ITEMS) }];
     }
 
     const items = filtrar(NAV_ITEMS_BY_ROLE[role] || RESIDENTE_ITEMS);
