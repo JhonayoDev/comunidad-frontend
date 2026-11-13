@@ -23,6 +23,11 @@
 | ⬜ | Pendiente |
 | — | No aplica para el perfil / no implementado |
 
+### Issues relacionados
+
+- **#37 — QA visual: desviaciones del estándar de botones.** Se ejecuta en la ronda que toque UI; no se duplica aquí.
+- **#19 — P4 follow-up: reenvío de notificación de encomienda/carta.** Cubierto por la fila `ADM-11`.
+
 ---
 
 ## 1. Entorno y cuentas necesarias
