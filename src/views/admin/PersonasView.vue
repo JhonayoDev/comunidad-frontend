@@ -68,7 +68,7 @@ const personas = ref([]);
 const unidades = ref([]);
 const busqueda = ref("");
 const pagina = ref(0);
-const estadoFiltro = ref("ACTIVO");
+const estadoFiltro = ref("TODOS");
 const tipoFiltro = ref(null);
 
 const showCrearPersona = ref(false);
@@ -442,6 +442,15 @@ function aplicarErroresBackend(error, destino) {
 function tipoVinculoLabel(tipo) {
   if (!tipo) return "";
   return tipoVinculoLabels[tipo] || tipo;
+}
+
+/**
+ * Membresía sin participación vigente: no tiene unidad, cargo ni tipo
+ * derivado. Se marca para poder identificar a quienes ya no mantienen vínculo
+ * con la app (candidatos a anonimización futura) sin ocultarlos del listado.
+ */
+function sinVinculo(persona) {
+  return !(persona?.tiposParticipacion || []).length && !persona?.cargo;
 }
 
 function formatearFecha(valor) {
@@ -1516,6 +1525,12 @@ async function crearUsuario() {
                     severity="secondary"
                     size="small"
                   />
+                  <Tag
+                    v-if="sinVinculo(p)"
+                    value="Sin vínculo"
+                    severity="secondary"
+                    size="small"
+                  />
                 </div>
               </div>
 
@@ -1691,8 +1706,18 @@ async function crearUsuario() {
                       severity="secondary"
                       size="small"
                     />
+                    <Tag
+                      v-if="sinVinculo(p)"
+                      value="Sin vínculo"
+                      severity="secondary"
+                      size="small"
+                    />
                     <span
-                      v-if="!(p.tiposParticipacion || []).length && !p.cargo"
+                      v-if="
+                        !sinVinculo(p) &&
+                        !(p.tiposParticipacion || []).length &&
+                        !p.cargo
+                      "
                       class="text-text-muted"
                     >
                       —

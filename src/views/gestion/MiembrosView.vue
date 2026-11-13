@@ -75,7 +75,7 @@ async function cargarPersonas() {
   const cid = auth.condominioActualId;
   if (!cid) return;
   try {
-    const { data } = await personasService.listar(cid);
+    const { data } = await personasService.listar(cid, { estado: "TODOS" });
     personas.value = Array.isArray(data) ? data : [];
   } catch (e) {
     console.error("Error al cargar personas", e);

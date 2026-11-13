@@ -1,6 +1,6 @@
 # Inventario PrimeVue (v2)
 
-Generado: 2026-11-13T06:41:05.846Z
+Generado: 2026-11-13T22:02:24.124Z
 
 Total de usos: **484**
 
@@ -61,10 +61,10 @@ Clases usadas: `[
 - src/components/planilla/PlanillaResultado.vue:129
 - src/modules/permisos/views/CargosPermisosView.vue:102
 - src/views/admin/PersonalView.vue:121
-- src/views/admin/PersonasView.vue:2834
-- src/views/admin/PersonasView.vue:3013
-- src/views/admin/PersonasView.vue:3130
-- src/views/admin/PersonasView.vue:3176
+- src/views/admin/PersonasView.vue:2859
+- src/views/admin/PersonasView.vue:3038
+- src/views/admin/PersonasView.vue:3155
+- src/views/admin/PersonasView.vue:3201
 - src/views/admin/UnidadesView.vue:382
 - src/views/admin/UnidadesView.vue:415
 - src/views/finanzas/CargosAdicionalesView.vue:255
@@ -130,8 +130,8 @@ Clases usadas: `flex-1 rounded-lg shadow-lg`, `self-start`, `flex-1`
 - src/components/encomiendas/EntregarEncomiendaDialog.vue:81
 - src/components/encomiendas/RegistrarEncomiendaDialog.vue:252
 - src/views/admin/ConfiguracionAlmacenamientoView.vue:79
-- src/views/admin/PersonasView.vue:2189
-- src/views/admin/PersonasView.vue:2624
+- src/views/admin/PersonasView.vue:2214
+- src/views/admin/PersonasView.vue:2649
 - src/views/admin/PlantillasNotificacionView.vue:133
 - src/views/guardia/ChecklistTemplatesView.vue:148
 - src/views/notificaciones/NotificacionesView.vue:92
@@ -195,16 +195,16 @@ icon="pi pi-info-circle" rounded severity="secondary" size="small" variant="text
 severity="secondary" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2183
-- src/views/admin/PersonasView.vue:2437
-- src/views/admin/PersonasView.vue:2618
-- src/views/admin/PersonasView.vue:2670
-- src/views/admin/PersonasView.vue:2828
-- src/views/admin/PersonasView.vue:2952
-- src/views/admin/PersonasView.vue:3007
-- src/views/admin/PersonasView.vue:3124
-- src/views/admin/PersonasView.vue:3170
-- src/views/admin/PersonasView.vue:3268
+- src/views/admin/PersonasView.vue:2208
+- src/views/admin/PersonasView.vue:2462
+- src/views/admin/PersonasView.vue:2643
+- src/views/admin/PersonasView.vue:2695
+- src/views/admin/PersonasView.vue:2853
+- src/views/admin/PersonasView.vue:2977
+- src/views/admin/PersonasView.vue:3032
+- src/views/admin/PersonasView.vue:3149
+- src/views/admin/PersonasView.vue:3195
+- src/views/admin/PersonasView.vue:3293
 - src/views/admin/SolicitudesAdminView.vue:1107
 - src/views/admin/SolicitudesAdminView.vue:1176
 - src/views/admin/SolicitudesAdminView.vue:1221
@@ -278,9 +278,9 @@ icon="pi pi-plus"
 
 - src/components/visitas/BuscadorPatenteCard.vue:228
 - src/components/visitas/BuscadorPatenteCard.vue:394
-- src/views/admin/PersonasView.vue:1395
-- src/views/admin/PersonasView.vue:2427
-- src/views/admin/PersonasView.vue:2884
+- src/views/admin/PersonasView.vue:1404
+- src/views/admin/PersonasView.vue:2452
+- src/views/admin/PersonasView.vue:2909
 - src/views/admin/SolicitudesAdminView.vue:1269
 - src/views/guardia/ChecklistTemplatesView.vue:142
 - src/views/residente/GestionesView.vue:149
@@ -294,7 +294,7 @@ icon="pi pi-check" size="small"
 
 - src/components/planilla/PlanillaDatos.vue:321
 - src/components/planilla/PlanillaStagedPreview.vue:1009
-- src/views/admin/PersonasView.vue:2732
+- src/views/admin/PersonasView.vue:2757
 - src/views/setup/SetupEntidadesView.vue:660
 - src/views/setup/SetupEntidadesView.vue:781
 - src/views/setup/SetupUnidadesView.vue:526
@@ -388,7 +388,7 @@ icon="pi pi-ban" severity="danger" size="small" variant="text"
 ```
 
 - src/views/admin/PersonalView.vue:99
-- src/views/admin/PersonasView.vue:2739
+- src/views/admin/PersonasView.vue:2764
 - src/views/finanzas/CargosAdicionalesView.vue:200
 - src/views/finanzas/GastosView.vue:244
 
@@ -506,8 +506,8 @@ icon="pi pi-trash" severity="secondary" size="small" variant="outlined"
 icon="pi pi-search" severity="secondary"
 ```
 
-- src/views/admin/PersonasView.vue:1388
-- src/views/admin/PersonasView.vue:2250
+- src/views/admin/PersonasView.vue:1397
+- src/views/admin/PersonasView.vue:2275
 - src/views/encomiendas/EncomiendasView.vue:348
 
 ### Button · V31 — 3 usos
@@ -516,9 +516,9 @@ icon="pi pi-search" severity="secondary"
 icon="pi pi-user-minus" rounded severity="danger" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1614
-- src/views/admin/PersonasView.vue:1806
-- src/views/admin/PersonasView.vue:2936
+- src/views/admin/PersonasView.vue:1629
+- src/views/admin/PersonasView.vue:1831
+- src/views/admin/PersonasView.vue:2961
 
 ### Button · V32 — 3 usos
 
@@ -526,7 +526,7 @@ icon="pi pi-user-minus" rounded severity="danger" size="small" variant="text"
 icon="pi pi-link" severity="secondary"
 ```
 
-- src/views/admin/PersonasView.vue:2396
+- src/views/admin/PersonasView.vue:2421
 - src/views/admin/SolicitudesAdminView.vue:998
 - src/views/gestion/CasosAdminView.vue:502
 
@@ -650,8 +650,8 @@ icon="pi pi-times" severity="secondary" size="small" variant="outlined"
 icon="pi pi-link" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1526
-- src/views/admin/PersonasView.vue:1718
+- src/views/admin/PersonasView.vue:1541
+- src/views/admin/PersonasView.vue:1743
 
 ### Button · V46 — 2 usos
 
@@ -659,8 +659,8 @@ icon="pi pi-link" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-plus-circle" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1537
-- src/views/admin/PersonasView.vue:1729
+- src/views/admin/PersonasView.vue:1552
+- src/views/admin/PersonasView.vue:1754
 
 ### Button · V47 — 2 usos
 
@@ -668,8 +668,8 @@ icon="pi pi-plus-circle" rounded severity="secondary" size="small" variant="text
 icon="pi pi-replay" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1548
-- src/views/admin/PersonasView.vue:1740
+- src/views/admin/PersonasView.vue:1563
+- src/views/admin/PersonasView.vue:1765
 
 ### Button · V48 — 2 usos
 
@@ -677,8 +677,8 @@ icon="pi pi-replay" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-user-plus" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1559
-- src/views/admin/PersonasView.vue:1751
+- src/views/admin/PersonasView.vue:1574
+- src/views/admin/PersonasView.vue:1776
 
 ### Button · V49 — 2 usos
 
@@ -686,8 +686,8 @@ icon="pi pi-user-plus" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-send" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1570
-- src/views/admin/PersonasView.vue:1762
+- src/views/admin/PersonasView.vue:1585
+- src/views/admin/PersonasView.vue:1787
 
 ### Button · V50 — 2 usos
 
@@ -695,8 +695,8 @@ icon="pi pi-send" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-refresh" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1581
-- src/views/admin/PersonasView.vue:1773
+- src/views/admin/PersonasView.vue:1596
+- src/views/admin/PersonasView.vue:1798
 
 ### Button · V51 — 2 usos
 
@@ -704,8 +704,8 @@ icon="pi pi-refresh" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-envelope" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1592
-- src/views/admin/PersonasView.vue:1784
+- src/views/admin/PersonasView.vue:1607
+- src/views/admin/PersonasView.vue:1809
 
 ### Button · V52 — 2 usos
 
@@ -713,8 +713,8 @@ icon="pi pi-envelope" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-pencil" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1603
-- src/views/admin/PersonasView.vue:1795
+- src/views/admin/PersonasView.vue:1618
+- src/views/admin/PersonasView.vue:1820
 
 ### Button · V53 — 2 usos
 
@@ -722,8 +722,8 @@ icon="pi pi-pencil" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-replay"
 ```
 
-- src/views/admin/PersonasView.vue:1847
-- src/views/admin/PersonasView.vue:2376
+- src/views/admin/PersonasView.vue:1872
+- src/views/admin/PersonasView.vue:2401
 
 ### Button · V54 — 2 usos
 
@@ -731,8 +731,8 @@ icon="pi pi-replay"
 icon="pi pi-plus-circle"
 ```
 
-- src/views/admin/PersonasView.vue:2363
-- src/views/admin/PersonasView.vue:2387
+- src/views/admin/PersonasView.vue:2388
+- src/views/admin/PersonasView.vue:2412
 
 ### Button · V55 — 2 usos
 
@@ -1026,7 +1026,7 @@ icon="pi pi-user-plus" size="small"
 icon="pi pi-times" severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1873
+- src/views/admin/PersonasView.vue:1898
 
 ### Button · V87 — 1 usos
 
@@ -1034,7 +1034,7 @@ icon="pi pi-times" severity="secondary" size="small" variant="text"
 icon="pi pi-user-minus" severity="danger"
 ```
 
-- src/views/admin/PersonasView.vue:2676
+- src/views/admin/PersonasView.vue:2701
 
 ### Button · V88 — 1 usos
 
@@ -1042,7 +1042,7 @@ icon="pi pi-user-minus" severity="danger"
 icon="pi pi-envelope"
 ```
 
-- src/views/admin/PersonasView.vue:3274
+- src/views/admin/PersonasView.vue:3299
 
 ### Button · V89 — 1 usos
 

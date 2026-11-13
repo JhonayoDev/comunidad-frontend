@@ -186,7 +186,7 @@ async function cargarOpciones() {
   }
 
   try {
-    const res = await personasService.listar(cid);
+    const res = await personasService.listar(cid, { estado: "TODOS" });
     opcionesPersonas.value = res.data || [];
   } catch (e) {
     console.error("Error al cargar personas para filtros", e);
