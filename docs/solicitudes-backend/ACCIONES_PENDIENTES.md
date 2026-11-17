@@ -353,6 +353,21 @@ Histórico V57-V61 conservado abajo.
   administrador de A que es residente en B no hereda permisos de administrador en B; un residente
   con cargo operativo conserva ambos contextos.
 
+### [x] P25. Búsqueda de personas en el frontend (barra única + identidad inline)
+- **Frontend:** ✅ (rama `fix/personas-busqueda`, issue
+  https://github.com/JhonayoDev/comunidad-frontend/issues/47) — barra única con `IconField`,
+  filtros compactos en `Popover` con chips y contador, búsqueda de identidad inline por email
+  completo/RUT válido con debounce 400 ms (sin modal), normalización de acentos/RUT/teléfono y
+  multi-token, filtro "Solo sin vínculo", estado en URL, estados vacíos accionables y
+  `:draggable="false"` en los diálogos de la vista.
+- **Utilidades nuevas:** `src/utils/busqueda.js` y `src/composables/useDebouncedRef.js` (+ tests).
+- **Gap backend (búsqueda global parcial por nombre):** ❌
+  https://github.com/JhonayoDev/briku/issues/105 — `GET /personas/buscar` exige exactamente uno de
+  `email` o `rut`; `GET /personas?q=` solo recorre membresías del condominio. Mientras no exista
+  el endpoint, la UI exige email completo o RUT y lo explica en la barra.
+- **QA pendiente (en vivo):** ronda **R2** de `docs/qa/QA_PERMANENTE.md` (caso guía
+  `cintya@gmail.com` sin membresía en el condominio → tarjeta de identidad + "Asociar").
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod

@@ -1,17 +1,18 @@
 <script setup>
-import { ref, computed, watch } from "vue";
-import { useRoute } from "vue-router";
+import { ref, computed, watch, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { personasService } from "@/services/personasService";
 import { unidadesService } from "@/services/unidadesService";
 import { useValidacionChile } from "@/composables/useValidacionChile";
 import { useBusquedaPersona } from "@/composables/useBusquedaPersona";
-import { emailValido, rutValido } from "@/utils/validadoresChile";
+import { useDebouncedRef } from "@/composables/useDebouncedRef";
+import { coincidePersona, identidadDeBusqueda } from "@/utils/busqueda";
+import { emailValido } from "@/utils/validadoresChile";
 import { mensajeError } from "@/utils/errores";
 import { estadoCorreccionRut } from "@/utils/correccionRut";
 import { labelCargo as cargoLabel } from "@/data/cargos";
 import {
-  ESTADOS_MEMBRESIA,
   TIPOS_PARTICIPACION,
   TIPOS_ASOCIACION,
   CARGOS_ASOCIABLES,
@@ -46,16 +47,21 @@ import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
 import Checkbox from "primevue/checkbox";
+import Chip from "primevue/chip";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
 import Divider from "primevue/divider";
 import Paginator from "primevue/paginator";
+import Popover from "primevue/popover";
+import IconField from "primevue/iconfield";
+import InputIcon from "primevue/inputicon";
 import { useConfirm } from "primevue/useconfirm";
 import ConfirmDialog from "primevue/confirmdialog";
 
 const auth = useAuthStore();
 const route = useRoute();
+const router = useRouter();
 const confirm = useConfirm();
 
 const TAMANO_PAGINA = 25;
@@ -78,12 +84,13 @@ const showVinculos = ref(false);
 const showCrearVinculo = ref(false);
 const showCrearUsuario = ref(false);
 const showHabilitarRut = ref(false);
-const showBuscarPersona = ref(false);
 const showAsociarPersona = ref(false);
 const showDesactivar = ref(false);
-const busquedaModo = ref("email");
-const valorBusquedaPersona = ref("");
-const errorValorBusquedaPersona = ref(null);
+const filtrosPopover = ref(null);
+const soloSinVinculo = ref(false);
+const busquedaIdentidad = useDebouncedRef("", 400);
+const identidadOculta = ref(false);
+const inicializadoUrl = ref(false);
 const personaReutilizada = ref(null);
 const conflictoAlta = ref(null);
 const vinculoDesdeDetalle = ref(false);
@@ -236,14 +243,22 @@ const vigenciasRut = [
 ];
 
 const estadosFiltro = [
-  { value: "TODOS", label: "Todas las membresías" },
-  ...ESTADOS_MEMBRESIA,
+  { value: "TODOS", label: "Todos" },
+  { value: "ACTIVO", label: "Activos" },
+  { value: "PENDIENTE", label: "Pendientes" },
+  { value: "INACTIVO", label: "Inactivos" },
 ];
 
-const tiposFiltro = [
-  { value: null, label: "Todas las participaciones" },
-  ...TIPOS_PARTICIPACION,
-];
+const estadosValidos = new Set(estadosFiltro.map((estado) => estado.value));
+const labelEstadoFiltro = Object.fromEntries(
+  estadosFiltro.map((estado) => [estado.value, estado.label]),
+);
+
+const tiposFiltro = [...TIPOS_PARTICIPACION];
+const tiposValidos = new Set(tiposFiltro.map((tipo) => tipo.value));
+const labelTipoFiltro = Object.fromEntries(
+  TIPOS_PARTICIPACION.map((tipo) => [tipo.value, tipo.label]),
+);
 
 const tipoVinculoLabels = Object.fromEntries(
   TIPOS_VINCULO_UNIDAD.map((tipo) => [tipo.value, tipo.label]),
@@ -317,18 +332,59 @@ const personaBuscadaEnListado = computed(
     personas.value.some((p) => p.id === personaBuscada.value.id),
 );
 
-const personasFiltradas = computed(() => {
-  const q = busqueda.value.trim().toLowerCase();
-  if (!q) return personas.value;
-  return personas.value.filter((p) =>
-    [p.nombre, p.email, p.rut, p.telefono, p.cargo, p.unidadPrincipal].some(
-      (valor) =>
-        String(valor || "")
-          .toLowerCase()
-          .includes(q),
-    ),
-  );
+const identidadBuscada = computed(() =>
+  identidadDeBusqueda(busquedaIdentidad.valorDebounced.value),
+);
+
+const filtrosActivos = computed(() => {
+  let total = 0;
+  if (estadoFiltro.value !== "TODOS") total += 1;
+  if (tipoFiltro.value) total += 1;
+  if (soloSinVinculo.value) total += 1;
+  return total;
 });
+
+const chipsFiltros = computed(() => {
+  const chips = [];
+  if (estadoFiltro.value !== "TODOS") {
+    chips.push({
+      key: "estado",
+      label: `Estado: ${labelEstadoFiltro[estadoFiltro.value] || estadoFiltro.value}`,
+      quitar: () => {
+        estadoFiltro.value = "TODOS";
+      },
+    });
+  }
+  if (tipoFiltro.value) {
+    chips.push({
+      key: "tipo",
+      label: `Participación: ${labelTipoFiltro[tipoFiltro.value] || tipoFiltro.value}`,
+      quitar: () => {
+        tipoFiltro.value = null;
+      },
+    });
+  }
+  if (soloSinVinculo.value) {
+    chips.push({
+      key: "sinVinculo",
+      label: "Solo sin vínculo",
+      quitar: () => {
+        soloSinVinculo.value = false;
+      },
+    });
+  }
+  return chips;
+});
+
+const personasFiltradas = computed(() =>
+  personas.value.filter((persona) => {
+    if (soloSinVinculo.value && !sinVinculo(persona)) return false;
+    return coincidePersona(persona, busqueda.value, [
+      ...(persona.tiposParticipacion || []).map(labelTipoParticipacion),
+      labelEstadoMembresia(persona.estadoMembresia),
+    ]);
+  }),
+);
 
 const personasPagina = computed(() => {
   const inicio = pagina.value * TAMANO_PAGINA;
@@ -381,13 +437,92 @@ async function cargar() {
   }
 }
 
+// ─── Estado de la búsqueda en la URL ─────────────────────────
+// q (texto), estado, tipo, sinVinculo=1, page (1-based).
+function leerUrl() {
+  const q = route.query.q;
+  if (typeof q === "string") busqueda.value = q;
+  const estado = route.query.estado;
+  if (typeof estado === "string" && estadosValidos.has(estado)) {
+    estadoFiltro.value = estado;
+  }
+  const tipo = route.query.tipo;
+  if (typeof tipo === "string" && tiposValidos.has(tipo)) {
+    tipoFiltro.value = tipo;
+  }
+  soloSinVinculo.value = route.query.sinVinculo === "1";
+  const page = Number.parseInt(route.query.page, 10);
+  if (Number.isFinite(page) && page > 0) pagina.value = page - 1;
+  busquedaIdentidad.fijar(busqueda.value);
+  inicializadoUrl.value = true;
+}
+
+let temporizadorUrl = null;
+
+function sincronizarUrl() {
+  if (temporizadorUrl) clearTimeout(temporizadorUrl);
+  temporizadorUrl = setTimeout(() => {
+    temporizadorUrl = null;
+    if (!inicializadoUrl.value) return;
+    const query = { ...route.query };
+    delete query.q;
+    delete query.estado;
+    delete query.tipo;
+    delete query.sinVinculo;
+    delete query.page;
+    const texto = busqueda.value.trim();
+    if (texto) query.q = texto;
+    if (estadoFiltro.value !== "TODOS") query.estado = estadoFiltro.value;
+    if (tipoFiltro.value) query.tipo = tipoFiltro.value;
+    if (soloSinVinculo.value) query.sinVinculo = "1";
+    if (pagina.value > 0) query.page = String(pagina.value + 1);
+    router.replace({ query }).catch((e) => {
+      console.error("Error al sincronizar la búsqueda en la URL", e);
+    });
+  }, 250);
+}
+
+function limpiarBusqueda() {
+  busqueda.value = "";
+  busquedaIdentidad.fijar("");
+  pagina.value = 0;
+  limpiarBusquedaPersona();
+}
+
+function cerrarIdentidad() {
+  identidadOculta.value = true;
+  limpiarBusquedaPersona();
+}
+
+function limpiarFiltros() {
+  estadoFiltro.value = "TODOS";
+  tipoFiltro.value = null;
+  soloSinVinculo.value = false;
+  pagina.value = 0;
+}
+
+leerUrl();
+
+watch(
+  [busqueda, estadoFiltro, tipoFiltro, soloSinVinculo, pagina],
+  sincronizarUrl,
+);
+
+onUnmounted(() => {
+  if (temporizadorUrl) clearTimeout(temporizadorUrl);
+});
+
 watch(
   () => auth.condominioActualId,
-  (cid) => {
+  (cid, anterior) => {
     personas.value = [];
     unidades.value = [];
-    busqueda.value = "";
-    pagina.value = 0;
+    if (anterior !== undefined && anterior !== cid) {
+      busqueda.value = "";
+      busquedaIdentidad.fijar("");
+      pagina.value = 0;
+      limpiarBusquedaPersona();
+    }
     errorCarga.value = null;
     errorAccion.value = null;
     exito.value = null;
@@ -405,9 +540,19 @@ watch([estadoFiltro, tipoFiltro], () => {
   cargar();
 });
 
-watch(busqueda, () => {
+watch(busqueda, (valor) => {
   pagina.value = 0;
+  busquedaIdentidad.valor.value = valor;
 });
+
+watch(
+  () => busquedaIdentidad.valorDebounced.value,
+  (texto) => {
+    identidadOculta.value = false;
+    evaluarIdentidad(identidadDeBusqueda(texto));
+  },
+  { immediate: true },
+);
 
 watch(personasFiltradas, (lista) => {
   const maxPagina = Math.max(0, Math.ceil(lista.length / TAMANO_PAGINA) - 1);
@@ -634,6 +779,7 @@ async function guardarPersona() {
     conflictoAlta.value = null;
     exito.value = mensajeAlta(data);
     await cargar();
+    if (identidadBuscada.value) await evaluarIdentidad(identidadBuscada.value);
   } catch (e) {
     console.error("Error al registrar persona", e);
     const conflicto = datosConflicto(e);
@@ -663,61 +809,55 @@ function reintentarAlta() {
   guardarPersona();
 }
 
-// ─── Buscar persona ──────────────────────────────────────────
+// ─── Buscar persona en la plataforma ─────────────────────────
+// La identidad global solo se consulta cuando la búsqueda ya es un email
+// completo o un RUT válido (el backend exige uno de los dos). El debounce
+// evita una petición por tecla y `useBusquedaPersona` descarta respuestas
+// viejas (anti-race).
 
-function abrirBuscarPersona(valor = "") {
+async function evaluarIdentidad(identidad) {
+  if (!identidad) {
+    limpiarBusquedaPersona();
+    return;
+  }
   if (!puedeVerPersonas.value) return;
-  limpiarBusquedaPersona();
-  busquedaModo.value = "email";
-  valorBusquedaPersona.value = typeof valor === "string" ? valor : "";
-  errorValorBusquedaPersona.value = null;
-  showBuscarPersona.value = true;
-}
-
-function cerrarBuscarPersona() {
-  showBuscarPersona.value = false;
-  valorBusquedaPersona.value = "";
-  errorValorBusquedaPersona.value = null;
-  limpiarBusquedaPersona();
-}
-
-async function ejecutarBusquedaPersona() {
   const cid = auth.condominioActualId;
-  errorValorBusquedaPersona.value = null;
   if (!cid) return;
-
-  const valor = String(valorBusquedaPersona.value || "").trim();
-  if (!valor) {
-    errorValorBusquedaPersona.value =
-      busquedaModo.value === "email"
-        ? "Ingresa un email"
-        : "Ingresa un RUT";
-    return;
-  }
-  if (busquedaModo.value === "email" && !emailValido(valor)) {
-    errorValorBusquedaPersona.value =
-      "Ingresa un email válido (ej: nombre@dominio.cl)";
-    return;
-  }
-  if (busquedaModo.value === "rut" && !rutValido(valor)) {
-    errorValorBusquedaPersona.value = "Ingresa un RUT válido";
-    return;
-  }
-
   const params =
-    busquedaModo.value === "email"
-      ? { email: normalizarEmail(valor) }
-      : { rut: normalizarRut(valor) };
+    identidad.tipo === "email"
+      ? { email: identidad.valor }
+      : { rut: identidad.valor };
   await buscarPersona(cid, params);
 }
 
-function crearDesdeBusqueda() {
-  const valor = valorBusquedaPersona.value;
-  const modo = busquedaModo.value;
-  cerrarBuscarPersona();
+function abrirFiltros(event) {
+  filtrosPopover.value?.toggle(event);
+}
+
+function abrirAsociarDesdeIdentidad() {
+  if (!personaBuscada.value) return;
+  abrirAsociarPersona(personaBuscada.value);
+}
+
+function reactivarDesdeIdentidad() {
+  if (!personaBuscada.value) return;
+  confirmarReactivar(personaBuscada.value);
+}
+
+function verVinculosDesdeIdentidad() {
+  if (!personaBuscada.value) return;
+  verVinculos(personaBuscada.value);
+}
+
+function crearDesdeIdentidad() {
+  const identidad = identidadBuscada.value;
+  if (!identidad) return;
   abrirCrear(ASOCIACION_UNIDAD);
-  if (modo === "email") formPersona.value.email = valor;
-  else formPersona.value.rut = valor;
+  if (identidad.tipo === "email") {
+    formPersona.value.email = busqueda.value.trim();
+  } else {
+    formPersona.value.rut = busqueda.value.trim();
+  }
 }
 
 // ─── Asociar persona existente ───────────────────────────────
@@ -774,6 +914,7 @@ async function guardarAsociacion() {
     personaAsociar.value = null;
     exito.value = mensajeAlta(data);
     await cargar();
+    if (identidadBuscada.value) await evaluarIdentidad(identidadBuscada.value);
   } catch (e) {
     console.error("Error al asociar persona", e);
     errorFormAsociar.value = mensajeError(e, "Error al asociar la persona");
@@ -803,6 +944,7 @@ async function reactivarPersona(persona) {
     await personasService.reactivar(cid, persona.id);
     exito.value = `${persona.nombre} fue reactivada en este condominio.`;
     await cargar();
+    if (identidadBuscada.value) await evaluarIdentidad(identidadBuscada.value);
   } catch (e) {
     console.error("Error al reactivar persona", e);
     errorAccion.value = mensajeError(e, "No se pudo reactivar la persona");
@@ -1385,22 +1527,8 @@ async function crearUsuario() {
 <template>
   <div class="p-4 flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
+      <h1 class="text-xl font-bold m-0">Personas</h1>
       <div class="flex flex-wrap items-center gap-2">
-        <h1 class="text-xl font-bold m-0">Personas</h1>
-        <Tag
-          v-if="personas.length"
-          :value="`${personas.length} personas`"
-          severity="secondary"
-        />
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <Button
-          v-if="puedeVerPersonas"
-          label="Buscar persona"
-          icon="pi pi-search"
-          severity="secondary"
-          @click="abrirBuscarPersona()"
-        />
         <Button
           v-if="puedeCrear"
           label="Nueva persona"
@@ -1429,32 +1557,345 @@ async function crearUsuario() {
 
     <Card>
       <template #content>
-        <div class="flex flex-col gap-2 md:flex-row md:items-center">
-          <InputText
-            v-model="busqueda"
-            placeholder="Buscar por nombre, email o RUT..."
-            aria-label="Buscar personas"
-            class="w-full md:flex-1"
-          />
+        <div class="flex flex-col gap-3" role="search">
+          <div class="flex flex-col gap-2 md:flex-row md:items-center">
+            <div class="relative w-full md:flex-1">
+              <IconField class="w-full">
+                <InputIcon class="pi pi-search" />
+                <InputText
+                  id="buscar-personas"
+                  v-model="busqueda"
+                  placeholder="Buscar por nombre, email, RUT, teléfono o casa…"
+                  aria-label="Buscar personas en este condominio"
+                  autocomplete="off"
+                  class="w-full pr-10"
+                  @keydown.esc="limpiarBusqueda"
+                />
+              </IconField>
+              <Button
+                v-if="busqueda"
+                icon="pi pi-times"
+                severity="secondary"
+                variant="text"
+                size="small"
+                rounded
+                class="absolute right-1 top-1/2 -translate-y-1/2"
+                aria-label="Limpiar búsqueda"
+                @click="limpiarBusqueda"
+              />
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <Select
+                v-model="estadoFiltro"
+                :options="estadosFiltro"
+                optionLabel="label"
+                optionValue="value"
+                aria-label="Filtrar por estado de membresía"
+                class="w-full sm:w-8rem"
+              />
+              <Button
+                icon="pi pi-filter"
+                :label="filtrosActivos ? `Filtros (${filtrosActivos})` : 'Filtros'"
+                severity="secondary"
+                aria-haspopup="true"
+                @click="abrirFiltros"
+              />
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-1">
+              <Chip
+                v-for="chip in chipsFiltros"
+                :key="chip.key"
+                :label="chip.label"
+                removable
+                @remove="chip.quitar()"
+              />
+              <Button
+                v-if="filtrosActivos"
+                label="Limpiar filtros"
+                variant="text"
+                severity="secondary"
+                size="small"
+                @click="limpiarFiltros"
+              />
+            </div>
+            <span class="text-xs text-text-muted" aria-live="polite">
+              <template v-if="busqueda">
+                {{ personasFiltradas.length }} de {{ personas.length }}
+                coincidencias
+              </template>
+              <template v-else>
+                {{ personas.length }}
+                {{ personas.length === 1 ? "persona" : "personas" }}
+              </template>
+            </span>
+          </div>
+
+          <p class="text-xs text-text-muted m-0">
+            La búsqueda por nombre, teléfono o casa cubre este condominio.
+            Escribe un <strong>email completo</strong> o un
+            <strong>RUT válido</strong> para buscar en toda la plataforma a
+            alguien que aún no está vinculado.
+          </p>
+        </div>
+      </template>
+    </Card>
+
+    <Popover ref="filtrosPopover">
+      <div class="flex flex-col gap-3 w-72">
+        <div class="flex flex-col gap-1">
+          <label
+            for="filtro-participacion"
+            class="text-xs font-semibold text-text-muted"
+          >
+            Participación
+          </label>
           <Select
-            v-model="estadoFiltro"
-            :options="estadosFiltro"
-            optionLabel="label"
-            optionValue="value"
-            aria-label="Filtrar por estado de membresía"
-            class="w-full md:w-14rem"
-          />
-          <Select
+            id="filtro-participacion"
             v-model="tipoFiltro"
             :options="tiposFiltro"
             optionLabel="label"
             optionValue="value"
-            aria-label="Filtrar por tipo de participación"
-            class="w-full md:w-15rem"
+            placeholder="Todas"
+            showClear
+            class="w-full"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <Checkbox
+            v-model="soloSinVinculo"
+            inputId="filtro-sin-vinculo"
+            binary
+          />
+          <label for="filtro-sin-vinculo" class="text-sm">
+            Solo sin vínculo
+          </label>
+        </div>
+        <Divider class="m-0" />
+        <div class="flex items-center justify-between gap-2">
+          <Button
+            label="Limpiar"
+            variant="text"
+            severity="secondary"
+            :disabled="!filtrosActivos"
+            @click="limpiarFiltros"
+          />
+          <Button
+            label="Listo"
+            severity="secondary"
+            @click="filtrosPopover?.hide()"
+          />
+        </div>
+      </div>
+    </Popover>
+
+    <!-- ─── Identidad global (email o RUT exactos) ─── -->
+    <div
+      v-if="identidadBuscada && puedeVerPersonas && !identidadOculta"
+      class="bg-surface border border-border rounded-lg p-3 flex flex-col gap-3"
+      aria-live="polite"
+    >
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <i class="pi pi-globe text-primary" aria-hidden="true"></i>
+          <span class="text-sm font-medium">
+            Búsqueda en la plataforma ·
+            {{ identidadBuscada.tipo === "email" ? "email" : "RUT" }}
+          </span>
+        </div>
+        <Button
+          icon="pi pi-times"
+          severity="secondary"
+          variant="text"
+          size="small"
+          rounded
+          aria-label="Cerrar búsqueda de identidad"
+          @click="cerrarIdentidad"
+        />
+      </div>
+
+      <div
+        v-if="buscandoPersona"
+        class="flex items-center gap-2 text-sm text-text-muted"
+      >
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        Buscando a la persona en la plataforma…
+      </div>
+
+      <Message
+        v-else-if="mensajeErrorBusquedaPersona"
+        severity="error"
+        :closable="false"
+      >
+        {{ mensajeErrorBusquedaPersona }}
+      </Message>
+
+      <template v-else-if="personaBuscada">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-medium">{{ personaBuscada.nombre }}</span>
+          <Tag
+            v-if="!personaBuscada.activo"
+            value="Cuenta inactiva"
+            severity="warn"
+            size="small"
+          />
+          <Tag
+            v-if="personaBuscadaEnListado"
+            value="En el listado"
+            severity="info"
+            size="small"
+          />
+        </div>
+
+        <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+          <span class="text-text-muted">Email:</span>
+          <span class="truncate">{{ personaBuscada.email || "—" }}</span>
+          <span class="text-text-muted">RUT:</span>
+          <span>{{ personaBuscada.rut || "—" }}</span>
+          <span class="text-text-muted">Teléfono:</span>
+          <span>{{ personaBuscada.telefono || "—" }}</span>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <span class="text-xs font-semibold text-text-muted">Membresías</span>
+          <div
+            v-if="!(personaBuscada.membresias || []).length"
+            class="text-sm text-text-muted"
+          >
+            No pertenece a ningún condominio todavía.
+          </div>
+          <div v-else class="flex flex-col gap-1">
+            <div
+              v-for="m in personaBuscada.membresias"
+              :key="m.condominioId"
+              class="flex flex-wrap items-center justify-between gap-2 text-sm"
+            >
+              <span class="truncate">
+                {{ m.condominioNombre }}
+                <Tag
+                  v-if="m.condominioId === auth.condominioActualId"
+                  value="Este condominio"
+                  severity="info"
+                  size="small"
+                  class="ml-1"
+                />
+              </span>
+              <div class="flex flex-wrap items-center gap-1">
+                <Tag
+                  :value="labelEstadoMembresia(m.estado)"
+                  :severity="severityEstadoMembresia(m.estado)"
+                  size="small"
+                />
+                <Tag
+                  :value="labelTipoAlta(m.tipoAlta)"
+                  severity="secondary"
+                  size="small"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Message
+          v-if="!membresiaActualBuscada"
+          severity="info"
+          :closable="false"
+        >
+          No pertenece a este condominio. Puedes asociarla a una unidad, a un
+          cargo o registrarla como proveedor.
+        </Message>
+        <Message
+          v-else-if="membresiaActualBuscada.estado === 'INACTIVO'"
+          severity="warn"
+          :closable="false"
+        >
+          Su membresía en este condominio está inactiva. Reactívala antes de
+          volver a asociarla.
+        </Message>
+        <Message
+          v-else-if="membresiaActualBuscada.estado === 'PENDIENTE'"
+          severity="warn"
+          :closable="false"
+        >
+          Su membresía está pendiente de asociación en este condominio.
+        </Message>
+        <Message v-else severity="success" :closable="false">
+          Ya pertenece a este condominio como
+          {{ labelTipoAlta(membresiaActualBuscada.tipoAlta) || "miembro" }}.
+        </Message>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <template v-if="!membresiaActualBuscada">
+            <Button
+              v-if="puedeEditar"
+              label="Asociar a este condominio"
+              icon="pi pi-plus-circle"
+              @click="abrirAsociarDesdeIdentidad"
+            />
+          </template>
+          <template v-else-if="membresiaActualBuscada.estado === 'INACTIVO'">
+            <Button
+              v-if="puedeEditar"
+              label="Reactivar en este condominio"
+              icon="pi pi-replay"
+              @click="reactivarDesdeIdentidad"
+            />
+          </template>
+          <template v-else>
+            <Button
+              v-if="puedeEditar"
+              label="Agregar asociación"
+              icon="pi pi-plus-circle"
+              @click="abrirAsociarDesdeIdentidad"
+            />
+            <Button
+              v-if="puedeVerVinculos"
+              label="Ver vínculos"
+              icon="pi pi-link"
+              severity="secondary"
+              @click="verVinculosDesdeIdentidad"
+            />
+          </template>
+        </div>
+
+        <div
+          v-if="otrasMembresiasBuscada.length"
+          class="text-xs text-text-muted"
+        >
+          También pertenece a {{ otrasMembresiasBuscada.length }}
+          {{
+            otrasMembresiasBuscada.length === 1
+              ? "condominio"
+              : "condominios"
+          }}
+          más.
+        </div>
+      </template>
+
+      <template v-else-if="busquedaPersonaConsultada && personaNoEncontrada">
+        <p class="m-0 text-sm">
+          No existe una persona con ese
+          {{ identidadBuscada.tipo === "email" ? "email" : "RUT" }} en la
+          plataforma.
+        </p>
+        <div class="flex flex-wrap items-center gap-2">
+          <Button
+            v-if="puedeCrear"
+            label="Crear persona"
+            icon="pi pi-plus"
+            @click="crearDesdeIdentidad"
+          />
+          <Button
+            label="Limpiar búsqueda"
+            variant="text"
+            severity="secondary"
+            @click="limpiarBusqueda"
           />
         </div>
       </template>
-    </Card>
+    </div>
 
     <Skeleton v-if="loading" width="100%" height="300px" />
     <Message v-else-if="errorCarga" severity="error">
@@ -1462,14 +1903,44 @@ async function crearUsuario() {
     </Message>
 
     <template v-else>
-      <div v-if="!personas.length" class="text-center text-text-muted py-8">
-        No hay personas con este filtro
+      <div
+        v-if="!personas.length"
+        class="text-center text-text-muted py-8 flex flex-col items-center gap-3"
+      >
+        <span>No hay personas con este filtro.</span>
+        <Button
+          v-if="filtrosActivos"
+          label="Limpiar filtros"
+          variant="text"
+          severity="secondary"
+          @click="limpiarFiltros"
+        />
       </div>
       <div
         v-else-if="!personasFiltradas.length"
-        class="text-center text-text-muted py-8"
+        class="text-center text-text-muted py-8 flex flex-col items-center gap-3"
       >
-        No hay coincidencias con la búsqueda
+        <span>No hay coincidencias con la búsqueda.</span>
+        <span class="text-xs max-w-md">
+          Si la persona no está vinculada a este condominio, escribe su
+          <strong>email completo</strong> o su <strong>RUT</strong> en la barra
+          para buscarla en toda la plataforma.
+        </span>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <Button
+            label="Limpiar búsqueda"
+            variant="text"
+            severity="secondary"
+            @click="limpiarBusqueda"
+          />
+          <Button
+            v-if="filtrosActivos"
+            label="Limpiar filtros"
+            variant="text"
+            severity="secondary"
+            @click="limpiarFiltros"
+          />
+        </div>
       </div>
 
       <template v-else>
@@ -1860,6 +2331,7 @@ async function crearUsuario() {
 
     <!-- ─── Alta unificada: identidad + asociación ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showCrearPersona"
       header="Nueva persona"
       modal
@@ -2220,256 +2692,9 @@ async function crearUsuario() {
       </template>
     </Dialog>
 
-    <!-- ─── Buscar persona global (email o RUT) ─── -->
-    <Dialog
-      v-model:visible="showBuscarPersona"
-      header="Buscar persona"
-      modal
-      :style="{ width: '95%', maxWidth: '520px' }"
-    >
-      <div class="flex flex-col gap-3">
-        <p class="text-sm text-text-muted m-0">
-          Busca la identidad global de una persona. Si ya existe, puedes
-          asociarla a este condominio sin crear un duplicado.
-        </p>
-
-        <form
-          class="flex flex-col gap-2"
-          @submit.prevent="ejecutarBusquedaPersona"
-        >
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-start">
-            <div class="flex flex-col gap-1 sm:w-9rem">
-              <label for="buscar-persona-modo" class="text-sm">Buscar por</label>
-              <Select
-                id="buscar-persona-modo"
-                v-model="busquedaModo"
-                :options="[
-                  { label: 'Email', value: 'email' },
-                  { label: 'RUT', value: 'rut' },
-                ]"
-                optionLabel="label"
-                optionValue="value"
-                class="w-full"
-              />
-            </div>
-            <div class="flex flex-col gap-1 flex-1">
-              <label for="buscar-persona-valor" class="text-sm">
-                {{ busquedaModo === "email" ? "Email" : "RUT" }}
-              </label>
-              <InputText
-                id="buscar-persona-valor"
-                v-model="valorBusquedaPersona"
-                :type="busquedaModo === 'email' ? 'email' : 'text'"
-                :placeholder="
-                  busquedaModo === 'email' ? 'nombre@dominio.cl' : '12.345.678-9'
-                "
-                :maxlength="busquedaModo === 'email' ? 255 : 12"
-                :class="{ 'p-invalid': errorValorBusquedaPersona }"
-              />
-              <small v-if="errorValorBusquedaPersona" class="text-danger">
-                {{ errorValorBusquedaPersona }}
-              </small>
-            </div>
-          </div>
-          <div class="flex justify-end">
-            <Button
-              type="submit"
-              label="Buscar"
-              icon="pi pi-search"
-              severity="secondary"
-              :loading="buscandoPersona"
-            />
-          </div>
-        </form>
-
-        <Message
-          v-if="mensajeErrorBusquedaPersona"
-          severity="error"
-          :closable="false"
-        >
-          {{ mensajeErrorBusquedaPersona }}
-        </Message>
-
-        <div
-          v-if="personaBuscada"
-          class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
-        >
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="font-medium">{{ personaBuscada.nombre }}</span>
-            <Tag
-              v-if="!personaBuscada.activo"
-              value="Cuenta inactiva"
-              severity="warn"
-              size="small"
-            />
-          </div>
-
-          <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-            <span class="text-text-muted">Email:</span>
-            <span class="truncate">{{ personaBuscada.email || "—" }}</span>
-            <span class="text-text-muted">RUT:</span>
-            <span>{{ personaBuscada.rut || "—" }}</span>
-            <span class="text-text-muted">Teléfono:</span>
-            <span>{{ personaBuscada.telefono || "—" }}</span>
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-xs font-semibold text-text-muted">
-              Membresías
-            </span>
-            <div
-              v-if="!(personaBuscada.membresias || []).length"
-              class="text-sm text-text-muted"
-            >
-              No pertenece a ningún condominio todavía.
-            </div>
-            <div v-else class="flex flex-col gap-1">
-              <div
-                v-for="m in personaBuscada.membresias"
-                :key="m.condominioId"
-                class="flex flex-wrap items-center justify-between gap-2 text-sm"
-              >
-                <span class="truncate">
-                  {{ m.condominioNombre }}
-                  <Tag
-                    v-if="m.condominioId === auth.condominioActualId"
-                    value="Este condominio"
-                    severity="info"
-                    size="small"
-                    class="ml-1"
-                  />
-                </span>
-                <div class="flex flex-wrap items-center gap-1">
-                  <Tag
-                    :value="labelEstadoMembresia(m.estado)"
-                    :severity="severityEstadoMembresia(m.estado)"
-                    size="small"
-                  />
-                  <Tag
-                    :value="labelTipoAlta(m.tipoAlta)"
-                    severity="secondary"
-                    size="small"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Message
-            v-if="!membresiaActualBuscada"
-            severity="info"
-            :closable="false"
-          >
-            No pertenece a este condominio. Puedes asociarla a una unidad, a un
-            cargo o registrarla como proveedor.
-          </Message>
-          <Message
-            v-else-if="membresiaActualBuscada.estado === 'INACTIVO'"
-            severity="warn"
-            :closable="false"
-          >
-            Su membresía en este condominio está inactiva. Reactívala antes de
-            volver a asociarla.
-          </Message>
-          <Message
-            v-else-if="membresiaActualBuscada.estado === 'PENDIENTE'"
-            severity="warn"
-            :closable="false"
-          >
-            Su membresía está pendiente de asociación en este condominio.
-          </Message>
-          <Message v-else severity="success" :closable="false">
-            Ya pertenece a este condominio como
-            {{ labelTipoAlta(membresiaActualBuscada.tipoAlta) || "miembro" }}.
-          </Message>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <template v-if="!membresiaActualBuscada">
-              <Button
-                v-if="puedeEditar"
-                label="Asociar a este condominio"
-                icon="pi pi-plus-circle"
-                @click="
-                  cerrarBuscarPersona();
-                  abrirAsociarPersona(personaBuscada);
-                "
-              />
-            </template>
-            <template
-              v-else-if="membresiaActualBuscada.estado === 'INACTIVO'"
-            >
-              <Button
-                v-if="puedeEditar"
-                label="Reactivar en este condominio"
-                icon="pi pi-replay"
-                @click="
-                  cerrarBuscarPersona();
-                  confirmarReactivar(personaBuscada);
-                "
-              />
-            </template>
-            <template v-else>
-              <Button
-                v-if="puedeEditar"
-                label="Agregar asociación"
-                icon="pi pi-plus-circle"
-                @click="
-                  cerrarBuscarPersona();
-                  abrirAsociarPersona(personaBuscada);
-                "
-              />
-              <Button
-                v-if="puedeVerVinculos"
-                label="Ver vínculos"
-                icon="pi pi-link"
-                severity="secondary"
-                @click="
-                  cerrarBuscarPersona();
-                  verVinculos(personaBuscada);
-                "
-              />
-            </template>
-          </div>
-
-          <div
-            v-if="otrasMembresiasBuscada.length"
-            class="text-xs text-text-muted"
-          >
-            También pertenece a {{ otrasMembresiasBuscada.length }}
-            {{ otrasMembresiasBuscada.length === 1 ? "condominio" : "condominios" }}
-            más.
-          </div>
-        </div>
-
-        <div
-          v-else-if="busquedaPersonaConsultada && personaNoEncontrada"
-          class="flex flex-col gap-2 p-3 bg-inset border border-border-soft rounded-lg"
-        >
-          <p class="m-0 text-sm">
-            No existe una persona con ese
-            {{ busquedaModo === "email" ? "email" : "RUT" }}.
-          </p>
-          <Button
-            v-if="puedeCrear"
-            label="Registrar persona"
-            icon="pi pi-plus"
-            @click="crearDesdeBusqueda"
-          />
-        </div>
-      </div>
-
-      <template #footer>
-        <Button
-          label="Cerrar"
-          severity="secondary"
-          variant="text"
-          @click="cerrarBuscarPersona"
-        />
-      </template>
-    </Dialog>
-
     <!-- ─── Asociar persona existente ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showAsociarPersona"
       header="Agregar asociación"
       modal
@@ -2657,6 +2882,7 @@ async function crearUsuario() {
 
     <!-- ─── Baja local ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showDesactivar"
       header="Quitar del condominio"
       modal
@@ -2710,6 +2936,7 @@ async function crearUsuario() {
 
     <!-- ─── Editar persona ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showEditarPersona"
       header="Editar persona"
       modal
@@ -2866,6 +3093,7 @@ async function crearUsuario() {
 
     <!-- ─── Vínculos ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showVinculos"
       header="Vínculos"
       modal
@@ -2985,6 +3213,7 @@ async function crearUsuario() {
 
     <!-- ─── Habilitar corrección de RUT ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showHabilitarRut"
       header="Habilitar corrección de RUT"
       modal
@@ -3046,6 +3275,7 @@ async function crearUsuario() {
 
     <!-- ─── Nuevo vínculo (detalle) ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showCrearVinculo"
       header="Nuevo vínculo"
       modal
@@ -3163,6 +3393,7 @@ async function crearUsuario() {
 
     <!-- ─── Crear usuario ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showCrearUsuario"
       header="Crear usuario"
       modal
@@ -3208,6 +3439,7 @@ async function crearUsuario() {
 
     <!-- ─── Cambiar email ─── -->
     <Dialog
+      :draggable="false"
       v-model:visible="showCambiarEmail"
       header="Cambiar email"
       modal
