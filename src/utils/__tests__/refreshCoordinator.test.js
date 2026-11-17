@@ -186,7 +186,41 @@ describe("iniciarCoordinadorRefresh — BroadcastChannel", () => {
 
     expect(accessToken.value).toBe("token-broadcast");
     expect(guardarTokenEnIDB).toHaveBeenCalledWith("token-broadcast");
-    expect(emitirTokenRotado).toHaveBeenCalledWith("token-broadcast");
+  });
+
+  it("NO reemite el token recibido por el canal (evita el ping-pong entre pestañas)", async () => {
+    let callback = null;
+    suscribirseARotacionToken.mockImplementation((cb) => {
+      callback = cb;
+      return () => {};
+    });
+
+    iniciarCoordinadorRefresh();
+
+    // Simula dos pestañas recibiendo el token una de la otra: si el receptor
+    // reemitiera, el canal entraría en un bucle infinito (CPU/RAM al 100%).
+    callback("token-a");
+    callback("token-b");
+    await Promise.resolve();
+
+    expect(accessToken.value).toBe("token-b");
+    expect(emitirTokenRotado).not.toHaveBeenCalled();
+  });
+
+  it("ignora un token ya aplicado (no reescribe IndexedDB)", async () => {
+    let callback = null;
+    suscribirseARotacionToken.mockImplementation((cb) => {
+      callback = cb;
+      return () => {};
+    });
+
+    accessToken.value = "token-igual";
+    iniciarCoordinadorRefresh();
+
+    callback("token-igual");
+    await Promise.resolve();
+
+    expect(guardarTokenEnIDB).not.toHaveBeenCalled();
   });
 
   it("no registra dos veces los listeners", () => {

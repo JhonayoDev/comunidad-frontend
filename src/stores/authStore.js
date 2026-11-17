@@ -10,7 +10,15 @@ import {
   clearProactiveRefresh,
 } from "@/utils/refreshScheduler";
 import { refrescarToken } from "@/utils/refreshCoordinator";
+import {
+  emitirSesionCerrada,
+  suscribirseACierreSesion,
+} from "@/utils/tokenBroadcast";
 import { usePushNotifications } from "@/composables/usePushNotifications";
+
+// El listener cross-tab se registra una sola vez por módulo (no por cada
+// instancia de Pinia ni por recarga de HMR).
+let escuchaCierreSesionRegistrada = false;
 
 export const useAuthStore = defineStore("auth", () => {
   // Composable de notificaciones push — estado compartido reactivo
@@ -287,6 +295,9 @@ export const useAuthStore = defineStore("auth", () => {
       // Si falla en el servidor, limpiamos igualmente en el cliente
     } finally {
       clearSession();
+      // Avisar a las demás pestañas del mismo origen para que suelten su
+      // access token en memoria (el refresh token ya quedó revocado).
+      emitirSesionCerrada();
     }
   }
 
@@ -302,6 +313,29 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.removeItem("user");
     localStorage.removeItem("condominios");
     localStorage.removeItem("condominioActual");
+  }
+
+  // ─── Cierre de sesión desde otra pestaña ────────────────────────────────────
+  // Un logout en otra ventana revoca el refresh token en el backend; acá hay
+  // que soltar el access token en memoria de inmediato (si no, esta pestaña
+  // seguiría autenticada hasta que el JWT expire, ~15 min).
+  if (!escuchaCierreSesionRegistrada) {
+    escuchaCierreSesionRegistrada = true;
+    suscribirseACierreSesion(async () => {
+      // Pestaña sin sesión: no hay nada que limpiar ni recargar.
+      if (!accessToken.value && !user.value) return;
+
+      try {
+        await push.destruir();
+      } catch {
+        // La limpieza local continúa aunque falle la baja de push.
+      }
+      clearSession();
+
+      // Recarga completa: descarta estado de Vue, caché de queries y tokens
+      // en memoria de esta pestaña.
+      window.location.replace("/login");
+    });
   }
 
   return {

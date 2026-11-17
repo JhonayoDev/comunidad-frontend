@@ -46,10 +46,19 @@ let iniciado = false;
 
 // ─── Aplicar un token nuevo ───────────────────────────────────────────────────
 
-function aplicarTokenNuevo(token) {
+/**
+ * Aplica un access token nuevo en memoria y en IndexedDB.
+ *
+ * @param {string} token
+ * @param {{ emitir?: boolean }} [opciones] `emitir` debe ser `false` cuando el
+ * token llega POR el BroadcastChannel: reemitirlo produce un ping-pong
+ * infinito entre las dos pestañas (cada una responde a la otra), que satura
+ * el event loop (CPU al 100% por pestaña) y el almacenamiento IndexedDB.
+ */
+function aplicarTokenNuevo(token, { emitir = true } = {}) {
   accessToken.value = token;
   guardarTokenEnIDB(token).catch(() => {});
-  emitirTokenRotado(token);
+  if (emitir) emitirTokenRotado(token);
   scheduleProactiveRefresh();
 }
 
@@ -174,9 +183,13 @@ export function iniciarCoordinadorRefresh() {
   if (iniciado) return;
   iniciado = true;
   document.addEventListener("visibilitychange", manejarVisibilidad);
-  desuscribirBroadcast = suscribirseARotacionToken((token) =>
-    aplicarTokenNuevo(token),
-  );
+  desuscribirBroadcast = suscribirseARotacionToken((token) => {
+    // Idempotencia + NO reemitir: el token que llega por el canal ya está
+    // aplicado en la pestaña que lo rotó. Reemitirlo crearía un ping-pong
+    // infinito entre pestañas (bug de RAM/CPU al tener 2+ ventanas abiertas).
+    if (token === accessToken.value) return;
+    aplicarTokenNuevo(token, { emitir: false });
+  });
 }
 
 export function detenerCoordinadorRefresh() {
