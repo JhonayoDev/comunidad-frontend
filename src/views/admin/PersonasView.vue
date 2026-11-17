@@ -53,11 +53,11 @@ import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
 import Divider from "primevue/divider";
 import Paginator from "primevue/paginator";
-import Popover from "primevue/popover";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import { useConfirm } from "primevue/useconfirm";
 import ConfirmDialog from "primevue/confirmdialog";
+import InfoAyudaVista from "@/components/common/InfoAyudaVista.vue";
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -86,7 +86,7 @@ const showCrearUsuario = ref(false);
 const showHabilitarRut = ref(false);
 const showAsociarPersona = ref(false);
 const showDesactivar = ref(false);
-const filtrosPopover = ref(null);
+const mostrarFiltros = ref(false);
 const soloSinVinculo = ref(false);
 const busquedaIdentidad = useDebouncedRef("", 400);
 const identidadOculta = ref(false);
@@ -259,6 +259,56 @@ const tiposValidos = new Set(tiposFiltro.map((tipo) => tipo.value));
 const labelTipoFiltro = Object.fromEntries(
   TIPOS_PARTICIPACION.map((tipo) => [tipo.value, tipo.label]),
 );
+
+const ayudaBusqueda = [
+  {
+    titulo: "En este condominio",
+    items: [
+      {
+        label: "Nombre, email, RUT, teléfono o casa",
+        desc: "Filtra al instante las personas del listado. No distingue mayúsculas ni acentos, y puedes escribir varias palabras en cualquier orden (ej: perez juan).",
+      },
+      {
+        label: "RUT y teléfono parciales",
+        desc: "Desde 3 dígitos: 12345 encuentra 12.345.678-5 y 1234 encuentra +56 9 1234 5678.",
+      },
+    ],
+  },
+  {
+    titulo: "En la plataforma",
+    items: [
+      {
+        label: "Email completo o RUT válido",
+        desc: "Con un email completo (nombre@dominio.cl) o un RUT válido, la búsqueda revisa toda la plataforma y muestra las membresías de la persona en otros condominios.",
+      },
+      {
+        label: "Persona sin vínculo aquí",
+        desc: "Si existe pero no pertenece a este condominio, puedes asociarla, reactivarla o crear su ficha sin duplicarla.",
+      },
+      {
+        label: "Búsqueda por nombre parcial",
+        desc: "Todavía no está disponible para toda la plataforma. Escribe el email completo o el RUT.",
+      },
+    ],
+  },
+  {
+    titulo: "Filtros",
+    items: [
+      {
+        label: "Estado",
+        desc: "Activos, pendientes o inactivos según la membresía en este condominio.",
+      },
+      {
+        label: "Participación",
+        desc: "Propietario, arrendatario, residente, cargo o proveedor.",
+      },
+      {
+        label: "Solo sin vínculo",
+        desc: "Personas sin unidad, cargo ni participación registrada.",
+      },
+    ],
+  },
+];
 
 const tipoVinculoLabels = Object.fromEntries(
   TIPOS_VINCULO_UNIDAD.map((tipo) => [tipo.value, tipo.label]),
@@ -451,6 +501,13 @@ function leerUrl() {
     tipoFiltro.value = tipo;
   }
   soloSinVinculo.value = route.query.sinVinculo === "1";
+  if (
+    estadoFiltro.value !== "TODOS" ||
+    tipoFiltro.value ||
+    soloSinVinculo.value
+  ) {
+    mostrarFiltros.value = true;
+  }
   const page = Number.parseInt(route.query.page, 10);
   if (Number.isFinite(page) && page > 0) pagina.value = page - 1;
   busquedaIdentidad.fijar(busqueda.value);
@@ -828,10 +885,6 @@ async function evaluarIdentidad(identidad) {
       ? { email: identidad.valor }
       : { rut: identidad.valor };
   await buscarPersona(cid, params);
-}
-
-function abrirFiltros(event) {
-  filtrosPopover.value?.toggle(event);
 }
 
 function abrirAsociarDesdeIdentidad() {
@@ -1558,8 +1611,8 @@ async function crearUsuario() {
     <Card>
       <template #content>
         <div class="flex flex-col gap-3" role="search">
-          <div class="flex flex-col gap-2 md:flex-row md:items-center">
-            <div class="relative w-full md:flex-1">
+          <div class="flex items-start gap-2">
+            <div class="relative flex-1 min-w-0">
               <IconField class="w-full">
                 <InputIcon class="pi pi-search" />
                 <InputText
@@ -1584,43 +1637,27 @@ async function crearUsuario() {
                 @click="limpiarBusqueda"
               />
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <Select
-                v-model="estadoFiltro"
-                :options="estadosFiltro"
-                optionLabel="label"
-                optionValue="value"
-                aria-label="Filtrar por estado de membresía"
-                class="w-full sm:w-8rem"
-              />
-              <Button
-                icon="pi pi-filter"
-                :label="filtrosActivos ? `Filtros (${filtrosActivos})` : 'Filtros'"
-                severity="secondary"
-                aria-haspopup="true"
-                @click="abrirFiltros"
-              />
-            </div>
+            <InfoAyudaVista
+              titulo="Cómo buscar personas"
+              :secciones="ayudaBusqueda"
+            />
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-wrap items-center gap-1">
-              <Chip
-                v-for="chip in chipsFiltros"
-                :key="chip.key"
-                :label="chip.label"
-                removable
-                @remove="chip.quitar()"
-              />
-              <Button
-                v-if="filtrosActivos"
-                label="Limpiar filtros"
-                variant="text"
-                severity="secondary"
-                size="small"
-                @click="limpiarFiltros"
-              />
-            </div>
+            <Button
+              :label="
+                filtrosActivos ? `Filtros (${filtrosActivos})` : 'Filtros'
+              "
+              :icon="
+                mostrarFiltros ? 'pi pi-chevron-up' : 'pi pi-chevron-down'
+              "
+              iconPos="right"
+              severity="secondary"
+              variant="text"
+              :aria-expanded="mostrarFiltros"
+              aria-controls="panel-filtros-personas"
+              @click="mostrarFiltros = !mostrarFiltros"
+            />
             <span class="text-xs text-text-muted" aria-live="polite">
               <template v-if="busqueda">
                 {{ personasFiltradas.length }} de {{ personas.length }}
@@ -1633,63 +1670,80 @@ async function crearUsuario() {
             </span>
           </div>
 
-          <p class="text-xs text-text-muted m-0">
-            La búsqueda por nombre, teléfono o casa cubre este condominio.
-            Escribe un <strong>email completo</strong> o un
-            <strong>RUT válido</strong> para buscar en toda la plataforma a
-            alguien que aún no está vinculado.
-          </p>
+          <div
+            v-if="mostrarFiltros"
+            id="panel-filtros-personas"
+            class="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-lg border border-border bg-inset p-3"
+          >
+            <div class="flex flex-col gap-1">
+              <label
+                for="filtro-estado"
+                class="text-xs font-semibold text-text-muted"
+              >
+                Estado
+              </label>
+              <Select
+                id="filtro-estado"
+                v-model="estadoFiltro"
+                :options="estadosFiltro"
+                optionLabel="label"
+                optionValue="value"
+                aria-label="Filtrar por estado de membresía"
+                class="w-full"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label
+                for="filtro-participacion"
+                class="text-xs font-semibold text-text-muted"
+              >
+                Participación
+              </label>
+              <Select
+                id="filtro-participacion"
+                v-model="tipoFiltro"
+                :options="tiposFiltro"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todas"
+                showClear
+                class="w-full"
+              />
+            </div>
+            <div class="flex items-center gap-2 sm:col-span-2">
+              <Checkbox
+                v-model="soloSinVinculo"
+                inputId="filtro-sin-vinculo"
+                binary
+              />
+              <label for="filtro-sin-vinculo" class="text-sm">
+                Solo sin vínculo
+              </label>
+            </div>
+          </div>
+
+          <div
+            v-if="chipsFiltros.length"
+            class="flex flex-wrap items-center gap-1"
+          >
+            <Chip
+              v-for="chip in chipsFiltros"
+              :key="chip.key"
+              :label="chip.label"
+              removable
+              @remove="chip.quitar()"
+            />
+            <Button
+              label="Limpiar filtros"
+              variant="text"
+              severity="secondary"
+              size="small"
+              @click="limpiarFiltros"
+            />
+          </div>
         </div>
       </template>
     </Card>
-
-    <Popover ref="filtrosPopover">
-      <div class="flex flex-col gap-3 w-72">
-        <div class="flex flex-col gap-1">
-          <label
-            for="filtro-participacion"
-            class="text-xs font-semibold text-text-muted"
-          >
-            Participación
-          </label>
-          <Select
-            id="filtro-participacion"
-            v-model="tipoFiltro"
-            :options="tiposFiltro"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Todas"
-            showClear
-            class="w-full"
-          />
-        </div>
-        <div class="flex items-center gap-2">
-          <Checkbox
-            v-model="soloSinVinculo"
-            inputId="filtro-sin-vinculo"
-            binary
-          />
-          <label for="filtro-sin-vinculo" class="text-sm">
-            Solo sin vínculo
-          </label>
-        </div>
-        <Divider class="m-0" />
-        <div class="flex items-center justify-between gap-2">
-          <Button
-            label="Limpiar"
-            variant="text"
-            severity="secondary"
-            :disabled="!filtrosActivos"
-            @click="limpiarFiltros"
-          />
-          <Button
-            label="Listo"
-            severity="secondary"
-            @click="filtrosPopover?.hide()"
-          />
-        </div>
-      </div>
-    </Popover>
 
     <!-- ─── Identidad global (email o RUT exactos) ─── -->
     <div

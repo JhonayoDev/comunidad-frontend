@@ -1,41 +1,16 @@
 # Inventario PrimeVue (v2)
 
-Generado: 2026-11-17T07:55:00.448Z
+Generado: 2026-11-17T08:06:32.126Z
 
-Total de usos: **491**
+Total de usos: **489**
 
 Firma = props de estilo (sin title, sin class, props heredadas normalizadas a `variant`).
 
-## Button (491 usos, 0 con prop heredada text/outlined/link)
+## Button (489 usos, 0 con prop heredada text/outlined/link)
 
 Variantes distintas: **136**
 
 ### Button · V1 — 49 usos
-
-```
-severity="secondary"
-```
-
-Clases usadas: `rounded-lg`, `flex-1 rounded-lg`, `flex-1`
-
-- src/components/NotificationBanner.vue:34
-- src/components/bitacora/ChecklistDialog.vue:119
-- src/components/bitacora/NovedadDialog.vue:111
-- src/components/encomiendas/DetalleEncomiendaDialog.vue:176
-- src/components/encomiendas/EntregarEncomiendaDialog.vue:75
-- src/components/encomiendas/RegistrarEncomiendaDialog.vue:246
-- src/components/visitas/ConfirmarSalidaDialog.vue:99
-- src/views/admin/PersonalView.vue:120
-- src/views/admin/PersonasView.vue:1685
-- src/views/admin/PlantillasNotificacionView.vue:132
-- src/views/admin/UnidadesView.vue:381
-- src/views/admin/UnidadesView.vue:414
-- src/views/finanzas/CargosAdicionalesView.vue:254
-- src/views/finanzas/CargosAdicionalesView.vue:269
-- src/views/finanzas/CategoriasView.vue:143
-- … y 34 más
-
-### Button · V2 — 49 usos
 
 ```
 (default)
@@ -86,14 +61,39 @@ Clases usadas: `[
 - src/components/planilla/PlanillaResultado.vue:129
 - src/modules/permisos/views/CargosPermisosView.vue:102
 - src/views/admin/PersonalView.vue:121
-- src/views/admin/PersonasView.vue:3086
-- src/views/admin/PersonasView.vue:3267
-- src/views/admin/PersonasView.vue:3385
-- src/views/admin/PersonasView.vue:3432
+- src/views/admin/PersonasView.vue:3140
+- src/views/admin/PersonasView.vue:3321
+- src/views/admin/PersonasView.vue:3439
+- src/views/admin/PersonasView.vue:3486
 - src/views/admin/UnidadesView.vue:382
 - src/views/admin/UnidadesView.vue:415
 - src/views/finanzas/CargosAdicionalesView.vue:255
 - … y 34 más
+
+### Button · V2 — 48 usos
+
+```
+severity="secondary"
+```
+
+Clases usadas: `rounded-lg`, `flex-1 rounded-lg`, `flex-1`
+
+- src/components/NotificationBanner.vue:34
+- src/components/bitacora/ChecklistDialog.vue:119
+- src/components/bitacora/NovedadDialog.vue:111
+- src/components/encomiendas/DetalleEncomiendaDialog.vue:176
+- src/components/encomiendas/EntregarEncomiendaDialog.vue:75
+- src/components/encomiendas/RegistrarEncomiendaDialog.vue:246
+- src/components/visitas/ConfirmarSalidaDialog.vue:99
+- src/views/admin/PersonalView.vue:120
+- src/views/admin/PlantillasNotificacionView.vue:132
+- src/views/admin/UnidadesView.vue:381
+- src/views/admin/UnidadesView.vue:414
+- src/views/finanzas/CargosAdicionalesView.vue:254
+- src/views/finanzas/CargosAdicionalesView.vue:269
+- src/views/finanzas/CategoriasView.vue:143
+- src/views/finanzas/CuentasView.vue:212
+- … y 33 más
 
 ### Button · V3 — 30 usos
 
@@ -130,8 +130,8 @@ Clases usadas: `flex-1 rounded-lg shadow-lg`, `self-start`, `flex-1`
 - src/components/encomiendas/EntregarEncomiendaDialog.vue:81
 - src/components/encomiendas/RegistrarEncomiendaDialog.vue:252
 - src/views/admin/ConfiguracionAlmacenamientoView.vue:79
-- src/views/admin/PersonasView.vue:2686
-- src/views/admin/PersonasView.vue:2874
+- src/views/admin/PersonasView.vue:2740
+- src/views/admin/PersonasView.vue:2928
 - src/views/admin/PlantillasNotificacionView.vue:133
 - src/views/guardia/ChecklistTemplatesView.vue:148
 - src/views/notificaciones/NotificacionesView.vue:92
@@ -143,28 +143,28 @@ Clases usadas: `flex-1 rounded-lg shadow-lg`, `self-start`, `flex-1`
 - src/views/setup/SetupEntidadesView.vue:545
 - … y 9 más
 
-### Button · V5 — 24 usos
+### Button · V5 — 23 usos
 
 ```
 severity="secondary" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1678
-- src/views/admin/PersonasView.vue:1890
-- src/views/admin/PersonasView.vue:1911
-- src/views/admin/PersonasView.vue:1930
-- src/views/admin/PersonasView.vue:1936
-- src/views/admin/PersonasView.vue:2680
-- src/views/admin/PersonasView.vue:2868
-- src/views/admin/PersonasView.vue:2921
-- src/views/admin/PersonasView.vue:3080
-- src/views/admin/PersonasView.vue:3205
-- src/views/admin/PersonasView.vue:3261
-- src/views/admin/PersonasView.vue:3379
-- src/views/admin/PersonasView.vue:3426
-- src/views/admin/PersonasView.vue:3525
+- src/views/admin/PersonasView.vue:1944
+- src/views/admin/PersonasView.vue:1965
+- src/views/admin/PersonasView.vue:1984
+- src/views/admin/PersonasView.vue:1990
+- src/views/admin/PersonasView.vue:2734
+- src/views/admin/PersonasView.vue:2922
+- src/views/admin/PersonasView.vue:2975
+- src/views/admin/PersonasView.vue:3134
+- src/views/admin/PersonasView.vue:3259
+- src/views/admin/PersonasView.vue:3315
+- src/views/admin/PersonasView.vue:3433
+- src/views/admin/PersonasView.vue:3480
+- src/views/admin/PersonasView.vue:3579
 - src/views/admin/SolicitudesAdminView.vue:1107
-- … y 9 más
+- src/views/admin/SolicitudesAdminView.vue:1176
+- … y 8 más
 
 ### Button · V6 — 22 usos
 
@@ -278,9 +278,9 @@ icon="pi pi-plus"
 
 - src/components/visitas/BuscadorPatenteCard.vue:228
 - src/components/visitas/BuscadorPatenteCard.vue:394
-- src/views/admin/PersonasView.vue:1532
-- src/views/admin/PersonasView.vue:1884
-- src/views/admin/PersonasView.vue:3137
+- src/views/admin/PersonasView.vue:1585
+- src/views/admin/PersonasView.vue:1938
+- src/views/admin/PersonasView.vue:3191
 - src/views/admin/SolicitudesAdminView.vue:1269
 - src/views/guardia/ChecklistTemplatesView.vue:142
 - src/views/residente/GestionesView.vue:149
@@ -294,7 +294,7 @@ icon="pi pi-check" size="small"
 
 - src/components/planilla/PlanillaDatos.vue:321
 - src/components/planilla/PlanillaStagedPreview.vue:1009
-- src/views/admin/PersonasView.vue:2984
+- src/views/admin/PersonasView.vue:3038
 - src/views/setup/SetupEntidadesView.vue:660
 - src/views/setup/SetupEntidadesView.vue:781
 - src/views/setup/SetupUnidadesView.vue:526
@@ -312,8 +312,8 @@ Clases usadas: `btn-no-bg body-btn`, `absolute right-1 top-1/2 -translate-y-1/2`
 - src/components/common/InfoAyudaVista.vue:41
 - src/components/visitas/BuscadorPatenteCard.vue:180
 - src/components/visitas/BuscadorPatenteCard.vue:376
-- src/views/admin/PersonasView.vue:1575
-- src/views/admin/PersonasView.vue:1708
+- src/views/admin/PersonasView.vue:1628
+- src/views/admin/PersonasView.vue:1762
 - src/views/residente/MisSolicitudesView.vue:698
 
 ### Button · V14 — 6 usos
@@ -390,7 +390,7 @@ icon="pi pi-ban" severity="danger" size="small" variant="text"
 ```
 
 - src/views/admin/PersonalView.vue:99
-- src/views/admin/PersonasView.vue:2991
+- src/views/admin/PersonasView.vue:3045
 - src/views/finanzas/CargosAdicionalesView.vue:200
 - src/views/finanzas/GastosView.vue:244
 
@@ -508,7 +508,7 @@ icon="pi pi-trash" severity="secondary" size="small" variant="outlined"
 icon="pi pi-link" severity="secondary"
 ```
 
-- src/views/admin/PersonasView.vue:1853
+- src/views/admin/PersonasView.vue:1907
 - src/views/admin/SolicitudesAdminView.vue:998
 - src/views/gestion/CasosAdminView.vue:502
 
@@ -518,9 +518,9 @@ icon="pi pi-link" severity="secondary"
 icon="pi pi-user-minus" rounded severity="danger" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2100
-- src/views/admin/PersonasView.vue:2302
-- src/views/admin/PersonasView.vue:3189
+- src/views/admin/PersonasView.vue:2154
+- src/views/admin/PersonasView.vue:2356
+- src/views/admin/PersonasView.vue:3243
 
 ### Button · V32 — 3 usos
 
@@ -642,8 +642,8 @@ icon="pi pi-times" severity="secondary" size="small" variant="outlined"
 icon="pi pi-plus-circle"
 ```
 
-- src/views/admin/PersonasView.vue:1831
-- src/views/admin/PersonasView.vue:1847
+- src/views/admin/PersonasView.vue:1885
+- src/views/admin/PersonasView.vue:1901
 
 ### Button · V45 — 2 usos
 
@@ -651,8 +651,8 @@ icon="pi pi-plus-circle"
 icon="pi pi-replay"
 ```
 
-- src/views/admin/PersonasView.vue:1839
-- src/views/admin/PersonasView.vue:2344
+- src/views/admin/PersonasView.vue:1893
+- src/views/admin/PersonasView.vue:2398
 
 ### Button · V46 — 2 usos
 
@@ -660,8 +660,8 @@ icon="pi pi-replay"
 icon="pi pi-link" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2012
-- src/views/admin/PersonasView.vue:2214
+- src/views/admin/PersonasView.vue:2066
+- src/views/admin/PersonasView.vue:2268
 
 ### Button · V47 — 2 usos
 
@@ -669,8 +669,8 @@ icon="pi pi-link" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-plus-circle" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2023
-- src/views/admin/PersonasView.vue:2225
+- src/views/admin/PersonasView.vue:2077
+- src/views/admin/PersonasView.vue:2279
 
 ### Button · V48 — 2 usos
 
@@ -678,8 +678,8 @@ icon="pi pi-plus-circle" rounded severity="secondary" size="small" variant="text
 icon="pi pi-replay" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2034
-- src/views/admin/PersonasView.vue:2236
+- src/views/admin/PersonasView.vue:2088
+- src/views/admin/PersonasView.vue:2290
 
 ### Button · V49 — 2 usos
 
@@ -687,8 +687,8 @@ icon="pi pi-replay" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-user-plus" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2045
-- src/views/admin/PersonasView.vue:2247
+- src/views/admin/PersonasView.vue:2099
+- src/views/admin/PersonasView.vue:2301
 
 ### Button · V50 — 2 usos
 
@@ -696,8 +696,8 @@ icon="pi pi-user-plus" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-send" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2056
-- src/views/admin/PersonasView.vue:2258
+- src/views/admin/PersonasView.vue:2110
+- src/views/admin/PersonasView.vue:2312
 
 ### Button · V51 — 2 usos
 
@@ -705,8 +705,8 @@ icon="pi pi-send" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-refresh" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2067
-- src/views/admin/PersonasView.vue:2269
+- src/views/admin/PersonasView.vue:2121
+- src/views/admin/PersonasView.vue:2323
 
 ### Button · V52 — 2 usos
 
@@ -714,8 +714,8 @@ icon="pi pi-refresh" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-envelope" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2078
-- src/views/admin/PersonasView.vue:2280
+- src/views/admin/PersonasView.vue:2132
+- src/views/admin/PersonasView.vue:2334
 
 ### Button · V53 — 2 usos
 
@@ -723,8 +723,8 @@ icon="pi pi-envelope" rounded severity="secondary" size="small" variant="text"
 icon="pi pi-pencil" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2089
-- src/views/admin/PersonasView.vue:2291
+- src/views/admin/PersonasView.vue:2143
+- src/views/admin/PersonasView.vue:2345
 
 ### Button · V54 — 2 usos
 
@@ -1015,10 +1015,12 @@ icon="pi pi-user-plus" size="small"
 ### Button · V85 — 1 usos
 
 ```
-icon="pi pi-filter" severity="secondary"
+:icon="
+                mostrarFiltros ? 'pi pi-chevron-up' : 'pi pi-chevron-down'
+              " iconPos="right" severity="secondary" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1596
+- src/views/admin/PersonasView.vue:1647
 
 ### Button · V86 — 1 usos
 
@@ -1026,7 +1028,7 @@ icon="pi pi-filter" severity="secondary"
 severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:1615
+- src/views/admin/PersonasView.vue:1736
 
 ### Button · V87 — 1 usos
 
@@ -1034,7 +1036,7 @@ severity="secondary" size="small" variant="text"
 icon="pi pi-times" severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/PersonasView.vue:2370
+- src/views/admin/PersonasView.vue:2424
 
 ### Button · V88 — 1 usos
 
@@ -1042,7 +1044,7 @@ icon="pi pi-times" severity="secondary" size="small" variant="text"
 icon="pi pi-user-minus" severity="danger"
 ```
 
-- src/views/admin/PersonasView.vue:2927
+- src/views/admin/PersonasView.vue:2981
 
 ### Button · V89 — 1 usos
 
@@ -1050,7 +1052,7 @@ icon="pi pi-user-minus" severity="danger"
 icon="pi pi-envelope"
 ```
 
-- src/views/admin/PersonasView.vue:3531
+- src/views/admin/PersonasView.vue:3585
 
 ### Button · V90 — 1 usos
 

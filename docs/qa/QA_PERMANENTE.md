@@ -62,7 +62,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 
 ### R2 — Búsqueda de Personas (issue #47)
 
-> Alcance: barra única con `IconField`, filtros compactos en `Popover` con chips, búsqueda de identidad inline (email completo o RUT válido, debounce 400 ms), normalización de acentos/RUT/teléfono, filtro "Solo sin vínculo", estado en URL y `:draggable="false"` en los diálogos de la vista.
+> Alcance: barra única con `IconField`, ayuda contextual en un (i), filtros en una fila desplegable con chips, búsqueda de identidad inline (email completo o RUT válido, debounce 400 ms), normalización de acentos/RUT/teléfono, filtro "Solo sin vínculo", estado en URL y `:draggable="false"` en los diálogos de la vista.
 > Caso guía: `cintya@gmail.com` existe en la plataforma pero **no** tiene membresía en el condominio; debe aparecer en la tarjeta de identidad y ofrecer "Asociar a este condominio" sin crear un duplicado.
 
 - [ ] Escribir `CINTYA@GMAIL.COM` en la barra → tras ~400 ms aparece la tarjeta "Búsqueda en la plataforma" (una sola petición, no una por tecla).
@@ -72,7 +72,8 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 - [ ] Nombre, teléfono o casa **no** disparan la búsqueda global: la barra indica que hace falta email completo o RUT.
 - [ ] Búsqueda local: `munoz` encuentra `Muñoz`, `perez juan` encuentra `Juan Pérez`, `1234` encuentra por teléfono y `12345` por RUT parcial.
 - [ ] Contador "N de M coincidencias" con `aria-live`; se actualiza al filtrar.
-- [ ] Filtros en `Popover`: `Participación`, "Solo sin vínculo", contador en el botón y chips removibles; "Limpiar filtros" deja `Estado = Todos` sin filtros.
+- [ ] Filtros en una **fila desplegable** (Mostrar/Ocultar con `aria-expanded`): `Estado`, `Participación` y "Solo sin vínculo"; el botón muestra el contador y los chips removibles aparecen al aplicar. "Limpiar filtros" deja `Estado = Todos` sin tocar la búsqueda.
+- [ ] El texto explicativo vive en el **(i)** "Cómo buscar personas", no como párrafo fijo; al llegar con filtros en la URL el panel aparece abierto.
 - [ ] Estado en URL (`?q=&estado=&tipo=&sinVinculo=1&page=`): recargar y atrás/adelante restauran búsqueda, filtros y página; otros query params se preservan.
 - [ ] Estados vacíos accionables: sin resultados por filtro vs sin coincidencias de búsqueda (este último invita a usar email/RUT).
 - [ ] Cerrar la tarjeta de identidad no borra el texto y no la reabre hasta cambiar la consulta.
@@ -200,7 +201,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 | ID | Vista / ruta | Perfil | Qué verificar | ● | P | Última |
 |---|---|---|---|---|---|---|
 | ADM-01 | `Dashboard` `/dashboard` | Admin + cargos | Totales, banner "Configuración pendiente", accesos activos, accesos rápidos | ● | P1 | ⬜ |
-| ADM-02 | `Personas` `/personas` | Admin + cargos | Barra única (nombre/email/RUT/teléfono/casa, sin acentos, multi-token), filtros en `Popover` + chips, identidad inline por email/RUT, estado en URL, alta atómica, reutilización, `409`, filtros `TODOS`, "Sin vínculo", baja/reactivación, corrección de RUT | ● | P1 | ⬜ |
+| ADM-02 | `Personas` `/personas` | Admin + cargos | Barra única (nombre/email/RUT/teléfono/casa, sin acentos, multi-token) + ayuda (i), filtros en fila desplegable + chips, identidad inline por email/RUT, estado en URL, alta atómica, reutilización, `409`, filtros `TODOS`, "Sin vínculo", baja/reactivación, corrección de RUT | ● | P1 | ⬜ |
 | ADM-03 | `Unidades` `/unidades` | Admin + cargos | CRUD, cupo por tipo, capacidad, sectores/pisos | ● | P2 | ⬜ |
 | ADM-04 | `SolicitudesAdmin` `/solicitudes-admin` | Admin + cargos | Filtros server-side, gestión, seguimiento, resolver RUT, casos | ● | P1 | ⬜ |
 | ADM-05 | `Personal` `/personal` | Admin + cargos | Listado de personal, turnos, checklist | | P2 | ⬜ |

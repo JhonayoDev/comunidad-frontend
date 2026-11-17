@@ -1567,7 +1567,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1532,
+    "line": 1585,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -1581,7 +1581,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1575,
+    "line": 1628,
     "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "absolute right-1 top-1/2 -translate-y-1/2",
     "legacyProp": false,
@@ -1600,27 +1600,29 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1596,
-    "signature": "icon=\"pi pi-filter\" severity=\"secondary\"",
+    "line": 1647,
+    "signature": ":icon=\"\n                mostrarFiltros ? 'pi pi-chevron-up' : 'pi pi-chevron-down'\n              \" iconPos=\"right\" severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "icon": "pi pi-filter",
-      ":label": "filtrosActivos ? `Filtros (${filtrosActivos})` : 'Filtros'",
+      ":label": "\n                filtrosActivos ? `Filtros (${filtrosActivos})` : 'Filtros'\n              ",
+      ":icon": "\n                mostrarFiltros ? 'pi pi-chevron-up' : 'pi pi-chevron-down'\n              ",
+      "iconPos": "right",
       "severity": "secondary",
-      "aria-haspopup": "true",
-      "@click": "abrirFiltros"
+      "variant": "text",
+      ":aria-expanded": "mostrarFiltros",
+      "aria-controls": "panel-filtros-personas",
+      "@click": "mostrarFiltros = !mostrarFiltros"
     }
   },
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1615,
+    "line": 1736,
     "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
     "attrs": {
-      "v-if": "filtrosActivos",
       "label": "Limpiar filtros",
       "variant": "text",
       "severity": "secondary",
@@ -1631,35 +1633,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1678,
-    "signature": "severity=\"secondary\" variant=\"text\"",
-    "classes": "",
-    "legacyProp": false,
-    "attrs": {
-      "label": "Limpiar",
-      "variant": "text",
-      "severity": "secondary",
-      ":disabled": "!filtrosActivos",
-      "@click": "limpiarFiltros"
-    }
-  },
-  {
-    "component": "Button",
-    "file": "src/views/admin/PersonasView.vue",
-    "line": 1685,
-    "signature": "severity=\"secondary\"",
-    "classes": "",
-    "legacyProp": false,
-    "attrs": {
-      "label": "Listo",
-      "severity": "secondary",
-      "@click": "filtrosPopover?.hide()"
-    }
-  },
-  {
-    "component": "Button",
-    "file": "src/views/admin/PersonasView.vue",
-    "line": 1708,
+    "line": 1762,
     "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1676,7 +1650,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1831,
+    "line": 1885,
     "signature": "icon=\"pi pi-plus-circle\"",
     "classes": "",
     "legacyProp": false,
@@ -1690,7 +1664,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1839,
+    "line": 1893,
     "signature": "icon=\"pi pi-replay\"",
     "classes": "",
     "legacyProp": false,
@@ -1704,7 +1678,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1847,
+    "line": 1901,
     "signature": "icon=\"pi pi-plus-circle\"",
     "classes": "",
     "legacyProp": false,
@@ -1718,7 +1692,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1853,
+    "line": 1907,
     "signature": "icon=\"pi pi-link\" severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -1733,7 +1707,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1884,
+    "line": 1938,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -1747,7 +1721,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1890,
+    "line": 1944,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1761,7 +1735,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1911,
+    "line": 1965,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1776,7 +1750,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1930,
+    "line": 1984,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1790,7 +1764,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 1936,
+    "line": 1990,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1805,7 +1779,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2012,
+    "line": 2066,
     "signature": "icon=\"pi pi-link\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1824,7 +1798,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2023,
+    "line": 2077,
     "signature": "icon=\"pi pi-plus-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1843,7 +1817,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2034,
+    "line": 2088,
     "signature": "icon=\"pi pi-replay\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1862,7 +1836,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2045,
+    "line": 2099,
     "signature": "icon=\"pi pi-user-plus\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1881,7 +1855,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2056,
+    "line": 2110,
     "signature": "icon=\"pi pi-send\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1900,7 +1874,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2067,
+    "line": 2121,
     "signature": "icon=\"pi pi-refresh\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1919,7 +1893,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2078,
+    "line": 2132,
     "signature": "icon=\"pi pi-envelope\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1938,7 +1912,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2089,
+    "line": 2143,
     "signature": "icon=\"pi pi-pencil\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1957,7 +1931,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2100,
+    "line": 2154,
     "signature": "icon=\"pi pi-user-minus\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1976,7 +1950,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2214,
+    "line": 2268,
     "signature": "icon=\"pi pi-link\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1995,7 +1969,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2225,
+    "line": 2279,
     "signature": "icon=\"pi pi-plus-circle\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2014,7 +1988,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2236,
+    "line": 2290,
     "signature": "icon=\"pi pi-replay\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2033,7 +2007,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2247,
+    "line": 2301,
     "signature": "icon=\"pi pi-user-plus\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2052,7 +2026,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2258,
+    "line": 2312,
     "signature": "icon=\"pi pi-send\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2071,7 +2045,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2269,
+    "line": 2323,
     "signature": "icon=\"pi pi-refresh\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2090,7 +2064,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2280,
+    "line": 2334,
     "signature": "icon=\"pi pi-envelope\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2109,7 +2083,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2291,
+    "line": 2345,
     "signature": "icon=\"pi pi-pencil\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2128,7 +2102,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2302,
+    "line": 2356,
     "signature": "icon=\"pi pi-user-minus\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2147,7 +2121,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2344,
+    "line": 2398,
     "signature": "icon=\"pi pi-replay\"",
     "classes": "",
     "legacyProp": false,
@@ -2162,7 +2136,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2370,
+    "line": 2424,
     "signature": "icon=\"pi pi-times\" severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2178,7 +2152,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2680,
+    "line": 2734,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2192,7 +2166,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2686,
+    "line": 2740,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -2206,7 +2180,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2868,
+    "line": 2922,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2220,7 +2194,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2874,
+    "line": 2928,
     "signature": "icon=\"pi pi-check\"",
     "classes": "",
     "legacyProp": false,
@@ -2234,7 +2208,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2921,
+    "line": 2975,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2248,7 +2222,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2927,
+    "line": 2981,
     "signature": "icon=\"pi pi-user-minus\" severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -2263,7 +2237,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2984,
+    "line": 3038,
     "signature": "icon=\"pi pi-check\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -2278,7 +2252,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 2991,
+    "line": 3045,
     "signature": "icon=\"pi pi-ban\" severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2296,7 +2270,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3080,
+    "line": 3134,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2310,7 +2284,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3086,
+    "line": 3140,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2323,7 +2297,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3137,
+    "line": 3191,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -2337,7 +2311,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3189,
+    "line": 3243,
     "signature": "icon=\"pi pi-user-minus\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2356,7 +2330,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3205,
+    "line": 3259,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2370,7 +2344,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3261,
+    "line": 3315,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2384,7 +2358,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3267,
+    "line": 3321,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2398,7 +2372,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3379,
+    "line": 3433,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2412,7 +2386,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3385,
+    "line": 3439,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2426,7 +2400,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3426,
+    "line": 3480,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2440,7 +2414,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3432,
+    "line": 3486,
     "signature": "(default)",
     "classes": "",
     "legacyProp": false,
@@ -2453,7 +2427,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3525,
+    "line": 3579,
     "signature": "severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -2467,7 +2441,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/PersonasView.vue",
-    "line": 3531,
+    "line": 3585,
     "signature": "icon=\"pi pi-envelope\"",
     "classes": "",
     "legacyProp": false,

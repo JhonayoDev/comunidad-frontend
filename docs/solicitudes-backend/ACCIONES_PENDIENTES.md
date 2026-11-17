@@ -356,10 +356,10 @@ Histórico V57-V61 conservado abajo.
 ### [x] P25. Búsqueda de personas en el frontend (barra única + identidad inline)
 - **Frontend:** ✅ (rama `fix/personas-busqueda`, issue
   https://github.com/JhonayoDev/comunidad-frontend/issues/47) — barra única con `IconField`,
-  filtros compactos en `Popover` con chips y contador, búsqueda de identidad inline por email
-  completo/RUT válido con debounce 400 ms (sin modal), normalización de acentos/RUT/teléfono y
-  multi-token, filtro "Solo sin vínculo", estado en URL, estados vacíos accionables y
-  `:draggable="false"` en los diálogos de la vista.
+  ayuda contextual en un (i), filtros en una fila desplegable (con contador y chips) y búsqueda
+  de identidad inline por email completo/RUT válido con debounce 400 ms (sin modal), normalización
+  de acentos/RUT/teléfono y multi-token, filtro "Solo sin vínculo", estado en URL, estados vacíos
+  accionables y `:draggable="false"` en los diálogos de la vista.
 - **Utilidades nuevas:** `src/utils/busqueda.js` y `src/composables/useDebouncedRef.js` (+ tests).
 - **Gap backend (búsqueda global parcial por nombre):** ❌
   https://github.com/JhonayoDev/briku/issues/105 — `GET /personas/buscar` exige exactamente uno de
