@@ -12,6 +12,17 @@ Alinear todos los módulos del frontend (GUARDIA y RESIDENTE) con los endpoints 
 - `console.error` en todos los catch blocks para depuración visible
 - Todos los endpoints scoped por condominio: `/api/v1/condominios/{condominioId}/...`
 
+## Herramientas de agente — `modern-web-guidance` (skill local, no versionada)
+
+Skill de Google Chrome (con Microsoft, Mozilla y MDN) que inyecta guías de web moderno (CSS, HTML, formularios, accesibilidad, Core Web Vitals, PWA, APIs de plataforma) en el agente. **Es herramienta de agente, no una dependencia del proyecto**: no entra en `package.json`, ni al bundle, ni al build del Worker de Cloudflare. Origen verificado (`GoogleChrome`, con provenance/attestations de npm; la CLI la clasificó como "Safe / Low Risk").
+
+- **Instalada el 17 nov 2026** con el equivalente pnpm del `npx modern-web-guidance@latest install`:
+  `pnpx skills@latest add GoogleChrome/modern-web-guidance --skill modern-web-guidance --agent opencode --copy -y`
+  Deja los archivos en `.agents/skills/modern-web-guidance` (~2.5 MB, 211 guías), ruta que OpenCode detecta por compatibilidad. Versión de las guías: `2026_11_10-47b4c80e`.
+- **No se versiona**: `.agents/` y `skills-lock.json` están en `.gitignore`. Para replicarla en otra máquina, ejecutar el mismo comando; para actualizar, repetirlo (o `pnpx skills update`); para quitarla, `pnpx skills remove modern-web-guidance` y borrar `.agents/` + `skills-lock.json`.
+- **Alcance (manda este repo)**: PrimeVue 4.5.5 + Tailwind + tokens (`.planilla`, `bg-surface`, …) y las reglas de este archivo **tienen prioridad**. La skill solo aporta criterio para HTML/CSS nativo, accesibilidad, CWV, PWA y plataforma que PrimeVue no cubre. **No** reemplazar `Dialog`/`Select`/`Popover`/tablas por `<dialog>`, Popover API o Anchor Positioning sin aprobación. Tampoco aplica a backend, infra ni tooling. Si una feature no es Baseline widely, aplicar el fallback de la guía (el público incluye PWA en iPhone) o ajustar el target con `set-baseline`.
+- **Uso** (siempre con pnpm, nunca `npx`): `pnpx modern-web-guidance@latest search "responsive table"` → `pnpx modern-web-guidance@latest retrieve "<id>"` (varios ids separados por coma). `legacy-scan` solo para auditorías amplias, no para una tarea puntual.
+
 ## Workflow — GitHub Project y Issues (BFF)
 
 **Project:** `Gestion Comunidad Briku` `PVT_kwHOBkcviM4Bb6yo` (`Users/JhonayoDev/projects/3`) — org-level, agrega issues de `comunidad-frontend` y `briku` (backend). Es la guía de trabajo.

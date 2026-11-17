@@ -60,3 +60,7 @@ pnpm-debug.log*
 # OS
 Thumbs.db
 
+# Agent skills (locales, no se versionan — ver AGENTS.md → "Herramientas de agente")
+.agents/
+skills-lock.json
+
