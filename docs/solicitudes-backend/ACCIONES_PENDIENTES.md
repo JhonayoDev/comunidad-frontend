@@ -368,6 +368,33 @@ Histórico V57-V61 conservado abajo.
 - **QA pendiente (en vivo):** ronda **R2** de `docs/qa/QA_PERMANENTE.md` (caso guía
   `cintya@gmail.com` sin membresía en el condominio → tarjeta de identidad + "Asociar").
 
+### [ ] P26. Participación "Trabajador" fantasma (`tipo_alta` del backfill + `derivarTipos`)
+- **Issue:** https://github.com/JhonayoDev/briku/issues/106 (bug, Project 3)
+- **Dónde:** `V85__personas_condominios.sql:73-78` y `MembresiaService.derivarTipos`
+  (`MembresiaService.java:154-159`).
+- **Qué pasa:** el backfill guarda `tipo_alta='TRABAJADOR'` para **cualquier** cargo activo
+  (PRESIDENTE/TESORERO/SECRETARIO/ADMINISTRADOR incluidos: 6 de 7 filas en dev) y `derivarTipos`
+  vuelve a sumar `TRABAJADOR`/`ADMINISTRACION` desde ese `tipoAlta` histórico, que
+  `asegurarMembresia` no actualiza si la membresía ya estaba `ACTIVO`.
+- **Efecto:** `Personas` muestra el badge "Trabajador" sin cargo de trabajo (caso `juan ramirez`
+  en *vista horizonte*: Propietario + Administración + **Trabajador**, cargo `ADMINISTRADOR`), el
+  filtro `tipoParticipacion=TRABAJADOR` devuelve a quien no lo es y `rolContextual` no ofrece ese
+  portal.
+- **Propuesta:** derivar el `tipo_alta` del cargo real en el backfill (+ migración de datos) y en
+  `derivarTipos` usar `tipoAlta` solo como fallback cuando no haya cargos activos.
+- **Frontend:** sin cambios; pinta `tiposParticipacion` tal como llega.
+
+### [ ] P27. Contexto de cargo `GUARDIA`/`CONSERJE` (frontend)
+- **Issue:** https://github.com/JhonayoDev/comunidad-frontend/issues/50 (bug, Project 3)
+- **Dónde:** `src/stores/authStore.js` (`CARGO_LABELS` local con 5 cargos, `contextos`,
+  `seleccionarCondominio`) y `portalResidente()` en `useNavigation.js`.
+- **Qué pasa:** `GUARDIA`/`CONSERJE` tienen `rolContextual='GUARDIA'`, pero no hay etiqueta ni
+  contexto → la píldora cae en "Residente" y el usuario ve el portal de residente.
+- **Propuesta:** usar el catálogo `src/data/cargos.js`, agregar el contexto `guardia`
+  (`CONTEXT_DASHBOARDS.guardia = "GuardiaDashboard"`, nav de guardia) y mapear ese contexto a
+  `"GUARDIA"` en `portalResidente()` (hoy cualquier contexto ≠ residente/trabajador/proveedor se
+  trata como `ADMINISTRADOR`).
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod
