@@ -46,6 +46,7 @@ describe("personaEmail", () => {
       passwordSetAt: "2026-11-02T10:00:00",
     });
     expect(estado.key).toBe(ESTADO_PERSONA.ACTIVO);
+    expect(estado.label).toBe("Cuenta activa");
   });
 
   it("detecta pre-activación", () => {

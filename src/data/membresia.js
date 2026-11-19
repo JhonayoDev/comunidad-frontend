@@ -7,17 +7,22 @@
  */
 
 export const ESTADOS_MEMBRESIA = [
-  { value: "ACTIVO", label: "Activas", singular: "Activa", severity: "success" },
+  {
+    value: "ACTIVO",
+    label: "Membresías activas",
+    singular: "Membresía activa",
+    severity: "success",
+  },
   {
     value: "PENDIENTE",
     label: "Pendientes de asociar",
-    singular: "Pendiente de asociar",
+    singular: "Membresía pendiente",
     severity: "warn",
   },
   {
     value: "INACTIVO",
-    label: "Inactivas",
-    singular: "Inactiva",
+    label: "Membresías inactivas",
+    singular: "Membresía inactiva",
     severity: "secondary",
   },
 ];

@@ -12,6 +12,19 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  /** Disparador mínimo (icono suelto) para cabeceras de tabla o leyendas. */
+  compact: {
+    type: Boolean,
+    default: false,
+  },
+  ariaLabel: {
+    type: String,
+    default: "Ver ayuda",
+  },
+  tooltip: {
+    type: String,
+    default: "¿Qué significa cada opción?",
+  },
 });
 
 const op = ref(null);
@@ -23,12 +36,24 @@ function toggle(event) {
 
 <template>
   <div class="inline-flex items-center">
-    <Button variant="text"
+    <button
+      v-if="compact"
+      type="button"
+      class="inline-flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 align-middle text-text-muted hover:text-text"
+      :aria-label="ariaLabel"
+      v-tooltip.top="tooltip"
+      @click="toggle"
+    >
+      <i class="pi pi-info-circle text-[0.7rem]" />
+    </button>
+    <Button
+      v-else
+      variant="text"
       icon="pi pi-info-circle"
       severity="secondary"
       rounded
-      aria-label="Ver ayuda"
-      v-tooltip.top="'¿Qué significa cada opción?'"
+      :aria-label="ariaLabel"
+      v-tooltip.top="tooltip"
       @click="toggle"
     />
     <Popover ref="op" :style="{ width: '340px', maxWidth: '90vw' }">

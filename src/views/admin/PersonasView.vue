@@ -310,6 +310,122 @@ const ayudaBusqueda = [
   },
 ];
 
+const ayudaParticipacion = [
+  {
+    titulo: "Qué es",
+    items: [
+      {
+        label: "Roles actuales de la persona aquí",
+        desc: "Es un conjunto calculado, no un campo editable: sale de sus vínculos a unidades y de sus cargos activos en este condominio.",
+      },
+      {
+        label: "Puede tener varios a la vez",
+        desc: "No se excluyen. Alguien puede ser Propietario y Administración si además ocupa un cargo del comité: verás un badge por cada rol.",
+      },
+      {
+        label: "Cambia solo",
+        desc: "Si desactivas el vínculo a la unidad o el cargo, ese badge desaparece en la siguiente carga sin editar a la persona.",
+      },
+    ],
+  },
+  {
+    titulo: "Valores",
+    items: [
+      {
+        label: "Propietario",
+        desc: "Dueño de una unidad, con el vínculo activo.",
+      },
+      {
+        label: "Arrendatario",
+        desc: "Arrienda la unidad y la ocupa como su residencia.",
+      },
+      {
+        label: "Dependiente",
+        desc: "Residente adicional de la unidad: familiar o dependiente del titular. No es dueño ni arrendatario.",
+      },
+      {
+        label: "Trabajador",
+        desc: "Cargo de trabajo activo: guardia, conserje, jardinero, etc.",
+      },
+      {
+        label: "Administración",
+        desc: "Cargo activo del comité o de la administración: presidente, secretario, tesorero o administrador.",
+      },
+      {
+        label: "Proveedor",
+        desc: "Registrado como proveedor del condominio: empresa o servicio externo que lo atiende.",
+      },
+    ],
+  },
+  {
+    titulo: "Para filtrar",
+    items: [
+      {
+        label: "Participación",
+        desc: "Devuelve a quienes hoy tienen ese rol activo. Si la persona acumula roles, aparece con el filtro de cualquiera de ellos.",
+      },
+      {
+        label: "Sin vínculo",
+        desc: "Membresías sin unidad, cargo ni proveedor: fichas que conviene completar o anonimizar.",
+      },
+    ],
+  },
+];
+
+const ayudaMembresia = [
+  {
+    titulo: "Membresía: pertenencia",
+    items: [
+      {
+        label: "Membresía activa",
+        desc: "La persona pertenece a este condominio: cuenta para residentes, comunicados y notificaciones.",
+      },
+      {
+        label: "Membresía pendiente",
+        desc: "Su ficha existe, pero todavía no tiene unidad ni cargo en este condominio. Puedes asociarla o completarla.",
+      },
+      {
+        label: "Membresía inactiva",
+        desc: "Se le dio de baja aquí. Conserva su ficha y sus otros condominios, y se puede reactivar sin volver a crearla.",
+      },
+      {
+        label: "Es por condominio",
+        desc: "Cada membresía es independiente: la misma persona puede estar activa aquí e inactiva en otro condominio.",
+      },
+    ],
+  },
+  {
+    titulo: "Cuenta: acceso a la app",
+    items: [
+      {
+        label: "Cuenta activa",
+        desc: "Ya configuró su contraseña y puede iniciar sesión.",
+      },
+      {
+        label: "Sin usuario",
+        desc: "No se le creó cuenta: puede pertenecer al condominio y aun así no poder entrar a la app.",
+      },
+      {
+        label: "Setup pendiente",
+        desc: "La cuenta existe y se envió el correo de configuración, pero todavía no define su contraseña.",
+      },
+      {
+        label: "Cambio de email pendiente",
+        desc: "Debe confirmar el nuevo correo antes de que la cuenta quede operativa.",
+      },
+    ],
+  },
+  {
+    titulo: "Cómo se relacionan",
+    items: [
+      {
+        label: "Son estados independientes",
+        desc: "Membresía = pertenencia al condominio. Cuenta = acceso a la plataforma. Puede haber membresía activa sin cuenta, o cuenta activa con la membresía ya inactiva.",
+      },
+    ],
+  },
+];
+
 const tipoVinculoLabels = Object.fromEntries(
   TIPOS_VINCULO_UNIDAD.map((tipo) => [tipo.value, tipo.label]),
 );
@@ -1813,7 +1929,7 @@ async function crearUsuario() {
         </div>
 
         <div class="flex flex-col gap-1">
-          <span class="text-xs font-semibold text-text-muted">Membresías</span>
+          <span class="text-xs font-semibold text-text-muted">Condominios</span>
           <div
             v-if="!(personaBuscada.membresias || []).length"
             class="text-sm text-text-muted"
@@ -2000,6 +2116,28 @@ async function crearUsuario() {
       <template v-else>
         <div class="flex flex-col gap-2 md:hidden">
           <div
+            class="flex flex-wrap items-center gap-3 text-xs text-text-muted"
+          >
+            <span class="inline-flex items-center gap-1">
+              Participación
+              <InfoAyudaVista
+                compact
+                titulo="Participación"
+                aria-label="Qué significa la participación"
+                :secciones="ayudaParticipacion"
+              />
+            </span>
+            <span class="inline-flex items-center gap-1">
+              Membresía y cuenta
+              <InfoAyudaVista
+                compact
+                titulo="Membresía y cuenta"
+                aria-label="Qué significan la membresía y la cuenta"
+                :secciones="ayudaMembresia"
+              />
+            </span>
+          </div>
+          <div
             v-for="p in personasPagina"
             :key="p.id"
             class="bg-surface border border-border-soft rounded-lg p-3"
@@ -2184,8 +2322,28 @@ async function crearUsuario() {
                 <th>RUT</th>
                 <th>Email</th>
                 <th>Teléfono</th>
-                <th>Participación</th>
-                <th>Membresía</th>
+                <th>
+                  <span class="inline-flex items-center gap-1">
+                    Participación
+                    <InfoAyudaVista
+                      compact
+                      titulo="Participación"
+                      aria-label="Qué significa la participación"
+                      :secciones="ayudaParticipacion"
+                    />
+                  </span>
+                </th>
+                <th>
+                  <span class="inline-flex items-center gap-1">
+                    Membresía
+                    <InfoAyudaVista
+                      compact
+                      titulo="Membresía y cuenta"
+                      aria-label="Qué significan la membresía y la cuenta"
+                      :secciones="ayudaMembresia"
+                    />
+                  </span>
+                </th>
                 <th class="text-right">Acciones</th>
               </tr>
             </thead>

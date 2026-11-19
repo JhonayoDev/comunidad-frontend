@@ -29,9 +29,9 @@ describe("membresia", () => {
   });
 
   it("etiqueta singular de estados de membresía", () => {
-    expect(labelEstadoMembresia("ACTIVO")).toBe("Activa");
-    expect(labelEstadoMembresia("PENDIENTE")).toBe("Pendiente de asociar");
-    expect(labelEstadoMembresia("INACTIVO")).toBe("Inactiva");
+    expect(labelEstadoMembresia("ACTIVO")).toBe("Membresía activa");
+    expect(labelEstadoMembresia("PENDIENTE")).toBe("Membresía pendiente");
+    expect(labelEstadoMembresia("INACTIVO")).toBe("Membresía inactiva");
     expect(severityEstadoMembresia("INACTIVO")).toBe("secondary");
   });
 

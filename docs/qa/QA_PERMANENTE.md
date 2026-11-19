@@ -72,6 +72,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 - [ ] Nombre, teléfono o casa **no** disparan la búsqueda global: la barra indica que hace falta email completo o RUT.
 - [ ] Búsqueda local: `munoz` encuentra `Muñoz`, `perez juan` encuentra `Juan Pérez`, `1234` encuentra por teléfono y `12345` por RUT parcial.
 - [ ] Contador "N de M coincidencias" con `aria-live`; se actualiza al filtrar.
+- [ ] Cada fila muestra `Membresía …` y `Cuenta …` (no `Activa`/`Activo` sueltos), y las cabeceras **Participación** y **Membresía** tienen un (i) con la explicación de cada valor; en mobile la leyenda aparece **una sola vez** sobre la lista (no por fila).
 - [ ] Filtros en una **fila desplegable** (Mostrar/Ocultar con `aria-expanded`): `Estado`, `Participación` y "Solo sin vínculo"; el botón muestra el contador y los chips removibles aparecen al aplicar. "Limpiar filtros" deja `Estado = Todos` sin tocar la búsqueda.
 - [ ] El texto explicativo vive en el **(i)** "Cómo buscar personas", no como párrafo fijo; al llegar con filtros en la URL el panel aparece abierto.
 - [ ] Estado en URL (`?q=&estado=&tipo=&sinVinculo=1&page=`): recargar y atrás/adelante restauran búsqueda, filtros y página; otros query params se preservan.
