@@ -96,8 +96,7 @@ describe("contextoInicial (portal al seleccionar condominio)", () => {
   });
 });
 
-describe("construirContextos (píldoras del header)", () => {
-  it.each(CARGOS)(
+describe("construirContextos (píldoras del header)", () => {  it.each(CARGOS)(
     "muestra solo el contexto del cargo %s",
     (cargo, rolContextual, clave, etiqueta) => {
       expect(
@@ -152,6 +151,48 @@ describe("construirContextos (píldoras del header)", () => {
     expect(construirContextos({})).toEqual([
       { key: "residente", label: "Residente" },
     ]);
+  });
+});
+
+describe("varios cargos activos (contrato futuro `cargos`)", () => {
+  it("agrega una píldora por cada cargo además del principal", () => {
+    expect(
+      construirContextos({
+        cargo: "ADMINISTRADOR",
+        cargos: ["ADMINISTRADOR", "CONSERJE"],
+        tiposParticipacion: ["PROPIETARIO", "ADMINISTRACION"],
+        rolContextual: "ADMINISTRADOR",
+      }).map((c) => c.key),
+    ).toEqual(["residente", "administrador", "guardia"]);
+  });
+
+  it("no duplica el portal cuando los cargos comparten espacio", () => {
+    expect(
+      construirContextos({
+        cargo: "GUARDIA",
+        cargos: ["GUARDIA", "CONSERJE"],
+        rolContextual: "GUARDIA",
+      }),
+    ).toEqual([{ key: "guardia", label: "Guardia" }]);
+  });
+
+  it("usa la lista cuando el backend no envía `cargo`", () => {
+    expect(construirContextos({ cargos: ["CONSERJE"] })).toEqual([
+      { key: "guardia", label: "Guardia" },
+    ]);
+  });
+
+  it("respeta el cargo principal para el portal inicial", () => {
+    expect(
+      contextoInicial({
+        cargo: "ADMINISTRADOR",
+        cargos: ["ADMINISTRADOR", "CONSERJE"],
+      }),
+    ).toBe("administrador");
+  });
+
+  it("deriva el portal inicial del primer cargo de la lista sin `cargo`", () => {
+    expect(contextoInicial({ cargos: ["CONSERJE"] })).toBe("guardia");
   });
 });
 

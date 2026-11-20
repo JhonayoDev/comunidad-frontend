@@ -3,8 +3,10 @@ import { labelCargo } from "@/data/cargos";
 /**
  * Mapa cargo → clave del contexto (portal).
  *
- * El backend entrega un solo cargo activo por condominio y un `rolContextual`;
- * varios cargos comparten espacio de trabajo:
+ * El contrato actual del backend entrega un solo cargo activo por condominio
+ * (`cargo` + `rolContextual`), pero una persona puede tener varios cargos. En
+ * cuanto el backend exponga la lista (`cargos`), los helpers la aceptan y
+ * generan una píldora por cada espacio; varios cargos comparten espacio:
  * - `GUARDIA` y `CONSERJE` → portal de guardia.
  * - `JARDINERO` y `MANTENCION` → portal de trabajador.
  * - El comité y el administrador tienen cada uno su propio espacio.
@@ -62,6 +64,17 @@ function etiquetaDeContexto(clave, cargo) {
   return clave;
 }
 
+/**
+ * Cargos activos del condominio. Prioriza `cargo` (contrato actual) y suma la
+ * lista `cargos` cuando el backend la entregue, sin duplicados. Mantener
+ * `cargo` primero preserva el portal inicial de siempre.
+ */
+function cargosActivos({ cargo = null, cargos = null } = {}) {
+  const lista = Array.isArray(cargos) ? [...cargos] : [];
+  if (cargo && !lista.includes(cargo)) lista.unshift(cargo);
+  return lista;
+}
+
 function esResidencial(tiposParticipacion) {
   return (tiposParticipacion || []).some((tipo) =>
     TIPOS_RESIDENCIALES.includes(tipo),
@@ -76,6 +89,7 @@ function esResidencial(tiposParticipacion) {
 export function construirContextos({
   tiposParticipacion = [],
   cargo = null,
+  cargos = null,
   rolContextual = null,
 } = {}) {
   const claves = [];
@@ -83,21 +97,29 @@ export function construirContextos({
     if (clave && !claves.includes(clave)) claves.push(clave);
   };
 
-  const contextoDelCargo = contextoDeCargo(cargo);
+  const activos = cargosActivos({ cargo, cargos });
+  const clavesDeCargos = activos.map(contextoDeCargo).filter(Boolean);
+  const cargoPorClave = new Map();
+  for (let i = 0; i < clavesDeCargos.length; i += 1) {
+    if (!cargoPorClave.has(clavesDeCargos[i])) {
+      cargoPorClave.set(clavesDeCargos[i], activos[i]);
+    }
+  }
+
   const esTrabajador =
-    rolContextual === "TRABAJADOR" || contextoDelCargo === "trabajador";
+    rolContextual === "TRABAJADOR" || clavesDeCargos.includes("trabajador");
   const esGuardia =
-    rolContextual === "GUARDIA" || contextoDelCargo === "guardia";
+    rolContextual === "GUARDIA" || clavesDeCargos.includes("guardia");
   const esProveedor =
     rolContextual === "PROVEEDOR" ||
     (tiposParticipacion || []).includes("PROVEEDOR");
   const tieneContextoPropio =
-    Boolean(contextoDelCargo) || esTrabajador || esGuardia || esProveedor;
+    clavesDeCargos.length > 0 || esTrabajador || esGuardia || esProveedor;
 
   if (esResidencial(tiposParticipacion) || !tieneContextoPropio) {
     agregar("residente");
   }
-  agregar(contextoDelCargo);
+  clavesDeCargos.forEach(agregar);
   if (esGuardia) agregar("guardia");
   if (esTrabajador) agregar("trabajador");
   if (esProveedor) agregar("proveedor");
@@ -105,7 +127,7 @@ export function construirContextos({
 
   return claves.map((clave) => ({
     key: clave,
-    label: etiquetaDeContexto(clave, cargo),
+    label: etiquetaDeContexto(clave, cargoPorClave.get(clave)),
   }));
 }
 
@@ -117,11 +139,14 @@ export function construirContextos({
 export function contextoInicial({
   tiposParticipacion = [],
   cargo = null,
+  cargos = null,
   rolContextual = null,
 } = {}) {
   if (esResidencial(tiposParticipacion)) return "residente";
 
-  const contextoDelCargo = contextoDeCargo(cargo);
+  const contextoDelCargo = contextoDeCargo(
+    cargosActivos({ cargo, cargos })[0],
+  );
   if (contextoDelCargo) return contextoDelCargo;
 
   if (rolContextual === "GUARDIA") return "guardia";

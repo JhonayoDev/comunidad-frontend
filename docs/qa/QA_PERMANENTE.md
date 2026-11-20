@@ -74,6 +74,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 - [ ] `JARDINERO`/`MANTENCION` siguen en `TrabajadorDashboard` y `PRESIDENTE`/`TESORERO`/`SECRETARIO`/`DELEGADO`/`ADMINISTRADOR` en su dashboard; sin regresiones.
 - [ ] PWA instalada: la bottom nav muestra la barra de guardia (Visita · Bitácora · Home · Autoriz. · Encomiendas), no la de residente.
 - [ ] `MisPermisos` del cargo muestra los permisos reales (`DASHBOARD_GUARDIA`, `ACCESO_*`, `ENCOMIENDA_*`, …) sin "sin catalogar" nuevos.
+- [ ] **Multi-cargo (bloqueado por [briku#108](https://github.com/JhonayoDev/briku/issues/108)):** una persona con dos cargos activos (`ADMINISTRADOR` + `CONSERJE`, p. ej. `juan ramirez` en *Vista Horizonte*) muestra las píldoras **Residente · Administrador · Guardia** y cada una abre su menú/dashboard. Mientras el backend no envíe `cargos`, solo se ven las dos primeras.
 
 ### R2 — Búsqueda de Personas (issue #47)
 

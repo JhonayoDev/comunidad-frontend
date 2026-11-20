@@ -400,9 +400,31 @@ Histórico V57-V61 conservado abajo.
   `activeContext` válido al cambiar o restaurar condominio. Tests nuevos:
   `contextoParticipacion.test.js` y `authStore.contextos.test.js` (9 cargos, residencial+cargo y
   corrección de `activeContext`) + casos del guard en `navigationGuard.test.js` y `useNavigation.test.js`.
-  Suite **460/460**.
+  Suite **466/466**.
 - **QA pendiente (en vivo):** ronda **R3** de `docs/qa/QA_PERMANENTE.md` (caso guía
   `Jorge Andrés Silva Núñez`, cargo `GUARDIA` en *Condominio Los Robles*).
+
+### [ ] P28. `/me/condominios` entrega un solo cargo (bloquea multi-cargo en el header)
+- **Issue:** https://github.com/JhonayoDev/briku/issues/108 (bug, Project 3)
+- **Dónde:** `CondominioAccessService.cargoEnCondominio()`/`contexto()` (`cargos.stream().findFirst()`),
+  `CondominioResumen` (`cargo`/`rolContextual` únicos) y `CargoService.resolverRolContextual`
+  (prioriza `ADMINISTRADOR`).
+- **Qué pasa:** una persona con **dos cargos activos** solo recibe uno. Caso real en dev:
+  `juan ramirez` (*Vista Horizonte*) tiene `ADMINISTRADOR` (2026-09-10) y `CONSERJE` (2026-11-20)
+  activos; el header muestra "Residente" y "Administrador", sin píldora "Guardia" ni menú de
+  guardia. Los permisos sí se suman de todos los cargos
+  (`findPermisosByPersonaIdAndCondominioId`), por lo que el portal de guardia no daría 403: solo
+  falta el dato.
+- **Propuesta:** agregar `List<String> cargos` a `CondominioResumen` (`GET /me/condominios`) con
+  todos los cargos activos, manteniendo `cargo`/`rolContextual` para compatibilidad.
+- **Frontend (ya preparado):** `src/utils/contextoParticipacion.js` acepta `cargos: string[]`
+  además de `cargo` (`cargosActivos`, píldora por espacio con dedupe) y `authStore` expone
+  `condominioActualCargos` y lo pasa a `construirContextos`/`contextoInicial`; `puedeAcceder` valida
+  `meta.cargos` contra la lista. En cuanto el backend envíe `cargos`, ADMINISTRADOR + CONSERJE
+  mostrará **Residente · Administrador · Guardia** sin cambios.
+- **QA pendiente (en vivo):** al implementarse, repetir la ronda **R3** con Juan Ramírez
+  (*Vista Horizonte*): debe aparecer la píldora "Guardia" y, al activarla, el menú/dashboard de
+  guardia.
 
 ## Pendientes de verificación (QA)
 

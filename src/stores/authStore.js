@@ -58,6 +58,12 @@ export const useAuthStore = defineStore("auth", () => {
   const condominioActualCargo = computed(
     () => condominioActual.value?.cargo || null,
   );
+  // Lista de cargos activos. Hoy el backend entrega uno solo (`cargo`); cuando
+  // exponga todos los cargos de la persona, esta lista habilita una píldora por
+  // espacio sin cambiar el mapeo cargo → contexto.
+  const condominioActualCargos = computed(
+    () => condominioActual.value?.cargos || [],
+  );
   // Rol contextual del condominio (usuario_condominios o derivado del cargo),
   // distinto del rol global del JWT (`rolAcceso`). Es la fuente para elegir el
   // portal de trabajador/proveedor.
@@ -117,6 +123,7 @@ export const useAuthStore = defineStore("auth", () => {
     construirContextos({
       tiposParticipacion: condominioActualTiposParticipacion.value,
       cargo: condominioActualCargo.value,
+      cargos: condominioActualCargos.value,
       rolContextual: condominioActualRolContextual.value,
     }),
   );
@@ -245,6 +252,7 @@ export const useAuthStore = defineStore("auth", () => {
     activeContext.value = contextoInicial({
       tiposParticipacion: encontrado.tiposParticipacion || [],
       cargo: encontrado.cargo,
+      cargos: encontrado.cargos || [],
       rolContextual: encontrado.rolContextual,
     });
     localStorage.setItem("condominioActual", JSON.stringify(encontrado));
@@ -324,6 +332,7 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActualTiposParticipacion,
     esParticipacionResidencial,
     condominioActualCargo,
+    condominioActualCargos,
     condominioActualStatusPago,
     condominioActualAccesoOperativo,
     esContactoFacturacion,

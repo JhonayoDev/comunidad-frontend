@@ -237,7 +237,11 @@ export function useNavigation() {
         rRoles.includes(auth.condominioActualRol) ||
         rRoles.includes(auth.condominioActualRolContextual) ||
         rRoles.includes((auth.activeContext || "").toUpperCase()));
-    const cumpleCargo = necesitaCargo && rCargos.includes(auth.condominioActualCargo);
+    const cargosUsuario = [
+      auth.condominioActualCargo,
+      ...(auth.condominioActualCargos || []),
+    ].filter(Boolean);
+    const cumpleCargo = necesitaCargo && rCargos.some((c) => cargosUsuario.includes(c));
     return cumpleCargo || cumpleRol;
   }
 

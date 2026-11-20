@@ -93,6 +93,31 @@ describe("authStore — contextos por cargo", () => {
     expect(auth.contextDashboard).toBe("Inicio");
   });
 
+  it("muestra las píldoras de todos los cargos activos (ADMINISTRADOR + CONSERJE)", () => {
+    const auth = useAuthStore();
+    auth.condominios = [
+      condominio({
+        cargo: "ADMINISTRADOR",
+        cargos: ["ADMINISTRADOR", "CONSERJE"],
+        rolContextual: "ADMINISTRADOR",
+        tiposParticipacion: ["PROPIETARIO", "ADMINISTRACION"],
+      }),
+    ];
+
+    auth.seleccionarCondominio("cid-1");
+
+    expect(auth.activeContext).toBe("residente");
+    expect(auth.condominioActualCargos).toEqual([
+      "ADMINISTRADOR",
+      "CONSERJE",
+    ]);
+    expect(auth.contextos.map((c) => c.key)).toEqual([
+      "residente",
+      "administrador",
+      "guardia",
+    ]);
+  });
+
   it("corrige el contexto activo si el condominio cambia a otro con contextos distintos", async () => {
     const auth = useAuthStore();
     auth.condominios = [condominio({ cargo: "PRESIDENTE" })];
