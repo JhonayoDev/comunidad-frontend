@@ -183,6 +183,7 @@ function nombresDe(items) {
 const RUTAS_RESIDENTE = new Set(nombresDe(RESIDENTE_ITEMS));
 const RUTAS_TRABAJADOR = new Set(nombresDe(NAV_ITEMS_BY_ROLE.TRABAJADOR));
 const RUTAS_PROVEEDOR = new Set(nombresDe(NAV_ITEMS_BY_ROLE.PROVEEDOR));
+const RUTAS_GUARDIA = new Set(nombresDe(NAV_ITEMS_BY_ROLE.GUARDIA));
 const RUTAS_POR_CARGO = new Map(
   Object.entries(CARGO_NAV_ITEMS).map(([cargo, items]) => [
     cargo.toLowerCase(),
@@ -204,6 +205,7 @@ export function contextosDeRuta(routeName) {
   }
   if (RUTAS_TRABAJADOR.has(routeName)) contextos.push("trabajador");
   if (RUTAS_PROVEEDOR.has(routeName)) contextos.push("proveedor");
+  if (RUTAS_GUARDIA.has(routeName)) contextos.push("guardia");
   return contextos;
 }
 
@@ -250,12 +252,16 @@ export function useNavigation() {
    * portal por defecto.
    */
   function portalResidente() {
+    if (auth.activeContext === "guardia") return "GUARDIA";
     if (auth.activeContext === "trabajador") return "TRABAJADOR";
     if (auth.activeContext === "proveedor") return "PROVEEDOR";
     if (auth.activeContext && auth.activeContext !== "residente") {
       return "ADMINISTRADOR";
     }
     const contextual = auth.condominioActualRolContextual;
+    if (contextual === "GUARDIA" && !auth.esParticipacionResidencial) {
+      return "GUARDIA";
+    }
     if (
       contextual === "TRABAJADOR" &&
       !auth.esParticipacionResidencial
@@ -284,6 +290,9 @@ export function useNavigation() {
       if (portal === "PROVEEDOR") {
         return filtrar(NAV_ITEMS_BY_ROLE.PROVEEDOR);
       }
+      if (portal === "GUARDIA") {
+        return filtrar(NAV_ITEMS_BY_ROLE.GUARDIA);
+      }
       if (auth.activeContext === "residente") {
         return filtrar(RESIDENTE_ITEMS);
       }
@@ -306,7 +315,11 @@ export function useNavigation() {
 
     if (role === "RESIDENTE") {
       const portal = portalResidente();
-      if (portal === "TRABAJADOR" || portal === "PROVEEDOR") {
+      if (
+        portal === "TRABAJADOR" ||
+        portal === "PROVEEDOR" ||
+        portal === "GUARDIA"
+      ) {
         return [
           {
             label: "",

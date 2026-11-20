@@ -60,6 +60,21 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 
 > Cada ronda en curso mantiene su checklist aquí. Al cerrarla se marca el resultado y se agrega la fila en la sección 6.
 
+### R3 — Contexto del cargo guardia/conserje (issue #50)
+
+> Alcance: un usuario **sin participación residencial** cuyo cargo es `GUARDIA` o `CONSERJE` debe entrar al portal de guardia (píldora "Guardia" si tiene más de un contexto, `GuardiaDashboard`, menú y bottom nav de guardia) en vez de caer en "Residente". `JARDINERO`/`MANTENCION` conservan el portal "Trabajador" y el comité el suyo.
+> Caso guía: `Jorge Andrés Silva Núñez` (cargo `GUARDIA` en *Condominio Los Robles*, sin vínculo de unidad) y un `CONSERJE` equivalente.
+
+- [ ] Login del cargo `GUARDIA` sin unidad → aterriza en `/guardia` (`GuardiaDashboard`), no en `Inicio`.
+- [ ] Header: no aparece la píldora "Residente"; con un solo contexto no hay píldoras y el menú es el de guardia (Inicio, Portón, Encomiendas, Bitácora, Autoriz., Solic., Checklist).
+- [ ] Cargo `CONSERJE` → mismo portal y mismas rutas que `GUARDIA` (sin 403).
+- [ ] URL directa a `/mi-unidad`, `/mis-deudas` o `/inicio` con contexto guardia → redirige a `/guardia` (sin bucle).
+- [ ] Un residente con cargo `GUARDIA` ve **dos** píldoras (Residente + Guardia); cambiar de píldora cambia menú y Home en ambos sentidos.
+- [ ] Recargar con el condominio guardia seleccionado mantiene el contexto guardia (no vuelve a residente).
+- [ ] `JARDINERO`/`MANTENCION` siguen en `TrabajadorDashboard` y `PRESIDENTE`/`TESORERO`/`SECRETARIO`/`DELEGADO`/`ADMINISTRADOR` en su dashboard; sin regresiones.
+- [ ] PWA instalada: la bottom nav muestra la barra de guardia (Visita · Bitácora · Home · Autoriz. · Encomiendas), no la de residente.
+- [ ] `MisPermisos` del cargo muestra los permisos reales (`DASHBOARD_GUARDIA`, `ACCESO_*`, `ENCOMIENDA_*`, …) sin "sin catalogar" nuevos.
+
 ### R2 — Búsqueda de Personas (issue #47)
 
 > Alcance: barra única con `IconField`, ayuda contextual en un (i), filtros en una fila desplegable con chips, búsqueda de identidad inline (email completo o RUT válido, debounce 400 ms), normalización de acentos/RUT/teléfono, filtro "Solo sin vínculo", estado en URL y `:draggable="false"` en los diálogos de la vista.
@@ -172,7 +187,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 
 ## 3. Matriz de regresión por módulo
 
-**●** = tocada por alguna entrega en curso (R1 / PR #45, R2 / #47) → revisión obligatoria.
+**●** = tocada por alguna entrega en curso (R1 / PR #45, R2 / #47, R3 / #50) → revisión obligatoria.
 **Prioridad:** P1 = bloquea operación o corrompe datos · P2 = funcionalidad importante · P3 = cosmético.
 
 ### 3.1 Autenticación (público)
@@ -256,6 +271,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 | GUA-07 | `ChecklistTemplates` | Guardia/Admin + cargos | Plantillas, toggle Sí/No legible (claro/oscuro) | | P3 | ⬜ |
 | GUA-08 | `Autorizaciones` | Guardia/Admin + cargos | Aprobar/rechazar, tipos, vencimiento | | P1 | ⬜ |
 | GUA-09 | `Solicitudes` / `Escanear` | Guardia | Placeholder "en construcción" (sin `404`) | | P3 | ⬜ |
+| GUA-10 | Contexto de cargo `GUARDIA`/`CONSERJE` | Guardia/Conserje | Píldora "Guardia" (no "Residente"), `GuardiaDashboard`, menú/bottom nav de guardia, `JARDINERO`/`MANTENCION` en portal trabajador | ● | P1 | ⬜ |
 
 ### 3.7 Residente
 
@@ -329,6 +345,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 
 | Ronda | Fecha | Alcance | Commit / PR | Resultado | Hallazgos | Pendiente |
 |---|---|---|---|---|---|---|
+| R3 | — | Contexto del cargo guardia/conserje (#50) | `fix/personas-busqueda` | ⬜ | — | — |
 | R2 | — | Búsqueda de Personas (#47) | `fix/personas-busqueda` | ⬜ | — | — |
 | R1 | — | Épica #44 / PR #45 | `fix/personas-crear-vincular-42` | ⬜ | — | — |
 

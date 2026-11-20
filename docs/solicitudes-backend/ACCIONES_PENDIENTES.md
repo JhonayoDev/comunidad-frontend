@@ -384,16 +384,25 @@ Histórico V57-V61 conservado abajo.
   `derivarTipos` usar `tipoAlta` solo como fallback cuando no haya cargos activos.
 - **Frontend:** sin cambios; pinta `tiposParticipacion` tal como llega.
 
-### [ ] P27. Contexto de cargo `GUARDIA`/`CONSERJE` (frontend)
+### [x] P27. Contexto de cargo `GUARDIA`/`CONSERJE` (frontend) — ✅ Implementado
 - **Issue:** https://github.com/JhonayoDev/comunidad-frontend/issues/50 (bug, Project 3)
 - **Dónde:** `src/stores/authStore.js` (`CARGO_LABELS` local con 5 cargos, `contextos`,
   `seleccionarCondominio`) y `portalResidente()` en `useNavigation.js`.
-- **Qué pasa:** `GUARDIA`/`CONSERJE` tienen `rolContextual='GUARDIA'`, pero no hay etiqueta ni
-  contexto → la píldora cae en "Residente" y el usuario ve el portal de residente.
-- **Propuesta:** usar el catálogo `src/data/cargos.js`, agregar el contexto `guardia`
-  (`CONTEXT_DASHBOARDS.guardia = "GuardiaDashboard"`, nav de guardia) y mapear ese contexto a
-  `"GUARDIA"` en `portalResidente()` (hoy cualquier contexto ≠ residente/trabajador/proveedor se
-  trata como `ADMINISTRADOR`).
+- **Qué pasaba:** `GUARDIA`/`CONSERJE` tienen `rolContextual='GUARDIA'`, pero no había etiqueta ni
+  contexto → la píldora caía en "Residente" y el usuario veía el portal de residente.
+- **Implementado:** la lógica se movió a `src/utils/contextoParticipacion.js`
+  (`CONTEXTO_POR_CARGO`, `CONTEXT_DASHBOARDS`, `construirContextos`, `contextoInicial`): `GUARDIA` y
+  `CONSERJE` comparten el contexto `guardia` (dashboard `GuardiaDashboard`), `JARDINERO` y
+  `MANTENCION` el de `trabajador`, y el comité conserva el suyo; las etiquetas salen de
+  `src/data/cargos.js` (sin catálogo duplicado). `portalResidente()` mapea `guardia` → `"GUARDIA"`,
+  `navItems`/`groupedNavItems` usan `NAV_ITEMS_BY_ROLE.GUARDIA`, `contextosDeRuta` incluye las rutas
+  de guardia y `useBottomNav` respeta ese portal. Un `watch` sobre `contextos` mantiene
+  `activeContext` válido al cambiar o restaurar condominio. Tests nuevos:
+  `contextoParticipacion.test.js` y `authStore.contextos.test.js` (9 cargos, residencial+cargo y
+  corrección de `activeContext`) + casos del guard en `navigationGuard.test.js` y `useNavigation.test.js`.
+  Suite **460/460**.
+- **QA pendiente (en vivo):** ronda **R3** de `docs/qa/QA_PERMANENTE.md` (caso guía
+  `Jorge Andrés Silva Núñez`, cargo `GUARDIA` en *Condominio Los Robles*).
 
 ## Pendientes de verificación (QA)
 

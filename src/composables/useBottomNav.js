@@ -15,11 +15,17 @@ export function useBottomNav() {
     let rol = rolesGlobales.includes("SUPER_ADMIN")
       ? "SUPER_ADMIN"
       : auth.condominioActualRol || rolesGlobales[0] || "";
-    // Un usuario con rol base RESIDENTE pero portal trabajador/proveedor no
-    // debe ver la barra de residente.
+    // Un usuario con rol base RESIDENTE pero portal guardia/trabajador/proveedor
+    // no debe ver la barra de residente.
     if (rol === "RESIDENTE") {
       const portal = portalResidente();
-      if (portal === "TRABAJADOR" || portal === "PROVEEDOR") rol = portal;
+      if (
+        portal === "GUARDIA" ||
+        portal === "TRABAJADOR" ||
+        portal === "PROVEEDOR"
+      ) {
+        rol = portal;
+      }
     }
     const set = BOTTOM_NAV_BY_ROLE[rol] || [];
     return set.filter((item) => puedeAcceder(item.routeName));

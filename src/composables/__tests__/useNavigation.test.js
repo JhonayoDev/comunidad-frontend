@@ -31,6 +31,16 @@ describe("contextosDeRuta", () => {
     expect(contextosDeRuta("ProveedorDashboard")).toEqual(["proveedor"]);
   });
 
+  it("ubica el portal del cargo guardia/conserje", () => {
+    expect(contextosDeRuta("GuardiaDashboard")).toEqual(["guardia"]);
+    expect(contextosDeRuta("Porton")).toContain("guardia");
+    expect(contextosDeRuta("Encomiendas")).toContain("guardia");
+    expect(contextosDeRuta("Bitacora")).toContain("guardia");
+    expect(contextosDeRuta("Autorizaciones")).toContain("guardia");
+    expect(contextosDeRuta("ChecklistTemplates")).toContain("guardia");
+    expect(contextosDeRuta("Inicio")).not.toContain("guardia");
+  });
+
   it("deja sin contexto las rutas auxiliares fuera del menú", () => {
     expect(contextosDeRuta("BusquedaDetalle")).toEqual([]);
     expect(contextosDeRuta("RegistrarVisita")).toEqual([]);
