@@ -1,420 +1,918 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
-import { unidadesService } from "@/services/unidadesService";
-import { personasService } from "@/services/personasService";
+import { useUnidadesConsulta } from "@/composables/useUnidadesConsulta";
 import { mensajeError } from "@/utils/errores";
+import {
+  admiteVehiculos,
+  contarRecursos,
+  filtrarUnidades,
+  labelTipoUnidad,
+  opcionesPiso,
+  opcionesSector,
+  opcionesTipoUnidad,
+  paginarUnidades,
+  personaPrincipal,
+  recursosDeUnidad,
+} from "@/utils/unidadesConsulta";
 
 import Card from "primevue/card";
 import Button from "primevue/button";
-import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
+import IconField from "primevue/iconfield";
+import InputIcon from "primevue/inputicon";
 import Select from "primevue/select";
 import Tag from "primevue/tag";
 import Skeleton from "primevue/skeleton";
 import Message from "primevue/message";
-import InputSwitch from "primevue/inputswitch";
+import Chip from "primevue/chip";
+import Paginator from "primevue/paginator";
 import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
 
+import ResumenCondominio from "@/components/unidades/ResumenCondominio.vue";
+import PanelUnidadCondominio from "@/components/unidades/PanelUnidadCondominio.vue";
+import UnidadDetalle from "@/components/unidades/UnidadDetalle.vue";
+import DialogoEditarPersona from "@/components/unidades/DialogoEditarPersona.vue";
+import DialogoQuitarPersona from "@/components/unidades/DialogoQuitarPersona.vue";
+import DialogoAgregarVehiculo from "@/components/unidades/DialogoAgregarVehiculo.vue";
+
 const auth = useAuthStore();
+const route = useRoute();
+const router = useRouter();
 const confirm = useConfirm();
 
-const loading = ref(true);
-const error = ref(null);
-const unidades = ref([]);
-const sectores = ref([]);
+const {
+  cargando,
+  errorCarga,
+  advertencias,
+  resumen,
+  unidadCondominio,
+  recursosCondominio,
+  indice,
+  viviendas,
+  cargandoVinculos,
+  errorVinculos,
+  puedeVerVinculos,
+  puedeEditarPersona,
+  puedeDesvincular,
+  puedeQuitarPersona,
+  puedeCrearVehiculo,
+  puedeEditarVehiculo,
+  puedeEliminarVehiculo,
+  cargar,
+  cargarVinculos,
+  vinculosDe,
+  obtenerPersona,
+  actualizarPersona,
+  desvincularPersonaDeUnidad,
+  quitarPersonaDelCondominio,
+  desvincularVehiculo,
+  moverVehiculo,
+  crearVehiculo,
+  vehiculosFueraDe,
+} = useUnidadesConsulta();
 
-const showCrear = ref(false);
+const TAMANO_PAGINA = 25;
+
+const busqueda = ref("");
+const tipoFiltro = ref(null);
+const sectorFiltro = ref(null);
+const pisoFiltro = ref(null);
+const pagina = ref(1);
+const mostrarFiltros = ref(false);
+const inicializadoUrl = ref(false);
+const unidadExpandidaId = ref(null);
+
+const exito = ref(null);
+const errorAccion = ref(null);
+
 const showEditar = ref(false);
-const unidadEditando = ref(null);
-const enviando = ref(false);
+const personaEditando = ref(null);
+const guardandoPersona = ref(false);
+const errorEditar = ref(null);
 
-const formCrear = ref({ numero: "", tipo: "CASA", sectorId: null, direccion: "" });
-const formEditar = ref({ numero: "", tipo: "CASA", sectorId: null, direccion: "" });
+const showQuitar = ref(false);
+const vinculoAQuitar = ref(null);
+const guardandoQuitar = ref(false);
+const errorQuitar = ref(null);
 
-const tiposUnidad = [
-  { label: "Casa", value: "CASA" },
-  { label: "Departamento", value: "DEPARTAMENTO" },
-  { label: "Otro", value: "OTRO" },
-];
+const showVehiculo = ref(false);
+const guardandoVehiculo = ref(false);
+const errorVehiculo = ref(null);
 
-const capacidadConfig = [
-  { tipo: "CASA", label: "Casas", suffix: "Casas" },
-  { tipo: "DEPARTAMENTO", label: "Departamentos", suffix: "Departamentos" },
-  { tipo: "ESTACIONAMIENTO", label: "Estacionamientos", suffix: "Estacionamientos" },
-  { tipo: "BODEGA", label: "Bodegas", suffix: "Bodegas" },
-  { tipo: "OTRO", label: "Otro", suffix: "Otro" },
-];
-const capacidad = ref(null);
+// ─── Derivados ───────────────────────────────────────────────
+const puedeConfigurar = computed(
+  () =>
+    auth.permisos.includes("UNIDAD_CREAR") ||
+    auth.permisos.includes("UNIDAD_EDITAR"),
+);
+const puedeVerPersonas = computed(
+  () => auth.permisos.includes("PERSONA_VER") || puedeVerVinculos.value,
+);
+const puedeVincularPersona = computed(() =>
+  auth.permisos.includes("VINCULO_CREAR"),
+);
 
-const usoPorTipo = computed(() => {
-  const map = {};
-  unidades.value.forEach((u) => {
-    map[u.tipo] = (map[u.tipo] || 0) + 1;
-  });
-  return map;
+const unidadesFiltradas = computed(() =>
+  filtrarUnidades(viviendas.value, {
+    q: busqueda.value,
+    tipo: tipoFiltro.value,
+    sector: sectorFiltro.value,
+    piso: pisoFiltro.value,
+  }),
+);
+
+const paginacion = computed(() =>
+  paginarUnidades(unidadesFiltradas.value, pagina.value, TAMANO_PAGINA),
+);
+
+const unidadesPagina = computed(() => paginacion.value.items);
+const primerRegistro = computed(() => paginacion.value.first);
+
+const opcionesTipos = computed(() => opcionesTipoUnidad(viviendas.value));
+const opcionesSectores = computed(() => opcionesSector(viviendas.value));
+const opcionesPisos = computed(() => opcionesPiso(viviendas.value));
+
+const unidadExpandida = computed(
+  () =>
+    viviendas.value.find((u) => u.id === unidadExpandidaId.value) || null,
+);
+
+const puedeAgregarVehiculo = computed(() => {
+  if (!unidadExpandida.value || !admiteVehiculos(unidadExpandida.value)) {
+    return false;
+  }
+  return puedeCrearVehiculo.value || puedeEditarVehiculo.value;
 });
 
-function capacidadDe(tipo) {
-  const cfg = capacidadConfig.find((c) => c.tipo === tipo);
-  return capacidad.value?.[`capacidad${cfg.suffix}`] ?? null;
-}
+const vehiculosMovibles = computed(() =>
+  unidadExpandida.value ? vehiculosFueraDe(unidadExpandida.value.id) : [],
+);
 
-function usoDe(tipo) {
-  if (capacidad.value) {
-    const cfg = capacidadConfig.find((c) => c.tipo === tipo);
-    const total = cfg ? capacidad.value[`total${cfg.suffix}`] : null;
-    if (total != null) return total;
+const filtrosActivos = computed(
+  () =>
+    [tipoFiltro.value, sectorFiltro.value].filter(Boolean).length +
+    (pisoFiltro.value !== null && pisoFiltro.value !== "" ? 1 : 0),
+);
+
+const chipsFiltros = computed(() => {
+  const chips = [];
+  if (tipoFiltro.value) {
+    chips.push({
+      key: "tipo",
+      label: labelTipoUnidad(tipoFiltro.value),
+      quitar: () => {
+        tipoFiltro.value = null;
+        reiniciarPagina();
+      },
+    });
   }
-  return usoPorTipo.value[tipo] || 0;
+  if (sectorFiltro.value) {
+    chips.push({
+      key: "sector",
+      label: `Sector ${sectorFiltro.value}`,
+      quitar: () => {
+        sectorFiltro.value = null;
+        reiniciarPagina();
+      },
+    });
+  }
+  if (pisoFiltro.value !== null && pisoFiltro.value !== "") {
+    chips.push({
+      key: "piso",
+      label: `Piso ${pisoFiltro.value}`,
+      quitar: () => {
+        pisoFiltro.value = null;
+        reiniciarPagina();
+      },
+    });
+  }
+  return chips;
+});
+
+// ─── Helpers de fila ─────────────────────────────────────────
+function recursosDe(u) {
+  return recursosDeUnidad(indice.value, u.id);
 }
 
-function tipoAlLimite(tipo) {
-  const cap = capacidadDe(tipo);
-  return cap != null && usoDe(tipo) >= cap;
+function conteoDe(u) {
+  return contarRecursos(indice.value, u.id);
 }
 
-function tipoAlLimiteAlEditar(nuevoTipo) {
-  const u = unidadEditando.value;
-  if (!u || nuevoTipo === u.tipo) return false;
-  return tipoAlLimite(nuevoTipo);
+function personasDe(u) {
+  return vinculosDe(u.id);
 }
 
-function tipoLabel(tipo) {
-  return capacidadConfig.find((c) => c.tipo === tipo)?.label || tipo;
+function principalDe(u) {
+  return personaPrincipal(personasDe(u));
 }
 
-async function cargar() {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  loading.value = true;
-  error.value = null;
-  try {
-    const { data } = await unidadesService.getUnidades(cid);
-    unidades.value = data;
-    try {
-      const secRes = await unidadesService.getSectores(cid);
-      sectores.value = secRes.data;
-    } catch (e) {
-      // El backend no expone endpoint de sectores — la vista degrada sin ellos
-      console.error("Error al cargar sectores", e);
-      sectores.value = [];
+function resumenPersonas(u) {
+  const personas = personasDe(u);
+  if (!personas.length) return "";
+  const principal = principalDe(u);
+  return principal ? `${personas.length} · ${principal.personaNombre}` : `${personas.length}`;
+}
+
+function cargandoPersonas(u) {
+  return !!cargandoVinculos[u.id];
+}
+
+// ─── Expansión ───────────────────────────────────────────────
+async function alternarUnidad(u) {
+  if (unidadExpandidaId.value === u.id) {
+    unidadExpandidaId.value = null;
+    return;
+  }
+  unidadExpandidaId.value = u.id;
+  await cargarVinculos(u.id);
+}
+
+function irAVincularPersona() {
+  router.push({ name: "Personas" });
+}
+
+// ─── Estado en la URL (patrón Personas) ──────────────────────
+function leerUrl() {
+  const q = route.query.q;
+  if (typeof q === "string") busqueda.value = q;
+
+  const tipo = route.query.tipo;
+  if (typeof tipo === "string" && opcionesTipos.value.some((o) => o.value === tipo)) {
+    tipoFiltro.value = tipo;
+  }
+
+  const sector = route.query.sector;
+  if (
+    typeof sector === "string" &&
+    opcionesSectores.value.some((o) => o.value === sector)
+  ) {
+    sectorFiltro.value = sector;
+  }
+
+  const piso = Number.parseInt(route.query.piso, 10);
+  if (
+    Number.isFinite(piso) &&
+    opcionesPisos.value.some((o) => o.value === piso)
+  ) {
+    pisoFiltro.value = piso;
+  }
+
+  const page = Number.parseInt(route.query.page, 10);
+  if (Number.isFinite(page) && page > 0) pagina.value = page;
+
+  if (tipoFiltro.value || sectorFiltro.value || pisoFiltro.value !== null) {
+    mostrarFiltros.value = true;
+  }
+}
+
+let temporizadorUrl = null;
+function escribirUrl() {
+  if (!inicializadoUrl.value) return;
+  if (temporizadorUrl) clearTimeout(temporizadorUrl);
+  temporizadorUrl = setTimeout(() => {
+    const query = { ...route.query };
+    delete query.q;
+    delete query.tipo;
+    delete query.sector;
+    delete query.piso;
+    delete query.page;
+
+    if (busqueda.value.trim()) query.q = busqueda.value.trim();
+    if (tipoFiltro.value) query.tipo = tipoFiltro.value;
+    if (sectorFiltro.value) query.sector = sectorFiltro.value;
+    if (pisoFiltro.value !== null && pisoFiltro.value !== "") {
+      query.piso = String(pisoFiltro.value);
     }
-    try {
-      const { data: capData } = await unidadesService.getCapacidad(cid);
-      capacidad.value = capData;
-    } catch (e) {
-      // Si el endpoint de capacidad no está disponible, la vista degrada
-      // sin el cupo (solo muestra el uso derivado de la lista de unidades).
-      if (e?.response?.status !== 404) {
-        console.error("Error al cargar capacidad del condominio", e);
-      }
-      capacidad.value = null;
-    }
+    if (pagina.value > 1) query.page = String(pagina.value);
+
+    router.replace({ query }).catch((e) => {
+      console.error("Error al sincronizar la búsqueda en la URL", e);
+    });
+  }, 250);
+}
+
+watch([busqueda, tipoFiltro, sectorFiltro, pisoFiltro], escribirUrl);
+
+watch(pagina, escribirUrl);
+
+function reiniciarPagina() {
+  pagina.value = 1;
+}
+
+function limpiarBusqueda() {
+  busqueda.value = "";
+  pagina.value = 1;
+}
+
+function limpiarFiltros() {
+  tipoFiltro.value = null;
+  sectorFiltro.value = null;
+  pisoFiltro.value = null;
+  pagina.value = 1;
+}
+
+function cambiarPagina(event) {
+  pagina.value = event.page + 1;
+}
+
+// ─── Acciones: personas ─────────────────────────────────────
+async function abrirEditarPersona(vinculo) {
+  errorAccion.value = null;
+  try {
+    const detalle = await obtenerPersona(vinculo.personaId);
+    personaEditando.value = detalle;
+    errorEditar.value = null;
+    showEditar.value = true;
   } catch (e) {
-    console.error("Error al cargar unidades", e);
-    error.value = "No se pudieron cargar las unidades";
-  } finally {
-    loading.value = false;
+    console.error("Error al cargar la persona", e);
+    errorAccion.value = mensajeError(
+      e,
+      "No se pudieron cargar los datos de la persona",
+    );
   }
 }
 
-function abrirCrear() {
-  formCrear.value = { numero: "", tipo: "CASA", sectorId: null, direccion: "" };
-  showCrear.value = true;
-}
-
-async function crearUnidad() {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  enviando.value = true;
+async function guardarPersona(form) {
+  if (!personaEditando.value) return;
+  guardandoPersona.value = true;
+  errorEditar.value = null;
   try {
-    await unidadesService.crearUnidad(cid, formCrear.value);
-    showCrear.value = false;
-    await cargar();
-  } catch (e) {
-    console.error("Error al crear unidad", e);
-    error.value = mensajeError(e, "Error al crear unidad");
-  } finally {
-    enviando.value = false;
-  }
-}
-
-function abrirEditar(u) {
-  unidadEditando.value = u;
-  formEditar.value = { numero: u.numero, tipo: u.tipo, sectorId: u.sectorId || null, direccion: u.direccion || "" };
-  showEditar.value = true;
-}
-
-async function editarUnidad() {
-  const cid = auth.condominioActualId;
-  if (!cid || !unidadEditando.value) return;
-  enviando.value = true;
-  try {
-    await unidadesService.actualizarUnidad(cid, unidadEditando.value.id, formEditar.value);
+    await actualizarPersona(personaEditando.value.id, form);
     showEditar.value = false;
-    unidadEditando.value = null;
-    await cargar();
+    exito.value = `Datos de ${form.nombre} actualizados.`;
   } catch (e) {
-    console.error("Error al editar unidad", e);
+    console.error("Error al actualizar la persona", e);
+    errorEditar.value = mensajeError(e, "No se pudo guardar la persona");
   } finally {
-    enviando.value = false;
+    guardandoPersona.value = false;
   }
 }
 
-function confirmarDesactivar(u) {
+function abrirQuitarPersona(vinculo) {
+  vinculoAQuitar.value = vinculo;
+  errorQuitar.value = null;
+  showQuitar.value = true;
+}
+
+async function confirmarQuitarPersona({ alcance, motivo }) {
+  const vinculo = vinculoAQuitar.value;
+  if (!vinculo) return;
+  guardandoQuitar.value = true;
+  errorQuitar.value = null;
+  try {
+    if (alcance === "CONDOMINIO") {
+      await quitarPersonaDelCondominio(vinculo.personaId, motivo);
+      exito.value = `${vinculo.personaNombre} fue quitada del condominio. Su cuenta sigue activa en otros condominios.`;
+    } else {
+      await desvincularPersonaDeUnidad(vinculo);
+      exito.value = `${vinculo.personaNombre} ya no está vinculada a la unidad ${vinculo.unidadNumero}.`;
+    }
+    showQuitar.value = false;
+    vinculoAQuitar.value = null;
+  } catch (e) {
+    console.error("Error al quitar la persona", e);
+    errorQuitar.value = mensajeError(e, "No se pudo quitar la persona");
+  } finally {
+    guardandoQuitar.value = false;
+  }
+}
+
+// ─── Acciones: vehículos ────────────────────────────────────
+function abrirAgregarVehiculo() {
+  if (!unidadExpandida.value) return;
+  errorVehiculo.value = null;
+  showVehiculo.value = true;
+}
+
+async function moverVehiculoAUnidad(vehiculo) {
+  const unidad = unidadExpandida.value;
+  if (!unidad) return;
+  guardandoVehiculo.value = true;
+  errorVehiculo.value = null;
+  try {
+    await moverVehiculo(vehiculo, unidad.id);
+    showVehiculo.value = false;
+    exito.value = `${vehiculo.patente} ahora está en la unidad ${unidad.numero}.`;
+  } catch (e) {
+    console.error("Error al mover el vehículo", e);
+    errorVehiculo.value = mensajeError(e, "No se pudo mover el vehículo");
+  } finally {
+    guardandoVehiculo.value = false;
+  }
+}
+
+async function crearVehiculoEnUnidad(payload) {
+  const unidad = unidadExpandida.value;
+  if (!unidad) return;
+  guardandoVehiculo.value = true;
+  errorVehiculo.value = null;
+  try {
+    await crearVehiculo({ ...payload, unidadId: unidad.id });
+    showVehiculo.value = false;
+    exito.value = `${payload.patente} fue agregado a la unidad ${unidad.numero}.`;
+  } catch (e) {
+    console.error("Error al crear el vehículo", e);
+    errorVehiculo.value = mensajeError(e, "No se pudo agregar el vehículo");
+  } finally {
+    guardandoVehiculo.value = false;
+  }
+}
+
+function confirmarQuitarVehiculo(vehiculo) {
   confirm.require({
-    message: `¿Desactivar unidad ${u.numero}?`,
-    header: "Confirmar",
-    acceptLabel: "Desactivar",
+    message: `¿Quitar el vehículo ${vehiculo.patente} de esta casa? El historial se conserva.`,
+    header: "Quitar vehículo",
+    acceptLabel: "Quitar",
     rejectLabel: "Cancelar",
-    accept: () => desactivarUnidad(u),
+    accept: () => quitarVehiculo(vehiculo),
   });
 }
 
-async function desactivarUnidad(u) {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
+async function quitarVehiculo(vehiculo) {
+  errorAccion.value = null;
   try {
-    await unidadesService.desactivarUnidad(cid, u.id);
-    await cargar();
+    await desvincularVehiculo(vehiculo);
+    exito.value = `${vehiculo.patente} ya no está vinculado a esta casa.`;
   } catch (e) {
-    console.error("Error al desactivar unidad", e);
+    console.error("Error al quitar el vehículo", e);
+    errorAccion.value = mensajeError(e, "No se pudo quitar el vehículo");
   }
 }
 
-function sectorLabel(id) {
-  const s = sectores.value.find((s) => s.id === id);
-  return s ? (s.nombre || "Sector") : "—";
+// ─── Navegación ──────────────────────────────────────────────
+function irAConfigurar() {
+  router.push({ name: "SetupUnidades" });
 }
 
-// ─── Consolidado por casa (fusionado desde UnidadesPersonasView) ───
-const unidadExpandida = ref(null);
-const vinculos = ref({});
-const cargandoVinculos = ref({});
-const guardandoNotif = ref({});
-
-const tipoLabels = {
-  PROPIETARIO: "Propietario",
-  ARRENDATARIO: "Arrendatario",
-  RESIDENTE_ADICIONAL: "Adicional",
-};
-
-const tipoSeverity = {
-  PROPIETARIO: "info",
-  ARRENDATARIO: "warn",
-  RESIDENTE_ADICIONAL: "secondary",
-};
-
-async function toggleExpandir(u) {
-  if (unidadExpandida.value === u.id) {
-    unidadExpandida.value = null;
-    return;
-  }
-  unidadExpandida.value = u.id;
-  if (vinculos.value[u.id]) return;
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  cargandoVinculos.value = { ...cargandoVinculos.value, [u.id]: true };
-  try {
-    const { data } = await personasService.vinculosUnidad(cid, u.id);
-    vinculos.value = { ...vinculos.value, [u.id]: data || [] };
-  } catch (e) {
-    console.error("Error al cargar vínculos de la unidad", e);
-    vinculos.value = { ...vinculos.value, [u.id]: [] };
-  } finally {
-    cargandoVinculos.value = { ...cargandoVinculos.value, [u.id]: false };
-  }
+function irAPersonas() {
+  router.push({ name: "Personas" });
 }
 
-async function toggleRecibeNotificaciones(v) {
-  const cid = auth.condominioActualId;
-  if (!cid) return;
-  const nuevo = !v.recibeNotificaciones;
-  guardandoNotif.value = { ...guardandoNotif.value, [v.id]: true };
-  try {
-    await personasService.actualizarRecibeNotificaciones(cid, v.id, nuevo);
-    v.recibeNotificaciones = nuevo;
-  } catch (e) {
-    console.error("Error al actualizar recibe-notificaciones", e);
-  } finally {
-    guardandoNotif.value = { ...guardandoNotif.value, [v.id]: false };
-  }
-}
+onMounted(async () => {
+  await cargar();
+  leerUrl();
+  inicializadoUrl.value = true;
+  if (pagina.value > paginacion.value.paginas) pagina.value = 1;
+});
 
-onMounted(cargar);
+onUnmounted(() => {
+  if (temporizadorUrl) clearTimeout(temporizadorUrl);
+});
 </script>
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <div class="flex justify-between items-center">
-      <h1 class="text-xl font-bold m-0">Unidades</h1>
-      <Button label="Nueva unidad" icon="pi pi-plus" size="small" @click="abrirCrear" />
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+      <div>
+        <h1 class="text-xl font-bold m-0">Unidades</h1>
+        <p class="text-sm text-text-muted m-0">
+          Consulta las casas, quiénes viven en ellas y sus vehículos. Crear o
+          editar una unidad se hace en Configurar unidades.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <Button
+          v-if="puedeVerPersonas"
+          label="Personas"
+          icon="pi pi-users"
+          size="small"
+          severity="secondary"
+          variant="text"
+          @click="irAPersonas"
+        />
+        <Button
+          v-if="puedeConfigurar"
+          label="Configurar unidades"
+          icon="pi pi-cog"
+          size="small"
+          severity="secondary"
+          variant="outlined"
+          @click="irAConfigurar"
+        />
+      </div>
     </div>
 
-    <Skeleton v-if="loading" width="100%" height="300px" />
-    <Message v-else-if="error" severity="error">{{ error }}</Message>
+    <Message
+      v-if="exito"
+      severity="success"
+      :closable="true"
+      @close="exito = null"
+    >
+      {{ exito }}
+    </Message>
+    <Message
+      v-if="errorAccion"
+      severity="error"
+      :closable="true"
+      @close="errorAccion = null"
+    >
+      {{ errorAccion }}
+    </Message>
+    <Message
+      v-for="(aviso, i) in advertencias"
+      :key="`aviso-${i}`"
+      severity="warn"
+      :closable="false"
+    >
+      {{ aviso }} Las demás secciones siguen disponibles.
+    </Message>
+
+    <Skeleton v-if="cargando" width="100%" height="12rem" />
+    <Message v-else-if="errorCarga" severity="error" :closable="false">
+      {{ errorCarga }}
+      <Button
+        label="Reintentar"
+        size="small"
+        severity="secondary"
+        class="ml-2"
+        @click="cargar"
+      />
+    </Message>
 
     <template v-else>
-      <div class="flex flex-wrap gap-2">
-        <Tag
-          v-for="c in capacidadConfig"
-          :key="c.tipo"
-          :severity="tipoAlLimite(c.tipo) ? 'danger' : 'info'"
-          size="small"
-        >
-          {{ c.label }}: {{ usoDe(c.tipo) }}<template
-            v-if="capacidadDe(c.tipo) != null"
-            > / {{ capacidadDe(c.tipo) }}</template
-          >
-        </Tag>
-      </div>
-      <small class="text-xs text-text-subprincipal">
-        Los estacionamientos y bodegas son entidades independientes y no se registran aquí como
-        unidades.
-      </small>
-      <div v-if="!unidades.length" class="text-center text-text-subprincipal py-8">No hay unidades</div>
-      <div v-else class="flex flex-col gap-2">
-        <div v-for="u in unidades" :key="u.id" class="surface-card p-3 border-round shadow-1">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-medium">{{ u.numero }}</span>
-                <Tag :value="u.tipo" severity="info" size="small" />
-                <Tag v-if="!u.activo" value="Inactiva" severity="secondary" size="small" />
-                <Tag
-                  v-if="vinculos[u.id]?.length"
-                  :value="`${vinculos[u.id].length}`"
-                  severity="warn"
+      <ResumenCondominio :resumen="resumen" />
+
+      <PanelUnidadCondominio
+        v-if="unidadCondominio"
+        :unidad="unidadCondominio"
+        :recursos="recursosCondominio"
+      />
+
+      <!-- ─── Búsqueda y filtros ─── -->
+      <Card>
+        <template #content>
+          <div class="flex flex-col gap-3" role="search">
+            <div class="flex items-start gap-2">
+              <div class="relative flex-1 min-w-0">
+                <IconField class="w-full">
+                  <InputIcon class="pi pi-search" />
+                  <InputText
+                    id="buscar-unidades"
+                    v-model="busqueda"
+                    placeholder="Buscar por número de casa, sector o piso…"
+                    aria-label="Buscar unidades del condominio"
+                    autocomplete="off"
+                    class="w-full pr-10"
+                    @input="reiniciarPagina"
+                    @keydown.esc="limpiarBusqueda"
+                  />
+                </IconField>
+                <Button
+                  v-if="busqueda"
+                  icon="pi pi-times"
+                  severity="secondary"
+                  variant="text"
                   size="small"
-                  :title="`${vinculos[u.id].length} persona(s) vinculada(s)`"
+                  rounded
+                  class="absolute right-1 top-1/2 -translate-y-1/2"
+                  aria-label="Limpiar búsqueda"
+                  @click="limpiarBusqueda"
                 />
               </div>
-              <span class="text-sm text-text-subprincipal">{{ sectorLabel(u.sectorId) }}</span>
             </div>
-            <div class="flex items-center gap-1">
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
               <Button
-                :icon="unidadExpandida === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                variant="text"
-                size="small"
+                :label="filtrosActivos ? `Filtros (${filtrosActivos})` : 'Filtros'"
+                :icon="mostrarFiltros ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                iconPos="right"
                 severity="secondary"
-                :title="unidadExpandida === u.id ? 'Ocultar quiénes viven aquí' : 'Ver quiénes viven aquí'"
-                @click="toggleExpandir(u)"
+                variant="text"
+                :aria-expanded="mostrarFiltros"
+                aria-controls="panel-filtros-unidades"
+                @click="mostrarFiltros = !mostrarFiltros"
               />
-              <Button icon="pi pi-pencil" variant="text" size="small" severity="secondary" @click="abrirEditar(u)" />
-              <Button v-if="u.activo !== false" icon="pi pi-trash" variant="text" size="small" severity="danger" @click="confirmarDesactivar(u)" />
+              <span class="text-xs text-text-muted" aria-live="polite">
+                <template v-if="busqueda || filtrosActivos">
+                  {{ unidadesFiltradas.length }} de {{ viviendas.length }}
+                  unidades
+                </template>
+                <template v-else>
+                  {{ viviendas.length }}
+                  {{ viviendas.length === 1 ? "unidad" : "unidades" }}
+                </template>
+              </span>
+            </div>
+
+            <div
+              v-if="mostrarFiltros"
+              id="panel-filtros-unidades"
+              class="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-lg border border-border bg-inset p-3"
+            >
+              <div class="flex flex-col gap-1">
+                <label for="filtro-tipo-unidad" class="text-xs font-semibold text-text-muted">
+                  Tipo
+                </label>
+                <Select
+                  id="filtro-tipo-unidad"
+                  v-model="tipoFiltro"
+                  :options="opcionesTipos"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Todos"
+                  showClear
+                  class="w-full"
+                  @change="reiniciarPagina"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label for="filtro-sector-unidad" class="text-xs font-semibold text-text-muted">
+                  Sector
+                </label>
+                <Select
+                  id="filtro-sector-unidad"
+                  v-model="sectorFiltro"
+                  :options="opcionesSectores"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Todos"
+                  showClear
+                  class="w-full"
+                  @change="reiniciarPagina"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label for="filtro-piso-unidad" class="text-xs font-semibold text-text-muted">
+                  Piso
+                </label>
+                <Select
+                  id="filtro-piso-unidad"
+                  v-model="pisoFiltro"
+                  :options="opcionesPisos"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Todos"
+                  showClear
+                  class="w-full"
+                  @change="reiniciarPagina"
+                />
+              </div>
+            </div>
+
+            <div v-if="chipsFiltros.length" class="flex flex-wrap items-center gap-1">
+              <Chip
+                v-for="chip in chipsFiltros"
+                :key="chip.key"
+                :label="chip.label"
+                removable
+                @remove="chip.quitar()"
+              />
+              <Button
+                label="Limpiar filtros"
+                variant="text"
+                severity="secondary"
+                size="small"
+                @click="limpiarFiltros"
+              />
             </div>
           </div>
-          <div v-if="unidadExpandida === u.id" class="mt-2 pt-2 border-t border-border-soft">
-            <Skeleton v-if="cargandoVinculos[u.id]" width="100%" height="3rem" />
-            <div v-else-if="!(vinculos[u.id] || []).length" class="text-sm text-text-subprincipal py-1">
-              Sin personas vinculadas a esta unidad.
-            </div>
-            <div v-else class="flex flex-col gap-1">
-              <div
-                v-for="v in vinculos[u.id]"
-                :key="v.id"
-                class="flex items-center justify-between p-2 border-round bg-subtle"
-              >
-                <div class="flex items-center gap-2 min-w-0">
-                  <i class="pi pi-user text-primary"></i>
-                  <span class="text-sm font-medium truncate">{{ v.personaNombre }}</span>
+        </template>
+      </Card>
+
+      <!-- ─── Estados vacíos ─── -->
+      <div
+        v-if="!viviendas.length"
+        class="text-center text-text-subprincipal py-10 flex flex-col items-center gap-2"
+      >
+        <i class="pi pi-home text-3xl" aria-hidden="true" />
+        <span>Este condominio todavía no tiene unidades registradas.</span>
+        <Button
+          v-if="puedeConfigurar"
+          label="Crear unidades"
+          icon="pi pi-plus"
+          size="small"
+          @click="irAConfigurar"
+        />
+      </div>
+
+      <div
+        v-else-if="!unidadesPagina.length"
+        class="text-center text-text-subprincipal py-10 flex flex-col items-center gap-2"
+      >
+        <i class="pi pi-search text-3xl" aria-hidden="true" />
+        <span>Ninguna unidad coincide con la búsqueda o los filtros.</span>
+        <div class="flex gap-2">
+          <Button
+            v-if="busqueda"
+            label="Limpiar búsqueda"
+            severity="secondary"
+            variant="outlined"
+            size="small"
+            @click="limpiarBusqueda"
+          />
+          <Button
+            v-if="filtrosActivos"
+            label="Limpiar filtros"
+            severity="secondary"
+            variant="outlined"
+            size="small"
+            @click="limpiarFiltros"
+          />
+        </div>
+      </div>
+
+      <template v-else>
+        <!-- ─── Tabla desktop ─── -->
+        <div class="planilla hidden md:block">
+          <table>
+            <thead>
+              <tr>
+                <th>Unidad</th>
+                <th>Tipo</th>
+                <th>Sector</th>
+                <th>Piso</th>
+                <th>Personas</th>
+                <th>Vehículos</th>
+                <th>Est. y bodegas</th>
+                <th class="text-right">Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="u in unidadesPagina" :key="u.id">
+                <tr>
+                  <td>
+                    <span class="font-semibold">{{ u.numero }}</span>
+                  </td>
+                  <td>{{ labelTipoUnidad(u.tipo) }}</td>
+                  <td>{{ u.sectorNombre || "—" }}</td>
+                  <td>{{ u.piso ?? "—" }}</td>
+                  <td>
+                    <span v-if="cargandoPersonas(u)" class="text-xs text-text-muted">
+                      Cargando…
+                    </span>
+                    <div v-else-if="personasDe(u).length" class="flex flex-col min-w-0">
+                      <span>
+                        {{ personasDe(u).length }}
+                        {{ personasDe(u).length === 1 ? "persona" : "personas" }}
+                      </span>
+                      <span class="text-xs text-text-muted truncate" :title="principalDe(u)?.personaNombre">
+                        {{ principalDe(u)?.personaNombre }}
+                      </span>
+                    </div>
+                    <span v-else class="text-xs text-text-muted">
+                      {{ puedeVerVinculos ? "Ver personas" : "—" }}
+                    </span>
+                  </td>
+                  <td>{{ conteoDe(u).vehiculos }}</td>
+                  <td>
+                    <span class="text-xs text-text-muted">
+                      {{ conteoDe(u).estacionamientos }} est ·
+                      {{ conteoDe(u).bodegas }} bod
+                    </span>
+                  </td>
+                  <td class="text-right">
+                    <Button
+                      :icon="unidadExpandidaId === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                      severity="secondary"
+                      variant="text"
+                      size="small"
+                      rounded
+                      :aria-expanded="unidadExpandidaId === u.id"
+                      :aria-label="`${unidadExpandidaId === u.id ? 'Ocultar' : 'Ver'} el detalle de la unidad ${u.numero}`"
+                      :title="unidadExpandidaId === u.id ? 'Ocultar detalle' : 'Ver detalle'"
+                      @click="alternarUnidad(u)"
+                    />
+                  </td>
+                </tr>
+                <tr v-if="unidadExpandidaId === u.id">
+                  <td colspan="8" class="!p-0">
+                    <div class="p-3 bg-surface">
+                      <UnidadDetalle
+                        :unidad="u"
+                        :vinculos="personasDe(u)"
+                        :recursos="recursosDe(u)"
+                        :cargando="cargandoPersonas(u)"
+                        :error="errorVinculos[u.id] || ''"
+                        :puede-ver-vinculos="puedeVerVinculos"
+                        :puede-editar-persona="puedeEditarPersona"
+                        :puede-desvincular="puedeDesvincular"
+                        :puede-quitar-persona="puedeQuitarPersona"
+                        :puede-vincular-persona="puedeVincularPersona"
+                        :puede-eliminar-vehiculo="puedeEliminarVehiculo"
+                        :puede-agregar-vehiculo="puedeAgregarVehiculo"
+                        @editar-persona="abrirEditarPersona"
+                        @quitar-persona="abrirQuitarPersona"
+                        @vincular-persona="irAVincularPersona"
+                        @agregar-vehiculo="abrirAgregarVehiculo"
+                        @quitar-vehiculo="confirmarQuitarVehiculo"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ─── Cards mobile ─── -->
+        <div class="md:hidden flex flex-col gap-2">
+          <div
+            v-for="u in unidadesPagina"
+            :key="u.id"
+            class="bg-surface border border-border rounded-lg"
+          >
+            <div class="p-3 flex flex-col gap-2">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-2 min-w-0">
+                  <span class="text-base font-bold">{{ u.numero }}</span>
+                  <Tag :value="labelTipoUnidad(u.tipo)" severity="info" size="small" />
                   <Tag
-                    :value="tipoLabels[v.tipo] || v.tipo"
-                    :severity="tipoSeverity[v.tipo] || 'info'"
+                    v-if="u.sectorNombre"
+                    :value="u.sectorNombre"
+                    severity="secondary"
                     size="small"
                   />
-                  <Tag v-if="v.esOcupante" value="Ocupante" severity="success" size="small" />
-                  <Tag v-if="!v.activo" value="Inactivo" severity="secondary" size="small" />
                 </div>
-                <div class="flex items-center gap-1 text-xs text-text-muted shrink-0">
-                  <span>Notif.</span>
-                  <InputSwitch
-                    :modelValue="v.recibeNotificaciones"
-                    :disabled="guardandoNotif[v.id] || !v.activo"
-                    @update:modelValue="toggleRecibeNotificaciones(v)"
-                  />
-                </div>
+                <Button
+                  :icon="unidadExpandidaId === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                  severity="secondary"
+                  variant="text"
+                  size="small"
+                  rounded
+                  :aria-expanded="unidadExpandidaId === u.id"
+                  :aria-label="`${unidadExpandidaId === u.id ? 'Ocultar' : 'Ver'} el detalle de la unidad ${u.numero}`"
+                  @click="alternarUnidad(u)"
+                />
               </div>
-              <span class="text-xs text-text-subprincipal">Ocupante = vive físicamente aquí · Notif. en OFF no recibe avisos de esta unidad</span>
+
+              <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <span class="text-text-muted">Piso</span>
+                <span>{{ u.piso ?? "—" }}</span>
+                <span class="text-text-muted">Personas</span>
+                <span class="truncate">
+                  {{ cargandoPersonas(u) ? "Cargando…" : resumenPersonas(u) || (puedeVerVinculos ? "Ver personas" : "—") }}
+                </span>
+                <span class="text-text-muted">Vehículos</span>
+                <span>{{ conteoDe(u).vehiculos }}</span>
+                <span class="text-text-muted">Est. y bodegas</span>
+                <span>{{ conteoDe(u).estacionamientos }} est · {{ conteoDe(u).bodegas }} bod</span>
+              </div>
+            </div>
+
+            <div v-if="unidadExpandidaId === u.id" class="p-3 border-t border-border-soft">
+              <UnidadDetalle
+                :unidad="u"
+                :vinculos="personasDe(u)"
+                :recursos="recursosDe(u)"
+                :cargando="cargandoPersonas(u)"
+                :error="errorVinculos[u.id] || ''"
+                :puede-ver-vinculos="puedeVerVinculos"
+                :puede-editar-persona="puedeEditarPersona"
+                :puede-desvincular="puedeDesvincular"
+                :puede-quitar-persona="puedeQuitarPersona"
+                :puede-vincular-persona="puedeVincularPersona"
+                :puede-eliminar-vehiculo="puedeEliminarVehiculo"
+                :puede-agregar-vehiculo="puedeAgregarVehiculo"
+                @editar-persona="abrirEditarPersona"
+                @quitar-persona="abrirQuitarPersona"
+                @vincular-persona="irAVincularPersona"
+                @agregar-vehiculo="abrirAgregarVehiculo"
+                @quitar-vehiculo="confirmarQuitarVehiculo"
+              />
             </div>
           </div>
         </div>
-      </div>
+
+        <Paginator
+          :rows="TAMANO_PAGINA"
+          :totalRecords="unidadesFiltradas.length"
+          :first="primerRegistro"
+          @page="cambiarPagina"
+        />
+      </template>
     </template>
 
-    <Dialog :draggable="false" v-model:visible="showCrear" header="Nueva unidad" modal :style="{ width: '95%', maxWidth: '400px' }">
-      <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Número</label>
-          <InputText v-model="formCrear.numero" />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Tipo</label>
-          <Select v-model="formCrear.tipo" :options="tiposUnidad" optionLabel="label" optionValue="value" />
-        </div>
-        <Message
-          v-if="tipoAlLimite(formCrear.tipo)"
-          severity="warn"
-          :closable="false"
-          >Se alcanzó la capacidad de {{ tipoLabel(formCrear.tipo) }} ({{
-            capacidadDe(formCrear.tipo)
-          }}). No se pueden crear más.</Message
-        >
-        <small
-          v-else-if="capacidadDe(formCrear.tipo) != null"
-          class="text-xs text-text-subprincipal"
-          >Cupo: {{ usoDe(formCrear.tipo) }} de
-          {{ capacidadDe(formCrear.tipo) }}.</small
-        >
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Sector</label>
-          <Select v-model="formCrear.sectorId" :options="sectores" optionLabel="nombre" optionValue="id" placeholder="Seleccionar" clearable />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Dirección</label>
-          <InputText v-model="formCrear.direccion" placeholder="Opcional" />
-        </div>
-      </div>
-      <template #footer>
-        <Button severity="secondary" label="Cancelar" @click="showCrear = false" />
-        <Button label="Crear" :loading="enviando" :disabled="tipoAlLimite(formCrear.tipo)" @click="crearUnidad" />
-      </template>
-    </Dialog>
+    <!-- ─── Diálogos ─── -->
+    <DialogoEditarPersona
+      v-model:visible="showEditar"
+      :persona="personaEditando"
+      :guardando="guardandoPersona"
+      :error="errorEditar || ''"
+      @guardar="guardarPersona"
+    />
 
-    <Dialog :draggable="false" v-model:visible="showEditar" header="Editar unidad" modal :style="{ width: '95%', maxWidth: '400px' }">
-      <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Número</label>
-          <InputText v-model="formEditar.numero" />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Tipo</label>
-          <Select v-model="formEditar.tipo" :options="tiposUnidad" optionLabel="label" optionValue="value" />
-        </div>
-        <Message
-          v-if="tipoAlLimiteAlEditar(formEditar.tipo)"
-          severity="warn"
-          :closable="false"
-          >{{ tipoLabel(formEditar.tipo) }} ya alcanzó su capacidad ({{
-            capacidadDe(formEditar.tipo)
-          }}). No se puede cambiar el tipo a esta unidad.</Message
-        >
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Sector</label>
-          <Select v-model="formEditar.sectorId" :options="sectores" optionLabel="nombre" optionValue="id" placeholder="Seleccionar" clearable />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm">Dirección</label>
-          <InputText v-model="formEditar.direccion" />
-        </div>
-      </div>
-      <template #footer>
-        <Button severity="secondary" label="Cancelar" @click="showEditar = false" />
-        <Button label="Guardar" :loading="enviando" :disabled="tipoAlLimiteAlEditar(formEditar.tipo)" @click="editarUnidad" />
-      </template>
-    </Dialog>
+    <DialogoQuitarPersona
+      v-model:visible="showQuitar"
+      :vinculo="vinculoAQuitar"
+      :puede-quitar-condominio="puedeQuitarPersona"
+      :guardando="guardandoQuitar"
+      :error="errorQuitar || ''"
+      @confirmar="confirmarQuitarPersona"
+    />
+
+    <DialogoAgregarVehiculo
+      v-model:visible="showVehiculo"
+      :unidad="unidadExpandida"
+      :vehiculos-existentes="vehiculosMovibles"
+      :puede-crear="puedeCrearVehiculo"
+      :guardando="guardandoVehiculo"
+      :error="errorVehiculo || ''"
+      @mover="moverVehiculoAUnidad"
+      @crear="crearVehiculoEnUnidad"
+    />
 
     <ConfirmDialog :draggable="false" />
   </div>

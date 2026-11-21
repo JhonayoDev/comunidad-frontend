@@ -454,6 +454,27 @@ Histórico V57-V61 conservado abajo.
   `CondominioAccessService`. Cuando exista, se puede retirar la petición extra del frontend.
 - **QA pendiente (en vivo):** ronda **R2** de `docs/qa/QA_PERMANENTE.md` con la persona de 4 cargos.
 
+### [ ] P30. Unidades: contadores por casa y datos de vínculo en el detalle (opcional, mejora)
+- **Contexto:** la nueva vista `Unidades` es una consulta operativa (no CRUD). Hoy funciona **sin
+  cambios de backend** con 5 listados paralelos al entrar (`unidades`, `estacionamientos`,
+  `bodegas`, `espacios-comunes`, `vehiculos`) y **1 request por casa al expandirla**
+  (`GET /unidades/{id}/vinculos`, cacheado en memoria). El panel de la unidad `CONDOMINIO` se arma
+  con esos mismos índices y no hace peticiones.
+- **Qué falta (opcional, no bloquea):**
+  1. `UnidadResumenResponse` no trae contadores (`personas`, `vehiculos`, `estacionamientos`,
+     `bodegas`) ni `sectorId`; la vista los deriva de los índices y deja "Ver personas" hasta
+     expandir. Con contadores se podría mostrar el resumen sin abrir la casa.
+  2. `UnidadDetalleResponse.PersonaEnUnidad` no trae `vinculoId`, `esResponsable` ni
+     `recibeNotificaciones`; por eso la vista usa `/vinculos` en vez del detalle. Si se agregan,
+     el detalle de la unidad bastaría para editar/quitar personas.
+- **Impacto:** solo rendimiento/UX; no hay datos mock ni N+1 al cargar la lista. Si se implementa,
+  retirar el request de expansión y la caché local.
+- **Permisos (decisión vigente, sin cambio de backend):** `PRESIDENTE`/`SECRETARIO` tienen
+  `UNIDAD_VER`, `VINCULO_VER`, `VEHICULO_VER` y `PERSONA_EDITAR`, pero **no**
+  `VINCULO_ELIMINAR`, `PERSONA_ELIMINAR` ni `VEHICULO_CREAR/EDITAR/ELIMINAR`. La vista oculta esas
+  acciones según `auth.permisos`; el `ADMINISTRADOR` las ve. No se amplían cargos: si se necesita
+  que el comité quite vehículos, se otorga el permiso en vivo.
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod

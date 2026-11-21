@@ -60,6 +60,30 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 
 > Cada ronda en curso mantiene su checklist aquí. Al cerrarla se marca el resultado y se agrega la fila en la sección 6.
 
+### R4 — Unidades como consulta operativa
+
+> Alcance: `/unidades` deja de ser CRUD. Crear/editar/eliminar unidades vive en `SetupUnidades`; aquí se busca una casa, se expande y se opera sobre sus personas y vehículos. Cabecera solo con datos reales (sin capacidad del plan ni "libres"). La unidad `CONDOMINIO` es un panel fijo de solo lectura.
+> Caso guía: *Vista Horizonte* con **204 unidades**, **300 estacionamientos** (287 residentes + 13 `EV-`), **1 bodega** (`oficina`), **3 áreas comunes**, 263 vehículos y 478 vínculos.
+
+- [ ] La cabecera muestra **204 unidades · 300 estacionamientos (287 residentes · 13 visitas) · 1 bodega · 3 áreas comunes**; no aparece la capacidad del plan ni conteos de "libres".
+- [ ] No hay botones para crear, editar ni desactivar unidades; "Configurar unidades" navega a `setup/unidades`.
+- [ ] El panel `CONDOMINIO` aparece fijo, en solo lectura, con los 13 `EV-`, la bodega `oficina` y las 3 áreas comunes, **sin peticiones adicionales** (sale de los índices globales).
+- [ ] Al entrar se hacen **5 peticiones en paralelo** (unidades, estacionamientos, bodegas, áreas comunes, vehículos); ninguna por casa.
+- [ ] Expandir una casa hace **una** petición (`/unidades/{id}/vinculos`); abrir/cerrar la misma casa de nuevo no repite la petición.
+- [ ] La casa expandida muestra propietario, arrendatario y adicionales con Tags (Vive aquí / Responsable), sus vehículos y sus estacionamientos/bodegas/áreas comunes; estos últimos salen del índice sin request extra.
+- [ ] Búsqueda: `100` muestra primero la unidad 100 y luego 1000; `20` encuentra 200; sector con tilde (`nunoa`) encuentra `Ñuñoa`; `Esc` limpia.
+- [ ] Filtros Tipo/Sector/Piso en fila desplegable con chips removibles y "Limpiar filtros" (no toca la búsqueda).
+- [ ] Estado en URL (`?q=&tipo=&sector=&piso=&page=`): recargar restaura búsqueda, filtros y página; otros params se preservan.
+- [ ] Paginación de 25 con `Paginator`; en mobile se ve la lista de cards y en desktop la tabla `.planilla`, ambas con la misma información.
+- [ ] **Editar persona**: solo nombre y teléfono (email/RUT se gestionan en Personas); al guardar se actualiza el nombre en la fila sin recargar todo.
+- [ ] **Quitar persona**: el diálogo ofrece "solo de esta casa" (`PATCH /vinculos/{id}/desactivar`) y "del condominio" (`PATCH /personas/{id}/desactivar` con motivo opcional); cada alcance deja el mensaje correcto.
+- [ ] **Quitar vehículo** pide confirmación y desaparece de la casa (`PATCH /vehiculos/{id}/desactivar`).
+- [ ] **Agregar vehículo**: mover uno existente de otra casa (`PUT /vehiculos/{id}` con `unidadId`) y crear uno nuevo (`POST`); una patente ya activa en el condominio da `409` visible en el diálogo.
+- [ ] Permisos: `ADMINISTRADOR` ve editar/quitar/mover; `PRESIDENTE`/`SECRETARIO` (solo `VEHICULO_VER` y sin `VINCULO_ELIMINAR`/`PERSONA_ELIMINAR`) ven la consulta sin esas acciones.
+- [ ] Si un listado auxiliar falla (p. ej. `403` en vehículos), las casas siguen visibles con un aviso y sin `403` en cascada.
+- [ ] Los 3 diálogos nuevos (`Editar persona`, `Quitar persona`, `Agregar vehículo`) cierran con Esc/X/máscara sin el error `initDrag` (`:draggable="false"`).
+- [ ] PWA: la barra de búsqueda, los chips, las cards y el detalle no se desbordan en 375 px.
+
 ### R3 — Contexto del cargo guardia/conserje (issue #50)
 
 > Alcance: un usuario **sin participación residencial** cuyo cargo es `GUARDIA` o `CONSERJE` debe entrar al portal de guardia (píldora "Guardia" si tiene más de un contexto, `GuardiaDashboard`, menú y bottom nav de guardia) en vez de caer en "Residente". `JARDINERO`/`MANTENCION` conservan el portal "Trabajador" y el comité el suyo.
@@ -220,7 +244,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 |---|---|---|---|---|---|---|
 | ADM-01 | `Dashboard` `/dashboard` | Admin + cargos | Totales, banner "Configuración pendiente", accesos activos, accesos rápidos | ● | P1 | ⬜ |
 | ADM-02 | `Personas` `/personas` | Admin + cargos | Barra única (nombre/email/RUT/teléfono/casa, sin acentos, multi-token) + ayuda (i), filtros en fila desplegable + chips, identidad inline por email/RUT, estado en URL, alta atómica, reutilización, `409`, filtros `TODOS`, "Sin vínculo", baja/reactivación, corrección de RUT | ● | P1 | ⬜ |
-| ADM-03 | `Unidades` `/unidades` | Admin + cargos | CRUD, cupo por tipo, capacidad, sectores/pisos | ● | P2 | ⬜ |
+| ADM-03 | `Unidades` `/unidades` | Admin + cargos | Consulta operativa: cabecera real (sin capacidad), búsqueda por número exact-first, filtros Tipo/Sector/Piso + URL, panel `CONDOMINIO` solo-lectura, expansión con 1 request cacheado, editar persona, quitar persona (casa vs condominio), quitar vehículo, mover/crear vehículo (409), paginación 25 | ● | P1 | ⬜ |
 | ADM-04 | `SolicitudesAdmin` `/solicitudes-admin` | Admin + cargos | Filtros server-side, gestión, seguimiento, resolver RUT, casos | ● | P1 | ⬜ |
 | ADM-05 | `Personal` `/personal` | Admin + cargos | Listado de personal, turnos, checklist | | P2 | ⬜ |
 | ADM-06 | `PlantillasNotificacion` | Admin | Editar/restaurar plantilla, variables | | P2 | ⬜ |
@@ -347,6 +371,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 
 | Ronda | Fecha | Alcance | Commit / PR | Resultado | Hallazgos | Pendiente |
 |---|---|---|---|---|---|---|
+| R4 | — | Unidades como consulta operativa | `feature/unidades-consulta` | ⬜ | — | — |
 | R3 | — | Contexto del cargo guardia/conserje (#50) | `fix/personas-busqueda` | ⬜ | — | — |
 | R2 | — | Búsqueda de Personas (#47) | `fix/personas-busqueda` | ⬜ | — | — |
 | R1 | — | Épica #44 / PR #45 | `fix/personas-crear-vincular-42` | ⬜ | — | — |
