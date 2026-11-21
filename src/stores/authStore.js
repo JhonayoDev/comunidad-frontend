@@ -64,6 +64,12 @@ export const useAuthStore = defineStore("auth", () => {
   const condominioActualCargos = computed(
     () => condominioActual.value?.cargos || [],
   );
+  // Roles de portal derivados de todos los cargos (`rolesContextuales`:
+  // ADMINISTRADOR/GUARDIA/TRABAJADOR, sin duplicados). Complementa el
+  // `rolContextual` único y alimenta las píldoras de guardia/trabajador.
+  const condominioActualRolesContextuales = computed(
+    () => condominioActual.value?.rolesContextuales || [],
+  );
   // Rol contextual del condominio (usuario_condominios o derivado del cargo),
   // distinto del rol global del JWT (`rolAcceso`). Es la fuente para elegir el
   // portal de trabajador/proveedor.
@@ -125,6 +131,7 @@ export const useAuthStore = defineStore("auth", () => {
       cargo: condominioActualCargo.value,
       cargos: condominioActualCargos.value,
       rolContextual: condominioActualRolContextual.value,
+      rolesContextuales: condominioActualRolesContextuales.value,
     }),
   );
 
@@ -254,6 +261,7 @@ export const useAuthStore = defineStore("auth", () => {
       cargo: encontrado.cargo,
       cargos: encontrado.cargos || [],
       rolContextual: encontrado.rolContextual,
+      rolesContextuales: encontrado.rolesContextuales || [],
     });
     localStorage.setItem("condominioActual", JSON.stringify(encontrado));
 
@@ -333,6 +341,7 @@ export const useAuthStore = defineStore("auth", () => {
     esParticipacionResidencial,
     condominioActualCargo,
     condominioActualCargos,
+    condominioActualRolesContextuales,
     condominioActualStatusPago,
     condominioActualAccesoOperativo,
     esContactoFacturacion,

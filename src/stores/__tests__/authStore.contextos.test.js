@@ -26,6 +26,8 @@ function condominio(extra = {}) {
     rolAcceso: "RESIDENTE",
     tiposParticipacion: [],
     cargo: null,
+    cargos: [],
+    rolesContextuales: [],
     rolContextual: null,
     ...extra,
   };
@@ -99,6 +101,7 @@ describe("authStore — contextos por cargo", () => {
       condominio({
         cargo: "ADMINISTRADOR",
         cargos: ["ADMINISTRADOR", "CONSERJE"],
+        rolesContextuales: ["ADMINISTRADOR", "GUARDIA"],
         rolContextual: "ADMINISTRADOR",
         tiposParticipacion: ["PROPIETARIO", "ADMINISTRACION"],
       }),
@@ -111,10 +114,14 @@ describe("authStore — contextos por cargo", () => {
       "ADMINISTRADOR",
       "CONSERJE",
     ]);
-    expect(auth.contextos.map((c) => c.key)).toEqual([
-      "residente",
-      "administrador",
-      "guardia",
+    expect(auth.condominioActualRolesContextuales).toEqual([
+      "ADMINISTRADOR",
+      "GUARDIA",
+    ]);
+    expect(auth.contextos).toEqual([
+      { key: "residente", label: "Residente" },
+      { key: "administrador", label: "Administrador" },
+      { key: "guardia", label: "Conserje" },
     ]);
   });
 

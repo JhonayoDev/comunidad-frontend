@@ -7,7 +7,8 @@ import {
 } from "@/utils/contextoParticipacion";
 
 // Los 9 cargos del enum CargoCondominio con su rol contextual real del backend
-// (CargoService.ROL_CONTEXTUAL_POR_CARGO) y el portal que debe abrir cada uno.
+// (CargoService.ROL_CONTEXTUAL_POR_CARGO), el portal compartido que abren y la
+// etiqueta que muestra la píldora (el cargo real, no el portal).
 const CARGOS = [
   ["ADMINISTRADOR", "ADMINISTRADOR", "administrador", "Administrador"],
   ["PRESIDENTE", "ADMINISTRADOR", "presidente", "Presidente"],
@@ -15,9 +16,9 @@ const CARGOS = [
   ["SECRETARIO", "ADMINISTRADOR", "secretario", "Secretario"],
   ["DELEGADO", "ADMINISTRADOR", "delegado", "Delegado"],
   ["GUARDIA", "GUARDIA", "guardia", "Guardia"],
-  ["CONSERJE", "GUARDIA", "guardia", "Guardia"],
-  ["JARDINERO", "TRABAJADOR", "trabajador", "Trabajador"],
-  ["MANTENCION", "TRABAJADOR", "trabajador", "Trabajador"],
+  ["CONSERJE", "GUARDIA", "guardia", "Conserje"],
+  ["JARDINERO", "TRABAJADOR", "trabajador", "Jardinero"],
+  ["MANTENCION", "TRABAJADOR", "trabajador", "Mantención"],
 ];
 
 describe("contextoDeCargo", () => {
@@ -125,7 +126,7 @@ describe("construirContextos (píldoras del header)", () => {  it.each(CARGOS)(
         rolContextual: "TRABAJADOR",
         tiposParticipacion: ["TRABAJADOR"],
       }),
-    ).toEqual([{ key: "trabajador", label: "Trabajador" }]);
+    ).toEqual([{ key: "trabajador", label: "Jardinero" }]);
   });
 
   it("ofrece Residente y el cargo de comité a un residente", () => {
@@ -178,8 +179,32 @@ describe("varios cargos activos (contrato futuro `cargos`)", () => {
 
   it("usa la lista cuando el backend no envía `cargo`", () => {
     expect(construirContextos({ cargos: ["CONSERJE"] })).toEqual([
-      { key: "guardia", label: "Guardia" },
+      { key: "guardia", label: "Conserje" },
     ]);
+  });
+
+  it("etiqueta la píldora con el cargo real del portal compartido", () => {
+    expect(
+      construirContextos({
+        cargo: "ADMINISTRADOR",
+        cargos: ["ADMINISTRADOR", "CONSERJE"],
+        rolesContextuales: ["ADMINISTRADOR", "GUARDIA"],
+        tiposParticipacion: ["PROPIETARIO", "ADMINISTRACION"],
+      }),
+    ).toEqual([
+      { key: "residente", label: "Residente" },
+      { key: "administrador", label: "Administrador" },
+      { key: "guardia", label: "Conserje" },
+    ]);
+  });
+
+  it("usa `rolesContextuales` cuando el backend informa el portal sin cargo", () => {
+    expect(
+      construirContextos({ rolesContextuales: ["GUARDIA"] }),
+    ).toEqual([{ key: "guardia", label: "Guardia" }]);
+    expect(
+      contextoInicial({ rolesContextuales: ["TRABAJADOR"] }),
+    ).toBe("trabajador");
   });
 
   it("respeta el cargo principal para el portal inicial", () => {

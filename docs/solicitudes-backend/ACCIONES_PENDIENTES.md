@@ -400,31 +400,35 @@ Histórico V57-V61 conservado abajo.
   `activeContext` válido al cambiar o restaurar condominio. Tests nuevos:
   `contextoParticipacion.test.js` y `authStore.contextos.test.js` (9 cargos, residencial+cargo y
   corrección de `activeContext`) + casos del guard en `navigationGuard.test.js` y `useNavigation.test.js`.
-  Suite **466/466**.
+  Suite **470/470**.
 - **QA pendiente (en vivo):** ronda **R3** de `docs/qa/QA_PERMANENTE.md` (caso guía
   `Jorge Andrés Silva Núñez`, cargo `GUARDIA` en *Condominio Los Robles*).
 
-### [ ] P28. `/me/condominios` entrega un solo cargo (bloquea multi-cargo en el header)
-- **Issue:** https://github.com/JhonayoDev/briku/issues/108 (bug, Project 3)
-- **Dónde:** `CondominioAccessService.cargoEnCondominio()`/`contexto()` (`cargos.stream().findFirst()`),
+### [x] P28. `/me/condominios` entrega un solo cargo — ✅ Implementado (backend #108/#109 + frontend)
+- **Issues:** https://github.com/JhonayoDev/briku/issues/108 y PR https://github.com/JhonayoDev/briku/pull/109 (fusionado)
+- **Dónde estaba:** `CondominioAccessService.cargoEnCondominio()`/`contexto()` (`cargos.stream().findFirst()`),
   `CondominioResumen` (`cargo`/`rolContextual` únicos) y `CargoService.resolverRolContextual`
-  (prioriza `ADMINISTRADOR`).
-- **Qué pasa:** una persona con **dos cargos activos** solo recibe uno. Caso real en dev:
+  (priorizaba `ADMINISTRADOR`).
+- **Qué pasaba:** una persona con **dos cargos activos** solo recibía uno. Caso real en dev:
   `juan ramirez` (*Vista Horizonte*) tiene `ADMINISTRADOR` (2026-09-10) y `CONSERJE` (2026-11-20)
-  activos; el header muestra "Residente" y "Administrador", sin píldora "Guardia" ni menú de
-  guardia. Los permisos sí se suman de todos los cargos
-  (`findPermisosByPersonaIdAndCondominioId`), por lo que el portal de guardia no daría 403: solo
-  falta el dato.
-- **Propuesta:** agregar `List<String> cargos` a `CondominioResumen` (`GET /me/condominios`) con
-  todos los cargos activos, manteniendo `cargo`/`rolContextual` para compatibilidad.
-- **Frontend (ya preparado):** `src/utils/contextoParticipacion.js` acepta `cargos: string[]`
-  además de `cargo` (`cargosActivos`, píldora por espacio con dedupe) y `authStore` expone
-  `condominioActualCargos` y lo pasa a `construirContextos`/`contextoInicial`; `puedeAcceder` valida
-  `meta.cargos` contra la lista. En cuanto el backend envíe `cargos`, ADMINISTRADOR + CONSERJE
-  mostrará **Residente · Administrador · Guardia** sin cambios.
-- **QA pendiente (en vivo):** al implementarse, repetir la ronda **R3** con Juan Ramírez
-  (*Vista Horizonte*): debe aparecer la píldora "Guardia" y, al activarla, el menú/dashboard de
+  activos; el header mostraba "Residente" y "Administrador", sin píldora de conserje ni menú de
   guardia.
+- **Backend (decisión):** `GET /me/condominios` ahora expone `cargos` (todos los cargos activos, en
+  orden estable del enum `CargoCondominio`) y `rolesContextuales` (portales derivados
+  `ADMINISTRADOR`/`GUARDIA`/`TRABAJADOR`, deduplicados). `cargo` pasa a ser el primero de `cargos`
+  y `rolContextual` se conserva. Sin cargos → `cargos: []` y `rolesContextuales: []`.
+- **Frontend alineado:** `src/utils/contextoParticipacion.js` acepta `cargos` y `rolesContextuales`
+  (`cargosActivos`/`rolesPortal`, una píldora por espacio con dedupe); la píldora usa la etiqueta
+  real del cargo (`CONSERJE` → **Conserje**, `JARDINERO` → **Jardinero**, `MANTENCION` →
+  **Mantención**) aunque el portal compartido siga siendo `guardia`/`trabajador`. `authStore` expone
+  `condominioActualCargos`/`condominioActualRolesContextuales`; `useNavigation` valida
+  `meta.cargos`/roles contra las listas y, para roles base distintos de `RESIDENTE`, el **menú y la
+  bottom nav siguen el espacio operativo activo** (p. ej. un administrador externo con cargo
+  `CONSERJE` ve el menú de guardia al elegir esa píldora). `residente`/`administrador` conservan el
+  menú del rol base para no cambiar el comportamiento de los administradores externos.
+- **QA pendiente (en vivo):** ronda **R3** de `docs/qa/QA_PERMANENTE.md` con Juan Ramírez
+  (*Vista Horizonte*): píldoras **Residente · Administrador · Conserje**, y al elegir Conserje el
+  menú/bottom nav y Home de guardia.
 
 ## Pendientes de verificación (QA)
 

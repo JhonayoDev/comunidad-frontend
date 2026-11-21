@@ -58,9 +58,13 @@ export function contextoDeCargo(cargo) {
 }
 
 function etiquetaDeContexto(clave, cargo) {
-  if (clave === "guardia") return "Guardia";
+  // Si el contexto proviene de un cargo, manda su etiqueta del catálogo:
+  // CONSERJE → "Conserje", GUARDIA → "Guardia", JARDINERO → "Jardinero".
+  // El portal (clave) se comparte, pero la píldora muestra el cargo real.
+  if (cargo && clave === contextoDeCargo(cargo)) {
+    return labelCargo(cargo) || clave;
+  }
   if (CONTEXT_LABELS[clave]) return CONTEXT_LABELS[clave];
-  if (cargo && clave === cargo.toLowerCase()) return labelCargo(cargo);
   return clave;
 }
 
@@ -72,6 +76,20 @@ function etiquetaDeContexto(clave, cargo) {
 function cargosActivos({ cargo = null, cargos = null } = {}) {
   const lista = Array.isArray(cargos) ? [...cargos] : [];
   if (cargo && !lista.includes(cargo)) lista.unshift(cargo);
+  return lista;
+}
+
+/**
+ * Roles de portal que informa el backend (`rolesContextuales`, derivados de
+ * los cargos) más el `rolContextual` único por compatibilidad.
+ */
+function rolesPortal({ rolContextual = null, rolesContextuales = null } = {}) {
+  const lista = Array.isArray(rolesContextuales)
+    ? rolesContextuales.filter(Boolean)
+    : [];
+  if (rolContextual && !lista.includes(rolContextual)) {
+    lista.unshift(rolContextual);
+  }
   return lista;
 }
 
@@ -91,6 +109,7 @@ export function construirContextos({
   cargo = null,
   cargos = null,
   rolContextual = null,
+  rolesContextuales = null,
 } = {}) {
   const claves = [];
   const agregar = (clave) => {
@@ -106,12 +125,13 @@ export function construirContextos({
     }
   }
 
+  const roles = rolesPortal({ rolContextual, rolesContextuales });
   const esTrabajador =
-    rolContextual === "TRABAJADOR" || clavesDeCargos.includes("trabajador");
+    roles.includes("TRABAJADOR") || clavesDeCargos.includes("trabajador");
   const esGuardia =
-    rolContextual === "GUARDIA" || clavesDeCargos.includes("guardia");
+    roles.includes("GUARDIA") || clavesDeCargos.includes("guardia");
   const esProveedor =
-    rolContextual === "PROVEEDOR" ||
+    roles.includes("PROVEEDOR") ||
     (tiposParticipacion || []).includes("PROVEEDOR");
   const tieneContextoPropio =
     clavesDeCargos.length > 0 || esTrabajador || esGuardia || esProveedor;
@@ -133,7 +153,7 @@ export function construirContextos({
 
 /**
  * Contexto con el que se entra a un condominio recién seleccionado: manda la
- * participación residencial; si no hay, el cargo activo; luego el portal
+ * participación residencial; si no hay, el cargo principal; luego el portal
  * derivado por el backend (trabajador/proveedor); y residente como fallback.
  */
 export function contextoInicial({
@@ -141,6 +161,7 @@ export function contextoInicial({
   cargo = null,
   cargos = null,
   rolContextual = null,
+  rolesContextuales = null,
 } = {}) {
   if (esResidencial(tiposParticipacion)) return "residente";
 
@@ -149,8 +170,9 @@ export function contextoInicial({
   );
   if (contextoDelCargo) return contextoDelCargo;
 
-  if (rolContextual === "GUARDIA") return "guardia";
-  if (rolContextual === "TRABAJADOR") return "trabajador";
-  if (rolContextual === "PROVEEDOR") return "proveedor";
+  const roles = rolesPortal({ rolContextual, rolesContextuales });
+  if (roles.includes("GUARDIA")) return "guardia";
+  if (roles.includes("TRABAJADOR")) return "trabajador";
+  if (roles.includes("PROVEEDOR")) return "proveedor";
   return "residente";
 }

@@ -231,11 +231,15 @@ export function useNavigation() {
     const necesitaCargo = rCargos?.length > 0;
     if (!necesitaRol && !necesitaCargo) return true;
     const userRoles = auth.user?.roles || [];
+    const rolesContextualesUsuario = [
+      auth.condominioActualRolContextual,
+      ...(auth.condominioActualRolesContextuales || []),
+    ].filter(Boolean);
     const cumpleRol =
       necesitaRol &&
       (rRoles.some((r) => userRoles.includes(r)) ||
         rRoles.includes(auth.condominioActualRol) ||
-        rRoles.includes(auth.condominioActualRolContextual) ||
+        rolesContextualesUsuario.some((r) => rRoles.includes(r)) ||
         rRoles.includes((auth.activeContext || "").toUpperCase()));
     const cargosUsuario = [
       auth.condominioActualCargo,
@@ -278,6 +282,23 @@ export function useNavigation() {
     return "RESIDENTE";
   }
 
+  /**
+   * Menú del espacio operativo activo para un rol base que no es RESIDENTE.
+   * Solo aplica a portales operativos (guardia, trabajador, proveedor, comité):
+   * "residente" y "administrador" siguen usando el menú del rol base para no
+   * cambiar el comportamiento de los administradores externos.
+   */
+  function navDeContextoOperativo() {
+    const contexto = auth.activeContext;
+    if (!contexto || contexto === "residente" || contexto === "administrador") {
+      return null;
+    }
+    if (contexto === "guardia") return NAV_ITEMS_BY_ROLE.GUARDIA;
+    if (contexto === "trabajador") return NAV_ITEMS_BY_ROLE.TRABAJADOR;
+    if (contexto === "proveedor") return NAV_ITEMS_BY_ROLE.PROVEEDOR;
+    return CARGO_NAV_ITEMS[contexto.toUpperCase()] || null;
+  }
+
   const navItems = computed(() => {
     const rolesGlobales = auth.user?.roles || [];
     if (rolesGlobales.includes("SUPER_ADMIN")) {
@@ -303,6 +324,12 @@ export function useNavigation() {
       const cargoKey = auth.activeContext?.toUpperCase();
       return filtrar(CARGO_NAV_ITEMS[cargoKey] || RESIDENTE_ITEMS);
     }
+
+    // Rol base distinto de RESIDENTE con un espacio operativo adicional (p.ej.
+    // administrador externo que además tiene el cargo CONSERJE): al elegir esa
+    // píldora el menú cambia al portal correspondiente.
+    const espacio = navDeContextoOperativo();
+    if (espacio) return filtrar(espacio);
 
     return filtrar(NAV_ITEMS_BY_ROLE[role] || RESIDENTE_ITEMS);
   });
@@ -342,6 +369,11 @@ export function useNavigation() {
       }
 
       return [{ label: "", items: filtrar(RESIDENTE_ITEMS) }];
+    }
+
+    const espacio = navDeContextoOperativo();
+    if (espacio) {
+      return [{ label: "", items: filtrar(espacio) }];
     }
 
     const items = filtrar(NAV_ITEMS_BY_ROLE[role] || RESIDENTE_ITEMS);

@@ -16,8 +16,11 @@ export function useBottomNav() {
       ? "SUPER_ADMIN"
       : auth.condominioActualRol || rolesGlobales[0] || "";
     // Un usuario con rol base RESIDENTE pero portal guardia/trabajador/proveedor
-    // no debe ver la barra de residente.
-    if (rol === "RESIDENTE") {
+    // no debe ver la barra de residente. Un administrador externo que además
+    // tiene el cargo CONSERJE/GUARDIA sigue su espacio activo.
+    if (rol !== "SUPER_ADMIN" && auth.activeContext === "guardia") {
+      rol = "GUARDIA";
+    } else if (rol === "RESIDENTE") {
       const portal = portalResidente();
       if (
         portal === "GUARDIA" ||
