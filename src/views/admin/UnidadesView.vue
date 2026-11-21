@@ -897,6 +897,7 @@ onUnmounted(() => {
     <DialogoQuitarPersona
       v-model:visible="showQuitar"
       :vinculo="vinculoAQuitar"
+      :puede-quitar-unidad="puedeDesvincular"
       :puede-quitar-condominio="puedeQuitarPersona"
       :guardando="guardandoQuitar"
       :error="errorQuitar || ''"

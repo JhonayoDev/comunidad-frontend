@@ -9,6 +9,7 @@ import Message from "primevue/message";
 const props = defineProps({
   visible: { type: Boolean, default: false },
   vinculo: { type: Object, default: null },
+  puedeQuitarUnidad: { type: Boolean, default: true },
   puedeQuitarCondominio: { type: Boolean, default: false },
   guardando: { type: Boolean, default: false },
   error: { type: String, default: "" },
@@ -23,7 +24,9 @@ watch(
   () => props.visible,
   (visible) => {
     if (visible) {
-      alcance.value = "UNIDAD";
+      // Si el perfil solo puede dar de baja en el condominio (sin
+      // VINCULO_ELIMINAR), el alcance por defecto es el que sí puede ejecutar.
+      alcance.value = props.puedeQuitarUnidad ? "UNIDAD" : "CONDOMINIO";
       motivo.value = "";
     }
   },
@@ -54,6 +57,7 @@ function confirmar() {
       </p>
 
       <label
+        v-if="puedeQuitarUnidad"
         class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer"
         :class="alcance === 'UNIDAD' ? 'border-primary bg-subtle' : 'border-border bg-inset'"
       >
