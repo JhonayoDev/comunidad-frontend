@@ -360,6 +360,11 @@ Histórico V57-V61 conservado abajo.
   de identidad inline por email completo/RUT válido con debounce 400 ms (sin modal), normalización
   de acentos/RUT/teléfono y multi-token, filtro "Solo sin vínculo", estado en URL, estados vacíos
   accionables y `:draggable="false"` en los diálogos de la vista.
+- **Barrido de diálogos (issue #48):** ✅ todas las instancias de la app llevan
+  `:draggable="false"` — **83 etiquetas** (59 `<Dialog>` en 36 archivos + 24 `<ConfirmDialog>`),
+  porque en PrimeVue 4.5.5 ambos traen `draggable: true` por defecto y `initDrag` falla si el
+  diálogo ya se desmontó. Verificación: `grep -rho 'draggable="false"' src --include='*.vue' | wc -l`
+  → 83, sin ocurrencias con arrastre activo.
 - **Utilidades nuevas:** `src/utils/busqueda.js` y `src/composables/useDebouncedRef.js` (+ tests).
 - **Gap backend (búsqueda global parcial por nombre):** ❌
   https://github.com/JhonayoDev/briku/issues/105 — `GET /personas/buscar` exige exactamente uno de
