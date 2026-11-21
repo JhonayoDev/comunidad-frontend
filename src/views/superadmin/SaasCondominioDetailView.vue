@@ -539,6 +539,7 @@ onMounted(cargar);
     </template>
 
     <Dialog
+      :draggable="false"
       v-model:visible="showEditar"
       header="Editar condominio"
       modal
@@ -617,6 +618,7 @@ onMounted(cargar);
     </Dialog>
 
     <Dialog
+      :draggable="false"
       v-model:visible="showCapacidad"
       header="Capacidad de unidades"
       modal
@@ -658,6 +660,7 @@ onMounted(cargar);
     </Dialog>
 
     <Dialog
+      :draggable="false"
       v-model:visible="showSuspender"
       header="Suspender condominio"
       modal

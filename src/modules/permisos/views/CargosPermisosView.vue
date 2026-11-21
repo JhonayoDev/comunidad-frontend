@@ -136,6 +136,6 @@ function confirmarGuardar() {
       </div>
     </template>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

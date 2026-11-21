@@ -163,7 +163,7 @@ onMounted(cargar);
       </div>
     </template>
 
-    <Dialog v-model:visible="showCrear" header="Nuevo anuncio" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog :draggable="false" v-model:visible="showCrear" header="Nuevo anuncio" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
         <div class="text-xs text-text-subprincipal mb-1">{{ auth.condominioActualNombre }}</div>
         <div class="flex flex-col gap-1">

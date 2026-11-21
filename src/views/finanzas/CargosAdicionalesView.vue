@@ -211,7 +211,7 @@ onMounted(() => {
       </div>
     </template>
 
-    <Dialog v-model:visible="showCrear" header="Nuevo cargo adicional" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog :draggable="false" v-model:visible="showCrear" header="Nuevo cargo adicional" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Unidad</label>
@@ -256,7 +256,7 @@ onMounted(() => {
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="showAnular" header="Anular cargo" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog :draggable="false" v-model:visible="showAnular" header="Anular cargo" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <p class="text-sm m-0">¿Estás seguro de anular este cargo?</p>
         <p class="text-sm text-text-muted m-0">{{ cargoSeleccionado?.descripcion }} — {{ cargoSeleccionado?.monto?.toLocaleString("es-CL") }}</p>

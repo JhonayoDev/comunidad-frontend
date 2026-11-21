@@ -200,7 +200,7 @@ onMounted(cargar);
       </div>
     </template>
 
-    <Dialog v-model:visible="showDialog" :header="modoDialog === 'editar' ? 'Editar plan' : 'Nuevo plan'" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog :draggable="false" v-model:visible="showDialog" :header="modoDialog === 'editar' ? 'Editar plan' : 'Nuevo plan'" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Código</label>
@@ -246,6 +246,6 @@ onMounted(cargar);
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

@@ -125,7 +125,7 @@ onMounted(() => cargar());
       </Card>
     </template>
 
-    <Dialog v-model:visible="mostrarDetalle" :header="detalle ? `Encomienda — Casa ${detalle.unidadNumero}` : 'Detalle'" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog :draggable="false" v-model:visible="mostrarDetalle" :header="detalle ? `Encomienda — Casa ${detalle.unidadNumero}` : 'Detalle'" modal :style="{ width: '95%', maxWidth: '500px' }">
       <Skeleton v-if="cargandoDetalle" width="100%" height="300px" />
       <div v-else-if="detalle" class="flex flex-col gap-3">
         <div v-if="detalle.imagenUrl" class="w-full">

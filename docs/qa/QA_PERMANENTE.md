@@ -95,7 +95,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 - [ ] Estados vacíos accionables: sin resultados por filtro vs sin coincidencias de búsqueda (este último invita a usar email/RUT).
 - [ ] Cerrar la tarjeta de identidad no borra el texto y no la reabre hasta cambiar la consulta.
 - [ ] Permisos: sin `PERSONA_VER` no aparece la tarjeta de identidad; sin `PERSONA_CREAR` no se ofrece "Crear persona"; sin `VINCULO_CREAR` el alta no permite asociar.
-- [ ] Abrir y cerrar los 9 diálogos con Esc/X/máscara sin el error `initDrag` (fix local; el barrido app-wide va en #48).
+- [ ] Abrir y cerrar los 9 diálogos con Esc/X/máscara sin el error `initDrag`. El barrido app-wide de #48 ya está aplicado: los **83 `<Dialog>`/`<ConfirmDialog>` de 45 archivos** llevan `:draggable="false"`, así que cualquier diálogo de la app debe cerrar sin excepción.
 - [ ] Regresión del alta atómica: crear una persona nueva desde la tarjeta ("Crear persona") reutiliza el email/RUT escrito y respeta el flujo de asociación.
 
 ### R1 — Épica #44 / PR #45

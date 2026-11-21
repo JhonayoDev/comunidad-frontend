@@ -344,6 +344,7 @@ onMounted(cargar);
     </template>
 
     <Dialog
+      :draggable="false"
       v-model:visible="showEditar"
       header="Configuración de Almacenamiento"
       modal

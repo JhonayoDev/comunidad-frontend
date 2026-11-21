@@ -370,7 +370,7 @@ onMounted(cargar);
       </div>
     </template>
 
-    <Dialog v-model:visible="showEditar" :header="editando ? codigoLabel(editando.codigo) : ''" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog :draggable="false" v-model:visible="showEditar" :header="editando ? codigoLabel(editando.codigo) : ''" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-xs text-text-muted">Variables disponibles (toca para copiar)</label>
@@ -406,7 +406,7 @@ onMounted(cargar);
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="showPreview" :header="editando ? `Preview — ${codigoLabel(editando.codigo)}` : 'Preview'" modal :style="{ width: '95%', maxWidth: '480px' }">
+    <Dialog :draggable="false" v-model:visible="showPreview" :header="editando ? `Preview — ${codigoLabel(editando.codigo)}` : 'Preview'" modal :style="{ width: '95%', maxWidth: '480px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-xs text-text-muted">Canal</label>
@@ -447,6 +447,6 @@ onMounted(cargar);
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

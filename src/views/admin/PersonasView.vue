@@ -3749,6 +3749,6 @@ async function crearUsuario() {
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

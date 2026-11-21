@@ -150,6 +150,7 @@ function handleRegister() {
 
 <template>
   <Dialog
+    :draggable="false"
     :visible="visible"
     @update:visible="$emit('update:visible', $event)"
     header="Nueva encomienda"

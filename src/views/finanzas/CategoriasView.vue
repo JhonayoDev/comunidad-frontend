@@ -133,7 +133,7 @@ onMounted(cargar);
       </div>
     </template>
 
-    <Dialog v-model:visible="showCrear" header="Nueva categoría" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog :draggable="false" v-model:visible="showCrear" header="Nueva categoría" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1"><label class="text-sm">Nombre</label><InputText v-model="form.nombre" /></div>
         <div class="flex flex-col gap-1"><label class="text-sm">Tipo</label><Select v-model="form.tipo" :options="tiposMovimiento" optionLabel="label" optionValue="value" /></div>
@@ -145,6 +145,6 @@ onMounted(cargar);
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

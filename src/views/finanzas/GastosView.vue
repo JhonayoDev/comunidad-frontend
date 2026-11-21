@@ -260,7 +260,7 @@ onMounted(() => {
       </div>
     </template>
 
-    <Dialog v-model:visible="showCrear" header="Nuevo gasto" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog :draggable="false" v-model:visible="showCrear" header="Nuevo gasto" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Categoría</label>
@@ -309,7 +309,7 @@ onMounted(() => {
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="showAnular" header="Anular gasto" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog :draggable="false" v-model:visible="showAnular" header="Anular gasto" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <p class="text-sm m-0">¿Estás seguro de anular este gasto?</p>
         <p class="text-sm text-text-muted m-0">{{ gastoSeleccionado?.descripcion }}</p>

@@ -67,6 +67,7 @@ watch(
 
 <template>
   <Dialog
+    :draggable="false"
     :visible="visible"
     @update:visible="$emit('update:visible', $event)"
     :header="`Checklist para ${actionLabel}`"

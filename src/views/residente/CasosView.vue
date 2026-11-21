@@ -173,6 +173,7 @@ onMounted(cargar);
     </template>
 
     <Dialog
+      :draggable="false"
       v-model:visible="showDialog"
       header="Nuevo caso"
       :modal="true"

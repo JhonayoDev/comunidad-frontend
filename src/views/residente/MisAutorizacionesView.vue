@@ -289,6 +289,7 @@ onMounted(async () => {
     </template>
 
     <Dialog
+      :draggable="false"
       v-model:visible="showDialog"
       header="Nueva autorización"
       :modal="true"
