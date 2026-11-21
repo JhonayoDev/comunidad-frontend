@@ -272,7 +272,7 @@ Un solo condominio de prueba con: ≥ 2 unidades (una con propietario + arrendat
 | GUA-07 | `ChecklistTemplates` | Guardia/Admin + cargos | Plantillas, toggle Sí/No legible (claro/oscuro) | | P3 | ⬜ |
 | GUA-08 | `Autorizaciones` | Guardia/Admin + cargos | Aprobar/rechazar, tipos, vencimiento | | P1 | ⬜ |
 | GUA-09 | `Solicitudes` / `Escanear` | Guardia | Placeholder "en construcción" (sin `404`) | | P3 | ⬜ |
-| GUA-10 | Contexto de cargo `GUARDIA`/`CONSERJE` | Guardia/Conserje | Píldora "Guardia" (no "Residente"), `GuardiaDashboard`, menú/bottom nav de guardia, `JARDINERO`/`MANTENCION` en portal trabajador | ● | P1 | ⬜ |
+| GUA-10 | Contexto de cargo `GUARDIA`/`CONSERJE` | Guardia/Conserje | Píldora con el cargo real ("Conserje"/"Guardia"), `GuardiaDashboard`, menú/bottom nav de guardia, multi-cargo (`cargos` + `rolesContextuales`), `JARDINERO`/`MANTENCION` en portal trabajador | ● | P1 | ⬜ |
 
 ### 3.7 Residente
 
