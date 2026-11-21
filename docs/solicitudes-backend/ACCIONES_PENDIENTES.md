@@ -435,6 +435,25 @@ Histórico V57-V61 conservado abajo.
   (*Vista Horizonte*): píldoras **Residente · Administrador · Conserje**, y al elegir Conserje el
   menú/bottom nav y Home de guardia.
 
+### [ ] P29. `/personas` expone un solo cargo (el resto se pierde en la vista Personas)
+- **Issue:** https://github.com/JhonayoDev/briku/issues/110 (bug, Project 3)
+- **Dónde:** `PersonaCondominioService` (listado ~165 y detalle ~213) usa `cargos.stream().findFirst()`
+  para `PersonaResumenResponse.cargo` y `PersonaDetalleResponse.cargo`; sin `ORDER BY`, el cargo
+  mostrado depende de Postgres.
+- **Qué pasa:** tras asignarle a `juan ramirez` (*Vista Horizonte*) `TESORERO` y `SECRETARIO`, la
+  vista **Personas** mostraba un solo Tag de cargo (**Secretario**) mientras el header ya mostraba
+  todas las píldoras (briku#108/#109): `tiposParticipacion` sí traía `PROPIETARIO`,
+  `ADMINISTRACION` y `TRABAJADOR`, pero no distingue qué cargos los generan.
+- **Frontend (workaround ya aplicado):** `PersonasView` cruza el listado con
+  `GET /condominios/{cid}/miembros` (`miembrosService.listar`, mismo permiso `PERSONA_VER`, una fila
+  por cargo activo) y muestra **un Tag por cargo** en tabla, cards y detalle. Helpers en
+  `src/utils/personaCargos.js` con fallback al `cargo` único si el cruce falla (catch +
+  `console.error`), y la búsqueda local indexa los nombres de cargo.
+- **Backend propuesto:** `List<String> cargos` en `PersonaResumenResponse`/`PersonaDetalleResponse`
+  (orden estable del enum, `cargo` = primero), reutilizando la derivación de
+  `CondominioAccessService`. Cuando exista, se puede retirar la petición extra del frontend.
+- **QA pendiente (en vivo):** ronda **R2** de `docs/qa/QA_PERMANENTE.md` con la persona de 4 cargos.
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod

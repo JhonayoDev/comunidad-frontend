@@ -3,6 +3,7 @@ import { ref, computed, watch, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { personasService } from "@/services/personasService";
+import { miembrosService } from "@/services/miembrosService";
 import { unidadesService } from "@/services/unidadesService";
 import { useValidacionChile } from "@/composables/useValidacionChile";
 import { useBusquedaPersona } from "@/composables/useBusquedaPersona";
@@ -11,6 +12,10 @@ import { coincidePersona, identidadDeBusqueda } from "@/utils/busqueda";
 import { emailValido } from "@/utils/validadoresChile";
 import { mensajeError } from "@/utils/errores";
 import { estadoCorreccionRut } from "@/utils/correccionRut";
+import {
+  agruparCargosPorPersona,
+  cargosDePersona,
+} from "@/utils/personaCargos";
 import { labelCargo as cargoLabel } from "@/data/cargos";
 import {
   TIPOS_PARTICIPACION,
@@ -72,6 +77,10 @@ const errorAccion = ref(null);
 const exito = ref(null);
 const personas = ref([]);
 const unidades = ref([]);
+// Cargos activos por persona. `GET /personas` solo expone un `cargo` (el
+// primero), así que se cruzan los cargos del endpoint de miembros para no
+// perder a quien tiene varios (p. ej. TESORERO + SECRETARIO + CONSERJE).
+const cargosPorPersona = ref({});
 const busqueda = ref("");
 const pagina = ref(0);
 const estadoFiltro = ref("TODOS");
@@ -547,6 +556,7 @@ const personasFiltradas = computed(() =>
     if (soloSinVinculo.value && !sinVinculo(persona)) return false;
     return coincidePersona(persona, busqueda.value, [
       ...(persona.tiposParticipacion || []).map(labelTipoParticipacion),
+      ...cargosDe(persona).map(cargoLabel),
       labelEstadoMembresia(persona.estadoMembresia),
     ]);
   }),
@@ -592,15 +602,36 @@ async function cargar() {
       console.error("Error al cargar unidades para vínculos", e);
       if (token === tokenCarga) unidades.value = [];
     }
+
+    // Cargos activos: el listado de personas solo trae uno, así que se cruza
+    // este endpoint (mismo permiso PERSONA_VER) para mostrar todos. Si falla,
+    // la vista sigue funcionando con el `cargo` que venga en la persona.
+    try {
+      const { data: miembrosData } = await miembrosService.listar(cid);
+      if (token !== tokenCarga) return;
+      cargosPorPersona.value = agruparCargosPorPersona(miembrosData);
+    } catch (e) {
+      console.error("Error al cargar los cargos del condominio", e);
+      if (token === tokenCarga) cargosPorPersona.value = {};
+    }
   } catch (e) {
     if (token !== tokenCarga) return;
     console.error("Error al cargar personas", e);
     errorCarga.value = mensajeError(e, "No se pudieron cargar las personas");
     personas.value = [];
     unidades.value = [];
+    cargosPorPersona.value = {};
   } finally {
     if (token === tokenCarga) loading.value = false;
   }
+}
+
+/**
+ * Cargos a mostrar para una persona: todos los activos y, si el cruce no está
+ * disponible, el `cargo` único que entrega el backend.
+ */
+function cargosDe(persona) {
+  return cargosDePersona(persona, cargosPorPersona.value);
 }
 
 // ─── Estado de la búsqueda en la URL ─────────────────────────
@@ -768,7 +799,7 @@ function tipoVinculoLabel(tipo) {
  * con la app (candidatos a anonimización futura) sin ocultarlos del listado.
  */
 function sinVinculo(persona) {
-  return !(persona?.tiposParticipacion || []).length && !persona?.cargo;
+  return !(persona?.tiposParticipacion || []).length && !cargosDe(persona).length;
 }
 
 function formatearFecha(valor) {
@@ -2183,8 +2214,9 @@ async function crearUsuario() {
                     size="small"
                   />
                   <Tag
-                    v-if="p.cargo"
-                    :value="cargoLabel(p.cargo)"
+                    v-for="c in cargosDe(p)"
+                    :key="c"
+                    :value="cargoLabel(c)"
                     severity="secondary"
                     size="small"
                   />
@@ -2384,8 +2416,9 @@ async function crearUsuario() {
                       size="small"
                     />
                     <Tag
-                      v-if="p.cargo"
-                      :value="cargoLabel(p.cargo)"
+                      v-for="c in cargosDe(p)"
+                      :key="c"
+                      :value="cargoLabel(c)"
                       severity="secondary"
                       size="small"
                     />
@@ -2399,7 +2432,7 @@ async function crearUsuario() {
                       v-if="
                         !sinVinculo(p) &&
                         !(p.tiposParticipacion || []).length &&
-                        !p.cargo
+                        !cargosDe(p).length
                       "
                       class="text-text-muted"
                     >
@@ -3333,8 +3366,9 @@ async function crearUsuario() {
                 size="small"
               />
               <Tag
-                v-if="personaSeleccionada?.cargo"
-                :value="cargoLabel(personaSeleccionada.cargo)"
+                v-for="c in cargosDe(personaSeleccionada)"
+                :key="c"
+                :value="cargoLabel(c)"
                 severity="secondary"
                 size="small"
               />
