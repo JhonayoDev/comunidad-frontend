@@ -402,9 +402,9 @@ onMounted(() => {
       </template>
     </Card>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
 
-    <Dialog v-model:visible="showRoutingDialog" header="Routing de email" modal :style="{ width: '95%', maxWidth: '420px' }">
+    <Dialog :draggable="false" v-model:visible="showRoutingDialog" header="Routing de email" modal :style="{ width: '95%', maxWidth: '420px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Tipo notificación *</label>

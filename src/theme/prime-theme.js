@@ -659,6 +659,29 @@ export default definePreset(Aura, {
       emptyMessage: { color: "{primary.textMuted}" },
     },
 
+    // Chip suelto (filtros, etiquetas). Aura usa {surface.800}/{surface.0}, que
+    // en esta escala por roles resuelve a blanco sobre blanco en modo oscuro.
+    chip: {
+      colorScheme: {
+        light: {
+          root: {
+            background: mix("{primary.textMuted}", 14),
+            color: "{primary.textPrincipal}",
+          },
+          icon: { color: "{primary.textPrincipal}" },
+          removeIcon: { color: "{primary.textPrincipal}" },
+        },
+        dark: {
+          root: {
+            background: mix("{primary.textMuted}", 14),
+            color: "{primary.textPrincipal}",
+          },
+          icon: { color: "{primary.textPrincipal}" },
+          removeIcon: { color: "{primary.textPrincipal}" },
+        },
+      },
+    },
+
     datepicker: {
       colorScheme: {
         light: {

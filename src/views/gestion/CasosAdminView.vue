@@ -401,6 +401,7 @@ onMounted(cargar);
 
     <!-- Detalle -->
     <Dialog
+      :draggable="false"
       v-model:visible="showDetalle"
       header="Detalle del caso"
       modal
@@ -659,6 +660,7 @@ onMounted(cargar);
 
     <!-- Seguimiento -->
     <Dialog
+      :draggable="false"
       v-model:visible="showSeguimiento"
       header="Agregar seguimiento"
       modal
@@ -698,6 +700,7 @@ onMounted(cargar);
 
     <!-- Vincular solicitudes -->
     <Dialog
+      :draggable="false"
       v-model:visible="showVincular"
       header="Vincular solicitudes al caso"
       modal
@@ -752,6 +755,7 @@ onMounted(cargar);
 
     <!-- Cerrar caso -->
     <Dialog
+      :draggable="false"
       v-model:visible="showCerrar"
       header="Cerrar caso"
       modal

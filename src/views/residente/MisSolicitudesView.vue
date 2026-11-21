@@ -435,7 +435,7 @@ onMounted(async () => {
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
 
     <div class="flex items-center justify-between gap-2 flex-wrap">
       <h2 class="text-xl font-bold m-0">Solicitudes y reclamos</h2>
@@ -602,6 +602,7 @@ onMounted(async () => {
 
     <!-- Dialog Nueva solicitud -->
     <Dialog
+      :draggable="false"
       v-model:visible="showNueva"
       header="Nueva solicitud"
       modal
@@ -785,6 +786,7 @@ onMounted(async () => {
 
     <!-- Dialog Detalle -->
     <Dialog
+      :draggable="false"
       v-model:visible="showDetalle"
       :header="`Solicitud #${solicitudActual?.numero ?? ''}`"
       modal

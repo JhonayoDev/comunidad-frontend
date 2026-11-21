@@ -173,7 +173,7 @@ function formatoMonto(n) {
       </template>
     </Card>
 
-    <Dialog v-model:visible="dialogoVisible" modal header="Dialog de ejemplo" class="w-[95%] max-w-lg">
+    <Dialog :draggable="false" v-model:visible="dialogoVisible" modal header="Dialog de ejemplo" class="w-[95%] max-w-lg">
       <p class="m-0 text-sm">
         Cuerpo del diálogo. Revisa fondo del overlay, color del texto y
         visibilidad del botón de cierre en claro y oscuro.

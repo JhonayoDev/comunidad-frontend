@@ -45,6 +45,7 @@ function handleCancel() {
 
 <template>
   <Dialog
+    :draggable="false"
     :visible="visible"
     @update:visible="$emit('update:visible', $event)"
     header="Registrar salida"

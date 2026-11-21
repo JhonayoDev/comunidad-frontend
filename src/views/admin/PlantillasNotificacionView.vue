@@ -122,7 +122,7 @@ onMounted(cargar);
       <div v-if="!plantillas.length" class="text-center text-text-subprincipal py-8">No hay plantillas disponibles</div>
     </div>
 
-    <Dialog v-model:visible="showEditar" :header="editando ? codigoLabel(editando.codigo) : ''" modal :style="{ width: '95%', maxWidth: '500px' }">
+    <Dialog :draggable="false" v-model:visible="showEditar" :header="editando ? codigoLabel(editando.codigo) : ''" modal :style="{ width: '95%', maxWidth: '500px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1"><label class="text-sm">Título</label><InputText v-model="form.tituloPlantilla" /></div>
         <div class="flex flex-col gap-1"><label class="text-sm">Plantilla App</label><Textarea v-model="form.enAppPlantilla" rows="3" placeholder="Mensaje para notificaciones en la app" /></div>
@@ -134,6 +134,6 @@ onMounted(cargar);
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

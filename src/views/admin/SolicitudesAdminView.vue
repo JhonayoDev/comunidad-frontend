@@ -591,7 +591,7 @@ onMounted(async () => {
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
 
     <Message v-if="error" severity="error" :closable="false" @close="error = null">
       {{ error }}
@@ -828,6 +828,7 @@ onMounted(async () => {
 
     <!-- Dialog Detalle -->
     <Dialog
+      :draggable="false"
       v-model:visible="showDetalle"
       :header="`Solicitud #${solicitudActual?.numero ?? ''}`"
       modal
@@ -1115,6 +1116,7 @@ onMounted(async () => {
 
     <!-- Dialog Resolver -->
     <Dialog
+      :draggable="false"
       v-model:visible="showResolver"
       :header="
         esCorreccionRut && resolverData.resultado === 'RESUELTA'
@@ -1192,6 +1194,7 @@ onMounted(async () => {
 
     <!-- Dialog Vincular Caso -->
     <Dialog
+      :draggable="false"
       v-model:visible="showVincularCaso"
       header="Vincular a caso existente"
       modal
@@ -1235,6 +1238,7 @@ onMounted(async () => {
 
     <!-- Dialog Crear Caso -->
     <Dialog
+      :draggable="false"
       v-model:visible="showCrearCaso"
       header="Crear caso desde la solicitud"
       modal

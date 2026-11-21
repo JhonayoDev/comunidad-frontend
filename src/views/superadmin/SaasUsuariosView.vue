@@ -158,7 +158,7 @@ onMounted(cargar);
       </div>
     </template>
 
-    <Dialog v-model:visible="showRol" header="Asignar rol" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog :draggable="false" v-model:visible="showRol" header="Asignar rol" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <p class="text-sm m-0">Asignar rol a <strong>{{ usuarioRol?.nombre }}</strong></p>
         <Select v-model="rolSeleccionado" :options="rolesDisponibles" optionLabel="label" optionValue="value" placeholder="Seleccionar rol" class="w-full" />

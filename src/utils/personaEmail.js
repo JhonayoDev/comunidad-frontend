@@ -23,7 +23,7 @@ const ESTADOS = {
   },
   [ESTADO_PERSONA.ACTIVO]: {
     key: ESTADO_PERSONA.ACTIVO,
-    label: "Activo",
+    label: "Cuenta activa",
     severity: "success",
   },
 };

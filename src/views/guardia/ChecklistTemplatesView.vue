@@ -153,6 +153,6 @@ async function desactivar() {
       Selecciona un tipo de evento y presiona "Cargar"
     </div>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

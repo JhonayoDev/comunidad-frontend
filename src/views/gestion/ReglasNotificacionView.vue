@@ -233,6 +233,6 @@ async function handleRestaurar(tipo) {
       </Card>
     </div>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

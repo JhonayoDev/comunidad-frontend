@@ -277,6 +277,7 @@ onMounted(() => {
     </template>
 
     <Dialog
+      :draggable="false"
       v-model:visible="showAsignar"
       header="Asignar cargo"
       modal
@@ -357,6 +358,6 @@ onMounted(() => {
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { authService } from "@/services/authService";
 import api from "@/services/api";
 import { accessToken } from "@/utils/tokenStore";
@@ -10,7 +10,20 @@ import {
   clearProactiveRefresh,
 } from "@/utils/refreshScheduler";
 import { refrescarToken } from "@/utils/refreshCoordinator";
+import {
+  emitirSesionCerrada,
+  suscribirseACierreSesion,
+} from "@/utils/tokenBroadcast";
 import { usePushNotifications } from "@/composables/usePushNotifications";
+import {
+  CONTEXT_DASHBOARDS,
+  construirContextos,
+  contextoInicial,
+} from "@/utils/contextoParticipacion";
+
+// El listener cross-tab se registra una sola vez por módulo (no por cada
+// instancia de Pinia ni por recarga de HMR).
+let escuchaCierreSesionRegistrada = false;
 
 export const useAuthStore = defineStore("auth", () => {
   // Composable de notificaciones push — estado compartido reactivo
@@ -44,6 +57,18 @@ export const useAuthStore = defineStore("auth", () => {
   );
   const condominioActualCargo = computed(
     () => condominioActual.value?.cargo || null,
+  );
+  // Lista de cargos activos. Hoy el backend entrega uno solo (`cargo`); cuando
+  // exponga todos los cargos de la persona, esta lista habilita una píldora por
+  // espacio sin cambiar el mapeo cargo → contexto.
+  const condominioActualCargos = computed(
+    () => condominioActual.value?.cargos || [],
+  );
+  // Roles de portal derivados de todos los cargos (`rolesContextuales`:
+  // ADMINISTRADOR/GUARDIA/TRABAJADOR, sin duplicados). Complementa el
+  // `rolContextual` único y alimenta las píldoras de guardia/trabajador.
+  const condominioActualRolesContextuales = computed(
+    () => condominioActual.value?.rolesContextuales || [],
   );
   // Rol contextual del condominio (usuario_condominios o derivado del cargo),
   // distinto del rol global del JWT (`rolAcceso`). Es la fuente para elegir el
@@ -92,63 +117,40 @@ export const useAuthStore = defineStore("auth", () => {
   const permisos = ref([]);
   const permisosRol = ref(null);
 
-  const CARGO_LABELS = {
-    PRESIDENTE: "Presidente",
-    TESORERO: "Tesorero",
-    SECRETARIO: "Secretario",
-    DELEGADO: "Delegado",
-    ADMINISTRADOR: "Administrador",
-  };
-
-  const CONTEXT_DASHBOARDS = {
-    residente: "Inicio",
-    presidente: "Dashboard",
-    tesorero: "FinanzasDashboard",
-    secretario: "Dashboard",
-    delegado: "Dashboard",
-    administrador: "Dashboard",
-    trabajador: "TrabajadorDashboard",
-    proveedor: "ProveedorDashboard",
-  };
-
   const activeContext = ref("residente");
 
   /**
    * Contextos de participación disponibles. Un usuario puede ser residente y
-   * trabajador a la vez; el portal de trabajador/proveedor solo aparece cuando
-   * la API lo deriva (`rolContextual`) o la membresía lo indica.
+   * guardia a la vez; el portal de guardia/trabajador/proveedor solo aparece
+   * cuando la API lo deriva (`rolContextual`), el cargo o la membresía lo
+   * indican. Las etiquetas y claves viven en `contextoParticipacion.js`.
    */
-  const contextos = computed(() => {
-    const list = [];
-    const tipos = condominioActualTiposParticipacion.value;
-    const cargo = condominioActualCargo.value;
-    const rolContextual = condominioActualRolContextual.value;
-
-    const esTrabajador = rolContextual === "TRABAJADOR";
-    const esProveedor =
-      rolContextual === "PROVEEDOR" || tipos.includes("PROVEEDOR");
-
-    if (
-      esParticipacionResidencial.value ||
-      (!esTrabajador && !esProveedor && !cargo)
-    ) {
-      list.push({ key: "residente", label: "Residente" });
-    }
-    if (cargo && CARGO_LABELS[cargo]) {
-      list.push({ key: cargo.toLowerCase(), label: CARGO_LABELS[cargo] });
-    }
-    if (esTrabajador) {
-      list.push({ key: "trabajador", label: "Trabajador" });
-    }
-    if (esProveedor) {
-      list.push({ key: "proveedor", label: "Proveedor" });
-    }
-    if (!list.length) list.push({ key: "residente", label: "Residente" });
-    return list;
-  });
+  const contextos = computed(() =>
+    construirContextos({
+      tiposParticipacion: condominioActualTiposParticipacion.value,
+      cargo: condominioActualCargo.value,
+      cargos: condominioActualCargos.value,
+      rolContextual: condominioActualRolContextual.value,
+      rolesContextuales: condominioActualRolesContextuales.value,
+    }),
+  );
 
   const contextDashboard = computed(
     () => CONTEXT_DASHBOARDS[activeContext.value] || "Inicio",
+  );
+
+  // Mantiene el contexto activo dentro de los disponibles: al cambiar de
+  // condominio (o restaurar la sesión con otro condominio) el contexto previo
+  // puede no existir en el nuevo (p.ej. residencial → cargo guardia).
+  watch(
+    contextos,
+    (disponibles) => {
+      const claves = disponibles.map((c) => c.key);
+      if (!claves.includes(activeContext.value)) {
+        activeContext.value = claves[0] || "residente";
+      }
+    },
+    { immediate: true },
   );
 
   // ─── Actions ─────────────────────────────────────────────────────────────────
@@ -250,24 +252,17 @@ export const useAuthStore = defineStore("auth", () => {
     if (!encontrado) return;
     condominioActual.value = encontrado;
     // Portal inicial: si hay participación residencial el usuario entra como
-    // residente; si no, al primer contexto disponible (cargo, trabajador o
-    // proveedor). Los espacios de trabajo son separados y se cambian desde el
-    // header con las píldoras de contexto.
-    const tipos = encontrado.tiposParticipacion || [];
-    const residencial = tipos.some((tipo) =>
-      ["PROPIETARIO", "ARRENDATARIO", "DEPENDIENTE"].includes(tipo),
-    );
-    if (residencial) {
-      activeContext.value = "residente";
-    } else if (encontrado.cargo && CARGO_LABELS[encontrado.cargo]) {
-      activeContext.value = encontrado.cargo.toLowerCase();
-    } else if (encontrado.rolContextual === "TRABAJADOR") {
-      activeContext.value = "trabajador";
-    } else if (encontrado.rolContextual === "PROVEEDOR") {
-      activeContext.value = "proveedor";
-    } else {
-      activeContext.value = "residente";
-    }
+    // residente; si no, al contexto de su cargo (guardia/conserje → guardia,
+    // jardinero/mantención → trabajador) o al que deriva el backend. Los
+    // espacios de trabajo son separados y se cambian desde el header con las
+    // píldoras de contexto.
+    activeContext.value = contextoInicial({
+      tiposParticipacion: encontrado.tiposParticipacion || [],
+      cargo: encontrado.cargo,
+      cargos: encontrado.cargos || [],
+      rolContextual: encontrado.rolContextual,
+      rolesContextuales: encontrado.rolesContextuales || [],
+    });
     localStorage.setItem("condominioActual", JSON.stringify(encontrado));
 
     fetchPermisos(encontrado.id);
@@ -287,6 +282,9 @@ export const useAuthStore = defineStore("auth", () => {
       // Si falla en el servidor, limpiamos igualmente en el cliente
     } finally {
       clearSession();
+      // Avisar a las demás pestañas del mismo origen para que suelten su
+      // access token en memoria (el refresh token ya quedó revocado).
+      emitirSesionCerrada();
     }
   }
 
@@ -304,6 +302,29 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.removeItem("condominioActual");
   }
 
+  // ─── Cierre de sesión desde otra pestaña ────────────────────────────────────
+  // Un logout en otra ventana revoca el refresh token en el backend; acá hay
+  // que soltar el access token en memoria de inmediato (si no, esta pestaña
+  // seguiría autenticada hasta que el JWT expire, ~15 min).
+  if (!escuchaCierreSesionRegistrada) {
+    escuchaCierreSesionRegistrada = true;
+    suscribirseACierreSesion(async () => {
+      // Pestaña sin sesión: no hay nada que limpiar ni recargar.
+      if (!accessToken.value && !user.value) return;
+
+      try {
+        await push.destruir();
+      } catch {
+        // La limpieza local continúa aunque falle la baja de push.
+      }
+      clearSession();
+
+      // Recarga completa: descarta estado de Vue, caché de queries y tokens
+      // en memoria de esta pestaña.
+      window.location.replace("/login");
+    });
+  }
+
   return {
     user,
     condominios,
@@ -319,6 +340,8 @@ export const useAuthStore = defineStore("auth", () => {
     condominioActualTiposParticipacion,
     esParticipacionResidencial,
     condominioActualCargo,
+    condominioActualCargos,
+    condominioActualRolesContextuales,
     condominioActualStatusPago,
     condominioActualAccesoOperativo,
     esContactoFacturacion,

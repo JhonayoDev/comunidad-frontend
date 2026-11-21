@@ -162,7 +162,7 @@ onMounted(cargar);
       </div>
     </template>
 
-    <Dialog v-model:visible="showCrear" header="Nuevo periodo" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog :draggable="false" v-model:visible="showCrear" header="Nuevo periodo" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Periodo (YYYY-MM)</label>
@@ -183,7 +183,7 @@ onMounted(cargar);
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="showDetalle" header="Detalle del periodo" modal :style="{ width: '95%', maxWidth: '600px' }">
+    <Dialog :draggable="false" v-model:visible="showDetalle" header="Detalle del periodo" modal :style="{ width: '95%', maxWidth: '600px' }">
       <template v-if="detalle">
         <p class="text-sm text-text-muted m-0 mb-3">{{ detalle.resumen?.periodo }} — {{ detalle.resumen?.estado }}</p>
         <div class="flex flex-col gap-2">

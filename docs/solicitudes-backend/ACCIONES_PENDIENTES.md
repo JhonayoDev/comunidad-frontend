@@ -353,6 +353,88 @@ Histórico V57-V61 conservado abajo.
   administrador de A que es residente en B no hereda permisos de administrador en B; un residente
   con cargo operativo conserva ambos contextos.
 
+### [x] P25. Búsqueda de personas en el frontend (barra única + identidad inline)
+- **Frontend:** ✅ (rama `fix/personas-busqueda`, issue
+  https://github.com/JhonayoDev/comunidad-frontend/issues/47) — barra única con `IconField`,
+  ayuda contextual en un (i), filtros en una fila desplegable (con contador y chips) y búsqueda
+  de identidad inline por email completo/RUT válido con debounce 400 ms (sin modal), normalización
+  de acentos/RUT/teléfono y multi-token, filtro "Solo sin vínculo", estado en URL, estados vacíos
+  accionables y `:draggable="false"` en los diálogos de la vista.
+- **Barrido de diálogos (issue #48):** ✅ todas las instancias de la app llevan
+  `:draggable="false"` — **83 etiquetas** (59 `<Dialog>` en 36 archivos + 24 `<ConfirmDialog>`),
+  porque en PrimeVue 4.5.5 ambos traen `draggable: true` por defecto y `initDrag` falla si el
+  diálogo ya se desmontó. Verificación: `grep -rho 'draggable="false"' src --include='*.vue' | wc -l`
+  → 83, sin ocurrencias con arrastre activo.
+- **Utilidades nuevas:** `src/utils/busqueda.js` y `src/composables/useDebouncedRef.js` (+ tests).
+- **Gap backend (búsqueda global parcial por nombre):** ❌
+  https://github.com/JhonayoDev/briku/issues/105 — `GET /personas/buscar` exige exactamente uno de
+  `email` o `rut`; `GET /personas?q=` solo recorre membresías del condominio. Mientras no exista
+  el endpoint, la UI exige email completo o RUT y lo explica en la barra.
+- **QA pendiente (en vivo):** ronda **R2** de `docs/qa/QA_PERMANENTE.md` (caso guía
+  `cintya@gmail.com` sin membresía en el condominio → tarjeta de identidad + "Asociar").
+
+### [ ] P26. Participación "Trabajador" fantasma (`tipo_alta` del backfill + `derivarTipos`)
+- **Issue:** https://github.com/JhonayoDev/briku/issues/106 (bug, Project 3)
+- **Dónde:** `V85__personas_condominios.sql:73-78` y `MembresiaService.derivarTipos`
+  (`MembresiaService.java:154-159`).
+- **Qué pasa:** el backfill guarda `tipo_alta='TRABAJADOR'` para **cualquier** cargo activo
+  (PRESIDENTE/TESORERO/SECRETARIO/ADMINISTRADOR incluidos: 6 de 7 filas en dev) y `derivarTipos`
+  vuelve a sumar `TRABAJADOR`/`ADMINISTRACION` desde ese `tipoAlta` histórico, que
+  `asegurarMembresia` no actualiza si la membresía ya estaba `ACTIVO`.
+- **Efecto:** `Personas` muestra el badge "Trabajador" sin cargo de trabajo (caso `juan ramirez`
+  en *vista horizonte*: Propietario + Administración + **Trabajador**, cargo `ADMINISTRADOR`), el
+  filtro `tipoParticipacion=TRABAJADOR` devuelve a quien no lo es y `rolContextual` no ofrece ese
+  portal.
+- **Propuesta:** derivar el `tipo_alta` del cargo real en el backfill (+ migración de datos) y en
+  `derivarTipos` usar `tipoAlta` solo como fallback cuando no haya cargos activos.
+- **Frontend:** sin cambios; pinta `tiposParticipacion` tal como llega.
+
+### [x] P27. Contexto de cargo `GUARDIA`/`CONSERJE` (frontend) — ✅ Implementado
+- **Issue:** https://github.com/JhonayoDev/comunidad-frontend/issues/50 (bug, Project 3)
+- **Dónde:** `src/stores/authStore.js` (`CARGO_LABELS` local con 5 cargos, `contextos`,
+  `seleccionarCondominio`) y `portalResidente()` en `useNavigation.js`.
+- **Qué pasaba:** `GUARDIA`/`CONSERJE` tienen `rolContextual='GUARDIA'`, pero no había etiqueta ni
+  contexto → la píldora caía en "Residente" y el usuario veía el portal de residente.
+- **Implementado:** la lógica se movió a `src/utils/contextoParticipacion.js`
+  (`CONTEXTO_POR_CARGO`, `CONTEXT_DASHBOARDS`, `construirContextos`, `contextoInicial`): `GUARDIA` y
+  `CONSERJE` comparten el contexto `guardia` (dashboard `GuardiaDashboard`), `JARDINERO` y
+  `MANTENCION` el de `trabajador`, y el comité conserva el suyo; las etiquetas salen de
+  `src/data/cargos.js` (sin catálogo duplicado). `portalResidente()` mapea `guardia` → `"GUARDIA"`,
+  `navItems`/`groupedNavItems` usan `NAV_ITEMS_BY_ROLE.GUARDIA`, `contextosDeRuta` incluye las rutas
+  de guardia y `useBottomNav` respeta ese portal. Un `watch` sobre `contextos` mantiene
+  `activeContext` válido al cambiar o restaurar condominio. Tests nuevos:
+  `contextoParticipacion.test.js` y `authStore.contextos.test.js` (9 cargos, residencial+cargo y
+  corrección de `activeContext`) + casos del guard en `navigationGuard.test.js` y `useNavigation.test.js`.
+  Suite **470/470**.
+- **QA pendiente (en vivo):** ronda **R3** de `docs/qa/QA_PERMANENTE.md` (caso guía
+  `Jorge Andrés Silva Núñez`, cargo `GUARDIA` en *Condominio Los Robles*).
+
+### [x] P28. `/me/condominios` entrega un solo cargo — ✅ Implementado (backend #108/#109 + frontend)
+- **Issues:** https://github.com/JhonayoDev/briku/issues/108 y PR https://github.com/JhonayoDev/briku/pull/109 (fusionado)
+- **Dónde estaba:** `CondominioAccessService.cargoEnCondominio()`/`contexto()` (`cargos.stream().findFirst()`),
+  `CondominioResumen` (`cargo`/`rolContextual` únicos) y `CargoService.resolverRolContextual`
+  (priorizaba `ADMINISTRADOR`).
+- **Qué pasaba:** una persona con **dos cargos activos** solo recibía uno. Caso real en dev:
+  `juan ramirez` (*Vista Horizonte*) tiene `ADMINISTRADOR` (2026-09-10) y `CONSERJE` (2026-11-20)
+  activos; el header mostraba "Residente" y "Administrador", sin píldora de conserje ni menú de
+  guardia.
+- **Backend (decisión):** `GET /me/condominios` ahora expone `cargos` (todos los cargos activos, en
+  orden estable del enum `CargoCondominio`) y `rolesContextuales` (portales derivados
+  `ADMINISTRADOR`/`GUARDIA`/`TRABAJADOR`, deduplicados). `cargo` pasa a ser el primero de `cargos`
+  y `rolContextual` se conserva. Sin cargos → `cargos: []` y `rolesContextuales: []`.
+- **Frontend alineado:** `src/utils/contextoParticipacion.js` acepta `cargos` y `rolesContextuales`
+  (`cargosActivos`/`rolesPortal`, una píldora por espacio con dedupe); la píldora usa la etiqueta
+  real del cargo (`CONSERJE` → **Conserje**, `JARDINERO` → **Jardinero**, `MANTENCION` →
+  **Mantención**) aunque el portal compartido siga siendo `guardia`/`trabajador`. `authStore` expone
+  `condominioActualCargos`/`condominioActualRolesContextuales`; `useNavigation` valida
+  `meta.cargos`/roles contra las listas y, para roles base distintos de `RESIDENTE`, el **menú y la
+  bottom nav siguen el espacio operativo activo** (p. ej. un administrador externo con cargo
+  `CONSERJE` ve el menú de guardia al elegir esa píldora). `residente`/`administrador` conservan el
+  menú del rol base para no cambiar el comportamiento de los administradores externos.
+- **QA pendiente (en vivo):** ronda **R3** de `docs/qa/QA_PERMANENTE.md` con Juan Ramírez
+  (*Vista Horizonte*): píldoras **Residente · Administrador · Conserje**, y al elegir Conserje el
+  menú/bottom nav y Home de guardia.
+
 ## Pendientes de verificación (QA)
 
 ### [x] Q1. Polling metrics reemplaza SSE (verificado dev) — pendiente staging/prod

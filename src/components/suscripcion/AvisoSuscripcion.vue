@@ -26,6 +26,7 @@ const emailSoporte = import.meta.env.VITE_SUPPORT_EMAIL || "";
   </Message>
 
   <Dialog
+    :draggable="false"
     v-model:visible="mostrarSoporte"
     modal
     header="Contactar soporte"

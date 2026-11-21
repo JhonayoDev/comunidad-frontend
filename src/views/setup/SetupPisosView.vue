@@ -260,5 +260,5 @@ onMounted(() => u.cargar());
       </template>
     </template>
   </Card>
-  <ConfirmDialog />
+  <ConfirmDialog :draggable="false" />
 </template>

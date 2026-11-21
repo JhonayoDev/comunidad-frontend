@@ -6,6 +6,8 @@ const { auth } = vi.hoisted(() => ({
     user: { roles: ["RESIDENTE"] },
     condominioActualRol: "RESIDENTE",
     condominioActualCargo: null,
+    condominioActualRolContextual: null,
+    activeContext: "residente",
     contextDashboard: "Inicio",
     permisos: [],
     tryRestoreSession: vi.fn(),
@@ -29,6 +31,8 @@ describe("navigation guard", () => {
     auth.user = { roles: ["RESIDENTE"] };
     auth.condominioActualRol = "RESIDENTE";
     auth.condominioActualCargo = null;
+    auth.condominioActualRolContextual = null;
+    auth.activeContext = "residente";
     auth.contextDashboard = "Inicio";
     auth.permisos = [];
   });
@@ -53,5 +57,49 @@ describe("navigation guard", () => {
     await irA("/finanzas");
 
     expect(router.currentRoute.value.name).toBe("Menu");
+  });
+
+  it("abre GuardiaDashboard para un residente con cargo guardia", async () => {
+    auth.condominioActualCargo = "GUARDIA";
+    auth.condominioActualRolContextual = "GUARDIA";
+    auth.activeContext = "guardia";
+    auth.contextDashboard = "GuardiaDashboard";
+
+    await irA("/login");
+
+    expect(router.currentRoute.value.name).toBe("GuardiaDashboard");
+  });
+
+  it("permite las rutas del portal guardia con el contexto guardia", async () => {
+    auth.condominioActualCargo = "CONSERJE";
+    auth.condominioActualRolContextual = "GUARDIA";
+    auth.activeContext = "guardia";
+    auth.contextDashboard = "GuardiaDashboard";
+
+    await irA("/guardia");
+
+    expect(router.currentRoute.value.name).toBe("GuardiaDashboard");
+  });
+
+  it("saca del portal guardia cuando el contexto activo es residencial", async () => {
+    auth.condominioActualCargo = "GUARDIA";
+    auth.condominioActualRolContextual = "GUARDIA";
+    auth.activeContext = "residente";
+    auth.contextDashboard = "Inicio";
+
+    await irA("/guardia");
+
+    expect(router.currentRoute.value.name).toBe("Inicio");
+  });
+
+  it("no deja al contexto guardia entrar en módulos de residente", async () => {
+    auth.condominioActualCargo = "GUARDIA";
+    auth.condominioActualRolContextual = "GUARDIA";
+    auth.activeContext = "guardia";
+    auth.contextDashboard = "GuardiaDashboard";
+
+    await irA("/mi-unidad");
+
+    expect(router.currentRoute.value.name).toBe("GuardiaDashboard");
   });
 });

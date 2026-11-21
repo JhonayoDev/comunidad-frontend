@@ -382,7 +382,7 @@ onMounted(cargar);
       </template>
     </template>
 
-    <Dialog v-model:visible="showEditar" :header="editando ? `Editar — ${tipoLabel(editando.tipoNotificacion)}` : 'Editar regla'" modal :style="{ width: '95%', maxWidth: '520px' }">
+    <Dialog :draggable="false" v-model:visible="showEditar" :header="editando ? `Editar — ${tipoLabel(editando.tipoNotificacion)}` : 'Editar regla'" modal :style="{ width: '95%', maxWidth: '520px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-1">
@@ -454,7 +454,7 @@ onMounted(cargar);
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
 
     <Popover ref="popoverVisibilidad" :style="{ width: '340px', maxWidth: '90vw' }">
       <div class="flex flex-col gap-3 p-1">

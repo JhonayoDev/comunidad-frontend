@@ -103,7 +103,7 @@ async function handleRevocar(uid) {
       </Card>
     </div>
 
-    <Dialog v-model:visible="mostrarDialog" :header="editando ? 'Cambiar rol' : 'Asignar rol'" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog :draggable="false" v-model:visible="mostrarDialog" :header="editando ? 'Cambiar rol' : 'Asignar rol'" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm font-semibold">Usuario</label>
@@ -122,6 +122,6 @@ async function handleRevocar(uid) {
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

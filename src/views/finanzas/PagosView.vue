@@ -294,7 +294,7 @@ onMounted(() => {
       </div>
     </template>
 
-    <Dialog v-model:visible="showCrear" header="Registrar pago" modal :style="{ width: '95%', maxWidth: '560px' }">
+    <Dialog :draggable="false" v-model:visible="showCrear" header="Registrar pago" modal :style="{ width: '95%', maxWidth: '560px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm font-semibold">Unidad *</label>

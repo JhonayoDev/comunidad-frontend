@@ -229,7 +229,7 @@ onMounted(() => { listar("DOCUMENTO"); });
       </Card>
     </div>
 
-    <Dialog v-model:visible="mostrarSubida" header="Subir archivo" modal :style="{ width: '95%', maxWidth: '450px' }">
+    <Dialog :draggable="false" v-model:visible="mostrarSubida" header="Subir archivo" modal :style="{ width: '95%', maxWidth: '450px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm font-semibold">Archivo *</label>
@@ -268,6 +268,6 @@ onMounted(() => { listar("DOCUMENTO"); });
       </template>
     </Dialog>
 
-    <ConfirmDialog />
+    <ConfirmDialog :draggable="false" />
   </div>
 </template>

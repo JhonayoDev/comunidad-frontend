@@ -144,7 +144,7 @@ onMounted(cargar);
       </Card>
     </template>
 
-    <Dialog v-model:visible="showCambiarPlan" header="Cambiar plan" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog :draggable="false" v-model:visible="showCambiarPlan" header="Cambiar plan" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Plan</label>
@@ -161,7 +161,7 @@ onMounted(cargar);
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="showPago" header="Registrar pago" modal :style="{ width: '95%', maxWidth: '400px' }">
+    <Dialog :draggable="false" v-model:visible="showPago" header="Registrar pago" modal :style="{ width: '95%', maxWidth: '400px' }">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-sm">Monto</label>
