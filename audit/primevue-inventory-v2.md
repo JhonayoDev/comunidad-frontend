@@ -1,6 +1,6 @@
 # Inventario PrimeVue (v2)
 
-Generado: 2026-11-21T22:13:11.156Z
+Generado: 2026-11-23T15:29:47.436Z
 
 Total de usos: **507**
 
@@ -24,9 +24,9 @@ Clases usadas: `rounded-lg`, `flex-1 rounded-lg`, `flex-1`
 - src/components/encomiendas/DetalleEncomiendaDialog.vue:177
 - src/components/encomiendas/EntregarEncomiendaDialog.vue:76
 - src/components/encomiendas/RegistrarEncomiendaDialog.vue:247
-- src/components/unidades/DialogoAgregarVehiculo.vue:206
+- src/components/unidades/DialogoAgregarVehiculo.vue:209
 - src/components/unidades/DialogoEditarPersona.vue:135
-- src/components/unidades/DialogoQuitarPersona.vue:104
+- src/components/unidades/DialogoQuitarPersona.vue:108
 - src/components/visitas/ConfirmarSalidaDialog.vue:100
 - src/views/admin/PersonalView.vue:120
 - src/views/admin/PlantillasNotificacionView.vue:132
@@ -173,7 +173,7 @@ icon="pi pi-plus" size="small"
 ```
 
 - src/components/planilla/PlanillaDatos.vue:333
-- src/views/admin/UnidadesView.vue:682
+- src/views/admin/UnidadesView.vue:685
 - src/views/encomiendas/EncomiendasView.vue:182
 - src/views/finanzas/CargosAdicionalesView.vue:149
 - src/views/finanzas/CategoriasView.vue:106
@@ -260,7 +260,7 @@ icon="pi pi-save"
 icon="pi pi-plus"
 ```
 
-- src/components/unidades/DialogoAgregarVehiculo.vue:220
+- src/components/unidades/DialogoAgregarVehiculo.vue:223
 - src/components/visitas/BuscadorPatenteCard.vue:228
 - src/components/visitas/BuscadorPatenteCard.vue:394
 - src/views/admin/PersonasView.vue:1732
@@ -315,7 +315,7 @@ Clases usadas: `btn-no-bg body-btn`, `absolute right-1 top-1/2 -translate-y-1/2`
 - src/components/visitas/BuscadorPatenteCard.vue:376
 - src/views/admin/PersonasView.vue:1775
 - src/views/admin/PersonasView.vue:1909
-- src/views/admin/UnidadesView.vue:563
+- src/views/admin/UnidadesView.vue:566
 - src/views/residente/MisSolicitudesView.vue:699
 
 ### Button · V14 — 6 usos
@@ -383,7 +383,7 @@ severity="secondary" size="small"
 Clases usadas: `ml-2`
 
 - src/components/planilla/PlanillaDatos.vue:327
-- src/views/admin/UnidadesView.vue:526
+- src/views/admin/UnidadesView.vue:529
 - src/views/setup/SetupEntidadesView.vue:787
 - src/views/setup/SetupUnidadesView.vue:760
 
@@ -393,7 +393,7 @@ Clases usadas: `ml-2`
 icon="pi pi-user-minus" rounded severity="danger" size="small" variant="text"
 ```
 
-- src/components/unidades/UnidadDetalle.vue:140
+- src/components/unidades/UnidadDetalle.vue:147
 - src/views/admin/PersonasView.vue:2324
 - src/views/admin/PersonasView.vue:2547
 - src/views/admin/PersonasView.vue:3435
@@ -513,7 +513,7 @@ icon="pi pi-trash" severity="secondary" size="small" variant="outlined"
 icon="pi pi-pencil" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/components/unidades/UnidadDetalle.vue:129
+- src/components/unidades/UnidadDetalle.vue:136
 - src/views/admin/PersonasView.vue:2313
 - src/views/admin/PersonasView.vue:2536
 
@@ -621,7 +621,7 @@ icon="pi pi-download" size="small"
 icon="pi pi-user-minus" severity="danger"
 ```
 
-- src/components/unidades/DialogoQuitarPersona.vue:110
+- src/components/unidades/DialogoQuitarPersona.vue:114
 - src/views/admin/PersonasView.vue:3172
 
 ### Button · V42 — 2 usos
@@ -667,7 +667,7 @@ severity="secondary" size="small" variant="text"
 ```
 
 - src/views/admin/PersonasView.vue:1883
-- src/views/admin/UnidadesView.vue:663
+- src/views/admin/UnidadesView.vue:666
 
 ### Button · V47 — 2 usos
 
@@ -792,8 +792,8 @@ icon="pi pi-link"
 severity="secondary" size="small" variant="outlined"
 ```
 
-- src/views/admin/UnidadesView.vue:698
-- src/views/admin/UnidadesView.vue:706
+- src/views/admin/UnidadesView.vue:701
+- src/views/admin/UnidadesView.vue:709
 
 ### Button · V61 — 2 usos
 
@@ -801,8 +801,8 @@ severity="secondary" size="small" variant="outlined"
 :icon="unidadExpandidaId === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" rounded severity="secondary" size="small" variant="text"
 ```
 
-- src/views/admin/UnidadesView.vue:767
-- src/views/admin/UnidadesView.vue:828
+- src/views/admin/UnidadesView.vue:770
+- src/views/admin/UnidadesView.vue:832
 
 ### Button · V62 — 2 usos
 
@@ -1044,7 +1044,7 @@ Clases usadas: `text-text-muted`
 :severity="modo === 'EXISTENTE' ? 'primary' : 'secondary'" :variant="modo === 'EXISTENTE' ? undefined : 'outlined'" icon="pi pi-arrow-right-arrow-left" size="small"
 ```
 
-- src/components/unidades/DialogoAgregarVehiculo.vue:111
+- src/components/unidades/DialogoAgregarVehiculo.vue:114
 
 ### Button · V88 — 1 usos
 
@@ -1052,7 +1052,7 @@ Clases usadas: `text-text-muted`
 :severity="modo === 'NUEVO' ? 'primary' : 'secondary'" :variant="modo === 'NUEVO' ? undefined : 'outlined'" icon="pi pi-plus" size="small"
 ```
 
-- src/components/unidades/DialogoAgregarVehiculo.vue:119
+- src/components/unidades/DialogoAgregarVehiculo.vue:122
 
 ### Button · V89 — 1 usos
 
@@ -1060,7 +1060,7 @@ Clases usadas: `text-text-muted`
 icon="pi pi-arrow-right"
 ```
 
-- src/components/unidades/DialogoAgregarVehiculo.vue:212
+- src/components/unidades/DialogoAgregarVehiculo.vue:215
 
 ### Button · V90 — 1 usos
 
@@ -1068,7 +1068,7 @@ icon="pi pi-arrow-right"
 icon="pi pi-user-plus" severity="secondary" size="small" variant="text"
 ```
 
-- src/components/unidades/UnidadDetalle.vue:73
+- src/components/unidades/UnidadDetalle.vue:74
 
 ### Button · V91 — 1 usos
 
@@ -1076,7 +1076,7 @@ icon="pi pi-user-plus" severity="secondary" size="small" variant="text"
 icon="pi pi-plus" severity="secondary" size="small" variant="text"
 ```
 
-- src/components/unidades/UnidadDetalle.vue:168
+- src/components/unidades/UnidadDetalle.vue:175
 
 ### Button · V92 — 1 usos
 
@@ -1084,7 +1084,7 @@ icon="pi pi-plus" severity="secondary" size="small" variant="text"
 icon="pi pi-trash" rounded severity="danger" size="small" variant="text"
 ```
 
-- src/components/unidades/UnidadDetalle.vue:204
+- src/components/unidades/UnidadDetalle.vue:211
 
 ### Button · V93 — 1 usos
 
@@ -1163,18 +1163,22 @@ icon="pi pi-check" severity="success"
 ### Button · V102 — 1 usos
 
 ```
-icon="pi pi-users" severity="secondary" size="small" variant="text"
+icon="pi pi-users" severity="secondary"
 ```
 
-- src/views/admin/UnidadesView.vue:477
+Clases usadas: `w-full sm:w-auto`
+
+- src/views/admin/UnidadesView.vue:483
 
 ### Button · V103 — 1 usos
 
 ```
-icon="pi pi-cog" severity="secondary" size="small" variant="outlined"
+icon="pi pi-cog"
 ```
 
-- src/views/admin/UnidadesView.vue:486
+Clases usadas: `w-full sm:w-auto`
+
+- src/views/admin/UnidadesView.vue:491
 
 ### Button · V104 — 1 usos
 
@@ -1182,7 +1186,7 @@ icon="pi pi-cog" severity="secondary" size="small" variant="outlined"
 :icon="mostrarFiltros ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" iconPos="right" severity="secondary" variant="text"
 ```
 
-- src/views/admin/UnidadesView.vue:578
+- src/views/admin/UnidadesView.vue:581
 
 ### Button · V105 — 1 usos
 

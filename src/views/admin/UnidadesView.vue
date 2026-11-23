@@ -465,35 +465,38 @@ onUnmounted(() => {
 
 <template>
   <div class="p-4 flex flex-col gap-4">
-    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-      <div>
+    <header
+      class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3"
+    >
+      <div class="min-w-0">
         <h1 class="text-xl font-bold m-0">Unidades</h1>
         <p class="text-sm text-text-muted m-0">
-          Consulta las casas, quiénes viven en ellas y sus vehículos. Crear o
-          editar una unidad se hace en Configurar unidades.
+          Consulta las casas, quiénes viven en ellas y sus vehículos.
         </p>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <div
+        v-if="puedeVerPersonas || puedeConfigurar"
+        class="flex flex-col sm:flex-row gap-2 sm:shrink-0"
+        role="group"
+        aria-label="Acciones de la vista Unidades"
+      >
         <Button
           v-if="puedeVerPersonas"
           label="Personas"
           icon="pi pi-users"
-          size="small"
           severity="secondary"
-          variant="text"
+          class="w-full sm:w-auto"
           @click="irAPersonas"
         />
         <Button
           v-if="puedeConfigurar"
           label="Configurar unidades"
           icon="pi pi-cog"
-          size="small"
-          severity="secondary"
-          variant="outlined"
+          class="w-full sm:w-auto"
           @click="irAConfigurar"
         />
       </div>
-    </div>
+    </header>
 
     <Message
       v-if="exito"

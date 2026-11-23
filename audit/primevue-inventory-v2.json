@@ -1211,7 +1211,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/DialogoAgregarVehiculo.vue",
-    "line": 111,
+    "line": 114,
     "signature": ":severity=\"modo === 'EXISTENTE' ? 'primary' : 'secondary'\" :variant=\"modo === 'EXISTENTE' ? undefined : 'outlined'\" icon=\"pi pi-arrow-right-arrow-left\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -1227,7 +1227,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/DialogoAgregarVehiculo.vue",
-    "line": 119,
+    "line": 122,
     "signature": ":severity=\"modo === 'NUEVO' ? 'primary' : 'secondary'\" :variant=\"modo === 'NUEVO' ? undefined : 'outlined'\" icon=\"pi pi-plus\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -1244,7 +1244,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/DialogoAgregarVehiculo.vue",
-    "line": 206,
+    "line": 209,
     "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -1258,7 +1258,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/DialogoAgregarVehiculo.vue",
-    "line": 212,
+    "line": 215,
     "signature": "icon=\"pi pi-arrow-right\"",
     "classes": "",
     "legacyProp": false,
@@ -1274,7 +1274,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/DialogoAgregarVehiculo.vue",
-    "line": 220,
+    "line": 223,
     "signature": "icon=\"pi pi-plus\"",
     "classes": "",
     "legacyProp": false,
@@ -1316,7 +1316,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/DialogoQuitarPersona.vue",
-    "line": 104,
+    "line": 108,
     "signature": "severity=\"secondary\"",
     "classes": "",
     "legacyProp": false,
@@ -1330,7 +1330,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/DialogoQuitarPersona.vue",
-    "line": 110,
+    "line": 114,
     "signature": "icon=\"pi pi-user-minus\" severity=\"danger\"",
     "classes": "",
     "legacyProp": false,
@@ -1345,7 +1345,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/UnidadDetalle.vue",
-    "line": 73,
+    "line": 74,
     "signature": "icon=\"pi pi-user-plus\" severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1363,7 +1363,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/UnidadDetalle.vue",
-    "line": 129,
+    "line": 136,
     "signature": "icon=\"pi pi-pencil\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1382,7 +1382,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/UnidadDetalle.vue",
-    "line": 140,
+    "line": 147,
     "signature": "icon=\"pi pi-user-minus\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1401,7 +1401,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/UnidadDetalle.vue",
-    "line": 168,
+    "line": 175,
     "signature": "icon=\"pi pi-plus\" severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -1418,7 +1418,7 @@
   {
     "component": "Button",
     "file": "src/components/unidades/UnidadDetalle.vue",
-    "line": 204,
+    "line": 211,
     "signature": "icon=\"pi pi-trash\" rounded severity=\"danger\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3005,41 +3005,38 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 477,
-    "signature": "icon=\"pi pi-users\" severity=\"secondary\" size=\"small\" variant=\"text\"",
-    "classes": "",
+    "line": 483,
+    "signature": "icon=\"pi pi-users\" severity=\"secondary\"",
+    "classes": "w-full sm:w-auto",
     "legacyProp": false,
     "attrs": {
       "v-if": "puedeVerPersonas",
       "label": "Personas",
       "icon": "pi pi-users",
-      "size": "small",
       "severity": "secondary",
-      "variant": "text",
+      "class": "w-full sm:w-auto",
       "@click": "irAPersonas"
     }
   },
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 486,
-    "signature": "icon=\"pi pi-cog\" severity=\"secondary\" size=\"small\" variant=\"outlined\"",
-    "classes": "",
+    "line": 491,
+    "signature": "icon=\"pi pi-cog\"",
+    "classes": "w-full sm:w-auto",
     "legacyProp": false,
     "attrs": {
       "v-if": "puedeConfigurar",
       "label": "Configurar unidades",
       "icon": "pi pi-cog",
-      "size": "small",
-      "severity": "secondary",
-      "variant": "outlined",
+      "class": "w-full sm:w-auto",
       "@click": "irAConfigurar"
     }
   },
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 526,
+    "line": 529,
     "signature": "severity=\"secondary\" size=\"small\"",
     "classes": "ml-2",
     "legacyProp": false,
@@ -3054,7 +3051,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 563,
+    "line": 566,
     "signature": "icon=\"pi pi-times\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "absolute right-1 top-1/2 -translate-y-1/2",
     "legacyProp": false,
@@ -3073,7 +3070,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 578,
+    "line": 581,
     "signature": ":icon=\"mostrarFiltros ? 'pi pi-chevron-up' : 'pi pi-chevron-down'\" iconPos=\"right\" severity=\"secondary\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3091,7 +3088,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 663,
+    "line": 666,
     "signature": "severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3106,7 +3103,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 682,
+    "line": 685,
     "signature": "icon=\"pi pi-plus\" size=\"small\"",
     "classes": "",
     "legacyProp": false,
@@ -3121,7 +3118,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 698,
+    "line": 701,
     "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
@@ -3137,7 +3134,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 706,
+    "line": 709,
     "signature": "severity=\"secondary\" size=\"small\" variant=\"outlined\"",
     "classes": "",
     "legacyProp": false,
@@ -3153,7 +3150,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 767,
+    "line": 770,
     "signature": ":icon=\"unidadExpandidaId === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
@@ -3172,7 +3169,7 @@
   {
     "component": "Button",
     "file": "src/views/admin/UnidadesView.vue",
-    "line": 828,
+    "line": 832,
     "signature": ":icon=\"unidadExpandidaId === u.id ? 'pi pi-chevron-up' : 'pi pi-chevron-down'\" rounded severity=\"secondary\" size=\"small\" variant=\"text\"",
     "classes": "",
     "legacyProp": false,
